@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ready_materials",
+  "info": {
+    "name": "Ready Material"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "material_no": {
+      "type": "string"
+    },
+    "images": {
+      "collection": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
+      "pluginOptions": {}
+    },
+    "amt": {
+      "type": "float"
+    },
+    "raw_material_and_quantity": {
+      "type": "component",
+      "repeatable": true,
+      "component": "raw-material-and-quantity.raw-material"
+    }
+  }
+}

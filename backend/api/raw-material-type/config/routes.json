@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/raw-material-types",
+      "handler": "raw-material-type.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/raw-material-types/count",
+      "handler": "raw-material-type.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/raw-material-types/:id",
+      "handler": "raw-material-type.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/raw-material-types",
+      "handler": "raw-material-type.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/raw-material-types/:id",
+      "handler": "raw-material-type.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/raw-material-types/:id",
+      "handler": "raw-material-type.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

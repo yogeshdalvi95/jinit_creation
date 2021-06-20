@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_raw_material_and_quantity_raw_materials",
+  "info": {
+    "name": "raw_material",
+    "icon": "list"
+  },
+  "options": {},
+  "attributes": {
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "quantity": {
+      "type": "decimal"
+    },
+    "rate": {
+      "type": "float"
+    },
+    "final_costing": {
+      "type": "float"
+    }
+  }
+}

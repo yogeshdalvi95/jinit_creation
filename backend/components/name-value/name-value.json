@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_name_value_name_values",
+  "info": {
+    "name": "name_value",
+    "icon": "ad",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    },
+    "Value": {
+      "type": "string"
+    }
+  }
+}

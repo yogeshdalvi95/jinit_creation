@@ -1,0 +1,143 @@
+{
+  "kind": "collectionType",
+  "collectionName": "monthly_sheets",
+  "info": {
+    "name": "Monthly Sheet"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "month": {
+      "type": "enumeration",
+      "enum": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ]
+    },
+    "year": {
+      "type": "string"
+    },
+    "opening_balance": {
+      "type": "float"
+    },
+    "total": {
+      "type": "float"
+    },
+    "balance": {
+      "type": "float"
+    },
+    "amount": {
+      "type": "float"
+    },
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "day_1": {
+      "type": "float"
+    },
+    "day_2": {
+      "type": "float"
+    },
+    "day_3": {
+      "type": "float"
+    },
+    "day_4": {
+      "type": "float"
+    },
+    "day_5": {
+      "type": "float"
+    },
+    "day_6": {
+      "type": "float"
+    },
+    "day_7": {
+      "type": "float"
+    },
+    "day_8": {
+      "type": "float"
+    },
+    "day_9": {
+      "type": "float"
+    },
+    "day_10": {
+      "type": "float"
+    },
+    "day_11": {
+      "type": "float"
+    },
+    "day_12": {
+      "type": "float"
+    },
+    "day_13": {
+      "type": "float"
+    },
+    "day_14": {
+      "type": "float"
+    },
+    "day_15": {
+      "type": "float"
+    },
+    "day_16": {
+      "type": "float"
+    },
+    "day_17": {
+      "type": "float"
+    },
+    "day_18": {
+      "type": "float"
+    },
+    "day_19": {
+      "type": "float"
+    },
+    "day_20": {
+      "type": "float"
+    },
+    "day_21": {
+      "type": "float"
+    },
+    "day_22": {
+      "type": "float"
+    },
+    "day_23": {
+      "type": "float"
+    },
+    "day_24": {
+      "type": "float"
+    },
+    "day_25": {
+      "type": "float"
+    },
+    "day_26": {
+      "type": "float"
+    },
+    "day_27": {
+      "type": "float"
+    },
+    "day_28": {
+      "type": "float"
+    },
+    "day_29": {
+      "type": "float"
+    },
+    "day_30": {
+      "type": "float"
+    },
+    "day_31": {
+      "type": "float"
+    }
+  }
+}

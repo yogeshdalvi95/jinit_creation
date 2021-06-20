@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/ready-materials",
+      "handler": "ready-material.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ready-materials/count",
+      "handler": "ready-material.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ready-materials/:id",
+      "handler": "ready-material.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/ready-materials",
+      "handler": "ready-material.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/ready-materials/:id",
+      "handler": "ready-material.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/ready-materials/:id",
+      "handler": "ready-material.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/monthly-sheets",
+      "handler": "monthly-sheet.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/monthly-sheets/count",
+      "handler": "monthly-sheet.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/monthly-sheets/:id",
+      "handler": "monthly-sheet.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/monthly-sheets",
+      "handler": "monthly-sheet.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/monthly-sheets/:id",
+      "handler": "monthly-sheet.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/monthly-sheets/:id",
+      "handler": "monthly-sheet.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

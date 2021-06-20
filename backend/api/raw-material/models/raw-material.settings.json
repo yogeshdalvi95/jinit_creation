@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "raw_materials",
+  "info": {
+    "name": "Raw Material",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "size": {
+      "type": "string"
+    },
+    "balance": {
+      "type": "float"
+    },
+    "image": {
+      "collection": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
+      "pluginOptions": {}
+    },
+    "costing": {
+      "type": "float"
+    },
+    "name_value": {
+      "type": "component",
+      "repeatable": true,
+      "component": "name-value.name-value"
+    },
+    "department": {
+      "model": "department"
+    },
+    "unit": {
+      "model": "units"
+    }
+  }
+}

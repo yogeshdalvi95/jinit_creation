@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "purchases",
+  "info": {
+    "name": "Purchases",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "purchase_cost": {
+      "type": "float"
+    },
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "seller": {
+      "model": "seller"
+    },
+    "quantity": {
+      "type": "float"
+    }
+  }
+}

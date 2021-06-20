@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "raw_material_types",
+  "info": {
+    "name": "Raw Material Type"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string"
+    }
+  }
+}

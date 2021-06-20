@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "name": "Orders"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order_id": {
+      "type": "string"
+    },
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "order_placed_for_quantity": {
+      "type": "float"
+    },
+    "final_price_per_piece": {
+      "type": "float"
+    },
+    "final_price": {
+      "type": "float"
+    },
+    "pending": {
+      "type": "boolean",
+      "default": true
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "partial_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "completed_quantity": {
+      "type": "float"
+    },
+    "revoked_quantity": {
+      "type": "float"
+    }
+  }
+}
