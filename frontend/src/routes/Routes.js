@@ -1,18 +1,23 @@
 import React from "react";
-import { Switch } from "react-router-dom";
-import { Dashboard, RawMaterials } from "../containers";
-import { DASHBOARD, RAWMATERIALSVIEW } from "../paths";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { Layout } from "../hoc";
+import { DashboardAdminRoutes, allAdminRoutes } from "./AdminRoutes";
 import PublicRoute from "./PublicRoute";
 
 const Routes = () => {
   return (
     <div>
       <Switch>
-        <PublicRoute path={DASHBOARD} exact component={Dashboard} />
-        <PublicRoute path={RAWMATERIALSVIEW} exact component={RawMaterials} />
-
-        {/* <Route path={LOGOUT} exact component={Logout} /> */}
-        {/* <DefaultRoute path="*" exact /> */}
+        <Route
+          path="/"
+          render={props => (
+            <Layout
+              allRoutes={allAdminRoutes}
+              dashboardRoutes={DashboardAdminRoutes}
+              {...props}
+            />
+          )}
+        />
       </Switch>
     </div>
   );

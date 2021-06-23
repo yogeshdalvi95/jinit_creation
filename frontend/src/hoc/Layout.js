@@ -15,6 +15,7 @@ import Link from "@material-ui/core/Link";
 import AdminList from "./AdminList";
 import { useMediaQuery } from "@material-ui/core";
 import styles from "./Layout.module.css";
+import { Redirect, Route, Switch } from "react-router-dom";
 
 const drawerWidth = 240;
 

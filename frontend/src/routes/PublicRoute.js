@@ -3,7 +3,11 @@ import { Route } from "react-router-dom";
 import { Auth as auth, NotFoundPage } from "../components";
 import { Layout } from "../hoc";
 
-const PublicRoute = ({ component: Component, ...otherProps }) => {
+const PublicRoute = ({
+  component: Component,
+  routes: Routes,
+  ...otherProps
+}) => {
   if (auth.getToken() === null) {
     return (
       <>
@@ -17,7 +21,7 @@ const PublicRoute = ({ component: Component, ...otherProps }) => {
         <Route
           render={otherProps => (
             <>
-              <Layout>
+              <Layout routes={Routes}>
                 <Component {...otherProps} />
               </Layout>
             </>
