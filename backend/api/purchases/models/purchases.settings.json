@@ -23,6 +23,9 @@
     },
     "quantity": {
       "type": "float"
+    },
+    "notes": {
+      "type": "text"
     }
   }
 }

@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "orders",
   "info": {
-    "name": "Orders"
+    "name": "Orders",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -43,6 +44,10 @@
     },
     "revoked_quantity": {
       "type": "float"
+    },
+    "cancelled": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
