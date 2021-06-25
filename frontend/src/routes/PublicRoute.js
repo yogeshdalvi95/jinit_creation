@@ -1,40 +1,17 @@
 import * as React from "react";
-import { Route } from "react-router-dom";
-import { Auth as auth, NotFoundPage } from "../components";
-import { Layout } from "../hoc";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { NotFoundPage } from "../components";
+import { Login } from "../containers";
 
-const PublicRoute = ({
-  component: Component,
-  routes: Routes,
-  ...otherProps
-}) => {
-  if (auth.getToken() === null) {
-    return (
-      <>
-        {/* <Route
-          render={otherProps => (
-            <>
-              <Component {...otherProps} />
-            </>
-          )}
-        /> */}
-        <Route
-          render={otherProps => (
-            <>
-              <Layout routes={Routes}>
-                <Component {...otherProps} />
-              </Layout>
-            </>
-          )}
-        />
-      </>
-    );
-  } else {
-    return (
-      <React.Fragment>
-        <NotFoundPage />
-      </React.Fragment>
-    );
-  }
+const PublicRoute = props => {
+  return (
+    <div>
+      <Switch>
+        <Route path={"/Login"} exact component={Login} />
+        <Redirect from={"/"} to={"/Login"} />
+        <Route path="*" exact component={NotFoundPage} />
+      </Switch>
+    </div>
+  );
 };
 export default PublicRoute;

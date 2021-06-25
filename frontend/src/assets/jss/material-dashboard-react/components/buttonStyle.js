@@ -12,6 +12,11 @@ import {
 } from "../../material-dashboard-react.js";
 
 const buttonStyle = {
+  borderLess: {
+    backgroundColor: whiteColor + " !Important",
+    boxShadow: "none !Important"
+  },
+
   button: {
     minHeight: "auto",
     minWidth: "auto",
@@ -88,6 +93,97 @@ const buttonStyle = {
       }
     }
   },
+
+  rose_text_color: {
+    color: roseColor[0],
+    "&:hover,&:focus": {
+      color: roseColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(primaryColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(primaryColor[0]) +
+        ", 0.2)"
+    }
+  },
+  primary_text_color: {
+    color: primaryColor[0],
+
+    "&:hover,&:focus": {
+      color: primaryColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(primaryColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(primaryColor[0]) +
+        ", 0.2)"
+    }
+  },
+  info_text_color: {
+    color: infoColor[0],
+
+    "&:hover,&:focus": {
+      color: infoColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(infoColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(infoColor[0]) +
+        ", 0.2)"
+    }
+  },
+  success_text_color: {
+    color: successColor[0],
+
+    "&:hover,&:focus": {
+      color: successColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(successColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(successColor[0]) +
+        ", 0.2)"
+    }
+  },
+  warning_text_color: {
+    color: warningColor[0],
+
+    "&:hover,&:focus": {
+      color: warningColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(warningColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(warningColor[0]) +
+        ", 0.2)"
+    }
+  },
+  danger_text_color: {
+    color: dangerColor[0],
+
+    "&:hover,&:focus": {
+      color: dangerColor[0],
+      boxShadow:
+        "0 14px 26px -12px rgba(" +
+        hexToRgb(dangerColor[0]) +
+        ", 0.42), 0 4px 23px 0px rgba(" +
+        hexToRgb(blackColor) +
+        ", 0.12), 0 8px 10px -5px rgba(" +
+        hexToRgb(dangerColor[0]) +
+        ", 0.2)"
+    }
+  },
+
   white: {
     "&,&:focus,&:hover": {
       backgroundColor: whiteColor,

@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, Redirect, Link } from "react-router-dom";
+import { Switch, Route, Redirect } from "react-router-dom";
 // creates a beautiful scrollbar
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
@@ -7,14 +7,11 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import { Navbar, Footer, Sidebar } from "../components";
-import { AdminRoutes } from "../routes";
 
 import styles from "../assets/jss/material-dashboard-react/layouts/adminStyle.js";
 
 import bgImage from "../assets/img/sidebar-2.jpg";
 import logo from "../assets/img/reactlogo.png";
-import { CustomTypography } from "../components";
-import { Dashboard } from "../containers";
 
 let ps;
 
@@ -50,16 +47,12 @@ export default function Layout(props) {
   // ref to help us initialize PerfectScrollbar on windows devices
   const mainPanel = React.createRef();
   // states and functions
-  const [image, setImage] = React.useState(bgImage);
-  const [color, setColor] = React.useState("blue");
+  const [image] = React.useState(bgImage);
+  const [color] = React.useState("blue");
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
-  };
-
-  const getRoute = () => {
-    return window.location.pathname !== "/admin/maps";
   };
 
   const resizeFunction = () => {

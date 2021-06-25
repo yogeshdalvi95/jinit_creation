@@ -7,3 +7,12 @@ export { CustomInput } from "./CustomInput";
 export { RegularButton as Button } from "./CustomButtons";
 export { Header as Navbar } from "./Navbars";
 export { Sidebar } from "./Sidebar";
+export { GridItem, GridContainer } from "./Grid";
+export {
+  Card,
+  CardAvatar,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  CardIcon
+} from "./Card";

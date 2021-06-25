@@ -26,8 +26,10 @@ export default function RegularButton(props) {
     justIcon,
     className,
     muiClasses,
+    borderLess,
     ...rest
   } = props;
+
   const btnClasses = classNames({
     [classes.button]: true,
     [classes[size]]: size,
@@ -40,8 +42,27 @@ export default function RegularButton(props) {
     [classes.justIcon]: justIcon,
     [className]: className
   });
+
+  const btnClassesForNoBorder = classNames({
+    [classes.borderLess]: true,
+    [classes[color + "_text_color"]]: true,
+    [classes.button]: true,
+    [classes[size]]: size,
+    [classes.round]: round,
+    [classes.disabled]: disabled,
+    [classes.simple]: simple,
+    [classes.block]: block,
+    [classes.link]: link,
+    [classes.justIcon]: justIcon,
+    [className]: className
+  });
+
   return (
-    <Button {...rest} classes={muiClasses} className={btnClasses}>
+    <Button
+      {...rest}
+      classes={muiClasses}
+      className={borderLess ? btnClassesForNoBorder : btnClasses}
+    >
       {children}
     </Button>
   );
