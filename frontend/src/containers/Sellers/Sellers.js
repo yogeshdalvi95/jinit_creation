@@ -5,58 +5,39 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomTable,
+  FAB,
   GridContainer,
   GridItem,
   Table
 } from "../../components";
 // core components
+import AddIcon from "@material-ui/icons/Add";
 
-const styles = {
-  cardCategoryWhite: {
-    "&,& a,& a:hover,& a:focus": {
-      color: "rgba(255,255,255,.62)",
-      margin: "0",
-      fontSize: "14px",
-      marginTop: "0",
-      marginBottom: "0"
-    },
-    "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
-    }
-  },
-  cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none",
-    "& small": {
-      color: "#777",
-      fontSize: "65%",
-      fontWeight: "400",
-      lineHeight: "1"
-    }
-  }
-};
+import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import { ADDSELLER } from "../../paths";
 
 const useStyles = makeStyles(styles);
 
-export default function Dashboard() {
+export default function Sellers() {
   const classes = useStyles();
+  const history = useHistory();
+  const onAddClick = () => {
+    history.push(ADDSELLER);
+    console.log("button clicked");
+  };
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
+        <FAB color="primary" align={"end"} size={"small"} onClick={onAddClick}>
+          <AddIcon />
+        </FAB>
+      </GridItem>
+      <GridItem xs={12} sm={12} md={12}>
         <Card plain>
-          <CardHeader plain color="rose">
-            <h4 className={classes.cardTitleWhite}>
-              Table on Plain Background
-            </h4>
-            <p className={classes.cardCategoryWhite}>
-              Here is a subtitle for this table
-            </p>
+          <CardHeader plain color="primary">
+            <h4 className={classes.cardTitleWhite}>Sellers</h4>
+            <p className={classes.cardCategoryWhite}>List of all sellers</p>
           </CardHeader>
           <CardBody>
             <Table

@@ -11,6 +11,17 @@ import {
   Paper
 } from "@material-ui/core";
 
+import {
+  warningColor,
+  primaryColor,
+  dangerColor,
+  successColor,
+  infoColor,
+  roseColor,
+  grayColor,
+  defaultFont
+} from "../../assets/jss/material-dashboard-react.js";
+
 const useStyles = makeStyles(theme => ({
   root: {
     "& .MuiPaper-root": {
@@ -56,16 +67,18 @@ const useStyles = makeStyles(theme => ({
       letterSpacing: "0.15px !important",
       borderBottom: "1px solid #e0e0e0 !important",
       fontFamily: "Montserrat !important",
-      padding: "1rem !important"
+      padding: "1rem !important",
+      textAlign: "left",
+      flexDirection: "row"
     },
     "& td": {
-      fontSize: "0.9375rem !important",
-      fontWeight: "500 !important",
+      ...defaultFont,
+      textAlign: "left",
+      fontSize: "0.8125rem !important",
+      fontWeight: "450 !important",
       lineHeight: "1.5rem !important",
       letterSpacing: "0.15px !important",
       borderBottom: "1px solid #e0e0e0 !important",
-      fontFamily: "Montserrat !important",
-      padding: "1rem !important",
       "& .MuiIconButton-label": {
         color: "#1C4979 !important"
       },
@@ -79,6 +92,8 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const useNewStyles = makeStyles(styles);
+
 const Table = props => {
   const {
     rows,
@@ -90,6 +105,8 @@ const Table = props => {
     ...rest
   } = props;
   const classes = useStyles();
+
+  const newClasses = useStyles();
 
   return (
     <Box boxShadow={0}>

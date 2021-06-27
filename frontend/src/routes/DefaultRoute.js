@@ -2,24 +2,52 @@ import React from "../../node_modules/react";
 import { Redirect } from "../../node_modules/react-router-dom";
 import PropTypes from "../../node_modules/prop-types";
 import { Auth, NotFoundPage } from "../components";
-import { DASHBOARD, LOGIN } from "../paths";
-import { Route } from "react-router-dom";
-import { LogIn } from "../containers";
+import { LOGIN, RAWMATERIALSVIEW, USERS } from "../paths";
 
 const DefaultRoute = props => {
-  return (
-    <Redirect
-      to={{
-        pathname: DASHBOARD,
-        state: { from: props.location }
-      }}
-    />
-  );
+  console.log("Default route");
+  const auth = Auth.getToken();
+  const userInfo = Auth.getUserInfo();
+  if (auth !== null) {
+    if (
+      userInfo.role.name === process.env.REACT_APP_ADMIN ||
+      userInfo.role.name === process.env.REACT_APP_SUPER_ADMIN
+    ) {
+      return (
+        <Redirect
+          to={{
+            pathname: USERS,
+            state: { from: props.location }
+          }}
+        />
+      );
+    } else if (userInfo.role.name === process.env.REACT_APP_STAFF) {
+      return (
+        <Redirect
+          to={{
+            pathname: RAWMATERIALSVIEW,
+            state: { from: props.location }
+          }}
+        />
+      );
+    } else {
+      return <NotFoundPage />;
+    }
+  } else {
+    return (
+      <>
+        <Redirect
+          to={{
+            pathname: LOGIN,
+            state: { from: props.location }
+          }}
+        />
+      </>
+    );
+  }
 };
 
 DefaultRoute.propTypes = {
-  component: PropTypes.any.isRequired,
-  layout: PropTypes.any.isRequired,
   path: PropTypes.string
 };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "../../components";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { rawMaterials } from "../../constants";
+import { backend_raw_materials } from "../../constants";
 
 export default function RawMaterials() {
   const tableRef = React.createRef();
@@ -32,7 +32,7 @@ export default function RawMaterials() {
       }
     });
     return new Promise((resolve, reject) => {
-      fetch(rawMaterials + "?" + new URLSearchParams(params), {
+      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json"

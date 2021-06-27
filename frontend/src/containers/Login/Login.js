@@ -1,6 +1,7 @@
-import { makeStyles } from "@material-ui/core";
+import { IconButton, InputAdornment, makeStyles } from "@material-ui/core";
 import * as React from "react";
 import {
+  Auth,
   Button,
   Card,
   CardBody,
@@ -8,9 +9,18 @@ import {
   CardHeader,
   CustomInput,
   GridContainer,
-  GridItem
+  GridItem,
+  SnackBarComponent
 } from "../../components";
 import bgImage from "../../assets/img/cover_image.jpg";
+import MailIcon from "@material-ui/icons/Mail";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import LockIcon from "@material-ui/icons/Lock";
+import { providerForPublicPost } from "../../api";
+import { RAWMATERIALSVIEW, USERS } from "../../paths";
+import { useHistory } from "react-router-dom";
+import { backend_login } from "../../constants";
 
 const styles = {
   cardCategoryWhite: {
@@ -70,7 +80,64 @@ const styles = {
 const useStyles = makeStyles(styles);
 const Login = props => {
   const classes = useStyles();
+  const history = useHistory();
   const [image] = React.useState(bgImage);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [values, setValues] = React.useState({
+    email: "",
+    password: ""
+  });
+
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
+  });
+
+  const onsubmit = event => {
+    event.preventDefault();
+    handSubmit();
+  };
+
+  const handSubmit = async () => {
+    await providerForPublicPost(backend_login, {
+      identifier: values.email,
+      password: values.password
+    })
+      .then(res => {
+        if (res.data && res.data.user.role && res.data.user.role.name) {
+          Auth.setToken(res.data.jwt, true);
+          Auth.setUserInfo(res.data.user, true);
+          if (res.data.user.role.name === process.env.REACT_APP_STAFF) {
+            history.push(RAWMATERIALSVIEW);
+          } else if (
+            res.data.user.role.name === process.env.REACT_APP_ADMIN ||
+            res.data.user.role.name === process.env.REACT_APP_SUPER_ADMIN
+          ) {
+            history.push(USERS);
+          }
+        } else {
+        }
+      })
+      .catch(err => {
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Login/Password Invalid"
+        }));
+      });
+  };
+
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
   return (
     <div>
       {image !== undefined ? (
@@ -81,37 +148,100 @@ const Login = props => {
       ) : null}
       <GridContainer noWidth>
         <GridItem xs={12} sm={6} md={3} className={classes.alignLoginCard}>
+          <SnackBarComponent
+            open={snackBar.show}
+            severity={snackBar.severity}
+            message={snackBar.message}
+            handleClose={snackBarHandleClose}
+          />
           <Card className={classes.header}>
-            <CardHeader color="rose" className={classes.customLogin}>
-              <h3 className={classes.cardTitleWhite}>Log in</h3>
-            </CardHeader>
-            <CardBody>
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <CustomInput
-                    labelText="Email..."
-                    id="email-address"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={12}>
-                  <CustomInput
-                    labelText="Password"
-                    id="password"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-            </CardBody>
-            <CardFooter className={classes.alignLoginCard}>
-              <Button color="rose" borderLess>
-                Let's go
-              </Button>
-            </CardFooter>
+            <form className={classes.form} onSubmit={onsubmit} noValidate>
+              <CardHeader color="rose" className={classes.customLogin}>
+                <h3 className={classes.cardTitleWhite}>
+                  <LockIcon />
+                </h3>
+                <h3 className={classes.cardTitleWhite}>
+                  <span>Log in</span>
+                </h3>
+              </CardHeader>
+              <CardBody>
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <CustomInput
+                      labelText="Email"
+                      id="email-address"
+                      value={values.email}
+                      onChange={event => {
+                        setValues(values => ({
+                          ...values,
+                          email: event.target.value
+                        }));
+                      }}
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                      inputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <MailIcon color="action" />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <CustomInput
+                      labelText="Password"
+                      id="password"
+                      autoComplete="on"
+                      value={values.password}
+                      onChange={event => {
+                        setValues(values => ({
+                          ...values,
+                          password: event.target.value
+                        }));
+                      }}
+                      type={showPassword ? "text" : "password"}
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                      inputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={() => {
+                                setShowPassword(!showPassword);
+                              }}
+                              onMouseDown={event => {
+                                event.preventDefault();
+                              }}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <Visibility />
+                              ) : (
+                                <VisibilityOff />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  </GridItem>
+                </GridContainer>
+              </CardBody>
+              <CardFooter
+                className={classes.alignLoginCard}
+                style={{
+                  justifyContent: "space-evenly"
+                }}
+              >
+                <Button color="rose" borderLess type="submit">
+                  Login
+                </Button>
+              </CardFooter>
+            </form>
           </Card>
         </GridItem>
       </GridContainer>
