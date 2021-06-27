@@ -1,1 +1,10 @@
-export { DASHBOARD, LOGIN, RAWMATERIALSVIEW } from "./Paths";
+export {
+  DASHBOARD,
+  LOGIN,
+  RAWMATERIALSVIEW,
+  USERS,
+  PROFILE,
+  SELLERS,
+  PURCHASES,
+  ADDSELLER
+} from "./Paths";

@@ -24,7 +24,8 @@ export default function CustomInput(props) {
     inputProps,
     error,
     success,
-    rtlActive
+    rtlActive,
+    ...rest
   } = props;
 
   const labelClasses = classNames({
@@ -65,8 +66,10 @@ export default function CustomInput(props) {
         classes={{
           root: marginTop,
           disabled: classes.disabled,
-          underline: underlineClasses
+          underline: underlineClasses,
+          input: classes.input
         }}
+        {...rest}
         id={id}
         {...inputProps}
         inputProps={newInputProps}

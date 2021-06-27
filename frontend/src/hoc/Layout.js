@@ -1,204 +1,78 @@
 import React from "react";
-import clsx from "clsx";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import Link from "@material-ui/core/Link";
-import AdminList from "./AdminList";
-import { useMediaQuery } from "@material-ui/core";
-import styles from "./Layout.module.css";
-import { Redirect, Route, Switch } from "react-router-dom";
+// creates a beautiful scrollbar
+import PerfectScrollbar from "perfect-scrollbar";
+import "perfect-scrollbar/css/perfect-scrollbar.css";
+// @material-ui/core components
+import { makeStyles } from "@material-ui/core/styles";
+// core components
+import { Navbar, Footer, Sidebar } from "../components";
 
-const drawerWidth = 240;
+import styles from "../assets/jss/material-dashboard-react/layouts/adminStyle.js";
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="caption"
-      display="block"
-      gutterBottom
-      color="text.secondary"
-      align="right"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import bgImage from "../assets/img/sidebar-2.jpg";
+import logo from "../assets/img/reactlogo.png";
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: "flex"
-  },
-  appBar: {
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    })
-  },
-  appBarShift: {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: drawerWidth,
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    })
-  },
-  menuButton: {
-    marginRight: theme.spacing(2)
-  },
-  hide: {
-    display: "none"
-  },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0
-  },
-  drawerPaper: {
-    width: drawerWidth
-  },
-  drawerHeader: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-    justifyContent: "flex-end"
-  },
-  content: {
-    backgroundColor: "#ffffff",
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
-    marginLeft: -drawerWidth
-  },
-  main: {
-    backgroundColor: "#ffffff",
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
-    marginLeft: -drawerWidth
-  },
-  contentShift: {
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    }),
-    marginLeft: 0
-  }
-}));
+let ps;
+
+const useStyles = makeStyles(styles);
 
 export default function Layout(props) {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"), {
-    defaultMatches: true
-  });
+  // styles
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
+  // ref to help us initialize PerfectScrollbar on windows devices
+  const mainPanel = React.createRef();
+  // states and functions
+  const [image] = React.useState(bgImage);
+  const [color] = React.useState("blue");
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
   };
 
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const resizeFunction = () => {
+    if (window.innerWidth >= 960) {
+      setMobileOpen(false);
+    }
   };
+  // initialize and destroy the PerfectScrollbar plugin
+  React.useEffect(() => {
+    if (navigator.platform.indexOf("Win") > -1) {
+      ps = new PerfectScrollbar(mainPanel.current, {
+        suppressScrollX: true,
+        suppressScrollY: false
+      });
+      document.body.style.overflow = "hidden";
+    }
+
+    window.addEventListener("resize", resizeFunction);
+    // Specify how to clean up after this effect:
+    return function cleanup() {
+      if (navigator.platform.indexOf("Win") > -1) {
+        ps.destroy();
+      }
+      window.removeEventListener("resize", resizeFunction);
+    };
+  }, [mainPanel]);
 
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open
-        })}
-      >
-        <Toolbar
-          style={{
-            background: "#1976d2"
-          }}
-        >
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, open && classes.hide)}
-          >
-            <MenuIcon />
-          </IconButton>
-          {!open ? (
-            <Typography variant="h6" noWrap>
-              JINIT CREATION
-            </Typography>
-          ) : null}
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        className={classes.drawer}
-        variant="persistent"
-        anchor="left"
-        open={open}
-        classes={{
-          paper: classes.drawerPaper
-        }}
-      >
-        <div className={classes.drawerHeader}>
-          <Typography variant="h6" noWrap>
-            JINIT CREATION
-          </Typography>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
+    <div className={classes.wrapper}>
+      <Sidebar
+        routes={props.dashboardRoutes}
+        logoText={"JINIT Creation"}
+        logo={logo}
+        image={image}
+        handleDrawerToggle={handleDrawerToggle}
+        open={mobileOpen}
+        color={color}
+      />
+      <div className={classes.mainPanel} ref={mainPanel}>
+        <Navbar handleDrawerToggle={handleDrawerToggle} header={props.header} />
+        <div className={classes.content}>
+          <div className={classes.container}>{props.children}</div>
         </div>
-        <Divider />
-        <AdminList />
-        <Divider />
-      </Drawer>
-      {isDesktop ? (
-        <main
-          className={clsx(classes.content, {
-            [classes.contentShift]: open
-          })}
-        >
-          <div className={classes.drawerHeader} />
-          <div className={styles.mainContainer}>{props.children}</div>
-          <Copyright sx={{ mt: 8, mb: 4 }} />
-        </main>
-      ) : (
-        <main
-          className={clsx(classes.main, {
-            [classes.contentShift]: open
-          })}
-        >
-          <div className={classes.drawerHeader} />
-          {props.children}
-          <Copyright sx={{ mt: 8, mb: 4 }} />
-        </main>
-      )}
+        <Footer />
+      </div>
     </div>
   );
 }

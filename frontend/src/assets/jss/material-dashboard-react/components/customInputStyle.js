@@ -71,6 +71,10 @@ const customInputStyle = {
     "&.MuiInputLabel-shrink": {
       transform: "translate(0, 1.5px)"
     }
+  },
+  input: {
+    color: grayColor[7] + " !important",
+    fontSize: "0.900rem"
   }
 };
 

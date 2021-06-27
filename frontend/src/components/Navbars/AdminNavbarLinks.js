@@ -20,11 +20,15 @@ import CustomInput from "../CustomInput/CustomInput.js";
 import Button from "../CustomButtons/Button.js";
 
 import styles from "../../assets/jss/material-dashboard-react/components/headerLinksStyle.js";
+import auth from "../Auth/Auth.js";
+import { useHistory } from "react-router-dom";
+import { LOGIN } from "../../paths";
 
 const useStyles = makeStyles(styles);
 
 export default function AdminNavbarLinks() {
   const classes = useStyles();
+  const history = useHistory();
   const [openNotification, setOpenNotification] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(null);
   const handleClickNotification = event => {
@@ -47,10 +51,17 @@ export default function AdminNavbarLinks() {
   const handleCloseProfile = () => {
     setOpenProfile(null);
   };
+
+  const handleLogOut = event => {
+    event.preventDefault();
+    auth.clearAppStorage();
+    history.push(LOGIN);
+  };
+
   return (
     <div>
       <div className={classes.searchWrapper}>
-        <CustomInput
+        {/* <CustomInput
           formControlProps={{
             className: classes.margin + " " + classes.search
           }}
@@ -63,9 +74,9 @@ export default function AdminNavbarLinks() {
         />
         <Button color="white" aria-label="edit" justIcon round>
           <Search />
-        </Button>
+        </Button> */}
       </div>
-      <Button
+      {/* <Button
         color={window.innerWidth > 959 ? "transparent" : "white"}
         justIcon={window.innerWidth > 959}
         simple={!(window.innerWidth > 959)}
@@ -76,8 +87,8 @@ export default function AdminNavbarLinks() {
         <Hidden mdUp implementation="css">
           <p className={classes.linkText}>Dashboard</p>
         </Hidden>
-      </Button>
-      <div className={classes.manager}>
+      </Button> */}
+      {/* <div className={classes.manager}>
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
@@ -154,7 +165,7 @@ export default function AdminNavbarLinks() {
             </Grow>
           )}
         </Poppers>
-      </div>
+      </div> */}
       <div className={classes.manager}>
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
@@ -207,7 +218,7 @@ export default function AdminNavbarLinks() {
                     </MenuItem>
                     <Divider light />
                     <MenuItem
-                      onClick={handleCloseProfile}
+                      onClick={handleLogOut}
                       className={classes.dropdownItem}
                     >
                       Logout
