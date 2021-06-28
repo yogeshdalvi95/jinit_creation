@@ -14,30 +14,30 @@ import {
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_get_all_sellers } from "../../constants";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { ADDSELLER } from "../../paths";
+import { backend_get_all_admins } from "../../constants";
+import { ADDADMIN } from "../../paths";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles(styles);
 
-export default function Sellers() {
+export default function Admin() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "seller_name:asc"
+    _sort: "name:asc"
   });
 
   const columns = [
-    { title: "Name", field: "seller_name" },
-    { title: "Email", field: "seller_email" },
-    { title: "Phone", field: "phone_1" }
+    { title: "Name", field: "name" },
+    { title: "Email", field: "email" },
+    { title: "Phone", field: "phone_number" }
   ];
 
   const history = useHistory();
   const onAddClick = () => {
-    history.push(ADDSELLER);
+    history.push(ADDADMIN);
   };
 
   const getAdminUserData = async (page, pageSize) => {
@@ -53,7 +53,7 @@ export default function Sellers() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_get_all_sellers + "?" + new URLSearchParams(params), {
+      fetch(backend_get_all_admins + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -88,20 +88,20 @@ export default function Sellers() {
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
-        <FAB color="primary" align={"end"} size={"small"} onClick={onAddClick}>
+        <FAB color="primary" align={"end"} onClick={onAddClick} size={"small"}>
           <AddIcon />
         </FAB>
       </GridItem>
       <GridItem xs={12} sm={12} md={12}>
         <Card plain>
           <CardHeader plain color="primary">
-            <h4 className={classes.cardTitleWhite}>Sellers</h4>
-            <p className={classes.cardCategoryWhite}>List of all sellers</p>
+            <h4 className={classes.cardTitleWhite}>Admin Users</h4>
+            <p className={classes.cardCategoryWhite}>List of all admin users</p>
           </CardHeader>
           <CardBody>
             <Table
               tableRef={tableRef}
-              title="Sellers"
+              title="Admin Users"
               columns={columns}
               data={async query => {
                 return await getAdminUserData(query.page + 1, query.pageSize);

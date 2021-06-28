@@ -16,16 +16,16 @@ import {
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { SELLERS } from "../../paths";
+import { STAFF } from "../../paths";
 
 const useStyles = makeStyles(styles);
 
-export default function AddSeller() {
+export default function AddStaff() {
   const classes = useStyles();
   const history = useHistory();
 
   const onBackClick = () => {
-    history.push(SELLERS);
+    history.push(STAFF);
   };
   return (
     <GridContainer>
@@ -37,7 +37,7 @@ export default function AddSeller() {
       <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
-            <h4 className={classes.cardTitleWhite}>Add New Seller</h4>
+            <h4 className={classes.cardTitleWhite}>Add New Staff</h4>
             <p className={classes.cardCategoryWhite}></p>
           </CardHeader>
           <CardBody>
@@ -53,7 +53,7 @@ export default function AddSeller() {
               </GridItem>
             </GridContainer>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={12}>
+              <GridItem xs={12} sm={12} md={8}>
                 <CustomInput
                   labelText="Email address"
                   id="email-address"
@@ -62,21 +62,10 @@ export default function AddSeller() {
                   }}
                 />
               </GridItem>
-            </GridContainer>
-            <GridContainer>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
                   labelText="Phone Number"
                   id="phone-number"
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={6}>
-                <CustomInput
-                  labelText="Alternate number"
-                  id="phone_number_2"
                   formControlProps={{
                     fullWidth: true
                   }}
@@ -98,9 +87,38 @@ export default function AddSeller() {
                 />
               </GridItem>
             </GridContainer>
+            <GridContainer>
+              <GridItem xs={12} sm={12} md={4}>
+                <CustomInput
+                  labelText="City"
+                  id="city"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={4}>
+                <CustomInput
+                  labelText="Country"
+                  id="country"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={4}>
+                <CustomInput
+                  labelText="Postal Code"
+                  id="postal-code"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                />
+              </GridItem>
+            </GridContainer>
           </CardBody>
           <CardFooter>
-            <Button color="primary">Add Seller</Button>
+            <Button color="primary">Add Staff</Button>
           </CardFooter>
         </Card>
       </GridItem>

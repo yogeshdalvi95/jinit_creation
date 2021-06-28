@@ -4,7 +4,11 @@ import { Layout } from "../hoc";
 import { Auth as auth } from "../components";
 import { Redirect } from "react-router-dom";
 import { LOGIN } from "../paths";
-import { DashboardAdminRoutes } from "./AdminRoutes";
+import {
+  DashboardAdminRoutes,
+  DashboardStaffRoutes,
+  SuperAdminDashboardRoutes
+} from "./AdminRoutes";
 
 const PrivateRoute = ({
   component: Component,
@@ -13,13 +17,20 @@ const PrivateRoute = ({
   ...otherProps
 }) => {
   if (auth.getToken() !== null) {
-    console.log("computed Match");
+    let routes = [];
+    if (auth.getUserInfo().role.name === process.env.REACT_APP_SUPER_ADMIN) {
+      routes = SuperAdminDashboardRoutes;
+    } else if (auth.getUserInfo().role.name === process.env.REACT_APP_ADMIN) {
+      routes = DashboardAdminRoutes;
+    } else {
+      routes = DashboardStaffRoutes;
+    }
     return (
       <>
         <Route
           render={otherProps => (
             <>
-              <Layout dashboardRoutes={DashboardAdminRoutes} header={Header}>
+              <Layout dashboardRoutes={routes} header={Header}>
                 <Component {...otherProps} urlParams={ComputedMatch} />
               </Layout>
             </>

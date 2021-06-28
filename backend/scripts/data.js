@@ -656,7 +656,7 @@ const ROLES = {
       },
       {
         name: "seller",
-        action: [],
+        action: ["find"],
       },
       {
         name: "units",
@@ -669,7 +669,7 @@ const ROLES = {
     controllers: [
       {
         name: "department",
-        action: [],
+        action: ["find"],
       },
       {
         name: "monthly-sheet",
@@ -693,7 +693,7 @@ const ROLES = {
       },
       {
         name: "seller",
-        action: [],
+        action: ["find"],
       },
       {
         name: "units",
@@ -711,7 +711,7 @@ const ROLES = {
     controllers: [
       {
         name: "department",
-        action: [],
+        action: ["find"],
       },
       {
         name: "monthly-sheet",
@@ -735,7 +735,7 @@ const ROLES = {
       },
       {
         name: "seller",
-        action: [],
+        action: ["find"],
       },
       {
         name: "units",

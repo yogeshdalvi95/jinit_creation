@@ -1,2 +1,6 @@
 export { default as Routes } from "./Routes";
-export { DashboardAdminRoutes } from "./AdminRoutes";
+export {
+  DashboardAdminRoutes,
+  DashboardStaffRoutes,
+  SuperAdminDashboardRoutes
+} from "./AdminRoutes";

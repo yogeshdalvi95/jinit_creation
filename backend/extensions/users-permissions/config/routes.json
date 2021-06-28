@@ -1,0 +1,32 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/getAllAdmins",
+      "handler": "Auth.getAllAdmins",
+      "config": {
+        "policies": ["plugins::users-permissions.ratelimit"],
+        "prefix": "",
+        "description": "Get all admin user",
+        "tag": {
+          "plugin": "users-permissions",
+          "name": "User"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/getAllStaff",
+      "handler": "Auth.getAllStaff",
+      "config": {
+        "policies": ["plugins::users-permissions.ratelimit"],
+        "prefix": "",
+        "description": "Get all Staff user",
+        "tag": {
+          "plugin": "users-permissions",
+          "name": "User"
+        }
+      }
+    }
+  ]
+}

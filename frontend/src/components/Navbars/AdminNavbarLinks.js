@@ -166,6 +166,7 @@ export default function AdminNavbarLinks() {
           )}
         </Poppers>
       </div> */}
+      {auth.getUserInfo().name}
       <div className={classes.manager}>
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}

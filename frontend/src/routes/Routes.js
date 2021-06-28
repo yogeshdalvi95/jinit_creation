@@ -3,13 +3,28 @@ import { Switch } from "react-router-dom";
 import {
   LOGIN,
   RAWMATERIALSVIEW,
-  USERS,
   PROFILE,
   SELLERS,
   PURCHASES,
-  ADDSELLER
+  ADDSELLER,
+  ADMIN,
+  STAFF,
+  ADDADMIN,
+  ADDSTAFF,
+  DEPARTMENTS,
+  ADDDEPARTMENTS
 } from "../paths";
-import { Login, Dashboard, Users, Sellers } from "../containers";
+import {
+  Login,
+  Dashboard,
+  Sellers,
+  Admin,
+  Staff,
+  AddAdmin,
+  AddStaff,
+  Departments,
+  AddDepartment
+} from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
@@ -31,7 +46,49 @@ const Routes = () => {
           component={Dashboard}
           header={"Profile"}
         />
-        <PrivateRoute path={USERS} exact component={Users} header={"Users"} />
+        {/*** Admin */}
+        <PrivateRoute
+          path={ADMIN}
+          exact
+          component={Admin}
+          header={"Admin Users"}
+        />
+        <PrivateRoute
+          path={ADDADMIN}
+          exact
+          component={AddAdmin}
+          header={"Add Admin"}
+        />
+
+        {/** Add Staff */}
+        <PrivateRoute
+          path={STAFF}
+          exact
+          component={Staff}
+          header={"Staff Users"}
+        />
+        <PrivateRoute
+          path={ADDSTAFF}
+          exact
+          component={AddStaff}
+          header={"Add Staff"}
+        />
+
+        {/** Add Departments */}
+        <PrivateRoute
+          path={DEPARTMENTS}
+          exact
+          component={Departments}
+          header={"Departments"}
+        />
+        <PrivateRoute
+          path={ADDDEPARTMENTS}
+          exact
+          component={AddDepartment}
+          header={"Add Department"}
+        />
+
+        {/** Sellers */}
         <PrivateRoute
           path={SELLERS}
           exact
@@ -44,6 +101,7 @@ const Routes = () => {
           component={AddSeller}
           header={"Add Seller"}
         />
+
         <PrivateRoute
           path={PURCHASES}
           exact

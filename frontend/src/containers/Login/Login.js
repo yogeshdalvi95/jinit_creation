@@ -1,4 +1,9 @@
-import { IconButton, InputAdornment, makeStyles } from "@material-ui/core";
+import {
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  makeStyles
+} from "@material-ui/core";
 import * as React from "react";
 import {
   Auth,
@@ -18,9 +23,10 @@ import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import LockIcon from "@material-ui/icons/Lock";
 import { providerForPublicPost } from "../../api";
-import { RAWMATERIALSVIEW, USERS } from "../../paths";
+import { ADMIN, RAWMATERIALSVIEW, STAFF } from "../../paths";
 import { useHistory } from "react-router-dom";
 import { backend_login } from "../../constants";
+import classNames from "classnames";
 
 const styles = {
   cardCategoryWhite: {
@@ -74,6 +80,17 @@ const styles = {
       background: "#333232",
       opacity: ".58"
     }
+  },
+  wrapper: {
+    position: "relative"
+  },
+  buttonProgress: {
+    color: "#e91e63",
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -12,
+    marginLeft: -12
   }
 };
 
@@ -81,6 +98,7 @@ const useStyles = makeStyles(styles);
 const Login = props => {
   const classes = useStyles();
   const history = useHistory();
+  const [loading, setLoading] = React.useState(false);
   const [image] = React.useState(bgImage);
   const [showPassword, setShowPassword] = React.useState(false);
   const [values, setValues] = React.useState({
@@ -96,6 +114,7 @@ const Login = props => {
 
   const onsubmit = event => {
     event.preventDefault();
+    setLoading(true);
     handSubmit();
   };
 
@@ -110,14 +129,22 @@ const Login = props => {
           Auth.setUserInfo(res.data.user, true);
           if (res.data.user.role.name === process.env.REACT_APP_STAFF) {
             history.push(RAWMATERIALSVIEW);
+          } else if (res.data.user.role.name === process.env.REACT_APP_ADMIN) {
+            history.push(STAFF);
           } else if (
-            res.data.user.role.name === process.env.REACT_APP_ADMIN ||
             res.data.user.role.name === process.env.REACT_APP_SUPER_ADMIN
           ) {
-            history.push(USERS);
+            history.push(ADMIN);
           }
         } else {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Login/Password Invalid"
+          }));
         }
+        setLoading(false);
       })
       .catch(err => {
         setSnackBar(snackBar => ({
@@ -126,6 +153,7 @@ const Login = props => {
           severity: "error",
           message: "Login/Password Invalid"
         }));
+        setLoading(false);
       });
   };
 
@@ -237,9 +265,22 @@ const Login = props => {
                   justifyContent: "space-evenly"
                 }}
               >
-                <Button color="rose" borderLess type="submit">
-                  Login
-                </Button>
+                <div className={classes.wrapper}>
+                  <Button
+                    color="rose"
+                    borderLess
+                    type="submit"
+                    disabled={loading}
+                  >
+                    Login
+                  </Button>
+                  {loading && (
+                    <CircularProgress
+                      size={24}
+                      className={classes.buttonProgress}
+                    />
+                  )}
+                </div>
               </CardFooter>
             </form>
           </Card>
