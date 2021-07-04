@@ -2,7 +2,7 @@ import React from "../../node_modules/react";
 import { Redirect } from "../../node_modules/react-router-dom";
 import PropTypes from "../../node_modules/prop-types";
 import { Auth, NotFoundPage } from "../components";
-import { ADMIN, LOGIN, RAWMATERIALSVIEW, STAFF, USERS } from "../paths";
+import { ADMIN, LOGIN, RAWMATERIALSVIEW, STAFF } from "../paths";
 
 const DefaultRoute = props => {
   console.log("Default route");

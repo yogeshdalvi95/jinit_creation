@@ -4,9 +4,7 @@ import {
   Admin,
   Dashboard as DashboardScreen,
   Departments,
-  Sellers,
-  Staff,
-  Users
+  Staff
 } from "../containers";
 import {
   ADDADMIN,
@@ -19,8 +17,20 @@ import {
   RAWMATERIALSVIEW,
   SELLERS,
   STAFF,
-  USERS
+  ADDPURCHASES,
+  ADDRAWMATERIALS,
+  UNITS
 } from "../paths";
+
+const purchases = "shopping_cart";
+const departments = "apartment";
+
+const rawMaterialPath = [RAWMATERIALSVIEW, ADDRAWMATERIALS, UNITS];
+const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
+const purchasesPath = [PURCHASES, ADDPURCHASES, SELLERS, ADDSELLER];
+//const sellerPath = [SELLERS, ADDSELLER];
+const staffPath = [STAFF, ADDSTAFF];
+const adminPath = [ADMIN, ADDADMIN];
 
 export const DashboardStaffRoutes = [
   {
@@ -29,23 +39,23 @@ export const DashboardStaffRoutes = [
     icon: Dashboard,
     component: DashboardScreen,
     layout: "",
-    pathList: [RAWMATERIALSVIEW]
-  },
-  {
-    path: SELLERS,
-    name: "Sellers",
-    icon: "payments",
-    component: Sellers,
-    layout: "",
-    pathList: [SELLERS, ADDSELLER]
+    pathList: rawMaterialPath
   },
   {
     path: PURCHASES,
     name: "Purchases",
-    icon: "payments",
+    icon: purchases,
     component: DashboardScreen,
     layout: "",
-    pathList: [PURCHASES]
+    pathList: purchasesPath
+  },
+  {
+    path: DEPARTMENTS,
+    name: "Departments",
+    icon: departments,
+    component: Departments,
+    layout: "",
+    pathList: departmentsPath
   }
 ];
 
@@ -53,26 +63,26 @@ export const DashboardAdminRoutes = [
   {
     path: STAFF,
     name: "Staff Users",
-    icon: GroupIcon,
+    icon: "manage_accounts",
     component: Staff,
     layout: "",
     pathList: [STAFF, ADDSTAFF]
   },
   {
-    path: SELLERS,
-    name: "Sellers",
-    icon: "payments",
-    component: Sellers,
-    layout: "",
-    pathList: [SELLERS, ADDSELLER]
-  },
-  {
     path: PURCHASES,
     name: "Purchases",
-    icon: "payments",
+    icon: purchases,
     component: DashboardScreen,
     layout: "",
-    pathList: [PURCHASES]
+    pathList: purchasesPath
+  },
+  {
+    path: DEPARTMENTS,
+    name: "Departments",
+    icon: departments,
+    component: Departments,
+    layout: "",
+    pathList: departmentsPath
   },
   {
     path: RAWMATERIALSVIEW,
@@ -80,7 +90,7 @@ export const DashboardAdminRoutes = [
     icon: Dashboard,
     component: DashboardScreen,
     layout: "",
-    pathList: [RAWMATERIALSVIEW]
+    pathList: rawMaterialPath
   }
 ];
 
@@ -91,7 +101,7 @@ export const SuperAdminDashboardRoutes = [
     icon: GroupIcon,
     component: Admin,
     layout: "",
-    pathList: [ADMIN, ADDADMIN]
+    pathList: adminPath
   },
   {
     path: STAFF,
@@ -99,31 +109,23 @@ export const SuperAdminDashboardRoutes = [
     icon: GroupIcon,
     component: Staff,
     layout: "",
-    pathList: [STAFF, ADDSTAFF]
-  },
-  {
-    path: SELLERS,
-    name: "Sellers",
-    icon: "payments",
-    component: Sellers,
-    layout: "",
-    pathList: [SELLERS, ADDSELLER]
+    pathList: staffPath
   },
   {
     path: PURCHASES,
     name: "Purchases",
-    icon: "payments",
+    icon: purchases,
     component: DashboardScreen,
     layout: "",
-    pathList: [PURCHASES]
+    pathList: purchasesPath
   },
   {
     path: DEPARTMENTS,
     name: "Departments",
-    icon: "payments",
+    icon: departments,
     component: Departments,
     layout: "",
-    pathList: [DEPARTMENTS, ADDDEPARTMENTS]
+    pathList: departmentsPath
   },
   {
     path: RAWMATERIALSVIEW,
@@ -131,6 +133,6 @@ export const SuperAdminDashboardRoutes = [
     icon: Dashboard,
     component: DashboardScreen,
     layout: "",
-    pathList: [RAWMATERIALSVIEW]
+    pathList: rawMaterialPath
   }
 ];

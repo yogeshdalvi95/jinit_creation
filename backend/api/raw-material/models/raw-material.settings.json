@@ -49,6 +49,9 @@
     },
     "unit": {
       "model": "units"
+    },
+    "unit_name": {
+      "type": "string"
     }
   }
 }

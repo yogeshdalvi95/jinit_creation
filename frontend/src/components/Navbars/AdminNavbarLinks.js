@@ -12,13 +12,14 @@ import Poppers from "@material-ui/core/Popper";
 import Divider from "@material-ui/core/Divider";
 // @material-ui/icons
 import Person from "@material-ui/icons/Person";
-import Notifications from "@material-ui/icons/Notifications";
-import Dashboard from "@material-ui/icons/Dashboard";
-import Search from "@material-ui/icons/Search";
-// core components
-import CustomInput from "../CustomInput/CustomInput.js";
+// import Notifications from "@material-ui/icons/Notifications";
+// import Dashboard from "@material-ui/icons/Dashboard";
+// import Search from "@material-ui/icons/Search";
+// // core components
+// import CustomInput from "../CustomInput/CustomInput.js";
 import Button from "../CustomButtons/Button.js";
-
+import { useMediaQuery } from "@material-ui/core";
+import { useTheme } from "@material-ui/core/styles";
 import styles from "../../assets/jss/material-dashboard-react/components/headerLinksStyle.js";
 import auth from "../Auth/Auth.js";
 import { useHistory } from "react-router-dom";
@@ -27,20 +28,24 @@ import { LOGIN } from "../../paths";
 const useStyles = makeStyles(styles);
 
 export default function AdminNavbarLinks() {
+  const theme = useTheme();
+
+  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"), {
+    defaultMatches: true
+  });
   const classes = useStyles();
   const history = useHistory();
-  const [openNotification, setOpenNotification] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(null);
-  const handleClickNotification = event => {
-    if (openNotification && openNotification.contains(event.target)) {
-      setOpenNotification(null);
-    } else {
-      setOpenNotification(event.currentTarget);
-    }
-  };
-  const handleCloseNotification = () => {
-    setOpenNotification(null);
-  };
+  // const handleClickNotification = event => {
+  //   if (openNotification && openNotification.contains(event.target)) {
+  //     setOpenNotification(null);
+  //   } else {
+  //     setOpenNotification(event.currentTarget);
+  //   }
+  // };
+  // const handleCloseNotification = () => {
+  //   setOpenNotification(null);
+  // };
   const handleClickProfile = event => {
     if (openProfile && openProfile.contains(event.target)) {
       setOpenProfile(null);
@@ -88,8 +93,19 @@ export default function AdminNavbarLinks() {
           <p className={classes.linkText}>Dashboard</p>
         </Hidden>
       </Button> */}
-      {/* <div className={classes.manager}>
-        <Button
+      {isDesktop ? auth.getUserInfo().name : null}
+
+      <Hidden mdUp implementation="css">
+        <div
+          className={classes.manager}
+          style={{
+            padding: "12px 30px"
+          }}
+        >
+          <div className={classes.buttonLink}>
+            <p className={classes.linkText}>{auth.getUserInfo().name}</p>
+
+            {/* <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
           simple={!(window.innerWidth > 959)}
@@ -164,9 +180,10 @@ export default function AdminNavbarLinks() {
               </Paper>
             </Grow>
           )}
-        </Poppers>
-      </div> */}
-      {auth.getUserInfo().name}
+        </Poppers> */}
+          </div>
+        </div>
+      </Hidden>
       <div className={classes.manager}>
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}

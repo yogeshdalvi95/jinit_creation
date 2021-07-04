@@ -3,24 +3,25 @@ import React, { useState } from "react";
 import { Auth, Table } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_raw_materials } from "../../constants";
+import { backend_purchases } from "../../constants";
+import { plainDate } from "../../Utils";
 
-export default function RawMaterials() {
+export default function Purchases() {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "created_at:asc"
   });
 
   const columns = [
-    { title: "Name", field: "name" },
-    { title: "Color", field: "color" },
-    { title: "Size", field: "size" },
-    { title: "Department", field: "department" },
-    { title: "Costing", field: "costing" },
-    { title: "Balance", field: "balance" }
+    { title: "Raw Material", field: "raw_material_name" },
+    { title: "Department", field: "raw_material_department_name" },
+    { title: "Seller Name", field: "seller_name" },
+    { title: "Purchase cost", field: "purchase_cost" },
+    { title: "Quantity", field: "quantity" },
+    { title: "Purchase date", field: "created_at" }
   ];
 
-  const getRawMaterialsData = async (page, pageSize) => {
+  const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize
@@ -33,7 +34,7 @@ export default function RawMaterials() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+      fetch(backend_purchases + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -42,33 +43,33 @@ export default function RawMaterials() {
       })
         .then(response => response.json())
         .then(result => {
-          let data = convertData(result.data);
-          console.log(data);
+          let finalData = [];
+          if (result.data && result.data.length) {
+            result.data.map(r => {
+              console.log(r);
+              let costing = r.purchase_cost
+                ? r.purchase_cost + "/" + r.raw_material.unit.name
+                : 0;
+
+              let json = {
+                id: r.id,
+                created_at: plainDate(r.created_at),
+                purchase_cost: r.purchase_cost,
+                seller_name: r.seller_name,
+                raw_material_department_name: r.raw_material_department_name,
+                raw_material_name: r.raw_material_name,
+                quantity: r.quantity
+              };
+              finalData.push(json);
+            });
+          }
           resolve({
-            data: data,
+            data: finalData,
             page: result.page - 1,
             totalCount: result.totalCount
           });
         });
     });
-  };
-
-  const convertData = data => {
-    let arr = [];
-    data.map(d => {
-      let department = d.department.name;
-      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
-
-      arr.push({
-        name: d.name,
-        color: d.color,
-        size: d.size,
-        department: department,
-        costing: "Rs :- " + costing,
-        balance: d.balance ? d.balance : "0"
-      });
-    });
-    return arr;
   };
 
   const orderFunc = (columnId, direction) => {
@@ -88,10 +89,10 @@ export default function RawMaterials() {
   return (
     <Table
       tableRef={tableRef}
-      title="Raw Materials"
+      title="Purchases"
       columns={columns}
       data={async query => {
-        return await getRawMaterialsData(query.page + 1, query.pageSize);
+        return await getPurchasesData(query.page + 1, query.pageSize);
       }}
       actions={[
         rowData => ({

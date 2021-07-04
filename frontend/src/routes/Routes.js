@@ -6,13 +6,17 @@ import {
   PROFILE,
   SELLERS,
   PURCHASES,
-  ADDSELLER,
   ADMIN,
   STAFF,
   ADDADMIN,
   ADDSTAFF,
   DEPARTMENTS,
-  ADDDEPARTMENTS
+  ADDDEPARTMENTS,
+  ADDPURCHASES,
+  UNITS,
+  ADDRAWMATERIALS,
+  ADDUNITS,
+  ADDSELLER
 } from "../paths";
 import {
   Login,
@@ -23,23 +27,25 @@ import {
   AddAdmin,
   AddStaff,
   Departments,
-  AddDepartment
+  AddDepartment,
+  AddPurchases,
+  Purchases,
+  RawMaterials,
+  Units,
+  AddEditRawMaterial,
+  AddEditUnit,
+  AddSeller
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
-import { AddSeller } from "../containers/Sellers";
+import RouteWithTabLayoutForPurchase from "./RouteWithTabLayoutForPurchase";
+import { RouteWithTabLayoutForRawMaterial } from ".";
 
 const Routes = () => {
   return (
     <div>
       <Switch>
-        <PrivateRoute
-          path={RAWMATERIALSVIEW}
-          exact
-          component={Dashboard}
-          header={"Raw Materials"}
-        />
         <PrivateRoute
           path={PROFILE}
           exact
@@ -89,11 +95,13 @@ const Routes = () => {
         />
 
         {/** Sellers */}
-        <PrivateRoute
+        <RouteWithTabLayoutForPurchase
           path={SELLERS}
           exact
           component={Sellers}
+          addComponentPath={ADDSELLER}
           header={"Sellers"}
+          value={1}
         />
         <PrivateRoute
           path={ADDSELLER}
@@ -102,12 +110,54 @@ const Routes = () => {
           header={"Add Seller"}
         />
 
-        <PrivateRoute
+        {/** Purchases */}
+        <RouteWithTabLayoutForPurchase
           path={PURCHASES}
           exact
-          component={Dashboard}
+          component={Purchases}
+          addComponentPath={ADDPURCHASES}
           header={"Purchases"}
+          value={0}
         />
+        <PrivateRoute
+          path={ADDPURCHASES}
+          exact
+          component={AddPurchases}
+          header={"Add Purchases"}
+        />
+
+        {/** Raw materials */}
+        <RouteWithTabLayoutForRawMaterial
+          path={RAWMATERIALSVIEW}
+          exact
+          addComponentPath={ADDRAWMATERIALS}
+          component={RawMaterials}
+          header={"Raw Materials"}
+          value={0}
+        />
+        <PrivateRoute
+          path={ADDRAWMATERIALS}
+          exact
+          component={AddEditRawMaterial}
+          header={"Add New Raw Material"}
+        />
+
+        {/** Units */}
+        <RouteWithTabLayoutForRawMaterial
+          path={UNITS}
+          exact
+          addComponentPath={ADDUNITS}
+          component={Units}
+          header={"Units"}
+          value={1}
+        />
+        <PrivateRoute
+          path={ADDUNITS}
+          exact
+          component={AddEditUnit}
+          header={"Add New Unit"}
+        />
+
         <PublicRoute path={LOGIN} exact component={Login} />
         <DefaultRoute path="*" exact />
       </Switch>

@@ -46,7 +46,6 @@ const customInputStyle = {
     color: successColor[0]
   },
   feedback: {
-    position: "absolute",
     top: "18px",
     right: "0",
     zIndex: "2",
