@@ -14,10 +14,7 @@ import {
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import {
-  backend_get_all_departments,
-  backend_get_all_sellers
-} from "../../constants";
+import { backend_departments } from "../../constants";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
@@ -52,7 +49,7 @@ export default function Departments() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_get_all_departments + "?" + new URLSearchParams(params), {
+      fetch(backend_departments + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",

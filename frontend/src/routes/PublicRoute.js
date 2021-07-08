@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Redirect, Route } from "react-router-dom";
 import { Auth as auth, NotFoundPage } from "../components";
-import { ADMIN, RAWMATERIALSVIEW, STAFF, USERS } from "../paths";
+import { ADMIN, RAWMATERIALSVIEW, STAFF } from "../paths";
 
 const PublicRoute = ({ component: Component, ...otherProps }) => {
   if (auth.getToken() === null) {

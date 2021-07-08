@@ -11,6 +11,10 @@ const styles = {
       color: "#FFFFFF"
     }
   },
+  backdrop: {
+    zIndex: 1000,
+    color: "#fff"
+  },
   cardTitleWhite: {
     color: "#FFFFFF",
     marginTop: "0px",
@@ -28,6 +32,9 @@ const styles = {
   },
   cardHeaderStyles: {
     width: "max-content"
+  },
+  addDeleteFabButon: {
+    marginTop: "auto"
   }
 };
 

@@ -283,6 +283,8 @@ async function init() {
       update: { enabled: false },
       destroy: { enabled: false },
       me: { enabled: false },
+      getalladmins: { enabled: true },
+      getallstaff: { enabled: true },
     },
     user: {
       find: { enabled: false },
@@ -316,7 +318,6 @@ async function init() {
   let allAPIsControllerActions = Object.assign({}, apiControllerActions);
 
   allAPIsControllerActions = Object.assign(apiControllerActions);
-
   rolesAndPermissions = Object.keys(ROLES).map((r) => {
     const { controllers, grantAllPermissions } = ROLES[r];
     const updatedController = controllers.reduce((result, controller) => {
@@ -363,6 +364,13 @@ async function init() {
       }
       return result;
     }, {});
+
+    console.log(
+      "rolesAndPermissions ",
+      r,
+      updatedController["users-permissions"]
+    );
+
     return {
       name: r,
       description: r,
@@ -540,6 +548,7 @@ async function addPublicRoutes() {
         });
     });
   });
+
   await utils.asyncForEach(publicUserPermissionRoutes, async (controller) => {
     const { action, name } = controller;
 

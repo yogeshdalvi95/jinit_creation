@@ -3,24 +3,30 @@ import React, { useState } from "react";
 import { Auth, Table } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_raw_materials } from "../../constants";
+import { backend_sellers } from "../../constants";
 
-export default function RawMaterials() {
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import { ADDPURCHASES } from "../../paths";
+
+export default function Sellers() {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "created_at:asc"
   });
 
   const columns = [
-    { title: "Name", field: "name" },
-    { title: "Color", field: "color" },
-    { title: "Size", field: "size" },
-    { title: "Department", field: "department" },
-    { title: "Costing", field: "costing" },
-    { title: "Balance", field: "balance" }
+    { title: "Seller Name", field: "seller_name" },
+    { title: "Seller Email", field: "seller_email" },
+    { title: "Phone", field: "phone_1" },
+    { title: "Alt. Phone", field: "phone_2" }
   ];
 
-  const getRawMaterialsData = async (page, pageSize) => {
+  const history = useHistory();
+  const onAddClick = () => {
+    history.push(ADDPURCHASES);
+  };
+
+  const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize
@@ -33,7 +39,7 @@ export default function RawMaterials() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+      fetch(backend_sellers + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -42,33 +48,13 @@ export default function RawMaterials() {
       })
         .then(response => response.json())
         .then(result => {
-          let data = convertData(result.data);
-          console.log(data);
           resolve({
-            data: data,
+            data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount
           });
         });
     });
-  };
-
-  const convertData = data => {
-    let arr = [];
-    data.map(d => {
-      let department = d.department.name;
-      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
-
-      arr.push({
-        name: d.name,
-        color: d.color,
-        size: d.size,
-        department: department,
-        costing: "Rs :- " + costing,
-        balance: d.balance ? d.balance : "0"
-      });
-    });
-    return arr;
   };
 
   const orderFunc = (columnId, direction) => {
@@ -88,10 +74,10 @@ export default function RawMaterials() {
   return (
     <Table
       tableRef={tableRef}
-      title="Raw Materials"
+      title="Purchases"
       columns={columns}
       data={async query => {
-        return await getRawMaterialsData(query.page + 1, query.pageSize);
+        return await getPurchasesData(query.page + 1, query.pageSize);
       }}
       actions={[
         rowData => ({

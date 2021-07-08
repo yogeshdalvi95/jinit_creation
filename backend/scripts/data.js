@@ -662,6 +662,11 @@ const ROLES = {
         name: "units",
         action: [],
       },
+      {
+        name: "auth",
+        type: "users-permissions",
+        action: ["getalladmins", "getallstaff"],
+      },
     ],
     grantAllPermissions: true,
   },
@@ -669,85 +674,95 @@ const ROLES = {
     controllers: [
       {
         name: "department",
-        action: ["find"],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "monthly-sheet",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "orders",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "purchases",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "raw-material",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "ready-material",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "seller",
-        action: ["find"],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "units",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "user",
         type: "users-permissions",
         action: ["me"],
       },
+      {
+        name: "auth",
+        type: "users-permissions",
+        action: ["getalladmins", "getallstaff"],
+      },
     ],
-    grantAllPermissions: true,
+    grantAllPermissions: false,
   },
   Staff: {
     controllers: [
       {
         name: "department",
-        action: ["find"],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "monthly-sheet",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "orders",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "purchases",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "raw-material",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "ready-material",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "seller",
-        action: ["find"],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "units",
-        action: [],
+        action: ["find", "create", "update", "findOne"],
       },
       {
         name: "user",
         type: "users-permissions",
         action: ["me"],
       },
+      {
+        name: "auth",
+        type: "users-permissions",
+        action: ["getalladmins", "getallstaff"],
+      },
     ],
-    grantAllPermissions: true,
+    grantAllPermissions: false,
   },
 };
 

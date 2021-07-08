@@ -16,7 +16,7 @@ import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { backend_get_all_admins } from "../../constants";
+import { backend_admins } from "../../constants";
 import { ADDADMIN } from "../../paths";
 import { useHistory } from "react-router-dom";
 
@@ -53,7 +53,7 @@ export default function Admin() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_get_all_admins + "?" + new URLSearchParams(params), {
+      fetch(backend_admins + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",

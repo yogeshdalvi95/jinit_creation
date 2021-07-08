@@ -26,6 +26,15 @@
     },
     "notes": {
       "type": "text"
+    },
+    "raw_material_name": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "raw_material_department_name": {
+      "type": "string"
     }
   }
 }

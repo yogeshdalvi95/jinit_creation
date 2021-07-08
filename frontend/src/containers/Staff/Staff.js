@@ -16,7 +16,7 @@ import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { backend_get_all_staff } from "../../constants";
+import { backend_staff } from "../../constants";
 import { useHistory } from "react-router-dom";
 import { ADDSTAFF } from "../../paths";
 
@@ -51,7 +51,7 @@ export default function Staff() {
       }
     });
     return new Promise((resolve, reject) => {
-      fetch(backend_get_all_staff + "?" + new URLSearchParams(params), {
+      fetch(backend_staff + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
