@@ -1,0 +1,30 @@
+{
+  "email": {
+    "label": "Email",
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Email is required"
+      },
+      "validateEmailRegex": {
+        "value": "true",
+        "message": "Email is not valid"
+      }
+    }
+  },
+  "password": {
+    "label": "Password",
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Passsword is required"
+      },
+      "validatePasswordMinLength": {
+        "value": "true",
+        "message": "Passsword should be more than 5 characters"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "individual_pakka_purchases",
+  "info": {
+    "name": "Individual pakka purchase"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "purchase": {
+      "model": "purchases"
+    },
+    "purchase_cost": {
+      "type": "float"
+    },
+    "total_purchase_cost": {
+      "type": "float"
+    },
+    "name": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "float"
+    }
+  }
+}

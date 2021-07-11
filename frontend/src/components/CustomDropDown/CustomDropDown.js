@@ -5,30 +5,27 @@ import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
-import Input from "@material-ui/core/Input";
 // @material-ui/icons
 import Clear from "@material-ui/icons/Clear";
 import Check from "@material-ui/icons/Check";
 // core components
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
-import { FormHelperText } from "@material-ui/core";
+import { MenuItem, Select } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
-export default function CustomInput(props) {
+export default function CustomDropDown(props) {
   const classes = useStyles();
   const {
     formControlProps,
     labelText,
     id,
-    helperTextId,
-    isHelperText,
-    helperText,
     labelProps,
     inputProps,
     error,
     success,
     rtlActive,
+    nameValue,
     ...rest
   } = props;
 
@@ -45,7 +42,6 @@ export default function CustomInput(props) {
   const marginTop = classNames({
     [classes.marginTop]: labelText === undefined
   });
-
   let newInputProps = {
     maxLength:
       inputProps && inputProps.maxLength ? inputProps.maxLength : undefined,
@@ -53,7 +49,6 @@ export default function CustomInput(props) {
       inputProps && inputProps.minLength ? inputProps.minLength : undefined,
     step: inputProps && inputProps.step ? inputProps.step : undefined
   };
-
   return (
     <FormControl
       {...formControlProps}
@@ -68,7 +63,7 @@ export default function CustomInput(props) {
           {labelText}
         </InputLabel>
       ) : null}
-      <Input
+      <Select
         classes={{
           root: marginTop,
           disabled: classes.disabled,
@@ -79,17 +74,21 @@ export default function CustomInput(props) {
         id={id}
         {...inputProps}
         inputProps={newInputProps}
-      />
-      {isHelperText ? (
-        <FormHelperText id={helperTextId} error={error}>
-          {helperText}
-        </FormHelperText>
+      >
+        {nameValue.map(n => (
+          <MenuItem value={n.value}>{n.name}</MenuItem>
+        ))}
+      </Select>
+      {error ? (
+        <Clear className={classes.feedback + " " + classes.labelRootError} />
+      ) : success ? (
+        <Check className={classes.feedback + " " + classes.labelRootSuccess} />
       ) : null}
     </FormControl>
   );
 }
 
-CustomInput.propTypes = {
+CustomDropDown.propTypes = {
   labelText: PropTypes.node,
   labelProps: PropTypes.object,
   id: PropTypes.string,

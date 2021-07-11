@@ -3,32 +3,24 @@ import React, { useState } from "react";
 import { Auth, Table } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_purchases } from "../../constants";
-import { convertNumberToAmount, plainDate } from "../../Utils";
+import { backend_ready_materials } from "../../constants";
 
-export default function Purchases() {
+export default function ReadyMaterials() {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "created_at:asc"
+    _sort: "name:asc"
   });
 
   const columns = [
-    { title: "Type of purchase", field: "type_of_bill" },
-    { title: "Purchased From", field: "seller_name" },
-    {
-      title: "Total Amount in Rs(with tax)",
-      field: "total_amt_with_tax",
-      render: rowData => convertNumberToAmount(rowData.total_amt_with_tax)
-    },
-    { title: "GST No.", field: "gst_no" },
-    {
-      title: "Purchase date",
-      field: "date",
-      render: rowData => plainDate(new Date(rowData.date))
-    }
+    { title: "Name", field: "name" },
+    { title: "Color", field: "color" },
+    { title: "Size", field: "size" },
+    { title: "Department", field: "department" },
+    { title: "Costing", field: "costing" },
+    { title: "Balance", field: "balance" }
   ];
 
-  const getPurchasesData = async (page, pageSize) => {
+  const getReadyMaterialsData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize
@@ -41,7 +33,7 @@ export default function Purchases() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_purchases + "?" + new URLSearchParams(params), {
+      fetch(backend_ready_materials + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -50,13 +42,33 @@ export default function Purchases() {
       })
         .then(response => response.json())
         .then(result => {
+          let data = convertData(result.data);
+          console.log(data);
           resolve({
-            data: result.data,
+            data: data,
             page: result.page - 1,
             totalCount: result.totalCount
           });
         });
     });
+  };
+
+  const convertData = data => {
+    let arr = [];
+    data.map(d => {
+      let department = d.department.name;
+      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
+
+      arr.push({
+        name: d.name,
+        color: d.color,
+        size: d.size,
+        department: department,
+        costing: costing,
+        balance: d.balance ? d.balance : "0"
+      });
+    });
+    return arr;
   };
 
   const orderFunc = (columnId, direction) => {
@@ -76,10 +88,10 @@ export default function Purchases() {
   return (
     <Table
       tableRef={tableRef}
-      title="Purchases"
+      title="Raw Materials"
       columns={columns}
       data={async query => {
-        return await getPurchasesData(query.page + 1, query.pageSize);
+        return await getReadyMaterialsData(query.page + 1, query.pageSize);
       }}
       actions={[
         rowData => ({

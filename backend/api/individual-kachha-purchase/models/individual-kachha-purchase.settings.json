@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "individual_kachha_purchases",
+  "info": {
+    "name": "Individual Kachha Purchase",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "purchase_cost": {
+      "type": "float"
+    },
+    "total_purchase_cost": {
+      "type": "float"
+    },
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "purchase": {
+      "model": "purchases"
+    }
+  }
+}

@@ -40,7 +40,7 @@ const customInputStyle = {
     letterSpacing: "unset"
   },
   labelRootError: {
-    color: dangerColor[0]
+    color: dangerColor[0] + " !important"
   },
   labelRootSuccess: {
     color: successColor[0]

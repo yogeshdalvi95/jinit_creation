@@ -7,7 +7,6 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  CustomAutoComplete,
   CustomInput,
   FAB,
   GridContainer,
@@ -17,17 +16,16 @@ import {
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { RAWMATERIALSVIEW } from "../../paths";
+import { SELLERS } from "../../paths";
+
 const useStyles = makeStyles(styles);
 
-const top100Films = [];
-
-export default function AddSeller(props) {
+export default function AddSeller() {
   const classes = useStyles();
   const history = useHistory();
-  console.log(props);
+
   const onBackClick = () => {
-    history.push(RAWMATERIALSVIEW);
+    history.push(SELLERS);
   };
   return (
     <GridContainer>
@@ -39,12 +37,12 @@ export default function AddSeller(props) {
       <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
-            <h4 className={classes.cardTitleWhite}>{props.header}</h4>
+            <h4 className={classes.cardTitleWhite}>Add New Seller</h4>
             <p className={classes.cardCategoryWhite}></p>
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={12}>
                 <CustomInput
                   labelText="Name"
                   id="name"
@@ -53,34 +51,12 @@ export default function AddSeller(props) {
                   }}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={6}>
-                <CustomAutoComplete
-                  id="department-name"
-                  labelText="Department"
-                  autocompleteId={"department"}
-                  optionKey={"title"}
-                  options={top100Films}
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-                {/* <Autocomplete
-                  id="combo-box-demo"
-                  options={top100Films}
-                  getOptionLabel={option => option.title}
-                  style={{ width: 300 }}
-                  renderInput={params => (
-                    <TextField {...params} label="Combo box" margin="normal" />
-                  )}
-                /> */}
-              </GridItem>
             </GridContainer>
-
             <GridContainer>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={8}>
                 <CustomInput
-                  labelText="Size"
-                  id="size"
+                  labelText="Email address"
+                  id="email-address"
                   formControlProps={{
                     fullWidth: true
                   }}
@@ -88,41 +64,52 @@ export default function AddSeller(props) {
               </GridItem>
               <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
-                  labelText="Color"
-                  id="color"
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
-                <CustomAutoComplete
-                  id="unit-name"
-                  labelText="Unit"
-                  autocompleteId={"unit-id"}
-                  optionKey={"title"}
-                  options={top100Films}
+                  labelText="Phone Number"
+                  id="phone-number"
                   formControlProps={{
                     fullWidth: true
                   }}
                 />
               </GridItem>
             </GridContainer>
-
             <GridContainer>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={12}>
                 <CustomInput
-                  labelText="Costing"
-                  id="costing"
+                  labelText="Address"
+                  id="address"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                  inputProps={{
+                    multiline: true,
+                    rows: 5
+                  }}
+                />
+              </GridItem>
+            </GridContainer>
+            <GridContainer>
+              <GridItem xs={12} sm={12} md={4}>
+                <CustomInput
+                  labelText="City"
+                  id="city"
                   formControlProps={{
                     fullWidth: true
                   }}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
-                  labelText="Balance"
-                  id="balance"
+                  labelText="Country"
+                  id="country"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={4}>
+                <CustomInput
+                  labelText="Postal Code"
+                  id="postal-code"
                   formControlProps={{
                     fullWidth: true
                   }}
@@ -131,7 +118,7 @@ export default function AddSeller(props) {
             </GridContainer>
           </CardBody>
           <CardFooter>
-            <Button color="primary">Add</Button>
+            <Button color="primary">Add Seller</Button>
           </CardFooter>
         </Card>
       </GridItem>

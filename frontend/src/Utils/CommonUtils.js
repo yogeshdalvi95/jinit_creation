@@ -33,3 +33,13 @@ export const plainDate = data => {
   var newDate2 = moment(data).format("MMMM Do YYYY");
   return newDate2;
 };
+
+export const convertNumberToAmount = num => {
+  let x = num;
+  x = x.toString();
+  var lastThree = x.substring(x.length - 3);
+  var otherNumbers = x.substring(0, x.length - 3);
+  if (otherNumbers !== "") lastThree = "," + lastThree;
+  var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+  return res + "/-";
+};

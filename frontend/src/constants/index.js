@@ -7,5 +7,6 @@ export {
   backend_sellers,
   backend_departments,
   backend_purchases,
-  backend_units
+  backend_units,
+  backend_ready_materials
 } from "./UrlConstants";

@@ -12,29 +12,44 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "purchase_cost": {
+    "type_of_bill": {
+      "type": "enumeration",
+      "enum": [
+        "Kachaa",
+        "Pakka"
+      ]
+    },
+    "date": {
+      "type": "date"
+    },
+    "cgst_percent": {
       "type": "float"
     },
-    "raw_material": {
-      "model": "raw-material"
-    },
-    "seller": {
-      "model": "seller"
-    },
-    "quantity": {
+    "sgst_percent": {
       "type": "float"
+    },
+    "gst_no": {
+      "type": "string"
     },
     "notes": {
       "type": "text"
     },
-    "raw_material_name": {
-      "type": "string"
+    "seller": {
+      "model": "seller"
     },
     "seller_name": {
       "type": "string"
     },
-    "raw_material_department_name": {
-      "type": "string"
+    "total_amt_with_tax": {
+      "type": "float"
+    },
+    "total_amt_without_tax": {
+      "type": "float"
+    },
+    "individual_purchase": {
+      "type": "component",
+      "repeatable": true,
+      "component": "individual-purchase.individual-purchase"
     }
   }
 }

@@ -26,7 +26,9 @@ import { providerForPublicPost } from "../../api";
 import { ADMIN, RAWMATERIALSVIEW, STAFF } from "../../paths";
 import { useHistory } from "react-router-dom";
 import { backend_login } from "../../constants";
-import classNames from "classnames";
+import { checkEmpty, hasError, setErrors } from "../../Utils";
+import form from "./login.json";
+import { dangerColor } from "../../assets/jss/material-dashboard-react";
 
 const styles = {
   cardCategoryWhite: {
@@ -101,10 +103,8 @@ const Login = props => {
   const [loading, setLoading] = React.useState(false);
   const [image] = React.useState(bgImage);
   const [showPassword, setShowPassword] = React.useState(false);
-  const [values, setValues] = React.useState({
-    email: "",
-    password: ""
-  });
+  const [values, setValues] = React.useState({});
+  const [error, setError] = React.useState({});
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -115,7 +115,19 @@ const Login = props => {
   const onsubmit = event => {
     event.preventDefault();
     setLoading(true);
-    handSubmit();
+    let isValid = false;
+    let error = {};
+    error = setErrors(values, form);
+    console.log("Over here ", error);
+    if (checkEmpty(error)) {
+      isValid = true;
+    } else {
+      setLoading(false);
+      setError(error);
+    }
+    if (isValid) {
+      handSubmit();
+    }
   };
 
   const handSubmit = async () => {
@@ -166,6 +178,9 @@ const Login = props => {
     }));
   };
 
+  console.log("values", values);
+  console.log("error", error);
+
   return (
     <div>
       {image !== undefined ? (
@@ -198,20 +213,37 @@ const Login = props => {
                     <CustomInput
                       labelText="Email"
                       id="email-address"
-                      value={values.email}
+                      value={values.email ? values.email : ""}
                       onChange={event => {
                         setValues(values => ({
                           ...values,
                           email: event.target.value
                         }));
+                        if (error.hasOwnProperty("email")) {
+                          delete error["email"];
+                        }
                       }}
+                      helperTextId={"helperText-email-id"}
+                      isHelperText={hasError("email", error)}
+                      helperText={
+                        hasError("email", error)
+                          ? error["email"].map(error => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("email", error)}
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <MailIcon color="action" />
+                            <MailIcon
+                              color={
+                                hasError("email", error) ? "error" : "action"
+                              }
+                            />
                           </InputAdornment>
                         )
                       }}
@@ -222,13 +254,26 @@ const Login = props => {
                       labelText="Password"
                       id="password"
                       autoComplete="on"
-                      value={values.password}
+                      value={values.password ? values.password : ""}
                       onChange={event => {
                         setValues(values => ({
                           ...values,
                           password: event.target.value
                         }));
+                        if (error.hasOwnProperty("password")) {
+                          delete error["password"];
+                        }
                       }}
+                      helperTextId={"helperText-password-id"}
+                      isHelperText={hasError("password", error)}
+                      helperText={
+                        hasError("password", error)
+                          ? error["password"].map(error => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("password", error)}
                       type={showPassword ? "text" : "password"}
                       formControlProps={{
                         fullWidth: true
@@ -247,9 +292,21 @@ const Login = props => {
                               edge="end"
                             >
                               {showPassword ? (
-                                <Visibility />
+                                <Visibility
+                                  color={
+                                    hasError("password", error)
+                                      ? "error"
+                                      : "action"
+                                  }
+                                />
                               ) : (
-                                <VisibilityOff />
+                                <VisibilityOff
+                                  color={
+                                    hasError("password", error)
+                                      ? "error"
+                                      : "action"
+                                  }
+                                />
                               )}
                             </IconButton>
                           </InputAdornment>

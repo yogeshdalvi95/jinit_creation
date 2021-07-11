@@ -64,7 +64,7 @@ export default function RawMaterials() {
         color: d.color,
         size: d.size,
         department: department,
-        costing: "Rs :- " + costing,
+        costing: costing,
         balance: d.balance ? d.balance : "0"
       });
     });

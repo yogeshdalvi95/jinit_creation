@@ -1,3 +1,5 @@
+import { grayColor } from "../../material-dashboard-react";
+
 const styles = {
   cardCategoryWhite: {
     "&,& a,& a:hover,& a:focus": {
@@ -10,6 +12,11 @@ const styles = {
     "& a,& a:hover,& a:focus": {
       color: "#FFFFFF"
     }
+  },
+  componentBorder: {
+    margin: "0.5rem",
+    border: "0.5px solid " + grayColor[4],
+    borderRadius: "0.5rem"
   },
   backdrop: {
     zIndex: 1000,
@@ -34,7 +41,8 @@ const styles = {
     width: "max-content"
   },
   addDeleteFabButon: {
-    marginTop: "auto"
+    marginTop: "auto",
+    display: "flex"
   }
 };
 
