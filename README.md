@@ -1,2 +1,3 @@
 # jinit_creation
-Managing and organizing imitation jewellery.
+
+Managing and organizing imitation jwe
