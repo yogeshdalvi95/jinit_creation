@@ -5,12 +5,9 @@ import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
-// @material-ui/icons
-import Clear from "@material-ui/icons/Clear";
-import Check from "@material-ui/icons/Check";
 // core components
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
-import { MenuItem, Select } from "@material-ui/core";
+import { FormHelperText, Input, MenuItem, Select } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
@@ -26,6 +23,9 @@ export default function CustomDropDown(props) {
     success,
     rtlActive,
     nameValue,
+    helperTextId,
+    isHelperText,
+    helperText,
     ...rest
   } = props;
 
@@ -67,9 +67,17 @@ export default function CustomDropDown(props) {
         classes={{
           root: marginTop,
           disabled: classes.disabled,
-          underline: underlineClasses,
-          input: classes.input
+          select: classes.input,
+          selectMenu: classes.input
         }}
+        input={
+          <Input
+            classes={{
+              input: classes.input,
+              underline: underlineClasses
+            }}
+          />
+        }
         {...rest}
         id={id}
         {...inputProps}
@@ -79,10 +87,10 @@ export default function CustomDropDown(props) {
           <MenuItem value={n.value}>{n.name}</MenuItem>
         ))}
       </Select>
-      {error ? (
-        <Clear className={classes.feedback + " " + classes.labelRootError} />
-      ) : success ? (
-        <Check className={classes.feedback + " " + classes.labelRootSuccess} />
+      {isHelperText ? (
+        <FormHelperText id={helperTextId} error={error}>
+          {helperText}
+        </FormHelperText>
       ) : null}
     </FormControl>
   );

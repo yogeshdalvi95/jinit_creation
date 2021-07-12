@@ -1,6 +1,17 @@
 export { NotFoundPage } from "./NotFoundPage";
 export { default as Auth } from "./Auth";
-export { Body1, CaptionText, CustomTypography } from "./Typography";
+export {
+  Body1,
+  CaptionText,
+  CustomTypography,
+  Danger,
+  Info,
+  Muted,
+  Primary,
+  Quote,
+  Success,
+  Warning
+} from "./Typography";
 export { Table, CustomTable } from "./Table";
 export { Footer } from "./Footer";
 export { CustomInput } from "./CustomInput";

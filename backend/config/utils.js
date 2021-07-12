@@ -109,6 +109,20 @@ function sort(data, sort) {
   return result;
 }
 
+function getDateInYYYYMMDD(date) {
+  var today = date;
+  var dd = String(today.getDate()).padStart(2, "0");
+  var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+  var yyyy = today.getFullYear();
+
+  today = yyyy + "-" + mm + "-" + dd;
+  return today;
+}
+
+function convertNumber(num) {
+  return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+}
+
 module.exports = {
   getRequestParams,
   getPaginatedResponse,
@@ -124,4 +138,6 @@ module.exports = {
   lowerCase: _.lowerCase,
   head: _.head,
   last: _.last,
+  getDateInYYYYMMDD,
+  convertNumber,
 };

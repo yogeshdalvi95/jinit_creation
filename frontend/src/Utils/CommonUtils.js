@@ -41,5 +41,18 @@ export const convertNumberToAmount = num => {
   var otherNumbers = x.substring(0, x.length - 3);
   if (otherNumbers !== "") lastThree = "," + lastThree;
   var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
-  return res + "/-";
+  return res;
+};
+
+export const convertNumber = (val, isAmount) => {
+  let num = 0;
+  if (isAmount) {
+    num = new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR"
+    }).format(val);
+  } else {
+    num = new Intl.NumberFormat("en-IN", {}).format(val);
+  }
+  return num;
 };

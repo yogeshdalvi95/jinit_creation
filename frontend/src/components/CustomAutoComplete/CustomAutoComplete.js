@@ -12,7 +12,7 @@ import {
 } from "../../assets/jss/material-dashboard-react.js";
 // core components
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
-import { TextField } from "@material-ui/core";
+import { FormHelperText, TextField } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
@@ -56,6 +56,9 @@ export default function CustomAutoComplete(props) {
     value,
     getOptionLabel,
     onHighlightChange,
+    helperTextId,
+    isHelperText,
+    helperText,
     ...rest
   } = props;
 
@@ -100,15 +103,22 @@ export default function CustomAutoComplete(props) {
         listbox: classes.input
       }}
       renderInput={params => (
-        <StyledTextField
-          id={id}
-          {...params}
-          style={{
-            margin: "25px 0 0 0"
-          }}
-          label={labelText}
-          margin="normal"
-        />
+        <>
+          <StyledTextField
+            id={id}
+            {...params}
+            style={{
+              margin: "29px 0 0 0"
+            }}
+            label={labelText}
+            margin="normal"
+          />
+          {isHelperText ? (
+            <FormHelperText id={helperTextId} error={error}>
+              {helperText}
+            </FormHelperText>
+          ) : null}
+        </>
       )}
     />
   );

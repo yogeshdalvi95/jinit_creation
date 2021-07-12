@@ -18,23 +18,17 @@
     "seller_email": {
       "type": "string"
     },
-    "phone_1": {
+    "phone": {
       "type": "string"
     },
     "seller_address": {
       "type": "text"
     },
-    "phone_2": {
+    "gst_no": {
       "type": "string"
     },
-    "city": {
-      "type": "string"
-    },
-    "state": {
-      "type": "string"
-    },
-    "postal_code": {
-      "type": "string"
+    "extra_details": {
+      "type": "text"
     }
   }
 }
