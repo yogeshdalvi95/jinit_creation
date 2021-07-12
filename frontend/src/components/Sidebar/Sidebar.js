@@ -13,6 +13,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Icon from "@material-ui/core/Icon";
 // core components
 import AdminNavbarLinks from "../Navbars/AdminNavbarLinks.js";
+import { ExpandLess, ExpandMore } from "@material-ui/icons";
 
 import styles from "../../assets/jss/material-dashboard-react/components/sidebarStyle.js";
 
@@ -50,19 +51,6 @@ export default function Sidebar(props) {
             key={key}
           >
             <ListItem button className={classes.itemLink + listItemClasses}>
-              {/* {typeof prop.icon === "string" ? (
-                <Icon
-                  className={classNames(classes.itemIcon, whiteFontClasses)}
-                >
-                  {prop.icon}
-                </Icon>
-              ) : prop.src !== undefined && prop.src !== null ? (
-                <img src={prop.src} width="20px" height="20px" />
-              ) : (
-                <prop.icon
-                  className={classNames(classes.itemIcon, whiteFontClasses)}
-                />
-              )} */}
               <ListItemText
                 primary={prop.name}
                 className={classNames(classes.itemText, whiteFontClasses)}

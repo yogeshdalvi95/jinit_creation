@@ -12,6 +12,7 @@ export const ADDSELLER = "/add-seller";
 
 export const ADDPURCHASES = "/add-purchases";
 export const PURCHASES = "/purchases";
+export const VIEWPURCHASES = "/view-purchases";
 
 export const ADMIN = "/admins";
 export const ADDADMIN = "/add-admin";

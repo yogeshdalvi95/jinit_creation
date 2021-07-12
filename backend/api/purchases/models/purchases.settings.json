@@ -15,7 +15,7 @@
     "type_of_bill": {
       "type": "enumeration",
       "enum": [
-        "Kachaa",
+        "Kachha",
         "Pakka"
       ]
     },
@@ -45,11 +45,6 @@
     },
     "total_amt_without_tax": {
       "type": "float"
-    },
-    "individual_purchase": {
-      "type": "component",
-      "repeatable": true,
-      "component": "individual-purchase.individual-purchase"
     }
   }
 }

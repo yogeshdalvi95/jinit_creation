@@ -1,0 +1,20 @@
+{
+  "seller_name": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Seller Name is required"
+      }
+    }
+  },
+  "gst_no": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "GSTIN/UIN is required"
+      }
+    }
+  }
+}

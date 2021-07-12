@@ -16,7 +16,8 @@ import {
   UNITS,
   ADDRAWMATERIALS,
   ADDUNITS,
-  ADDSELLER
+  ADDSELLER,
+  VIEWPURCHASES
 } from "../paths";
 import {
   Login,
@@ -124,6 +125,12 @@ const Routes = () => {
           exact
           component={AddPurchases}
           header={"Add Purchases"}
+        />
+        <PrivateRoute
+          path={VIEWPURCHASES}
+          exact
+          component={AddPurchases}
+          header={"View Purchase"}
         />
 
         {/** Raw materials */}

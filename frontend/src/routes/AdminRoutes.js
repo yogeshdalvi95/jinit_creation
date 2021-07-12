@@ -19,7 +19,8 @@ import {
   STAFF,
   ADDPURCHASES,
   ADDRAWMATERIALS,
-  UNITS
+  UNITS,
+  VIEWPURCHASES
 } from "../paths";
 
 const purchases = "shopping_cart";
@@ -27,7 +28,13 @@ const departments = "apartment";
 
 const rawMaterialPath = [RAWMATERIALSVIEW, ADDRAWMATERIALS, UNITS];
 const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
-const purchasesPath = [PURCHASES, ADDPURCHASES, SELLERS, ADDSELLER];
+const purchasesPath = [
+  PURCHASES,
+  ADDPURCHASES,
+  SELLERS,
+  ADDSELLER,
+  VIEWPURCHASES
+];
 //const sellerPath = [SELLERS, ADDSELLER];
 const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
