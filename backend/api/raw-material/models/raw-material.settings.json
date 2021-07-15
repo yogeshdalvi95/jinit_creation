@@ -22,7 +22,8 @@
       "type": "string"
     },
     "balance": {
-      "type": "float"
+      "type": "float",
+      "default": 0
     },
     "image": {
       "collection": "file",
@@ -48,6 +49,10 @@
     },
     "unit_name": {
       "type": "string"
+    },
+    "is_die": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

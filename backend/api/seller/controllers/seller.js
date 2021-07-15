@@ -30,4 +30,49 @@ module.exports = {
       totalCount: count, // total row number
     };
   },
+
+  async check_duplicate_seller(ctx) {
+    const { isEdit, editId, seller_name, gst_no } = ctx.request.query;
+    let error = {};
+    let isNameAvailable = await strapi
+      .query("seller")
+      .findOne({ seller_name: seller_name });
+
+    let isGstNoAvailable = await strapi
+      .query("seller")
+      .findOne({ gst_no: gst_no });
+
+    console.log(isGstNoAvailable, isNameAvailable, editId);
+
+    if (isEdit === "true") {
+      if (isNameAvailable && editId != isNameAvailable.id) {
+        error = {
+          ...error,
+          seller_name: ["Seller name already exist"],
+        };
+      }
+
+      if (isGstNoAvailable && editId != isGstNoAvailable.id) {
+        error = {
+          ...error,
+          gst_no: ["Gst number already exist"],
+        };
+      }
+    } else {
+      if (isNameAvailable) {
+        error = {
+          ...error,
+          seller_name: ["Seller name already exist"],
+        };
+      }
+      if (isGstNoAvailable) {
+        error = {
+          ...error,
+          gst_no: ["Gst number already exist"],
+        };
+      }
+    }
+    console.log("error ", error);
+    ctx.send(error);
+  },
 };

@@ -674,31 +674,39 @@ const ROLES = {
     controllers: [
       {
         name: "department",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "monthly-sheet",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "orders",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "purchases",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "raw-material",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "ready-material",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "seller",
-        action: ["find", "create", "update", "findOne"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "check_duplicate_seller",
+          "update",
+          "delete",
+        ],
       },
       {
         name: "units",
@@ -721,35 +729,43 @@ const ROLES = {
     controllers: [
       {
         name: "department",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "monthly-sheet",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "orders",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "purchases",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "raw-material",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "ready-material",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "seller",
-        action: ["find", "create", "update", "findOne"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "check_duplicate_seller",
+          "update",
+          "delete",
+        ],
       },
       {
         name: "units",
-        action: ["find", "create", "update", "findOne"],
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "user",
