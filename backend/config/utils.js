@@ -123,6 +123,10 @@ function convertNumber(num) {
   return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
 }
 
+function checkEmpty(obj) {
+  return Object.keys(obj).length ? false : true;
+}
+
 module.exports = {
   getRequestParams,
   getPaginatedResponse,
@@ -140,4 +144,5 @@ module.exports = {
   last: _.last,
   getDateInYYYYMMDD,
   convertNumber,
+  checkEmpty,
 };
