@@ -33,3 +33,4 @@ export { FAB } from "./FAB";
 export { CustomTabs } from "./CustomTabs";
 export { CustomDropDown } from "./CustomDropDown";
 export { DatePicker } from "./DatePicker";
+export { CustomCheckBox } from "./CustomCheckBox";

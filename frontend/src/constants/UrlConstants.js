@@ -11,4 +11,5 @@ export const backend_staff = `${apiUrl}/getAllStaff`;
 export const backend_sellers = `${apiUrl}/sellers`;
 export const backend_departments = `${apiUrl}/departments`;
 export const backend_purchases = `${apiUrl}/purchases`;
+export const backend_check_seller_duplicate = `${apiUrl}/sellers/check_duplicate_seller`;
 export const backend_units = `${apiUrl}/units`;

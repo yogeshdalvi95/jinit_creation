@@ -4,12 +4,13 @@ import { Auth, SnackBarComponent, Table } from "../../components";
 // core components
 import { backend_purchases } from "../../constants";
 import { convertNumber, plainDate } from "../../Utils";
-import ViewListIcon from "@material-ui/icons/ViewList";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet } from "../../api";
 import { useHistory } from "react-router-dom";
-import { VIEWPURCHASES } from "../../paths";
+import { VIEWPURCHASES, EDITPURCHASES } from "../../paths";
+import EditIcon from "@material-ui/icons/Edit";
 
 const useStyles = makeStyles(styles);
 export default function Purchases() {
@@ -91,12 +92,16 @@ export default function Purchases() {
     tableRef.current.onQueryChange();
   };
 
-  const handleClickOpenIndividualPurchase = async row => {
+  const handleClickOpenIndividualPurchase = async (row, isView) => {
     setBackDrop(true);
     await providerForGet(backend_purchases + "/" + row.id, {}, Auth.getToken())
       .then(res => {
         setBackDrop(false);
-        history.push(VIEWPURCHASES, { data: res.data, view: true });
+        if (isView) {
+          history.push(VIEWPURCHASES, { data: res.data, view: true });
+        } else {
+          history.push(EDITPURCHASES, { data: res.data, edit: true });
+        }
       })
       .catch(err => {
         setBackDrop(false);
@@ -135,10 +140,17 @@ export default function Purchases() {
         }}
         actions={[
           rowData => ({
-            icon: () => <ViewListIcon fontSize="small" />,
+            icon: () => <EditIcon fontSize="small" />,
+            tooltip: "Edit",
+            onClick: (event, rowData) => {
+              handleClickOpenIndividualPurchase(rowData, false);
+            }
+          }),
+          rowData => ({
+            icon: () => <VisibilityIcon fontSize="small" />,
             tooltip: "View",
             onClick: (event, rowData) => {
-              handleClickOpenIndividualPurchase(rowData);
+              handleClickOpenIndividualPurchase(rowData, true);
             }
           })
         ]}

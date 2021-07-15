@@ -66,15 +66,6 @@ export default function Units() {
       data={async query => {
         return await getUnitsData(query.page + 1, query.pageSize);
       }}
-      actions={[
-        rowData => ({
-          icon: () => <EditOutlinedIcon fontSize="small" />,
-          tooltip: "Edit",
-          onClick: (event, rowData) => {
-            //handleClickOpen(rowData);
-          }
-        })
-      ]}
       options={{
         pageSize: 10,
         actionsColumnIndex: -1,

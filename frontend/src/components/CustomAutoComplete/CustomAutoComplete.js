@@ -108,7 +108,7 @@ export default function CustomAutoComplete(props) {
             id={id}
             {...params}
             style={{
-              margin: "29px 0 0 0"
+              margin: "27px 0 0 0"
             }}
             label={labelText}
             margin="normal"

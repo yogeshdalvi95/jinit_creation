@@ -3,14 +3,18 @@ export const DASHBOARD = "/dashboard";
 
 export const RAWMATERIALSVIEW = "/raw-materials";
 export const ADDRAWMATERIALS = "/add-raw-materials";
+export const EDITRAWMATERIALS = "/edit-raw-material";
+export const VIEWRAWMATERIALS = "/view-raw-material";
 
 export const USERS = "/users";
 export const PROFILE = "/profile";
 
 export const SELLERS = "/sellers";
 export const ADDSELLER = "/add-seller";
+export const EDITSELLER = "/edit-seller";
 
 export const ADDPURCHASES = "/add-purchases";
+export const EDITPURCHASES = "/edit-purchases";
 export const PURCHASES = "/purchases";
 export const VIEWPURCHASES = "/view-purchases";
 

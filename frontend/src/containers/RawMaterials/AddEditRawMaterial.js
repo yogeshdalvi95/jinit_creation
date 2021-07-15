@@ -9,6 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CustomAutoComplete,
+  CustomCheckBox,
   CustomInput,
   FAB,
   GridContainer,
@@ -22,7 +23,7 @@ import { RAWMATERIALSVIEW } from "../../paths";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { useEffect } from "react";
-import { providerForGet, providerForPost } from "../../api";
+import { providerForGet, providerForPost, providerForPut } from "../../api";
 import {
   backend_departments,
   backend_raw_materials,
@@ -30,6 +31,7 @@ import {
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
+import { isEmptyString } from "../../Utils";
 
 const useStyles = makeStyles(styles);
 
@@ -40,6 +42,7 @@ export default function AddEditRawMaterial(props) {
   const [units, setUnits] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
+    id: null,
     name: "",
     color: "",
     size: "",
@@ -47,13 +50,49 @@ export default function AddEditRawMaterial(props) {
     costing: 0,
     department: null,
     unit: null,
-    unit_name: ""
+    unit_name: "",
+    is_die: false,
+    name_value: []
   });
 
+  /** VIMP to check if the data is used for viewing */
+  const [isView] = useState(
+    props.location.state ? props.location.state.view : false
+  );
+
+  /** VIMP to check if the data is used for editing */
+  const [isEdit] = useState(
+    props.location.state ? props.location.state.edit : false
+  );
+
   useEffect(() => {
+    if (
+      props.location.state &&
+      (props.location.state.view || props.location.state.edit) &&
+      props.location.state.data
+    ) {
+      setData(props.location.state.data);
+    }
     getDepartmentData();
     getUnits();
   }, []);
+
+  const setData = data => {
+    setFormState(formState => ({
+      ...formState,
+      id: data.id,
+      name: data.name,
+      color: data.color,
+      size: data.size,
+      balance: data.balance,
+      costing: data.costing,
+      department: data.department ? data.department.id : null,
+      unit: data.unit ? data.unit.id : null,
+      unit_name: data.unit ? data.unit.name : "",
+      is_die: data.is_die,
+      name_value: data.name_value
+    }));
+  };
 
   const getUnits = async () => {
     setBackDrop(true);
@@ -87,10 +126,7 @@ export default function AddEditRawMaterial(props) {
       .catch(err => {});
   };
 
-  console.log(formState);
-
   const handleChangeAutoComplete = async (name, event, value) => {
-    console.log(name, value);
     if (value === null) {
       if (name === "unit") {
         setFormState(formState => ({
@@ -131,26 +167,116 @@ export default function AddEditRawMaterial(props) {
     history.push(RAWMATERIALSVIEW);
   };
 
+  const filterOutWrongValuesInNameValue = () => {
+    let arr = formState.name_value;
+    let newArr = [];
+    arr.map(nv => {
+      if (
+        nv.name &&
+        nv.value &&
+        !isEmptyString(nv.name) &&
+        !isEmptyString(nv.value)
+      ) {
+        if (nv.id) {
+          newArr.push({
+            id: nv.id,
+            name: nv.name,
+            value: nv.value
+          });
+        } else {
+          newArr.push({
+            name: nv.name,
+            value: nv.value
+          });
+        }
+      }
+    });
+    setFormState(formState => ({
+      ...formState,
+      name_value: newArr
+    }));
+    return newArr;
+  };
+
+  console.log(formState);
   const addButton = async () => {
+    let arr = filterOutWrongValuesInNameValue();
     setBackDrop(true);
-    await providerForPost(
-      backend_raw_materials,
-      {
-        name: formState.name,
-        department: formState.department,
-        size: formState.size,
-        color: formState.color,
-        unit: formState.unit,
-        costing: formState.costing,
-        unit_name: formState.unit_name
-      },
-      Auth.getToken()
-    )
-      .then(res => {
-        history.push(RAWMATERIALSVIEW);
-        setBackDrop(false);
-      })
-      .catch(err => {});
+    if (isEdit) {
+      await providerForPut(
+        backend_raw_materials,
+        formState.id,
+        {
+          name: formState.name,
+          department: formState.department,
+          size: formState.size,
+          color: formState.color,
+          unit: formState.unit,
+          costing: formState.costing,
+          unit_name: formState.unit_name,
+          is_die: formState.is_die,
+          name_value: arr
+        },
+        Auth.getToken()
+      )
+        .then(res => {
+          history.push(RAWMATERIALSVIEW);
+          setBackDrop(false);
+        })
+        .catch(err => {});
+    } else {
+      await providerForPost(
+        backend_raw_materials,
+        {
+          name: formState.name,
+          department: formState.department,
+          size: formState.size,
+          color: formState.color,
+          unit: formState.unit,
+          costing: formState.costing,
+          balance: 0,
+          unit_name: formState.unit_name,
+          is_die: formState.is_die,
+          name_value: arr
+        },
+        Auth.getToken()
+      )
+        .then(res => {
+          history.push(RAWMATERIALSVIEW);
+          setBackDrop(false);
+        })
+        .catch(err => {});
+    }
+  };
+
+  const addNewValue = () => {
+    setFormState(formState => ({
+      ...formState,
+      name_value: [
+        {
+          id: null,
+          name: "",
+          value: ""
+        },
+        ...formState.name_value
+      ]
+    }));
+  };
+
+  const handleChangeRepeatableComponent = (e, k) => {
+    let obj = formState.name_value[k];
+    obj = {
+      ...obj,
+      [e.target.name]: e.target.value
+    };
+    setFormState(formState => ({
+      ...formState,
+      name_value: [
+        ...formState.name_value.slice(0, k),
+        obj,
+        ...formState.name_value.slice(k + 1)
+      ]
+    }));
   };
 
   return (
@@ -168,10 +294,11 @@ export default function AddEditRawMaterial(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={5}>
                 <CustomInput
                   onChange={event => handleChange(event)}
                   labelText="Name"
+                  disabled={isView}
                   name="name"
                   value={formState.name}
                   id="name"
@@ -180,10 +307,11 @@ export default function AddEditRawMaterial(props) {
                   }}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={6}>
+              <GridItem xs={12} sm={12} md={5}>
                 <CustomAutoComplete
                   id="department-name"
                   labelText="Department"
+                  disabled={isView}
                   autocompleteId={"department"}
                   optionKey={"name"}
                   options={departments}
@@ -202,6 +330,21 @@ export default function AddEditRawMaterial(props) {
                   }
                 />
               </GridItem>
+              <GridItem xs={12} sm={12} md={2}>
+                <CustomCheckBox
+                  onChange={event => {
+                    setFormState(formState => ({
+                      ...formState,
+                      is_die: event.target.checked
+                    }));
+                  }}
+                  disabled={isView}
+                  labelText="Die"
+                  name="is_die"
+                  checked={formState.is_die || false}
+                  id="is_die"
+                />
+              </GridItem>
             </GridContainer>
 
             <GridContainer>
@@ -210,6 +353,7 @@ export default function AddEditRawMaterial(props) {
                   onChange={event => handleChange(event)}
                   labelText="Size"
                   name="size"
+                  disabled={isView}
                   value={formState.size}
                   id="size"
                   formControlProps={{
@@ -222,6 +366,7 @@ export default function AddEditRawMaterial(props) {
                   onChange={event => handleChange(event)}
                   labelText="Color"
                   name="color"
+                  disabled={isView}
                   value={formState.color}
                   id="color"
                   formControlProps={{
@@ -235,6 +380,7 @@ export default function AddEditRawMaterial(props) {
                   labelText="Unit"
                   autocompleteId={"unit-id"}
                   optionKey={"name"}
+                  disabled={isView}
                   options={units}
                   onChange={(event, value) => {
                     handleChangeAutoComplete("unit", event, value);
@@ -260,6 +406,7 @@ export default function AddEditRawMaterial(props) {
                   name="costing"
                   labelText="Costing"
                   id="costing"
+                  disabled={isView}
                   formControlProps={{
                     fullWidth: true
                   }}
@@ -289,62 +436,88 @@ export default function AddEditRawMaterial(props) {
                 />
               </GridItem>
             </GridContainer>
-            <GridContainer>
-              <GridItem xs={12} sm={12} md={4}>
-                <CustomInput
-                  labelText="Name"
-                  id="name"
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
-                <CustomInput
-                  labelText="Value"
-                  id="value"
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-              </GridItem>
-              <GridItem
-                xs={6}
-                sm={6}
-                md={1}
-                className={classes.addDeleteFabButon}
-              >
-                <FAB
-                  color="primary"
-                  align={"end"}
-                  size={"small"}
-                  onClick={() => {}}
-                >
-                  <AddIcon />
-                </FAB>
-              </GridItem>
-              <GridItem
-                xs={6}
-                sm={6}
-                md={1}
-                className={classes.addDeleteFabButon}
-              >
-                <FAB
-                  color="primary"
-                  align={"end"}
-                  size={"small"}
-                  onClick={() => {}}
-                >
-                  <DeleteIcon />
-                </FAB>
-              </GridItem>
-            </GridContainer>
+            {isView ? null : (
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    size={"medium"}
+                    variant="extended"
+                    onClick={() => addNewValue()}
+                  >
+                    <AddIcon className={classes.extendedIcon} />
+                    <h5>Add new value</h5>
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+            )}
+            {formState.name_value.map((nv, key) => (
+              <GridContainer key={key}>
+                <GridItem xs={12} sm={12} md={4}>
+                  <CustomInput
+                    labelText="Name"
+                    id="name"
+                    name="name"
+                    disabled={isView}
+                    value={formState.name_value[key].name || ""}
+                    onChange={event =>
+                      handleChangeRepeatableComponent(event, key)
+                    }
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={4}>
+                  <CustomInput
+                    labelText="Value"
+                    id="value"
+                    name="value"
+                    disabled={isView}
+                    onChange={event =>
+                      handleChangeRepeatableComponent(event, key)
+                    }
+                    value={formState.name_value[key].value || ""}
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                {isView ? null : (
+                  <GridItem
+                    xs={6}
+                    sm={6}
+                    md={1}
+                    className={classes.addDeleteFabButon}
+                  >
+                    <FAB
+                      color="primary"
+                      align={"end"}
+                      size={"small"}
+                      onClick={() => {
+                        setFormState(formState => ({
+                          ...formState,
+                          name_value: [
+                            ...formState.name_value.slice(0, key),
+                            ...formState.name_value.slice(key + 1)
+                          ]
+                        }));
+                      }}
+                    >
+                      <DeleteIcon />
+                    </FAB>
+                  </GridItem>
+                )}
+              </GridContainer>
+            ))}
           </CardBody>
-          <CardFooter>
-            <Button color="primary" onClick={() => addButton()}>
-              Add
-            </Button>
-          </CardFooter>
+          {isView ? null : (
+            <CardFooter>
+              <Button color="primary" onClick={() => addButton()}>
+                Save
+              </Button>
+            </CardFooter>
+          )}
         </Card>
         <Backdrop className={classes.backdrop} open={openBackDrop}>
           <CircularProgress color="inherit" />

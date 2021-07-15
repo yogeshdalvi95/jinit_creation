@@ -84,11 +84,6 @@ export default function Departments() {
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
-        <FAB color="primary" align={"end"} size={"small"} onClick={onAddClick}>
-          <AddIcon />
-        </FAB>
-      </GridItem>
-      <GridItem xs={12} sm={12} md={12}>
         <Card plain>
           <CardHeader plain color="primary">
             <h4 className={classes.cardTitleWhite}>Departments</h4>
@@ -110,21 +105,7 @@ export default function Departments() {
                   }
                 }
               }}
-              actions={[
-                rowData => ({
-                  icon: () => <EditOutlinedIcon />,
-                  tooltip: "Edit",
-                  onClick: (event, rowData) => {
-                    //handleClickOpen(rowData);
-                  }
-                }),
-                rowData => ({
-                  icon: "delete",
-                  tooltip: "Delete User",
-                  onClick: (event, rowData) => {},
-                  disabled: rowData.birthYear < 2000
-                })
-              ]}
+              actions={[]}
               options={{
                 pageSize: 10,
                 actionsColumnIndex: -1,

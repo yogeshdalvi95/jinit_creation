@@ -17,7 +17,11 @@ import {
   ADDRAWMATERIALS,
   ADDUNITS,
   ADDSELLER,
-  VIEWPURCHASES
+  VIEWPURCHASES,
+  EDITSELLER,
+  EDITPURCHASES,
+  EDITRAWMATERIALS,
+  VIEWRAWMATERIALS
 } from "../paths";
 import {
   Login,
@@ -110,6 +114,12 @@ const Routes = () => {
           component={AddSeller}
           header={"Add Seller"}
         />
+        <PrivateRoute
+          path={EDITSELLER}
+          exact
+          component={AddSeller}
+          header={"Edit Seller"}
+        />
 
         {/** Purchases */}
         <RouteWithTabLayoutForPurchase
@@ -125,6 +135,12 @@ const Routes = () => {
           exact
           component={AddPurchases}
           header={"Add Purchases"}
+        />
+        <PrivateRoute
+          path={EDITPURCHASES}
+          exact
+          component={AddPurchases}
+          header={"Edit Purchase"}
         />
         <PrivateRoute
           path={VIEWPURCHASES}
@@ -147,6 +163,18 @@ const Routes = () => {
           exact
           component={AddEditRawMaterial}
           header={"Add New Raw Material"}
+        />
+        <PrivateRoute
+          path={EDITRAWMATERIALS}
+          exact
+          component={AddEditRawMaterial}
+          header={"Edit Raw Material"}
+        />
+        <PrivateRoute
+          path={VIEWRAWMATERIALS}
+          exact
+          component={AddEditRawMaterial}
+          header={"View Raw Material"}
         />
 
         {/** Units */}
