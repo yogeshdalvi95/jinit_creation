@@ -2,6 +2,7 @@ import React from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import {
+  Auth,
   Button,
   Card,
   CardBody,
@@ -22,6 +23,12 @@ import { useState } from "react";
 import form from "./form/SellerForm.json";
 import { checkEmpty, hasError, setErrors } from "../../Utils";
 import { Backdrop, CircularProgress } from "@material-ui/core";
+import { providerForGet, providerForPost, providerForPut } from "../../api";
+import {
+  backend_check_seller_duplicate,
+  backend_sellers
+} from "../../constants";
+import { useEffect } from "react";
 
 const useStyles = makeStyles(styles);
 
@@ -30,10 +37,6 @@ export default function AddSeller(props) {
   const history = useHistory();
   const [loading, setLoading] = useState(false);
   const [error, setError] = React.useState({});
-  /** VIMP to check if the data is used for viewing */
-  const [isView] = useState(
-    props.location.state ? props.location.state.view : false
-  );
 
   /** VIMP to check if the data is used for editing */
   const [isEdit] = useState(
@@ -48,6 +51,7 @@ export default function AddSeller(props) {
   });
 
   const [formState, setFormState] = useState({
+    id: null,
     seller_name: "",
     seller_email: "",
     phone: "",
@@ -55,6 +59,30 @@ export default function AddSeller(props) {
     gst_no: "",
     extra_details: ""
   });
+
+  useEffect(() => {
+    if (
+      props.location.state &&
+      props.location.state.edit &&
+      props.location.state.data
+    ) {
+      setData(props.location.state.data);
+    }
+  }, []);
+
+  /** Function that sets data during editing  */
+  const setData = data => {
+    setFormState(formState => ({
+      ...formState,
+      id: data.id,
+      seller_name: data.seller_name,
+      seller_email: data.seller_email,
+      phone: data.phone,
+      seller_address: data.seller_address,
+      gst_no: data.gst_no,
+      extra_details: data.extra_details
+    }));
+  };
 
   const onBackClick = () => {
     history.push(SELLERS);
@@ -80,10 +108,18 @@ export default function AddSeller(props) {
     let error = {};
     /** This will set errors as per validations defined in form */
     error = setErrors(formState, form);
-    console.log("Over here ", error);
-    /** If no errors the isValid is set true */
+    /** If no errors then isValid is set true */
     if (checkEmpty(error)) {
-      isValid = true;
+      /** Check gst no and seller name duplicate */
+      error = await checkIfDuplicate();
+      /** If no duplicate then isValid is set true and then we proceed to add/edit data */
+      if (error && checkEmpty(error)) {
+        isValid = true;
+      } else {
+        setLoading(false);
+        /** Api might also return null so 1st check if its not null */
+        setError(error ? error : {});
+      }
     } else {
       setLoading(false);
       setError(error);
@@ -94,10 +130,76 @@ export default function AddSeller(props) {
     }
   };
 
-  const handSubmit = () => {
-    setLoading(false);
-    console.log("Success");
+  /** Function to check in database whether seller name and gst number is duplicate or not*/
+  const checkIfDuplicate = async () => {
+    let result = "";
+    await providerForGet(
+      backend_check_seller_duplicate,
+      {
+        isEdit: isEdit,
+        editId: formState.id,
+        seller_name: formState.seller_name,
+        gst_no: formState.gst_no
+      },
+      Auth.getToken()
+    )
+      .then(res => {
+        result = res.data;
+      })
+      .catch(err => {
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error adding data"
+        }));
+        setLoading(false);
+        result = null;
+      });
+    return result;
+  };
+
+  const handSubmit = async () => {
     /** Api call over here to save data */
+    let data = {
+      seller_name: formState.seller_name,
+      seller_email: formState.seller_email,
+      phone: formState.phone,
+      seller_address: formState.seller_address,
+      gst_no: formState.gst_no,
+      extra_details: formState.extra_details
+    };
+    if (isEdit) {
+      await providerForPut(backend_sellers, formState.id, data, Auth.getToken())
+        .then(res => {
+          history.push(SELLERS);
+          setLoading(false);
+        })
+        .catch(error => {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error saving data"
+          }));
+          setLoading(false);
+        });
+    } else {
+      await providerForPost(backend_sellers, data, Auth.getToken())
+        .then(res => {
+          history.push(SELLERS);
+          setLoading(false);
+        })
+        .catch(error => {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error saving data"
+          }));
+          setLoading(false);
+        });
+    }
   };
 
   /** Close function called when we click on cancel button of snackbar */
@@ -129,7 +231,9 @@ export default function AddSeller(props) {
       <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
-            <h4 className={classes.cardTitleWhite}>Add New Seller</h4>
+            <h4 className={classes.cardTitleWhite}>
+              {isEdit ? "Edit Seller" : "Add New Seller"}
+            </h4>
             <p className={classes.cardCategoryWhite}></p>
           </CardHeader>
           <CardBody>
@@ -246,7 +350,7 @@ export default function AddSeller(props) {
           </CardBody>
           <CardFooter>
             <Button color="primary" onClick={e => addButton(e)}>
-              Add Seller
+              Save
             </Button>
           </CardFooter>
         </Card>

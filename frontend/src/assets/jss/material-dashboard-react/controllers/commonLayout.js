@@ -1,6 +1,9 @@
 import { grayColor } from "../../material-dashboard-react";
 
 const styles = {
+  extendedIcon: {
+    marginRight: "1rem"
+  },
   cardCategoryWhite: {
     "&,& a,& a:hover,& a:focus": {
       color: "rgba(255,255,255,.62)",

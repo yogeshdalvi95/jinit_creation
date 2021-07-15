@@ -20,7 +20,8 @@ import {
   ADDPURCHASES,
   ADDRAWMATERIALS,
   UNITS,
-  VIEWPURCHASES
+  VIEWPURCHASES,
+  EDITSELLER
 } from "../paths";
 
 const purchases = "shopping_cart";
@@ -32,6 +33,7 @@ const purchasesPath = [
   PURCHASES,
   ADDPURCHASES,
   SELLERS,
+  EDITSELLER,
   ADDSELLER,
   VIEWPURCHASES
 ];

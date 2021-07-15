@@ -38,7 +38,6 @@ import { convertNumber, isEmptyString } from "../../Utils";
 const useStyles = makeStyles(styles);
 
 export default function AddPurchases(props) {
-  console.log(props);
   const classes = useStyles();
   const history = useHistory();
   const [rawMaterial, setRawMaterial] = useState([]);
@@ -47,6 +46,12 @@ export default function AddPurchases(props) {
   const [isView] = useState(
     props.location.state ? props.location.state.view : false
   );
+
+  /** VIMP to check if the data is used for editing */
+  const [isEdit] = useState(
+    props.location.state ? props.location.state.edit : false
+  );
+
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
     seller: null,
@@ -94,13 +99,14 @@ export default function AddPurchases(props) {
     department: "",
     color: "",
     size: "",
-    balance: ""
+    balance: "",
+    name_value: []
   });
 
   useEffect(() => {
     if (
       props.location.state &&
-      props.location.state.view &&
+      (props.location.state.view || props.location.state.edit) &&
       props.location.state.data
     ) {
       setData(props.location.state.data);
@@ -197,9 +203,66 @@ export default function AddPurchases(props) {
   };
 
   const handleChange = event => {
+    if (event.target.name === "type_of_bill") {
+      setRawMaterialDetails(rawMaterialDetails => ({
+        ...rawMaterialDetails,
+        name: ""
+      }));
+    }
+    if (
+      event.target.name === "cgst_percent" ||
+      event.target.name === "sgst_percent"
+    ) {
+      calculateNewTax(event.target.name, event.target.value);
+    }
     setFormState(formState => ({
       ...formState,
       [event.target.name]: event.target.value
+    }));
+  };
+
+  const calculateNewTax = (name, value) => {
+    let cgst_percent = 0;
+    let sgst_percent = 0;
+    if (name === "cgst_percent") {
+      if (isEmptyString(value)) {
+        cgst_percent = 0;
+      } else {
+        cgst_percent = parseFloat(value);
+      }
+    }
+    if (name === "sgst_percent") {
+      if (isEmptyString(value)) {
+        sgst_percent = 0;
+      } else {
+        sgst_percent = parseFloat(value);
+      }
+    }
+
+    let total_amt_without_tax = 0;
+    if (!isNaN(parseFloat(formState.total_amt_without_tax))) {
+      total_amt_without_tax = parseFloat(formState.total_amt_without_tax);
+    }
+
+    let cgst =
+      (parseFloat(cgst_percent) / 100) * formState.total_amt_without_tax;
+    let sgst = (parseFloat(sgst_percent) / 100) * total_amt_without_tax;
+    let totalCostWithTax = total_amt_without_tax + cgst + sgst;
+    let totalCostWithTaxFormatted = convertNumber(
+      totalCostWithTax.toFixed(2),
+      true
+    );
+    let total_amt_without_tax_formatted = convertNumber(
+      total_amt_without_tax.toFixed(2),
+      true
+    );
+
+    setFormState(formState => ({
+      ...formState,
+      total_amt_with_tax: totalCostWithTax,
+      total_amt_with_tax_formatted: totalCostWithTaxFormatted,
+      total_amt_without_tax: total_amt_without_tax,
+      total_amt_without_tax_formatted: total_amt_without_tax_formatted
     }));
   };
 
@@ -303,13 +366,22 @@ export default function AddPurchases(props) {
 
       if (name === "raw_material") {
         if (value) {
+          let arr = [];
+          console.log(value);
+          value.name_value.map(nv => {
+            arr.push({
+              name: nv.name,
+              value: nv.value
+            });
+          });
           setRawMaterialDetails(rawMaterialDetails => ({
             ...rawMaterialDetails,
             name: value ? value.name : "",
             department: value ? value.department.name : "",
             size: value ? value.size : "",
             balance: value ? value.balance : "",
-            color: value ? value.color : ""
+            color: value ? value.color : "",
+            name_value: arr
           }));
         } else {
           setRawMaterialDetails(rawMaterialDetails => ({
@@ -318,7 +390,8 @@ export default function AddPurchases(props) {
             department: null,
             size: null,
             balance: null,
-            color: null
+            color: null,
+            name_value: []
           }));
         }
       }
@@ -424,6 +497,61 @@ export default function AddPurchases(props) {
     }
   };
 
+  const deletePurchase = (purchase, key) => {
+    let object = {};
+    if (purchase === "Kachha") {
+      object = individualKachhaPurchase[key];
+    } else if (purchase === "Pakka") {
+      object = individualPakkaPurchase[key];
+    }
+
+    let total_amt_without_tax = formState.total_amt_without_tax;
+    total_amt_without_tax = total_amt_without_tax - object.total_purchase_cost;
+    let total_amt_without_tax_formatted = convertNumber(
+      total_amt_without_tax.toFixed(2),
+      true
+    );
+
+    /** Calculate tax */
+    let cgst_percent = formState.cgst_percent;
+    if (isEmptyString(cgst_percent)) {
+      cgst_percent = 0;
+    }
+
+    let sgst_percent = formState.sgst_percent;
+    if (isEmptyString(sgst_percent)) {
+      sgst_percent = 0;
+    }
+
+    let cgst = (parseFloat(cgst_percent) / 100) * total_amt_without_tax;
+    let sgst = (parseFloat(sgst_percent) / 100) * total_amt_without_tax;
+    let total_amt_with_tax = total_amt_without_tax + cgst + sgst;
+    let total_amt_with_tax_formatted = convertNumber(
+      total_amt_with_tax.toFixed(2),
+      true
+    );
+
+    setFormState(formState => ({
+      ...formState,
+      total_amt_with_tax: total_amt_with_tax,
+      total_amt_with_tax_formatted: total_amt_with_tax_formatted,
+      total_amt_without_tax: total_amt_without_tax,
+      total_amt_without_tax_formatted: total_amt_without_tax_formatted
+    }));
+
+    if (purchase === "Kachha") {
+      setIndividualKachhaPurchase([
+        ...individualKachhaPurchase.slice(0, key),
+        ...individualKachhaPurchase.slice(key + 1)
+      ]);
+    } else if (purchase === "Pakka") {
+      setIndividualPakkaPurchase([
+        ...individualPakkaPurchase.slice(0, key),
+        ...individualPakkaPurchase.slice(key + 1)
+      ]);
+    }
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -442,7 +570,7 @@ export default function AddPurchases(props) {
               <GridItem xs={12} sm={12} md={4}>
                 <CustomDropDown
                   id="type_of_bill"
-                  disabled={isView}
+                  disabled={isView || isEdit}
                   onChange={event => handleChange(event)}
                   labelText="Type of Purchase"
                   name="type_of_bill"
@@ -461,7 +589,7 @@ export default function AddPurchases(props) {
                   <GridItem xs={12} sm={12} md={4}>
                     <CustomAutoComplete
                       id="seller-name"
-                      disabled={isView}
+                      disabled={isView || isEdit}
                       labelText="Seller"
                       autocompleteId={"seller-id"}
                       optionKey={"seller_name"}
@@ -470,12 +598,14 @@ export default function AddPurchases(props) {
                         if (value === null) {
                           setFormState(formState => ({
                             ...formState,
-                            seller: null
+                            seller: null,
+                            gst_no: ""
                           }));
                         } else {
                           setFormState(formState => ({
                             ...formState,
-                            seller: value.id
+                            seller: value.id,
+                            gst_no: value.gst_no
                           }));
                         }
                       }}
@@ -518,7 +648,7 @@ export default function AddPurchases(props) {
                     onChange={event => handleChange(event)}
                     labelText="GST No."
                     name="gst_no"
-                    disabled={isView}
+                    disabled
                     value={formState.gst_no}
                     id="gst_no"
                     formControlProps={{
@@ -607,7 +737,7 @@ export default function AddPurchases(props) {
                       labelText="Notes"
                       id="notes"
                       name="notes"
-                      disabled={isView}
+                      disabled={isView || isEdit}
                       onChange={event => handleChange(event)}
                       value={formState.notes}
                       formControlProps={{
@@ -622,6 +752,24 @@ export default function AddPurchases(props) {
                 </GridContainer>
               </>
             ) : null}
+
+            {isView ||
+            isEdit ||
+            isEmptyString(formState.type_of_bill) ? null : (
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    size={"medium"}
+                    variant="extended"
+                    onClick={() => addNewPurchase(formState.type_of_bill)}
+                  >
+                    <AddIcon className={classes.extendedIcon} />
+                    <h5>Add new purchase</h5>
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+            )}
 
             {/** Should get executed only when the bill is pakka bill */}
             {formState.type_of_bill &&
@@ -641,7 +789,7 @@ export default function AddPurchases(props) {
                           labelText="Raw Material"
                           autocompleteId={"raw_material_id"}
                           optionKey={"name"}
-                          disabled={isView}
+                          disabled={isView || isEdit}
                           getOptionLabel={option => {
                             let bal = "0";
                             if (!option.balance) {
@@ -718,7 +866,7 @@ export default function AddPurchases(props) {
                             handleChangeForRepetableComponent(event, key)
                           }
                           type="number"
-                          disabled={isView}
+                          disabled={isView || isEdit}
                           labelText="Purchase Quantity"
                           name="purchase_quantity"
                           value={Ip.purchase_quantity}
@@ -744,7 +892,7 @@ export default function AddPurchases(props) {
                       </GridItem>
                     </GridContainer>
                   </GridItem>
-                  {!isView && key === individualKachhaPurchase.length - 1 ? (
+                  {isView || isEdit ? null : (
                     <GridItem
                       xs={12}
                       sm={12}
@@ -755,20 +903,14 @@ export default function AddPurchases(props) {
                         color="primary"
                         align={"end"}
                         size={"small"}
-                        onClick={() => addNewPurchase("Kachha")}
-                      >
-                        <AddIcon />
-                      </FAB>
-                      <FAB
-                        color="primary"
-                        align={"end"}
-                        size={"small"}
-                        onClick={() => {}}
+                        onClick={() => {
+                          deletePurchase("Kachha", key);
+                        }}
                       >
                         <DeleteIcon />
                       </FAB>
                     </GridItem>
-                  ) : null}
+                  )}
 
                   {/* <GridItem
                 xs={6}
@@ -830,7 +972,7 @@ export default function AddPurchases(props) {
                         <CustomInput
                           labelText="Purchase Quantity"
                           type="number"
-                          disabled={isView}
+                          disabled={isView || isEdit}
                           name="purchase_quantity"
                           value={Ip.purchase_quantity}
                           onChange={event =>
@@ -859,7 +1001,7 @@ export default function AddPurchases(props) {
                     </GridContainer>
                   </GridItem>
 
-                  {!isView && key === individualKachhaPurchase.length - 1 ? (
+                  {isView || isEdit ? null : (
                     <GridItem
                       xs={12}
                       sm={12}
@@ -870,36 +1012,21 @@ export default function AddPurchases(props) {
                         color="primary"
                         align={"end"}
                         size={"small"}
-                        onClick={() => addNewPurchase("Pakka")}
-                      >
-                        <AddIcon />
-                      </FAB>
-                      <FAB
-                        color="primary"
-                        align={"end"}
-                        size={"small"}
-                        onClick={() => {}}
+                        onClick={() => {
+                          deletePurchase("Pakka", key);
+                        }}
                       >
                         <DeleteIcon />
                       </FAB>
                     </GridItem>
-                  ) : null}
-
-                  {/* <GridItem
-                xs={6}
-                sm={6}
-                md={2}
-                className={classes.addDeleteFabButon}
-              >
-                
-              </GridItem> */}
+                  )}
                 </GridContainer>
               ))}
           </CardBody>
           {isView ? null : (
             <CardFooter>
               <Button color="primary" onClick={() => addButton()}>
-                Add
+                Save
               </Button>
             </CardFooter>
           )}
@@ -933,6 +1060,14 @@ export default function AddPurchases(props) {
                     : rawMaterialDetails.balance}
                 </Muted>
               </GridItem>
+              {rawMaterialDetails.name_value.map(nv => (
+                <GridItem xs={12} sm={12} md={12}>
+                  <Muted>
+                    {" "}
+                    {nv.name} : {nv.value}
+                  </Muted>
+                </GridItem>
+              ))}
             </CardBody>
           </Card>
         </GridItem>

@@ -1,30 +1,36 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import { Auth, Table } from "../../components";
+import { Auth, SnackBarComponent, Table } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_sellers } from "../../constants";
-
+import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { ADDPURCHASES } from "../../paths";
+import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
+import { providerForGet } from "../../api";
+import { EDITSELLER } from "../../paths";
 
+const useStyles = makeStyles(styles);
 export default function Sellers() {
+  const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "created_at:asc"
+    _sort: "seller_name:asc"
+  });
+  const [openBackDrop, setBackDrop] = useState(false);
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
   });
 
   const columns = [
     { title: "Seller Name", field: "seller_name" },
-    { title: "Seller Email", field: "seller_email" },
-    { title: "Phone", field: "phone_1" },
-    { title: "Alt. Phone", field: "phone_2" }
+    { title: "GSTIN/UIN", field: "gst_no" },
+    { title: "Phone", field: "phone" }
   ];
 
   const history = useHistory();
-  const onAddClick = () => {
-    history.push(ADDPURCHASES);
-  };
 
   const getPurchasesData = async (page, pageSize) => {
     let params = {
@@ -71,33 +77,71 @@ export default function Sellers() {
     tableRef.current.onQueryChange();
   };
 
+  const handleEdit = async row => {
+    setBackDrop(true);
+    await providerForGet(backend_sellers + "/" + row.id, {}, Auth.getToken())
+      .then(res => {
+        setBackDrop(false);
+        history.push(EDITSELLER, { data: res.data, edit: true });
+      })
+      .catch(err => {
+        setBackDrop(false);
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error viewing purchase"
+        }));
+      });
+  };
+
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
   return (
-    <Table
-      tableRef={tableRef}
-      title="Purchases"
-      columns={columns}
-      data={async query => {
-        return await getPurchasesData(query.page + 1, query.pageSize);
-      }}
-      actions={[
-        rowData => ({
-          icon: () => <EditOutlinedIcon fontSize="small" />,
-          tooltip: "Edit",
-          onClick: (event, rowData) => {
-            //handleClickOpen(rowData);
-          }
-        })
-      ]}
-      options={{
-        pageSize: 10,
-        actionsColumnIndex: -1,
-        search: false,
-        sorting: true,
-        thirdSortClick: false
-      }}
-      onOrderChange={(orderedColumnId, orderDirection) => {
-        orderFunc(orderedColumnId, orderDirection);
-      }}
-    />
+    <>
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
+      <Table
+        tableRef={tableRef}
+        title="Purchases"
+        columns={columns}
+        data={async query => {
+          return await getPurchasesData(query.page + 1, query.pageSize);
+        }}
+        actions={[
+          rowData => ({
+            icon: () => <EditOutlinedIcon fontSize="small" />,
+            tooltip: "Edit",
+            onClick: (event, rowData) => {
+              handleEdit(rowData);
+            }
+          })
+        ]}
+        options={{
+          pageSize: 10,
+          actionsColumnIndex: -1,
+          search: false,
+          sorting: true,
+          thirdSortClick: false
+        }}
+        onOrderChange={(orderedColumnId, orderDirection) => {
+          orderFunc(orderedColumnId, orderDirection);
+        }}
+      />
+      <Backdrop className={classes.backdrop} open={openBackDrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </>
   );
 }
