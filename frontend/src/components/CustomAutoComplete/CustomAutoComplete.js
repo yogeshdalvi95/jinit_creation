@@ -62,26 +62,9 @@ export default function CustomAutoComplete(props) {
     ...rest
   } = props;
 
-  const labelClasses = classNames({
-    [" " + classes.labelRootError]: error,
-    [" " + classes.labelRootSuccess]: success && !error,
-    [" " + classes.labelRTL]: rtlActive
-  });
-  const underlineClasses = classNames({
-    [classes.underlineError]: error,
-    [classes.underlineSuccess]: success && !error,
-    [classes.underline]: true
-  });
   const marginTop = classNames({
     [classes.marginTop]: labelText === undefined
   });
-  let newInputProps = {
-    maxLength:
-      inputProps && inputProps.maxLength ? inputProps.maxLength : undefined,
-    minLength:
-      inputProps && inputProps.minLength ? inputProps.minLength : undefined,
-    step: inputProps && inputProps.step ? inputProps.step : undefined
-  };
 
   return (
     <Autocomplete
@@ -96,8 +79,6 @@ export default function CustomAutoComplete(props) {
       {...rest}
       classes={{
         root: marginTop,
-        disabled: classes.disabled,
-        underline: underlineClasses,
         input: classes.input,
         popper: classes.input,
         listbox: classes.input

@@ -17,7 +17,7 @@ import { backend_departments, backend_raw_materials } from "../../constants";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { providerForGet } from "../../api";
+import { providerForGet, providerForDelete } from "../../api";
 import { useHistory } from "react-router-dom";
 import { EDITRAWMATERIALS, VIEWRAWMATERIALS } from "../../paths";
 import { isEmptyString } from "../../Utils";
@@ -200,8 +200,6 @@ export default function RawMaterials() {
       }));
     }
   };
-
-  console.log(filter);
 
   return (
     <>
@@ -404,6 +402,43 @@ export default function RawMaterials() {
             }
           })
         ]}
+        localization={{
+          body: {
+            editRow: {
+              deleteText: `Are you sure you want to delete this Raw Material?`,
+              saveTooltip: "Delete"
+            }
+          }
+        }}
+        editable={{
+          onRowDelete: oldData =>
+            new Promise(resolve => {
+              setTimeout(async () => {
+                await providerForDelete(
+                  backend_raw_materials,
+                  oldData.id,
+                  Auth.getToken()
+                )
+                  .then(async res => {
+                    setSnackBar(snackBar => ({
+                      ...snackBar,
+                      show: true,
+                      severity: "success",
+                      message: "Successfully deleted " + oldData.name
+                    }));
+                  })
+                  .catch(err => {
+                    setSnackBar(snackBar => ({
+                      ...snackBar,
+                      show: true,
+                      severity: "error",
+                      message: "Error deleting " + oldData.name
+                    }));
+                  });
+                resolve();
+              }, 1000);
+            })
+        }}
         options={{
           pageSize: 10,
           actionsColumnIndex: -1,
