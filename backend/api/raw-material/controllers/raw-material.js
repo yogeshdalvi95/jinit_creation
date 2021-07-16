@@ -32,4 +32,23 @@ module.exports = {
       totalCount: count, // total row number
     };
   },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    const checkIfPresentInPurchases = await strapi
+      .query("individual-kachha-purchase")
+      .findOne({ raw_material: id });
+
+    const checkIfPresentInReadyMaterial = await strapi
+      .query("raw-material-and-quantity-for-ready-material")
+      .findOne({ raw_material: id });
+
+    console.log(checkIfPresentInPurchases, checkIfPresentInReadyMaterial);
+    if (!checkIfPresentInPurchases && !checkIfPresentInReadyMaterial) {
+      await strapi.query("raw-material").delete({ id: id });
+      ctx.send(200);
+    } else {
+      return ctx.badRequest(null, "");
+    }
+  },
 };

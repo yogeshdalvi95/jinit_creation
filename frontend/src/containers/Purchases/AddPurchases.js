@@ -12,10 +12,12 @@ import {
   CustomDropDown,
   CustomInput,
   DatePicker,
+  DialogBox,
   FAB,
   GridContainer,
   GridItem,
-  Muted
+  Muted,
+  SnackBarComponent
 } from "../../components";
 // core components
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
@@ -52,8 +54,15 @@ export default function AddPurchases(props) {
     props.location.state ? props.location.state.edit : false
   );
 
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
+  });
+
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
+    id: null,
     seller: null,
     type_of_bill: "",
     cgst_percent: 0,
@@ -94,6 +103,8 @@ export default function AddPurchases(props) {
     pakkaPurchaseDetails
   ]);
 
+  const [openDialog, setOpenDialog] = useState(false);
+
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
     name: "",
     department: "",
@@ -118,6 +129,7 @@ export default function AddPurchases(props) {
   const setData = data => {
     setFormState(formState => ({
       ...formState,
+      id: data.purchase.id,
       seller: data.purchase.seller ? data.purchase.seller.id : null,
       type_of_bill: data.purchase.type_of_bill,
       cgst_percent: data.purchase.cgst_percent,
@@ -230,6 +242,9 @@ export default function AddPurchases(props) {
       } else {
         cgst_percent = parseFloat(value);
       }
+      if (!isNaN(parseFloat(formState.sgst_percent))) {
+        sgst_percent = parseFloat(formState.sgst_percent);
+      }
     }
     if (name === "sgst_percent") {
       if (isEmptyString(value)) {
@@ -237,8 +252,10 @@ export default function AddPurchases(props) {
       } else {
         sgst_percent = parseFloat(value);
       }
+      if (!isNaN(parseFloat(formState.cgst_percent))) {
+        cgst_percent = parseFloat(formState.cgst_percent);
+      }
     }
-
     let total_amt_without_tax = 0;
     if (!isNaN(parseFloat(formState.total_amt_without_tax))) {
       total_amt_without_tax = parseFloat(formState.total_amt_without_tax);
@@ -367,7 +384,6 @@ export default function AddPurchases(props) {
       if (name === "raw_material") {
         if (value) {
           let arr = [];
-          console.log(value);
           value.name_value.map(nv => {
             arr.push({
               name: nv.name,
@@ -402,6 +418,7 @@ export default function AddPurchases(props) {
   const handleChangeForRepetableComponent = (event, key) => {
     let name = event.target.name;
     let value = event.target.value;
+
     let object = {};
     let purchaseArr = [];
     if (formState.type_of_bill === "Kachha") {
@@ -422,13 +439,7 @@ export default function AddPurchases(props) {
         perRawMaterialFormatted,
         totalCostWithTaxFormatted,
         totalCostWithOutTaxFormatted
-      } = calculateTotalCost(
-        name,
-        event.target.value,
-        object,
-        purchaseArr,
-        key
-      );
+      } = calculateTotalCost(name, value, object, purchaseArr, key);
 
       setFormState(formState => ({
         ...formState,
@@ -465,22 +476,92 @@ export default function AddPurchases(props) {
     history.push(PURCHASES);
   };
 
-  const addButton = async () => {
-    setBackDrop(true);
-    await providerForPost(
-      backend_purchases,
-      {
-        purchases: formState,
-        kachhaPurchase: individualKachhaPurchase,
-        pakkaPurchase: individualPakkaPurchase
-      },
-      Auth.getToken()
-    )
-      .then(res => {
-        history.push(PURCHASES);
-        setBackDrop(false);
-      })
-      .catch(err => {});
+  const checkRepeatableComponent = () => {
+    let finalArr = [];
+    let initArr = [];
+    let status = true;
+    let str = "";
+    let errorCount = 0;
+    if (formState.type_of_bill === "Kachha") {
+      initArr = individualKachhaPurchase;
+    } else {
+      initArr = individualPakkaPurchase;
+    }
+    initArr.map((i, k) => {
+      if (isEdit) {
+        if (!i.total_purchase_cost) {
+          status = false;
+          str =
+            `For purchase no ${k + 1} the purchase cost cannot be empty or 0 ` +
+            `${errorCount !== 0 ? " | " : ""}` +
+            str;
+
+          errorCount = errorCount + 1;
+        }
+      } else {
+        if (i.total_purchase_cost) {
+          finalArr.push(i);
+        }
+      }
+    });
+    if (isEdit) {
+      finalArr = initArr;
+    }
+    if (formState.type_of_bill === "Kachha") {
+      setIndividualKachhaPurchase(finalArr);
+    } else {
+      setIndividualPakkaPurchase(finalArr);
+    }
+
+    return {
+      arr: finalArr,
+      status: status,
+      error: str
+    };
+  };
+
+  const submit = () => {
+    if (isEdit) {
+      addEditData();
+    } else {
+      setOpenDialog(true);
+    }
+  };
+
+  const addEditData = async () => {
+    const { arr, status, error } = checkRepeatableComponent();
+
+    /** Status checks if the repeatable component is proper while editing for adding it is always true */
+    if (status) {
+      let obj = {};
+      if (formState.type_of_bill === "Kachha") {
+        obj = {
+          purchases: formState,
+          kachhaPurchase: arr,
+          pakkaPurchase: individualPakkaPurchase
+        };
+      } else {
+        obj = {
+          purchases: formState,
+          kachhaPurchase: individualKachhaPurchase,
+          pakkaPurchase: arr
+        };
+      }
+      setBackDrop(true);
+      await providerForPost(backend_purchases, obj, Auth.getToken())
+        .then(res => {
+          history.push(PURCHASES);
+          setBackDrop(false);
+        })
+        .catch(err => {});
+    } else {
+      setSnackBar(snackBar => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: error
+      }));
+    }
   };
 
   const addNewPurchase = type => {
@@ -552,6 +633,23 @@ export default function AddPurchases(props) {
     }
   };
 
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleAcceptDialog = () => {
+    setOpenDialog(false);
+    addEditData();
+  };
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -559,6 +657,28 @@ export default function AddPurchases(props) {
           <KeyboardArrowLeftIcon />
         </FAB>
       </GridItem>
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
+      <DialogBox
+        open={openDialog}
+        dialogTitle={""}
+        handleCancel={handleCloseDialog}
+        handleClose={handleCloseDialog}
+        handleAccept={handleAcceptDialog}
+        cancelButton={"Cancel"}
+        acceptButton={"Yes"}
+        isWarning
+        text={[
+          `Please make sure you have added the right purchases and the right
+        quantity as the quantity once added cannot be changed.`,
+          `Are you sure you
+        want to proceed ?`
+        ]}
+      ></DialogBox>
       <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
@@ -626,7 +746,7 @@ export default function AddPurchases(props) {
                       onChange={event => handleChange(event)}
                       labelText="Purchase Date"
                       name="date"
-                      value={new Date()}
+                      value={formState.date || new Date()}
                       id="date"
                       formControlProps={{
                         fullWidth: true
@@ -813,10 +933,6 @@ export default function AddPurchases(props) {
                           formControlProps={{
                             fullWidth: true
                           }}
-                          // onHighlightChange={(event, value) => {
-                          //   console.log("Name :- ", value ? value.name : "");
-
-                          // }}
                           onChange={(event, value) => {
                             handleChangeAutoCompleteForRepetableComponent(
                               "raw_material",
@@ -1023,9 +1139,9 @@ export default function AddPurchases(props) {
                 </GridContainer>
               ))}
           </CardBody>
-          {isView ? null : (
+          {isView || isEmptyString(formState.type_of_bill) ? null : (
             <CardFooter>
-              <Button color="primary" onClick={() => addButton()}>
+              <Button color="primary" onClick={() => submit()}>
                 Save
               </Button>
             </CardFooter>
