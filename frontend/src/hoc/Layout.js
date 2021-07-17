@@ -65,6 +65,7 @@ export default function Layout(props) {
         handleDrawerToggle={handleDrawerToggle}
         open={mobileOpen}
         color={color}
+        openSubMenu={props.openSubMenu}
       />
       <div className={classes.mainPanel} ref={mainPanel}>
         <Navbar handleDrawerToggle={handleDrawerToggle} header={props.header} />

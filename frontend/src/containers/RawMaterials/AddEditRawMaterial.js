@@ -198,7 +198,6 @@ export default function AddEditRawMaterial(props) {
     return newArr;
   };
 
-  console.log(formState);
   const addButton = async () => {
     let arr = filterOutWrongValuesInNameValue();
     setBackDrop(true);

@@ -14,6 +14,7 @@ const PrivateRoute = ({
   component: Component,
   computedMatch: ComputedMatch,
   header: Header,
+  openSubMenu: OpenSubMenu,
   ...otherProps
 }) => {
   if (auth.getToken() !== null) {
@@ -30,7 +31,11 @@ const PrivateRoute = ({
         <Route
           render={otherProps => (
             <>
-              <Layout dashboardRoutes={routes} header={Header}>
+              <Layout
+                dashboardRoutes={routes}
+                header={Header}
+                openSubMenu={OpenSubMenu}
+              >
                 <Component
                   {...otherProps}
                   urlParams={ComputedMatch}

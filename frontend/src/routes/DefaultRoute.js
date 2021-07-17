@@ -5,7 +5,6 @@ import { Auth, NotFoundPage } from "../components";
 import { ADMIN, LOGIN, RAWMATERIALSVIEW, STAFF } from "../paths";
 
 const DefaultRoute = props => {
-  console.log("Default route");
   const auth = Auth.getToken();
   const userInfo = Auth.getUserInfo();
   if (auth !== null) {

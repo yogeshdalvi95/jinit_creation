@@ -3,7 +3,8 @@ export {
   RawMaterials,
   Units,
   AddEditRawMaterial,
-  AddEditUnit
+  AddEditUnit,
+  AddDailyUsage
 } from "./RawMaterials";
 export { Login } from "./Login";
 export { Users } from "./Users";

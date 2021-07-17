@@ -21,50 +21,123 @@ import {
   ADDRAWMATERIALS,
   UNITS,
   VIEWPURCHASES,
-  EDITSELLER
+  EDITSELLER,
+  EDITPURCHASES,
+  EDITRAWMATERIALS,
+  LISTREADYMATERIAL,
+  ADDREADYMATERIAL,
+  EDITREADYMATERIAL,
+  VIEWREADYMATERIAL,
+  DAILYUSAGERAWMATERIALS
 } from "../paths";
 
 const purchases = "shopping_cart";
 const departments = "apartment";
 
-const rawMaterialPath = [RAWMATERIALSVIEW, ADDRAWMATERIALS, UNITS];
+/** Raw material and units */
+const rawMaterialAndUnitPath = [
+  RAWMATERIALSVIEW,
+  ADDRAWMATERIALS,
+  EDITRAWMATERIALS,
+  UNITS,
+  DEPARTMENTS,
+  ADDDEPARTMENTS,
+  DAILYUSAGERAWMATERIALS
+];
+const rawMaterialPathList = [
+  RAWMATERIALSVIEW,
+  ADDRAWMATERIALS,
+  EDITRAWMATERIALS
+];
+const unitsPathList = [UNITS];
 const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
-const purchasesPath = [
+const dailyUsage = [DAILYUSAGERAWMATERIALS];
+
+/**---------------------------- */
+
+const readyMaterialPath = [
+  LISTREADYMATERIAL,
+  ADDREADYMATERIAL,
+  EDITREADYMATERIAL,
+  VIEWREADYMATERIAL
+];
+
+/** Purchases and sellers path */
+const purchasesAndSellersPath = [
   PURCHASES,
   ADDPURCHASES,
+  VIEWPURCHASES,
+  EDITPURCHASES,
   SELLERS,
   EDITSELLER,
-  ADDSELLER,
-  VIEWPURCHASES
+  ADDSELLER
 ];
+
+const purchasesPath = [PURCHASES, ADDPURCHASES, VIEWPURCHASES, EDITPURCHASES];
+
+const sellerPath = [SELLERS, EDITSELLER, ADDSELLER];
+/**--------------------------------------------- */
 //const sellerPath = [SELLERS, ADDSELLER];
 const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
 
 export const DashboardStaffRoutes = [
   {
-    path: RAWMATERIALSVIEW,
-    name: "Raw Materials",
-    icon: Dashboard,
-    component: DashboardScreen,
-    layout: "",
-    pathList: rawMaterialPath
-  },
-  {
-    path: PURCHASES,
     name: "Purchases",
-    icon: purchases,
-    component: DashboardScreen,
     layout: "",
-    pathList: purchasesPath
+    pathList: purchasesAndSellersPath,
+    children: [
+      {
+        path: PURCHASES,
+        name: "Purchases",
+        layout: "",
+        pathList: purchasesPath
+      },
+      {
+        path: SELLERS,
+        name: "Sellers",
+        layout: "",
+        pathList: sellerPath
+      }
+    ]
   },
   {
-    path: DEPARTMENTS,
-    name: "Departments",
-    icon: departments,
-    component: Departments,
+    name: "Raw Materials",
     layout: "",
-    pathList: departmentsPath
+    pathList: rawMaterialAndUnitPath,
+    children: [
+      {
+        path: RAWMATERIALSVIEW,
+        name: "Raw Materials",
+        layout: "",
+        pathList: rawMaterialPathList
+      },
+      {
+        path: DAILYUSAGERAWMATERIALS,
+        name: "Add Daily Usage",
+        layout: "",
+        pathList: dailyUsage
+      },
+      {
+        path: DEPARTMENTS,
+        name: "Departments",
+        layout: "",
+        pathList: departmentsPath
+      },
+      {
+        path: UNITS,
+        name: "Units",
+        layout: "",
+        pathList: unitsPathList
+      }
+    ]
+  },
+  {
+    path: LISTREADYMATERIAL,
+    name: "Ready Materials",
+    icon: Dashboard,
+    layout: "",
+    pathList: readyMaterialPath
   }
 ];
 
@@ -73,33 +146,65 @@ export const DashboardAdminRoutes = [
     path: STAFF,
     name: "Staff Users",
     icon: "manage_accounts",
-    component: Staff,
     layout: "",
-    pathList: [STAFF, ADDSTAFF]
+    pathList: staffPath
   },
   {
-    path: PURCHASES,
     name: "Purchases",
-    icon: purchases,
-    component: DashboardScreen,
     layout: "",
-    pathList: purchasesPath
+    pathList: purchasesAndSellersPath,
+    children: [
+      {
+        path: PURCHASES,
+        name: "Purchases",
+        layout: "",
+        pathList: purchasesPath
+      },
+      {
+        path: SELLERS,
+        name: "Sellers",
+        layout: "",
+        pathList: sellerPath
+      }
+    ]
   },
   {
-    path: DEPARTMENTS,
-    name: "Departments",
-    icon: departments,
-    component: Departments,
-    layout: "",
-    pathList: departmentsPath
-  },
-  {
-    path: RAWMATERIALSVIEW,
     name: "Raw Materials",
-    icon: Dashboard,
-    component: DashboardScreen,
     layout: "",
-    pathList: rawMaterialPath
+    pathList: rawMaterialAndUnitPath,
+    children: [
+      {
+        path: RAWMATERIALSVIEW,
+        name: "Raw Materials",
+        layout: "",
+        pathList: rawMaterialPathList
+      },
+      {
+        path: DAILYUSAGERAWMATERIALS,
+        name: "Add Daily Usage",
+        layout: "",
+        pathList: dailyUsage
+      },
+      {
+        path: DEPARTMENTS,
+        name: "Departments",
+        layout: "",
+        pathList: departmentsPath
+      },
+      {
+        path: UNITS,
+        name: "Units",
+        layout: "",
+        pathList: unitsPathList
+      }
+    ]
+  },
+  {
+    path: LISTREADYMATERIAL,
+    name: "Ready Materials",
+    icon: Dashboard,
+    layout: "",
+    pathList: readyMaterialPath
   }
 ];
 
@@ -108,7 +213,6 @@ export const SuperAdminDashboardRoutes = [
     path: ADMIN,
     name: "Admin Users",
     icon: GroupIcon,
-    component: Admin,
     layout: "",
     pathList: adminPath
   },
@@ -116,32 +220,64 @@ export const SuperAdminDashboardRoutes = [
     path: STAFF,
     name: "Staff Users",
     icon: GroupIcon,
-    component: Staff,
     layout: "",
     pathList: staffPath
   },
   {
-    path: PURCHASES,
     name: "Purchases",
-    icon: purchases,
-    component: DashboardScreen,
     layout: "",
-    pathList: purchasesPath
+    pathList: purchasesAndSellersPath,
+    children: [
+      {
+        path: PURCHASES,
+        name: "Purchases",
+        layout: "",
+        pathList: purchasesPath
+      },
+      {
+        path: SELLERS,
+        name: "Sellers",
+        layout: "",
+        pathList: sellerPath
+      }
+    ]
   },
   {
-    path: DEPARTMENTS,
-    name: "Departments",
-    icon: departments,
-    component: Departments,
-    layout: "",
-    pathList: departmentsPath
-  },
-  {
-    path: RAWMATERIALSVIEW,
     name: "Raw Materials",
-    icon: Dashboard,
-    component: DashboardScreen,
     layout: "",
-    pathList: rawMaterialPath
+    pathList: rawMaterialAndUnitPath,
+    children: [
+      {
+        path: RAWMATERIALSVIEW,
+        name: "Raw Materials",
+        layout: "",
+        pathList: rawMaterialPathList
+      },
+      {
+        path: DAILYUSAGERAWMATERIALS,
+        name: "Add Daily Usage",
+        layout: "",
+        pathList: dailyUsage
+      },
+      {
+        path: DEPARTMENTS,
+        name: "Departments",
+        layout: "",
+        pathList: departmentsPath
+      },
+      {
+        path: UNITS,
+        name: "Units",
+        layout: "",
+        pathList: unitsPathList
+      }
+    ]
+  },
+  {
+    path: LISTREADYMATERIAL,
+    name: "Ready Materials",
+    icon: Dashboard,
+    layout: "",
+    pathList: readyMaterialPath
   }
 ];

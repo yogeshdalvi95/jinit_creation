@@ -215,6 +215,13 @@ const sidebarStyle = theme => ({
         ",.2)"
     }
   },
+  transparent: {
+    backgroundColor: "rgba(200, 200, 200, 0.2)",
+    "&:hover,&:focus": {
+      backgroundColor: "rgba(200, 200, 200, 0.2)"
+    }
+  },
+
   green: {
     backgroundColor: successColor[0],
     boxShadow:

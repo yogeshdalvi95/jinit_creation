@@ -30,23 +30,6 @@ export default function DialogBox(props) {
             {props.text.map(t => (
               <div className={styles.secondText}>{t}</div>
             ))}
-
-            {/* <p style="display: flex; z-index: 1; flex-wrap: wrap; align-items: center; justify-content: center; width: 100%; margin: 1.25em auto 0px;">
-                <a
-                  href="#"
-                  class="btn btn-lg btn-link jss397 jss403"
-                  style="margin-right: 8px;"
-                >
-                  Cancel
-                </a>
-                <a
-                  href="#"
-                  class="btn btn-lg btn-primary jss397 jss401 "
-                  style="margin-right: 8px; border-color: rgb(40, 96, 144); box-shadow: rgba(0, 0, 0, 0.075) 0px 1px 1px inset, rgb(165, 202, 234) 0px 0px 8px;"
-                >
-                  Yes, delete it!
-                </a>
-              </p> */}
             {props.children}
           </DialogContentText>
         </DialogContent>
