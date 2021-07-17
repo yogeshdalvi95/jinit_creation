@@ -25,6 +25,7 @@ import { providerForGet, providerForDelete } from "../../api";
 import { useHistory } from "react-router-dom";
 import {
   ADDRAWMATERIALS,
+  DAILYUSAGERAWMATERIALS,
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS
 } from "../../paths";
@@ -215,7 +216,9 @@ export default function RawMaterials() {
     history.push(ADDRAWMATERIALS);
   };
 
-  const handleAddDailyCount = row => {};
+  const handleAddDailyCount = row => {
+    history.push(DAILYUSAGERAWMATERIALS);
+  };
 
   return (
     <>
