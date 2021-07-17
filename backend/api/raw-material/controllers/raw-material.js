@@ -43,7 +43,6 @@ module.exports = {
       .query("raw-material-and-quantity-for-ready-material")
       .findOne({ raw_material: id });
 
-    console.log(checkIfPresentInPurchases, checkIfPresentInReadyMaterial);
     if (!checkIfPresentInPurchases && !checkIfPresentInReadyMaterial) {
       await strapi.query("raw-material").delete({ id: id });
       ctx.send(200);

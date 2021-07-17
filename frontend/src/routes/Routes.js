@@ -3,7 +3,6 @@ import { Switch } from "react-router-dom";
 import {
   LOGIN,
   RAWMATERIALSVIEW,
-  PROFILE,
   SELLERS,
   PURCHASES,
   ADMIN,
@@ -21,11 +20,11 @@ import {
   EDITSELLER,
   EDITPURCHASES,
   EDITRAWMATERIALS,
-  VIEWRAWMATERIALS
+  VIEWRAWMATERIALS,
+  DAILYUSAGERAWMATERIALS
 } from "../paths";
 import {
   Login,
-  Dashboard,
   Sellers,
   Admin,
   Staff,
@@ -39,32 +38,27 @@ import {
   Units,
   AddEditRawMaterial,
   AddEditUnit,
-  AddSeller
+  AddSeller,
+  AddDailyUsage
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
-import RouteWithTabLayoutForPurchase from "./RouteWithTabLayoutForPurchase";
-import { RouteWithTabLayoutForRawMaterial } from ".";
 
 const Routes = () => {
   return (
     <div>
       <Switch>
-        <PrivateRoute
-          path={PROFILE}
-          exact
-          component={Dashboard}
-          header={"Profile"}
-        />
         {/*** Admin */}
         <PrivateRoute
+          openSubMenu={false}
           path={ADMIN}
           exact
           component={Admin}
           header={"Admin Users"}
         />
         <PrivateRoute
+          openSubMenu={false}
           path={ADDADMIN}
           exact
           component={AddAdmin}
@@ -73,34 +67,23 @@ const Routes = () => {
 
         {/** Add Staff */}
         <PrivateRoute
+          openSubMenu={false}
           path={STAFF}
           exact
           component={Staff}
           header={"Staff Users"}
         />
         <PrivateRoute
+          openSubMenu={false}
           path={ADDSTAFF}
           exact
           component={AddStaff}
           header={"Add Staff"}
         />
 
-        {/** Add Departments */}
-        <PrivateRoute
-          path={DEPARTMENTS}
-          exact
-          component={Departments}
-          header={"Departments"}
-        />
-        <PrivateRoute
-          path={ADDDEPARTMENTS}
-          exact
-          component={AddDepartment}
-          header={"Add Department"}
-        />
-
         {/** Sellers */}
-        <RouteWithTabLayoutForPurchase
+        <PrivateRoute
+          openSubMenu={true}
           path={SELLERS}
           exact
           component={Sellers}
@@ -109,12 +92,14 @@ const Routes = () => {
           value={1}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={ADDSELLER}
           exact
           component={AddSeller}
           header={"Add Seller"}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={EDITSELLER}
           exact
           component={AddSeller}
@@ -122,7 +107,8 @@ const Routes = () => {
         />
 
         {/** Purchases */}
-        <RouteWithTabLayoutForPurchase
+        <PrivateRoute
+          openSubMenu={true}
           path={PURCHASES}
           exact
           component={Purchases}
@@ -131,18 +117,21 @@ const Routes = () => {
           value={0}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={ADDPURCHASES}
           exact
           component={AddPurchases}
           header={"Add Purchases"}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={EDITPURCHASES}
           exact
           component={AddPurchases}
           header={"Edit Purchase"}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={VIEWPURCHASES}
           exact
           component={AddPurchases}
@@ -150,7 +139,8 @@ const Routes = () => {
         />
 
         {/** Raw materials */}
-        <RouteWithTabLayoutForRawMaterial
+        <PrivateRoute
+          openSubMenu={true}
           path={RAWMATERIALSVIEW}
           exact
           addComponentPath={ADDRAWMATERIALS}
@@ -159,26 +149,37 @@ const Routes = () => {
           value={0}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={ADDRAWMATERIALS}
           exact
           component={AddEditRawMaterial}
           header={"Add New Raw Material"}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={EDITRAWMATERIALS}
           exact
           component={AddEditRawMaterial}
           header={"Edit Raw Material"}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={VIEWRAWMATERIALS}
           exact
           component={AddEditRawMaterial}
           header={"View Raw Material"}
         />
+        <PrivateRoute
+          openSubMenu={true}
+          path={DAILYUSAGERAWMATERIALS}
+          exact
+          component={AddDailyUsage}
+          header={"Add Daily Usage"}
+        />
 
         {/** Units */}
-        <RouteWithTabLayoutForRawMaterial
+        <PrivateRoute
+          openSubMenu={true}
           path={UNITS}
           exact
           addComponentPath={ADDUNITS}
@@ -187,11 +188,29 @@ const Routes = () => {
           value={1}
         />
         <PrivateRoute
+          openSubMenu={true}
           path={ADDUNITS}
           exact
           component={AddEditUnit}
           header={"Add New Unit"}
         />
+
+        <PrivateRoute
+          openSubMenu={false}
+          path={DEPARTMENTS}
+          exact
+          component={Departments}
+          header={"Departments"}
+        />
+        <PrivateRoute
+          openSubMenu={false}
+          path={ADDDEPARTMENTS}
+          exact
+          component={AddDepartment}
+          header={"Add Department"}
+        />
+
+        {/** Ready Material */}
 
         <PublicRoute path={LOGIN} exact component={Login} />
         <DefaultRoute path="*" exact />

@@ -118,7 +118,6 @@ const Login = props => {
     let isValid = false;
     let error = {};
     error = setErrors(values, form);
-    console.log("Over here ", error);
     if (checkEmpty(error)) {
       isValid = true;
     } else {
@@ -177,9 +176,6 @@ const Login = props => {
       message: ""
     }));
   };
-
-  console.log("values", values);
-  console.log("error", error);
 
   return (
     <div>

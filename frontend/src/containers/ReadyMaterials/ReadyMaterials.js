@@ -43,7 +43,6 @@ export default function ReadyMaterials() {
         .then(response => response.json())
         .then(result => {
           let data = convertData(result.data);
-          console.log(data);
           resolve({
             data: data,
             page: result.page - 1,

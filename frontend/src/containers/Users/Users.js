@@ -20,9 +20,7 @@ const useStyles = makeStyles(styles);
 export default function Users() {
   const classes = useStyles();
 
-  const onAddClick = () => {
-    console.log("button clicked");
-  };
+  const onAddClick = () => {};
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>

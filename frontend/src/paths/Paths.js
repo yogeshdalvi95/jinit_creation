@@ -5,6 +5,7 @@ export const RAWMATERIALSVIEW = "/raw-materials";
 export const ADDRAWMATERIALS = "/add-raw-materials";
 export const EDITRAWMATERIALS = "/edit-raw-material";
 export const VIEWRAWMATERIALS = "/view-raw-material";
+export const DAILYUSAGERAWMATERIALS = "/raw-material-daily-usage";
 
 export const USERS = "/users";
 export const PROFILE = "/profile";
@@ -29,3 +30,8 @@ export const ADDDEPARTMENTS = "/add-departments";
 
 export const UNITS = "/units";
 export const ADDUNITS = "/add-unit";
+
+export const LISTREADYMATERIAL = "/list-ready-material";
+export const ADDREADYMATERIAL = "/add-ready-material";
+export const EDITREADYMATERIAL = "/edit-ready-material";
+export const VIEWREADYMATERIAL = "/ready-material";

@@ -13,55 +13,154 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Icon from "@material-ui/core/Icon";
 // core components
 import AdminNavbarLinks from "../Navbars/AdminNavbarLinks.js";
-import { ExpandLess, ExpandMore } from "@material-ui/icons";
+import IconExpandLess from "@material-ui/icons/ExpandLess";
+import IconExpandMore from "@material-ui/icons/ExpandMore";
 
 import styles from "../../assets/jss/material-dashboard-react/components/sidebarStyle.js";
+import { isEmptyString } from "../../Utils/index.js";
+import { Collapse, Divider } from "@material-ui/core";
 
 const useStyles = makeStyles(styles);
 
 export default function Sidebar(props) {
+  const { color, logo, image, logoText, routes } = props;
   const classes = useStyles();
   let location = useLocation();
+  const [subMenu, setSubMenu] = React.useState({
+    open: props.openSubMenu
+  });
+
+  function handleClick(name) {
+    setSubMenu(subMenu => ({
+      ...subMenu,
+      [name]: !subMenu[name]
+    }));
+  }
 
   // verifies if routeName is the one active (in browser input)
   function activeRoute(pathList) {
     return pathList.indexOf(location.pathname) > -1;
   }
 
-  const { color, logo, image, logoText, routes } = props;
-  var links = (
-    <List className={classes.list}>
-      {routes.map((prop, key) => {
-        var activePro = " ";
-        var listItemClasses;
+  /** Set all the parent menu keys in subMenu variable when the parent menu has children */
+  React.useEffect(() => {
+    let temp_sub_menu = {};
+    for (let i in routes) {
+      let value = false;
+      if (activeRoute(routes[i].pathList) && props.openSubMenu) {
+        value = true;
+      }
+      if (routes[i].children && routes[i].children.length) {
+        temp_sub_menu = {
+          ...temp_sub_menu,
+          [routes[i].name]: value
+        };
+      }
+    }
+    setSubMenu(temp_sub_menu);
+  }, [routes]);
 
-        listItemClasses = classNames({
-          [" " + classes[color]]: activeRoute(prop.pathList)
-        });
+  const getLinks = arr => {
+    return (
+      <List className={classes.list}>
+        {arr.map((prop, key) => {
+          const isExpandable = prop.children && prop.children.length > 0;
+          var activePro = " ";
+          var listItemClasses;
+          listItemClasses = classNames({
+            [" " + classes[color]]: activeRoute(prop.pathList)
+          });
 
-        const whiteFontClasses = classNames({
-          [" " + classes.whiteFont]: activeRoute(prop.pathList)
-        });
+          var listItemClassesWhenChildren = classNames({
+            [" " + classes["transparent"]]: activeRoute(prop.pathList)
+          });
 
-        return (
-          <NavLink
-            to={prop.layout + prop.path}
-            className={activePro + classes.item}
-            activeClassName="active"
-            key={key}
-          >
-            <ListItem button className={classes.itemLink + listItemClasses}>
-              <ListItemText
-                primary={prop.name}
-                className={classNames(classes.itemText, whiteFontClasses)}
-                disableTypography={true}
+          const whiteFontClasses = classNames({
+            [" " + classes.whiteFont]: activeRoute(prop.pathList)
+          });
+
+          const MenuItemChildren = isExpandable ? (
+            <Collapse in={subMenu[prop.name]} timeout="auto" unmountOnExit>
+              <Divider
+                style={{
+                  color: "#FFFFFF"
+                }}
               />
-            </ListItem>
-          </NavLink>
-        );
-      })}
-    </List>
-  );
+              <div
+                style={{
+                  marginLeft: "1rem"
+                }}
+              >
+                {getLinks(prop.children)}
+              </div>
+            </Collapse>
+          ) : null;
+
+          if (isExpandable) {
+            return (
+              <>
+                <ListItem
+                  className={classes.itemLink + listItemClassesWhenChildren}
+                  style={{
+                    display: "flex"
+                  }}
+                  button
+                  onClick={() => {
+                    handleClick(prop.name);
+                  }}
+                >
+                  <ListItemText
+                    primary={prop.name}
+                    className={classNames(classes.itemText, whiteFontClasses)}
+                    disableTypography={true}
+                  />
+                  {isExpandable && !subMenu[prop.name] && (
+                    <IconExpandMore
+                      style={{
+                        color: "#FFFFFF"
+                      }}
+                      onClick={() => {
+                        handleClick(prop.name);
+                      }}
+                    />
+                  )}
+                  {isExpandable && subMenu[prop.name] && (
+                    <IconExpandLess
+                      style={{
+                        color: "#FFFFFF"
+                      }}
+                      onClick={() => {
+                        handleClick(prop.name);
+                      }}
+                    />
+                  )}
+                </ListItem>
+                {MenuItemChildren}
+              </>
+            );
+          } else {
+            return (
+              <NavLink
+                to={prop.layout + prop.path}
+                className={activePro + classes.item}
+                activeClassName="active"
+                key={key}
+              >
+                <ListItem button className={classes.itemLink + listItemClasses}>
+                  <ListItemText
+                    primary={prop.name}
+                    className={classNames(classes.itemText, whiteFontClasses)}
+                    disableTypography={true}
+                  />
+                </ListItem>
+              </NavLink>
+            );
+          }
+        })}
+      </List>
+    );
+  };
+
   var brand = (
     <div className={classes.logo}>
       <a
@@ -96,7 +195,7 @@ export default function Sidebar(props) {
           {brand}
           <div className={classes.sidebarWrapper}>
             <AdminNavbarLinks />
-            {links}
+            {getLinks(routes)}
           </div>
           {image !== undefined ? (
             <div
@@ -118,7 +217,7 @@ export default function Sidebar(props) {
           }}
         >
           {brand}
-          <div className={classes.sidebarWrapper}>{links}</div>
+          <div className={classes.sidebarWrapper}>{getLinks(routes)}</div>
           {image !== undefined ? (
             <div
               className={classes.background}

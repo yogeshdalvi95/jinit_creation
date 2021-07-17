@@ -3,9 +3,13 @@ import React, { useState } from "react";
 import {
   Auth,
   Button,
+  Card,
+  CardBody,
+  CardHeader,
   CustomAutoComplete,
   CustomCheckBox,
   CustomInput,
+  FAB,
   GridContainer,
   GridItem,
   SnackBarComponent,
@@ -19,9 +23,16 @@ import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet, providerForDelete } from "../../api";
 import { useHistory } from "react-router-dom";
-import { EDITRAWMATERIALS, VIEWRAWMATERIALS } from "../../paths";
+import {
+  ADDRAWMATERIALS,
+  EDITRAWMATERIALS,
+  VIEWRAWMATERIALS
+} from "../../paths";
 import { isEmptyString } from "../../Utils";
 import { useEffect } from "react";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+import AddIcon from "@material-ui/icons/Add";
+import DateRangeIcon from "@material-ui/icons/DateRange";
 
 const useStyles = makeStyles(styles);
 export default function RawMaterials() {
@@ -200,6 +211,11 @@ export default function RawMaterials() {
       }));
     }
   };
+  const handleAdd = () => {
+    history.push(ADDRAWMATERIALS);
+  };
+
+  const handleAddDailyCount = row => {};
 
   return (
     <>
@@ -210,246 +226,280 @@ export default function RawMaterials() {
         handleClose={snackBarHandleClose}
       />
       <GridContainer>
-        <GridItem xs={12} sm={12} md={3}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Name"
-            value={filter.name_contains || ""}
-            name="name_contains"
-            id="name"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={3}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Color"
-            value={filter.color_contains || ""}
-            name="color_contains"
-            id="color"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={3}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Size"
-            value={filter.size_contains || ""}
-            name="size_contains"
-            id="size"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={3}>
-          <CustomAutoComplete
-            id="department-name"
-            labelText="Department"
-            autocompleteId={"department"}
-            optionKey={"name"}
-            options={departments}
-            formControlProps={{
-              fullWidth: true
-            }}
-            onChange={(event, value) => {
-              if (value !== null) {
-                setFilter(filter => ({
-                  ...filter,
-                  department: value.id
-                }));
-              } else {
-                delete filter.department;
-                setFilter(filter => ({
-                  ...filter
-                }));
-              }
-            }}
-            value={
-              departments[
-                departments.findIndex(function (item, i) {
-                  return item.id === filter.department;
-                })
-              ] || null
-            }
-          />
-        </GridItem>
-      </GridContainer>
-      <GridContainer>
-        <GridItem xs={12} sm={12} md={2}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Costing"
-            value={filter.costing_contains || ""}
-            name="costing_contains"
-            type="number"
-            id="costing"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={2}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Balance From"
-            value={filter.balance_gte || ""}
-            name="balance_gte"
-            type="number"
-            id="balance"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={2}>
-          <CustomInput
-            onChange={event => handleChange(event)}
-            labelText="Balance To"
-            value={filter.balance_lte || ""}
-            name="balance_lte"
-            type="number"
-            id="balance"
-            formControlProps={{
-              fullWidth: true
-            }}
-          />
-        </GridItem>
-        <GridItem xs={12} sm={12} md={2}>
-          <CustomCheckBox
-            onChange={event => {
-              if (event.target.checked) {
-                setFilter(filter => ({
-                  ...filter,
-                  is_die: true
-                }));
-              } else {
-                delete filter.is_die;
-                setFilter(filter => ({
-                  ...filter
-                }));
-              }
-            }}
-            labelText="Die"
-            name="is_die"
-            checked={filter.is_die || false}
-            id="die"
-          />
-        </GridItem>
-        <GridItem
-          xs={12}
-          sm={12}
-          md={4}
-          style={{
-            marginTop: "27px"
-          }}
-        >
-          <Button
-            color="primary"
-            onClick={() => {
-              tableRef.current.onQueryChange();
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            color="primary"
-            onClick={() => {
-              delete filter["name_contains"];
-              delete filter["color_contains"];
-              delete filter["size_contains"];
-              delete filter["department"];
-              delete filter["costing_contains"];
-              delete filter["balance_gte"];
-              delete filter["balance_lte"];
-              delete filter["is_die"];
-              setFilter(filter => ({
-                ...filter,
-                _sort: "name:asc"
-              }));
-              tableRef.current.onQueryChange();
-            }}
-          >
-            Cancel
-          </Button>
-        </GridItem>
-      </GridContainer>
-      <br />
-      <Table
-        tableRef={tableRef}
-        title="Raw Materials"
-        columns={columns}
-        data={async query => {
-          return await getRawMaterialsData(query.page + 1, query.pageSize);
-        }}
-        actions={[
-          rowData => ({
-            icon: () => <EditIcon fontSize="small" />,
-            tooltip: "Edit",
-            onClick: (event, rowData) => {
-              handleTableAction(rowData, false);
-            }
-          }),
-          rowData => ({
-            icon: () => <VisibilityIcon fontSize="small" />,
-            tooltip: "View",
-            onClick: (event, rowData) => {
-              handleTableAction(rowData, true);
-            }
-          })
-        ]}
-        localization={{
-          body: {
-            editRow: {
-              deleteText: `Are you sure you want to delete this Raw Material?`,
-              saveTooltip: "Delete"
-            }
-          }
-        }}
-        editable={{
-          onRowDelete: oldData =>
-            new Promise(resolve => {
-              setTimeout(async () => {
-                await providerForDelete(
-                  backend_raw_materials,
-                  oldData.id,
-                  Auth.getToken()
-                )
-                  .then(async res => {
-                    setSnackBar(snackBar => ({
-                      ...snackBar,
-                      show: true,
-                      severity: "success",
-                      message: "Successfully deleted " + oldData.name
-                    }));
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    align={"end"}
+                    size={"small"}
+                    onClick={() => handleAdd()}
+                  >
+                    <AddIcon />
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Name"
+                    value={filter.name_contains || ""}
+                    name="name_contains"
+                    id="name"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Color"
+                    value={filter.color_contains || ""}
+                    name="color_contains"
+                    id="color"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Size"
+                    value={filter.size_contains || ""}
+                    name="size_contains"
+                    id="size"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomAutoComplete
+                    id="department-name"
+                    labelText="Department"
+                    autocompleteId={"department"}
+                    optionKey={"name"}
+                    options={departments}
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    onChange={(event, value) => {
+                      if (value !== null) {
+                        setFilter(filter => ({
+                          ...filter,
+                          department: value.id
+                        }));
+                      } else {
+                        delete filter.department;
+                        setFilter(filter => ({
+                          ...filter
+                        }));
+                      }
+                    }}
+                    value={
+                      departments[
+                        departments.findIndex(function (item, i) {
+                          return item.id === filter.department;
+                        })
+                      ] || null
+                    }
+                  />
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Costing"
+                    value={filter.costing_contains || ""}
+                    name="costing_contains"
+                    type="number"
+                    id="costing"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Balance From"
+                    value={filter.balance_gte || ""}
+                    name="balance_gte"
+                    type="number"
+                    id="balance"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Balance To"
+                    value={filter.balance_lte || ""}
+                    name="balance_lte"
+                    type="number"
+                    id="balance"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomCheckBox
+                    onChange={event => {
+                      if (event.target.checked) {
+                        setFilter(filter => ({
+                          ...filter,
+                          is_die: true
+                        }));
+                      } else {
+                        delete filter.is_die;
+                        setFilter(filter => ({
+                          ...filter
+                        }));
+                      }
+                    }}
+                    labelText="Die"
+                    name="is_die"
+                    checked={filter.is_die || false}
+                    id="die"
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={4}
+                  style={{
+                    marginTop: "27px"
+                  }}
+                >
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      delete filter["name_contains"];
+                      delete filter["color_contains"];
+                      delete filter["size_contains"];
+                      delete filter["department"];
+                      delete filter["costing_contains"];
+                      delete filter["balance_gte"];
+                      delete filter["balance_lte"];
+                      delete filter["is_die"];
+                      setFilter(filter => ({
+                        ...filter,
+                        _sort: "name:asc"
+                      }));
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </GridItem>
+              </GridContainer>
+              <br />
+              <Table
+                tableRef={tableRef}
+                title="Raw Materials"
+                columns={columns}
+                data={async query => {
+                  return await getRawMaterialsData(
+                    query.page + 1,
+                    query.pageSize
+                  );
+                }}
+                actions={[
+                  rowData => ({
+                    icon: () => <EditIcon fontSize="small" />,
+                    tooltip: "Edit",
+                    onClick: (event, rowData) => {
+                      handleTableAction(rowData, false);
+                    }
+                  }),
+                  rowData => ({
+                    icon: () => <VisibilityIcon fontSize="small" />,
+                    tooltip: "View",
+                    onClick: (event, rowData) => {
+                      handleTableAction(rowData, true);
+                    }
+                  }),
+                  rowData => ({
+                    icon: () => <DateRangeIcon fontSize="small" />,
+                    tooltip: "Add Daily Count",
+                    onClick: (event, rowData) => {
+                      handleAddDailyCount(rowData);
+                    }
                   })
-                  .catch(err => {
-                    setSnackBar(snackBar => ({
-                      ...snackBar,
-                      show: true,
-                      severity: "error",
-                      message: "Error deleting " + oldData.name
-                    }));
-                  });
-                resolve();
-              }, 1000);
-            })
-        }}
-        options={{
-          pageSize: 10,
-          actionsColumnIndex: -1,
-          search: false,
-          sorting: true,
-          thirdSortClick: false
-        }}
-        onOrderChange={(orderedColumnId, orderDirection) => {
-          orderFunc(orderedColumnId, orderDirection);
-        }}
-      />
+                ]}
+                localization={{
+                  body: {
+                    editRow: {
+                      deleteText: `Are you sure you want to delete this Raw Material?`,
+                      saveTooltip: "Delete"
+                    }
+                  }
+                }}
+                editable={{
+                  onRowDelete: oldData =>
+                    new Promise(resolve => {
+                      setTimeout(async () => {
+                        await providerForDelete(
+                          backend_raw_materials,
+                          oldData.id,
+                          Auth.getToken()
+                        )
+                          .then(async res => {
+                            setSnackBar(snackBar => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "success",
+                              message: "Successfully deleted " + oldData.name
+                            }));
+                          })
+                          .catch(err => {
+                            setSnackBar(snackBar => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "error",
+                              message: "Error deleting " + oldData.name
+                            }));
+                          });
+                        resolve();
+                      }, 1000);
+                    })
+                }}
+                options={{
+                  pageSize: 10,
+                  actionsColumnIndex: -1,
+                  search: false,
+                  sorting: true,
+                  thirdSortClick: false
+                }}
+                onOrderChange={(orderedColumnId, orderDirection) => {
+                  orderFunc(orderedColumnId, orderDirection);
+                }}
+              />
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
       <Backdrop className={classes.backdrop} open={openBackDrop}>
         <CircularProgress color="inherit" />
       </Backdrop>

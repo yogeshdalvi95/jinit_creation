@@ -16,6 +16,7 @@
     "moment": "^2.29.1",
     "perfect-scrollbar": "^1.5.1",
     "react": "^17.0.2",
+    "react-big-calendar": "^0.33.5",
     "react-dom": "^17.0.2",
     "react-material-ui-carousel": "^2.2.7",
     "react-router-dom": "^5.2.0",
