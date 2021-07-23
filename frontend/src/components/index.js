@@ -34,4 +34,4 @@ export { CustomTabs } from "./CustomTabs";
 export { CustomDropDown } from "./CustomDropDown";
 export { DatePicker } from "./DatePicker";
 export { CustomCheckBox } from "./CustomCheckBox";
-export { DialogBox } from "./DialogBox";
+export { DialogBox, DialogBoxForSelectingRawMaterial } from "./DialogBox";

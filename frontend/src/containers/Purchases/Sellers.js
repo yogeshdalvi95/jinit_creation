@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import { Auth, SnackBarComponent, Table } from "../../components";
+import {
+  Auth,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CustomInput,
+  FAB,
+  GridContainer,
+  GridItem,
+  SnackBarComponent,
+  Table
+} from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_sellers } from "../../constants";
@@ -8,7 +20,10 @@ import styles from "../../assets/jss/material-dashboard-react/controllers/common
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { providerForGet } from "../../api";
-import { EDITSELLER } from "../../paths";
+import { ADDSELLER, EDITSELLER } from "../../paths";
+import { isEmptyString } from "../../Utils";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+import AddIcon from "@material-ui/icons/Add";
 
 const useStyles = makeStyles(styles);
 export default function Sellers() {
@@ -104,6 +119,24 @@ export default function Sellers() {
     }));
   };
 
+  const handleAdd = () => {
+    history.push(ADDSELLER);
+  };
+
+  const handleChange = event => {
+    if (isEmptyString(event.target.value)) {
+      delete filter[event.target.name];
+      setFilter(filter => ({
+        ...filter
+      }));
+    } else {
+      setFilter(filter => ({
+        ...filter,
+        [event.target.name]: event.target.value
+      }));
+    }
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -112,33 +145,103 @@ export default function Sellers() {
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
-      <Table
-        tableRef={tableRef}
-        title="Purchases"
-        columns={columns}
-        data={async query => {
-          return await getPurchasesData(query.page + 1, query.pageSize);
-        }}
-        actions={[
-          rowData => ({
-            icon: () => <EditOutlinedIcon fontSize="small" />,
-            tooltip: "Edit",
-            onClick: (event, rowData) => {
-              handleEdit(rowData);
-            }
-          })
-        ]}
-        options={{
-          pageSize: 10,
-          actionsColumnIndex: -1,
-          search: false,
-          sorting: true,
-          thirdSortClick: false
-        }}
-        onOrderChange={(orderedColumnId, orderDirection) => {
-          orderFunc(orderedColumnId, orderDirection);
-        }}
-      />
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    align={"end"}
+                    size={"small"}
+                    onClick={() => handleAdd()}
+                  >
+                    <AddIcon />
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Seller Name"
+                    value={filter.seller_name_contains || ""}
+                    name="seller_name_contains"
+                    id="seller_name_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={4}
+                  style={{
+                    marginTop: "27px"
+                  }}
+                >
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      delete filter["seller_name_contains"];
+                      setFilter(filter => ({
+                        ...filter,
+                        _sort: "seller_name:asc"
+                      }));
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </GridItem>
+              </GridContainer>
+
+              <Table
+                tableRef={tableRef}
+                title="Purchases"
+                columns={columns}
+                data={async query => {
+                  return await getPurchasesData(query.page + 1, query.pageSize);
+                }}
+                actions={[
+                  rowData => ({
+                    icon: () => <EditOutlinedIcon fontSize="small" />,
+                    tooltip: "Edit",
+                    onClick: (event, rowData) => {
+                      handleEdit(rowData);
+                    }
+                  })
+                ]}
+                options={{
+                  pageSize: 10,
+                  actionsColumnIndex: -1,
+                  search: false,
+                  sorting: true,
+                  thirdSortClick: false
+                }}
+                onOrderChange={(orderedColumnId, orderDirection) => {
+                  orderFunc(orderedColumnId, orderDirection);
+                }}
+              />
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
+
       <Backdrop className={classes.backdrop} open={openBackDrop}>
         <CircularProgress color="inherit" />
       </Backdrop>

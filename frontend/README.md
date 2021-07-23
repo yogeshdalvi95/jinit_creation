@@ -68,3 +68,13 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `yarn build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+Design inspired from
+
+=========================================================
+
+- # Material Dashboard React - v1.10.0 based on Material Dashboard - v1.2.0
+
+- Product Page: http://www.creative-tim.com/product/material-dashboard-react
+- Copyright 2021 Creative Tim (http://www.creative-tim.com)
+- Licensed under MIT (https://github.com/creativetimofficial/material-dashboard-react/blob/master/LICENSE.md)

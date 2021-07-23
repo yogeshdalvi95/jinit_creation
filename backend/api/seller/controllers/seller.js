@@ -31,6 +31,26 @@ module.exports = {
     };
   },
 
+  async getSellerNameForAutoComplete(ctx) {
+    const { page, query, pageSize } = utils.getRequestParams(ctx.request.query);
+    let _limit = 10;
+    let _start = 0;
+
+    _limit = pageSize;
+    _start = (page - 1) * _limit;
+
+    query["_limit"] = _limit;
+    query["_start"] = _start;
+
+    const data = await strapi.query("seller").find(query, []);
+
+    return {
+      data: data, // your data array
+      page: page, // current page number
+      pageSize: pageSize,
+    };
+  },
+
   async check_duplicate_seller(ctx) {
     const { isEdit, editId, seller_name, gst_no } = ctx.request.query;
     let error = {};

@@ -13,6 +13,7 @@ import {
   CustomInput,
   DatePicker,
   DialogBox,
+  DialogBoxForSelectingRawMaterial,
   FAB,
   GridContainer,
   GridItem,
@@ -79,6 +80,7 @@ export default function AddPurchases(props) {
   const kachhaPurchaseDetails = {
     id: null,
     raw_material: null,
+    raw_material_name: "",
     purchase_cost: 0,
     purchase_quantity: 0,
     purchase_unit: "",
@@ -104,6 +106,13 @@ export default function AddPurchases(props) {
   ]);
 
   const [openDialog, setOpenDialog] = useState(false);
+  const [
+    openDialogForSelectingRawMaterial,
+    setOpenDialogForSelectingRawMaterial
+  ] = useState({
+    key: null,
+    status: false
+  });
 
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
     name: "",
@@ -162,10 +171,30 @@ export default function AddPurchases(props) {
         )
       };
       if (data.purchase.type_of_bill === "Kachha") {
+        let bal = "0";
+        if (!d.raw_material.balance) {
+          bal = "0";
+        } else {
+          bal = d.raw_material.balance;
+        }
+        let nameObject = {
+          name: d.raw_material.name,
+          department: d.raw_material.department
+            ? d.raw_material.department.name
+            : "---",
+          color: isEmptyString(d.raw_material.color)
+            ? "---"
+            : d.raw_material.color,
+          size: isEmptyString(d.raw_material.size)
+            ? "---"
+            : d.raw_material.size,
+          bal: bal
+        };
         object = {
           ...object,
           raw_material: d.raw_material ? d.raw_material.id : null,
-          purchase_unit: d.unit
+          purchase_unit: d.unit,
+          raw_material_name: nameObject
         };
       } else {
         object = {
@@ -361,16 +390,23 @@ export default function AddPurchases(props) {
   };
 
   /** Handle change for repetable compoment */
-  const handleChangeAutoCompleteForRepetableComponent = (name, value, key) => {
+  const handleChangeAutoCompleteForRepetableComponent = (
+    name,
+    value,
+    key,
+    objectToAdd
+  ) => {
     if (formState.type_of_bill === "Kachha") {
       let object = individualKachhaPurchase[key];
       if (value === null) {
         object[name] = null;
+        object["raw_material_name"] = {};
         if (name === "raw_material") {
           object["purchase_unit"] = "";
         }
       } else {
         object[name] = value.id;
+        object["raw_material_name"] = objectToAdd;
         if (name === "raw_material") {
           object["purchase_unit"] = value.unit ? value.unit.name : "unit";
         }
@@ -412,6 +448,7 @@ export default function AddPurchases(props) {
         }
       }
     }
+    handleCloseDialogForRawMaterial();
   };
 
   /** Handle change for repetable compoment */
@@ -650,6 +687,29 @@ export default function AddPurchases(props) {
     setOpenDialog(false);
     addEditData();
   };
+
+  const handleCloseDialogForRawMaterial = () => {
+    setOpenDialogForSelectingRawMaterial({
+      key: null,
+      status: false
+    });
+  };
+
+  const handleAcceptDialogForRawMaterial = () => {
+    setOpenDialogForSelectingRawMaterial({
+      key: null,
+      status: false
+    });
+    //addEditData();
+  };
+
+  const addChangeRawMaterial = key => {
+    setOpenDialogForSelectingRawMaterial({
+      key: key,
+      status: true
+    });
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -679,7 +739,16 @@ export default function AddPurchases(props) {
         want to proceed ?`
         ]}
       ></DialogBox>
-      <GridItem xs={12} sm={12} md={8}>
+      <DialogBoxForSelectingRawMaterial
+        handleCancel={handleCloseDialogForRawMaterial}
+        handleClose={handleCloseDialogForRawMaterial}
+        handleAccept={handleAcceptDialogForRawMaterial}
+        handleAddRawMaterial={handleChangeAutoCompleteForRepetableComponent}
+        isHandleKey={true}
+        gridKey={openDialogForSelectingRawMaterial.key}
+        open={openDialogForSelectingRawMaterial.status}
+      />
+      <GridItem xs={12} sm={12} md={10}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
             <h4 className={classes.cardTitleWhite}>{props.header}</h4>
@@ -902,53 +971,111 @@ export default function AddPurchases(props) {
                     md={9}
                     className={classes.componentBorder}
                   >
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={12}>
-                        <CustomAutoComplete
-                          id="raw_material"
-                          labelText="Raw Material"
-                          autocompleteId={"raw_material_id"}
-                          optionKey={"name"}
-                          disabled={isView || isEdit}
-                          getOptionLabel={option => {
-                            let bal = "0";
-                            if (!option.balance) {
-                              bal = "0";
-                            } else {
-                              bal = option.balance;
+                    <GridContainer
+                      style={
+                        Ip.raw_material ? {} : { justifyContent: "center" }
+                      }
+                    >
+                      {Ip.raw_material ? (
+                        <GridItem
+                          xs={12}
+                          sm={12}
+                          md={8}
+                          style={{
+                            margin: "27px 0px 0px"
+                          }}
+                        >
+                          <GridContainer style={{ dispay: "flex" }}>
+                            <GridItem xs={12} sm={12} md={8}>
+                              <b>Name : </b> {Ip.raw_material_name.name}
+                            </GridItem>
+                          </GridContainer>
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={8}>
+                              <b>Department : </b>
+                              {Ip.raw_material_name.department}
+                            </GridItem>
+                          </GridContainer>
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={8}>
+                              <b>Color :</b> {Ip.raw_material_name.color}
+                            </GridItem>
+                          </GridContainer>
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={8}>
+                              <b>Size : </b>
+                              {Ip.raw_material_name.size}
+                            </GridItem>
+                          </GridContainer>
+
+                          {/* <CustomAutoComplete
+                            id="raw_material"
+                            labelText="Raw Material"
+                            autocompleteId={"raw_material_id"}
+                            optionKey={"name"}
+                            disabled={isView || isEdit}
+                            getOptionLabel={option => {
+                              let bal = "0";
+                              if (!option.balance) {
+                                bal = "0";
+                              } else {
+                                bal = option.balance;
+                              }
+                              return (
+                                option.name +
+                                ", Department: " +
+                                option.department.name +
+                                ", Color: " +
+                                option.color +
+                                ", Size: " +
+                                option.size +
+                                ", Balance: " +
+                                bal
+                              );
+                            }}
+                            options={rawMaterial}
+                            formControlProps={{
+                              fullWidth: true
+                            }}
+                            onChange={(event, value) => {
+                              handleChangeAutoCompleteForRepetableComponent(
+                                "raw_material",
+                                value,
+                                key
+                              );
+                            }}
+                            value={
+                              rawMaterial[
+                                rawMaterial.findIndex(function (item, i) {
+                                  return item.id === Ip.raw_material;
+                                })
+                              ] || null
                             }
-                            return (
-                              option.name +
-                              ", Department: " +
-                              option.department.name +
-                              ", Color: " +
-                              option.color +
-                              ", Size: " +
-                              option.size +
-                              ", Balance: " +
-                              bal
-                            );
+                          /> */}
+                        </GridItem>
+                      ) : null}
+
+                      {isView || isEdit ? null : (
+                        <GridItem
+                          xs={12}
+                          sm={12}
+                          md={4}
+                          style={{
+                            margin: "27px 0px 0px"
                           }}
-                          options={rawMaterial}
-                          formControlProps={{
-                            fullWidth: true
-                          }}
-                          onChange={(event, value) => {
-                            handleChangeAutoCompleteForRepetableComponent(
-                              "raw_material",
-                              value,
-                              key
-                            );
-                          }}
-                          value={
-                            rawMaterial[
-                              rawMaterial.findIndex(function (item, i) {
-                                return item.id === Ip.raw_material;
-                              })
-                            ] || null
-                          }
-                        />
-                      </GridItem>
+                        >
+                          <Button
+                            color="primary"
+                            onClick={() => {
+                              addChangeRawMaterial(key);
+                            }}
+                          >
+                            {Ip.raw_material
+                              ? "Change Raw Material"
+                              : " Select Raw Material"}
+                          </Button>
+                        </GridItem>
+                      )}
                     </GridContainer>
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={6}>

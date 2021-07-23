@@ -1,12 +1,6 @@
 import Dashboard from "@material-ui/icons/Dashboard";
 import GroupIcon from "@material-ui/icons/Group";
 import {
-  Admin,
-  Dashboard as DashboardScreen,
-  Departments,
-  Staff
-} from "../containers";
-import {
   ADDADMIN,
   ADDDEPARTMENTS,
   ADDSELLER,
@@ -30,9 +24,6 @@ import {
   VIEWREADYMATERIAL,
   DAILYUSAGERAWMATERIALS
 } from "../paths";
-
-const purchases = "shopping_cart";
-const departments = "apartment";
 
 /** Raw material and units */
 const rawMaterialAndUnitPath = [

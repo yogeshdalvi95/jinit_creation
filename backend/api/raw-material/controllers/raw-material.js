@@ -33,6 +33,26 @@ module.exports = {
     };
   },
 
+  async getRawMaterialNameForAutoComplete(ctx) {
+    const { page, query, pageSize } = utils.getRequestParams(ctx.request.query);
+    let _limit = 30;
+    let _start = 0;
+
+    _limit = pageSize;
+    _start = (page - 1) * _limit;
+
+    query["_limit"] = _limit;
+    query["_start"] = _start;
+
+    const data = await strapi.query("raw-material").find(query, []);
+
+    return {
+      data: data, // your data array
+      page: page, // current page number
+      pageSize: pageSize,
+    };
+  },
+
   async delete(ctx) {
     const { id } = ctx.params;
     const checkIfPresentInPurchases = await strapi

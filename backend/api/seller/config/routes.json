@@ -10,6 +10,14 @@
     },
     {
       "method": "GET",
+      "path": "/sellers/getSellerNameForAutoComplete",
+      "handler": "seller.getSellerNameForAutoComplete",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/sellers/check_duplicate_seller",
       "handler": "seller.check_duplicate_seller",
       "config": {
