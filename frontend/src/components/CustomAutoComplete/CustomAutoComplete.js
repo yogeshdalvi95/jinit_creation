@@ -59,6 +59,9 @@ export default function CustomAutoComplete(props) {
     helperTextId,
     isHelperText,
     helperText,
+    onTextFieldValueChange,
+    isInputPropsPresent,
+    inputRef,
     ...rest
   } = props;
 
@@ -85,15 +88,35 @@ export default function CustomAutoComplete(props) {
       }}
       renderInput={params => (
         <>
-          <StyledTextField
-            id={id}
-            {...params}
-            style={{
-              margin: "27px 0 0 0"
-            }}
-            label={labelText}
-            margin="normal"
-          />
+          {isInputPropsPresent ? (
+            <StyledTextField
+              id={id}
+              inputRef={inputRef}
+              {...params}
+              style={{
+                margin: "27px 0 0 0"
+              }}
+              onChange={onTextFieldValueChange}
+              label={labelText}
+              margin="normal"
+              InputProps={{
+                ...params.InputProps,
+                ...inputProps
+              }}
+            />
+          ) : (
+            <StyledTextField
+              id={id}
+              inputRef={inputRef}
+              {...params}
+              style={{
+                margin: "27px 0 0 0"
+              }}
+              onChange={onTextFieldValueChange}
+              label={labelText}
+              margin="normal"
+            />
+          )}
           {isHelperText ? (
             <FormHelperText id={helperTextId} error={error}>
               {helperText}

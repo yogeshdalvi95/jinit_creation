@@ -1,16 +1,36 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 // @material-ui/core components
-import { Auth, SnackBarComponent, Table } from "../../components";
+import {
+  Auth,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CustomAutoComplete,
+  CustomDropDown,
+  CustomInput,
+  FAB,
+  GridContainer,
+  GridItem,
+  SnackBarComponent,
+  Table
+} from "../../components";
 // core components
-import { backend_purchases } from "../../constants";
-import { convertNumber, plainDate } from "../../Utils";
+import {
+  backend_purchases,
+  backend_sellers_for_autocomplete
+} from "../../constants";
+import { convertNumber, isEmptyString, plainDate } from "../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet } from "../../api";
 import { useHistory } from "react-router-dom";
-import { VIEWPURCHASES, EDITPURCHASES } from "../../paths";
+import { VIEWPURCHASES, EDITPURCHASES, ADDPURCHASES } from "../../paths";
 import EditIcon from "@material-ui/icons/Edit";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+import AddIcon from "@material-ui/icons/Add";
+import { useEffect } from "react";
 
 const useStyles = makeStyles(styles);
 export default function Purchases() {
@@ -18,9 +38,12 @@ export default function Purchases() {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const tableRef = React.createRef();
+
   const [filter, setFilter] = useState({
-    _sort: "created_at:asc"
+    _sort: "created_at:desc"
   });
+  const [seller, setSeller] = useState([]);
+  console.log("filter", filter);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
@@ -32,7 +55,7 @@ export default function Purchases() {
     {
       title: "Purchased From",
       field: "seller",
-      render: rowData => rowData.seller.seller_name
+      render: rowData => (rowData.seller ? rowData.seller.seller_name : "")
     },
     {
       title: "Total Amount",
@@ -46,6 +69,10 @@ export default function Purchases() {
       render: rowData => plainDate(new Date(rowData.date))
     }
   ];
+
+  useEffect(() => {
+    getSellerNames();
+  }, []);
 
   const getPurchasesData = async (page, pageSize) => {
     let params = {
@@ -123,6 +150,47 @@ export default function Purchases() {
     }));
   };
 
+  const handleAdd = () => {
+    history.push(ADDPURCHASES);
+  };
+
+  const getSellerNames = value => {
+    let paginationFilter = {
+      pageSize: -1
+    };
+    providerForGet(
+      backend_sellers_for_autocomplete,
+      paginationFilter,
+      Auth.getToken()
+    )
+      .then(res => {
+        setSeller(res.data.data);
+      })
+      .catch(err => {
+        console.log(err);
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error getting seller info"
+        }));
+      });
+  };
+
+  const handleChange = event => {
+    if (isEmptyString(event.target.value)) {
+      delete filter[event.target.name];
+      setFilter(filter => ({
+        ...filter
+      }));
+    } else {
+      setFilter(filter => ({
+        ...filter,
+        [event.target.name]: event.target.value
+      }));
+    }
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -131,40 +199,161 @@ export default function Purchases() {
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
-      <Table
-        tableRef={tableRef}
-        title="Purchases"
-        columns={columns}
-        data={async query => {
-          return await getPurchasesData(query.page + 1, query.pageSize);
-        }}
-        actions={[
-          rowData => ({
-            icon: () => <EditIcon fontSize="small" />,
-            tooltip: "Edit",
-            onClick: (event, rowData) => {
-              handleClickOpenIndividualPurchase(rowData, false);
-            }
-          }),
-          rowData => ({
-            icon: () => <VisibilityIcon fontSize="small" />,
-            tooltip: "View",
-            onClick: (event, rowData) => {
-              handleClickOpenIndividualPurchase(rowData, true);
-            }
-          })
-        ]}
-        options={{
-          pageSize: 10,
-          actionsColumnIndex: -1,
-          search: false,
-          sorting: true,
-          thirdSortClick: false
-        }}
-        onOrderChange={(orderedColumnId, orderDirection) => {
-          orderFunc(orderedColumnId, orderDirection);
-        }}
-      />
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    align={"end"}
+                    size={"small"}
+                    onClick={() => handleAdd()}
+                  >
+                    <AddIcon />
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomDropDown
+                    id="type_of_bill"
+                    onChange={event => handleChange(event)}
+                    labelText="Type of Purchase"
+                    name="type_of_bill"
+                    value={filter.type_of_bill || ""}
+                    nameValue={[
+                      { name: "Pakka", value: "Pakka" },
+                      { name: "Kachha", value: "Kachha" }
+                    ]}
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomAutoComplete
+                    id="seller-name"
+                    labelText="Seller"
+                    autocompleteId={"seller-id"}
+                    optionKey={"seller_name"}
+                    options={seller}
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    onChange={(event, value) => {
+                      if (value === null) {
+                        setFilter(filter => ({
+                          ...filter,
+                          seller: null
+                        }));
+                      } else {
+                        setFilter(filter => ({
+                          ...filter,
+                          seller: value.id
+                        }));
+                      }
+                    }}
+                    value={
+                      seller[
+                        seller.findIndex(function (item, i) {
+                          return item.id === filter.seller;
+                        })
+                      ] || null
+                    }
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Total Amount"
+                    value={filter.total_amt_without_tax_contains || ""}
+                    name="total_amt_without_tax_contains"
+                    id="total_amt_without_tax_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={4}
+                  style={{
+                    marginTop: "27px"
+                  }}
+                >
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      delete filter["type_of_bill"];
+                      delete filter["seller"];
+                      delete filter["total_amt_without_tax_contains"];
+                      setFilter(filter => ({
+                        ...filter,
+                        _sort: "created_at:desc"
+                      }));
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </GridItem>
+              </GridContainer>
+
+              <br />
+              <Table
+                tableRef={tableRef}
+                title="Purchases"
+                columns={columns}
+                data={async query => {
+                  return await getPurchasesData(query.page + 1, query.pageSize);
+                }}
+                actions={[
+                  rowData => ({
+                    icon: () => <EditIcon fontSize="small" />,
+                    tooltip: "Edit",
+                    onClick: (event, rowData) => {
+                      handleClickOpenIndividualPurchase(rowData, false);
+                    }
+                  }),
+                  rowData => ({
+                    icon: () => <VisibilityIcon fontSize="small" />,
+                    tooltip: "View",
+                    onClick: (event, rowData) => {
+                      handleClickOpenIndividualPurchase(rowData, true);
+                    }
+                  })
+                ]}
+                options={{
+                  pageSize: 10,
+                  actionsColumnIndex: -1,
+                  search: false,
+                  sorting: true,
+                  thirdSortClick: false
+                }}
+                onOrderChange={(orderedColumnId, orderDirection) => {
+                  orderFunc(orderedColumnId, orderDirection);
+                }}
+              />
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
+
       <Backdrop className={classes.backdrop} open={openBackDrop}>
         <CircularProgress color="inherit" />
       </Backdrop>

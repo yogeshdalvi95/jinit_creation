@@ -690,7 +690,15 @@ const ROLES = {
       },
       {
         name: "raw-material",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getrawmaterialnameforautocomplete",
+        ],
       },
       {
         name: "ready-material",
@@ -706,6 +714,7 @@ const ROLES = {
           "check_duplicate_seller",
           "update",
           "delete",
+          "getsellernameforautocomplete",
         ],
       },
       {
@@ -745,7 +754,15 @@ const ROLES = {
       },
       {
         name: "raw-material",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getrawmaterialnameforautocomplete",
+        ],
       },
       {
         name: "ready-material",
@@ -761,6 +778,7 @@ const ROLES = {
           "check_duplicate_seller",
           "update",
           "delete",
+          "getsellernameforautocomplete",
         ],
       },
       {
