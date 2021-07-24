@@ -20,6 +20,8 @@ import {
   Muted,
   SnackBarComponent
 } from "../../components";
+import moment from "moment";
+
 // core components
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -710,6 +712,19 @@ export default function AddPurchases(props) {
     });
   };
 
+  const handleStartDateChange = event => {
+    let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
+    if (startDate === "Invalid date") {
+      startDate = null;
+    } else {
+      startDate = new Date(startDate).toISOString();
+    }
+    setFormState(formState => ({
+      ...formState,
+      date: startDate
+    }));
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -810,7 +825,7 @@ export default function AddPurchases(props) {
                       }}
                     />
                   </GridItem>
-                  <GridItem xs={12} sm={12} md={4}>
+                  {/* <GridItem xs={12} sm={12} md={4}>
                     <DatePicker
                       onChange={event => handleChange(event)}
                       labelText="Purchase Date"
@@ -823,6 +838,23 @@ export default function AddPurchases(props) {
                       disabled
                       style={{
                         marginTop: "2.7rem",
+                        width: "100%"
+                      }}
+                    />
+                  </GridItem> */}
+                  <GridItem xs={12} sm={12} md={3}>
+                    <DatePicker
+                      onChange={event => handleStartDateChange(event)}
+                      label="Purchase Date"
+                      name="date"
+                      disabled={isView || isEdit}
+                      value={formState.date || new Date()}
+                      id="date"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                      style={{
+                        marginTop: "1.5rem",
                         width: "100%"
                       }}
                     />
@@ -926,7 +958,6 @@ export default function AddPurchases(props) {
                       labelText="Notes"
                       id="notes"
                       name="notes"
-                      disabled={isView || isEdit}
                       onChange={event => handleChange(event)}
                       value={formState.notes}
                       formControlProps={{
