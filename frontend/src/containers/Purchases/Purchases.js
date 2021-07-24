@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 // @material-ui/core components
 import {
   Auth,
@@ -9,6 +9,7 @@ import {
   CustomAutoComplete,
   CustomDropDown,
   CustomInput,
+  DatePicker,
   FAB,
   GridContainer,
   GridItem,
@@ -31,6 +32,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import { useEffect } from "react";
+import moment from "moment";
 
 const useStyles = makeStyles(styles);
 export default function Purchases() {
@@ -191,6 +193,36 @@ export default function Purchases() {
     }
   };
 
+  /** Handle End Date filter change */
+  const handleEndDateChange = event => {
+    let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
+    if (endDate === "Invalid date") {
+      endDate = null;
+    } else {
+      endDate = new Date(endDate).toISOString();
+    }
+    setFilter(filter => ({
+      ...filter,
+      created_at_lte: endDate
+    }));
+  };
+
+  /** Handle Start Date filter change */
+  const handleStartDateChange = event => {
+    let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
+    if (startDate === "Invalid date") {
+      startDate = null;
+    } else {
+      startDate = new Date(startDate).toISOString();
+    }
+    setFilter(filter => ({
+      ...filter,
+      created_at_gte: startDate
+    }));
+  };
+
+  console.log("filter ", filter);
+
   return (
     <>
       <SnackBarComponent
@@ -280,6 +312,40 @@ export default function Purchases() {
                     }}
                   />
                 </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <DatePicker
+                    onChange={event => handleStartDateChange(event)}
+                    label="Purchase Date From"
+                    name="created_at_gte"
+                    value={filter.created_at_gte || null}
+                    id="created_at_gte"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%"
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <DatePicker
+                    onChange={event => handleEndDateChange(event)}
+                    label="Purchase Date To"
+                    name="created_at_lte"
+                    value={filter.created_at_lte || null}
+                    id="created_at_lte"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%"
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
                 <GridItem
                   xs={12}
                   sm={12}
@@ -299,13 +365,9 @@ export default function Purchases() {
                   <Button
                     color="primary"
                     onClick={() => {
-                      delete filter["type_of_bill"];
-                      delete filter["seller"];
-                      delete filter["total_amt_without_tax_contains"];
-                      setFilter(filter => ({
-                        ...filter,
+                      setFilter({
                         _sort: "created_at:desc"
-                      }));
+                      });
                       tableRef.current.onQueryChange();
                     }}
                   >
