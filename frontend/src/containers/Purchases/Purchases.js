@@ -42,7 +42,7 @@ export default function Purchases() {
   const tableRef = React.createRef();
 
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc"
+    _sort: "date:desc"
   });
   const [seller, setSeller] = useState([]);
   console.log("filter", filter);
@@ -221,8 +221,6 @@ export default function Purchases() {
     }));
   };
 
-  console.log("filter ", filter);
-
   return (
     <>
       <SnackBarComponent
@@ -366,7 +364,7 @@ export default function Purchases() {
                     color="primary"
                     onClick={() => {
                       setFilter({
-                        _sort: "created_at:desc"
+                        _sort: "date:desc"
                       });
                       tableRef.current.onQueryChange();
                     }}

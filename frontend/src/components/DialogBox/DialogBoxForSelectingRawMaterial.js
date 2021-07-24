@@ -377,9 +377,9 @@ export default function DialogBoxForSelectingRawMaterial(props) {
           <Button onClick={props.handleCancel} color="danger">
             Cancel
           </Button>
-          <Button onClick={props.handleAccept} color="success" autoFocus>
+          {/* <Button onClick={props.handleAccept} color="success" autoFocus>
             Add
-          </Button>
+          </Button> */}
         </DialogActions>
       </Dialog>
     </div>

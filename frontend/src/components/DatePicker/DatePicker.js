@@ -9,6 +9,12 @@ import {
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
 import { makeStyles } from "@material-ui/core";
 import classNames from "classnames";
+import {
+  primaryColor,
+  grayColor
+} from "../../assets/jss/material-dashboard-react.js";
+import styled from "styled-components";
+
 const useStyles = makeStyles(styles);
 
 export default function DatePicker(props) {
@@ -23,9 +29,29 @@ export default function DatePicker(props) {
     [classes.underline]: true
   });
 
+  const StyledTextField = styled(KeyboardDatePicker)`
+    label.Mui-focused {
+      color: green;
+    }
+    .MuiInput-underline:after {
+      border-color: ${primaryColor[0]};
+    }
+    .MuiInput-underline:before {
+      border-color: ${grayColor[4]} !important;
+    }
+    .MuiFormLabel-root {
+      color: #aaaaaa !important;
+      font-size: 14px;
+      font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+      font-weight: 400;
+      line-height: 1.42857;
+      letter-spacing: unset;
+    }
+  `;
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <KeyboardDatePicker
+      <StyledTextField
         margin="normal"
         id="date-picker-dialog"
         label={props.label}
@@ -40,9 +66,7 @@ export default function DatePicker(props) {
           root: marginTop,
           disabled: classes.disabled,
           underline: underlineClasses,
-          input: classes.input,
-          popper: classes.input,
-          listbox: classes.input
+          input: classes.input
         }}
         {...props}
       />
