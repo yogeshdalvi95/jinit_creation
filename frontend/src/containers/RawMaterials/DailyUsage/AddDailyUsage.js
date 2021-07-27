@@ -158,8 +158,6 @@ const AddDailyUsage = props => {
 
   /** For Adding value */
   const addNewEventAlert = slotInfo => {
-    // console.log(slotInfo.start, moment().toDate());
-    // slotInfo.start < moment().toDate() ? "#eaf6ff" : "#DDD"
     if (
       new Date(slotInfo.start).getMonth() + 1 === monthlyData.month &&
       slotInfo.start < moment().toDate()
@@ -396,23 +394,7 @@ const AddDailyUsage = props => {
           </GridItem>
         </GridContainer>
         <GridContainer>
-          <GridItem xs={12} sm={12} md={6}>
-            {/* <MonthYearPicker
-              onChange={event => {
-                console.log(event);
-              }}
-              name="date"
-              value={new Date(monthlyData.year, monthlyData.month, 0)}
-              id="date"
-              formControlProps={{
-                fullWidth: true
-              }}
-              style={{
-                marginTop: "1rem",
-                width: "50%"
-              }}
-            /> */}
-          </GridItem>
+          <GridItem xs={12} sm={12} md={6}></GridItem>
         </GridContainer>
       </>
     );
@@ -420,17 +402,26 @@ const AddDailyUsage = props => {
 
   const ColoredDateCellWrapper = ({ children, value }) => {
     let moment1 = moment(value).isSame(moment().toDate(), "day");
-    console.log(moment1);
-    return React.cloneElement(Children.only(children), {
-      style: {
-        ...children.style,
-        backgroundColor: moment1
-          ? "#eaf6ff"
-          : value < moment().toDate()
-          ? "#ffffff"
-          : "#DDD"
-      }
-    });
+    if (new Date(value).getMonth() + 1 !== monthlyData.month) {
+      return React.cloneElement(Children.only(children), {
+        style: {
+          ...children.style,
+          backgroundColor: "#DDD"
+        }
+      });
+    } else {
+      //console.log(moment1);
+      return React.cloneElement(Children.only(children), {
+        style: {
+          ...children.style,
+          backgroundColor: moment1
+            ? "#eaf6ff"
+            : value < moment().toDate()
+            ? "#ffffff"
+            : "#DDD"
+        }
+      });
+    }
   };
 
   return (
@@ -458,7 +449,7 @@ const AddDailyUsage = props => {
         getPreviosMonthData={getPreviosMonthData}
         open={openDialogForSelectingPreviousMonth}
         selectedRawMaterialId={selectedRawMaterialId}
-        rawMaterialName={selectedRawMaterial.name}
+        rawMaterialName={selectedRawMaterial ? selectedRawMaterial.name : ""}
       />
       <DialogBox
         open={modal.open}
