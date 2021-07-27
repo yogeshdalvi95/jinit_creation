@@ -117,6 +117,7 @@ export default function AddPurchases(props) {
   });
 
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
+    id: "",
     name: "",
     department: "",
     color: "",
@@ -180,6 +181,7 @@ export default function AddPurchases(props) {
           bal = d.raw_material.balance;
         }
         let nameObject = {
+          id: "#" + d.raw_material.id,
           name: d.raw_material.name,
           department: d.raw_material.department
             ? d.raw_material.department.name
@@ -430,6 +432,7 @@ export default function AddPurchases(props) {
           });
           setRawMaterialDetails(rawMaterialDetails => ({
             ...rawMaterialDetails,
+            id: "#" + value.id,
             name: value ? value.name : "",
             department: value ? value.department.name : "",
             size: value ? value.size : "",
@@ -440,6 +443,7 @@ export default function AddPurchases(props) {
         } else {
           setRawMaterialDetails(rawMaterialDetails => ({
             ...rawMaterialDetails,
+            id: null,
             name: null,
             department: null,
             size: null,
@@ -1018,6 +1022,11 @@ export default function AddPurchases(props) {
                         >
                           <GridContainer style={{ dispay: "flex" }}>
                             <GridItem xs={12} sm={12} md={8}>
+                              <b>Id : </b> {Ip.raw_material_name.id}
+                            </GridItem>
+                          </GridContainer>
+                          <GridContainer style={{ dispay: "flex" }}>
+                            <GridItem xs={12} sm={12} md={8}>
                               <b>Name : </b> {Ip.raw_material_name.name}
                             </GridItem>
                           </GridContainer>
@@ -1314,6 +1323,9 @@ export default function AddPurchases(props) {
         <GridItem xs={12} sm={12} md={4}>
           <Card>
             <CardBody>
+              <GridItem xs={12} sm={12} md={12}>
+                <Muted>Id :{rawMaterialDetails.id}</Muted>
+              </GridItem>
               <GridItem xs={12} sm={12} md={12}>
                 <Muted>Name :{rawMaterialDetails.name}</Muted>
               </GridItem>

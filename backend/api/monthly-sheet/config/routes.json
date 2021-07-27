@@ -10,6 +10,22 @@
     },
     {
       "method": "GET",
+      "path": "/monthly-sheets/get_selected_data",
+      "handler": "monthly-sheet.getSelectedData",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/monthly-sheets/get-latest-entries",
+      "handler": "monthly-sheet.getLatestEntries",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/monthly-sheets/count",
       "handler": "monthly-sheet.count",
       "config": {
@@ -28,6 +44,14 @@
       "method": "POST",
       "path": "/monthly-sheets",
       "handler": "monthly-sheet.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/monthly-sheets/add-update-entries",
+      "handler": "monthly-sheet.addUpdateEntries",
       "config": {
         "policies": []
       }

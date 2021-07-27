@@ -17,3 +17,8 @@ export const backend_sellers_for_autocomplete = `${apiUrl}/sellers/getSellerName
 
 export const backend_raw_materials = `${apiUrl}/raw-materials`;
 export const backend_raw_materials_for_autocomplete = `${apiUrl}/raw-materials/getRawMaterialNameForAutoComplete`;
+
+export const backend_monthly_sheet = `${apiUrl}/monthly-sheets`;
+export const backend_monthly_sheet_get_selected_data = `${apiUrl}/monthly-sheets/get_selected_data`;
+export const backend_monthly_sheet_latest_entries = `${apiUrl}/monthly-sheets/get-latest-entries`;
+export const backend_monthly_sheet_add_update_entries = `${apiUrl}/monthly-sheets/add-update-entries`;

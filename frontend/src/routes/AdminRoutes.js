@@ -105,7 +105,7 @@ export const DashboardStaffRoutes = [
       },
       {
         path: DAILYUSAGERAWMATERIALS,
-        name: "Add Daily Usage",
+        name: "Daily Usage",
         layout: "",
         pathList: dailyUsage
       },
@@ -172,7 +172,7 @@ export const DashboardAdminRoutes = [
       },
       {
         path: DAILYUSAGERAWMATERIALS,
-        name: "Add Daily Usage",
+        name: "Daily Usage",
         layout: "",
         pathList: dailyUsage
       },
@@ -246,7 +246,7 @@ export const SuperAdminDashboardRoutes = [
       },
       {
         path: DAILYUSAGERAWMATERIALS,
-        name: "Add Daily Usage",
+        name: "Daily Usage",
         layout: "",
         pathList: dailyUsage
       },
