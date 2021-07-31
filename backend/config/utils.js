@@ -131,6 +131,11 @@ function daysInMonth(month, year) {
   return new Date(year, month, 0).getDate();
 }
 
+function isEmptyString(val) {
+  let result = !val || /^\s*$/.test(val);
+  return result;
+}
+
 module.exports = {
   getRequestParams,
   getPaginatedResponse,
@@ -150,4 +155,5 @@ module.exports = {
   convertNumber,
   checkEmpty,
   daysInMonth,
+  isEmptyString,
 };

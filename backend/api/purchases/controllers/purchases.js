@@ -63,17 +63,23 @@ module.exports = {
       total_amt_without_tax,
       notes,
       date,
+      invoice_number,
+      bill_no,
     } = purchases;
 
     if (id) {
       await bookshelf
         .transaction(async (t) => {
           let purchaseData = {
+            date: utils.getDateInYYYYMMDD(new Date(date)),
+            seller: seller,
             cgst_percent: cgst_percent,
             sgst_percent: sgst_percent,
             notes: notes,
             total_amt_with_tax: total_amt_with_tax,
             total_amt_without_tax: total_amt_without_tax,
+            invoice_number: invoice_number,
+            bill_no: bill_no,
           };
 
           await strapi
@@ -89,6 +95,8 @@ module.exports = {
               let individualPurchase = {
                 purchase_cost: Ip.purchase_cost,
                 total_purchase_cost: Ip.total_purchase_cost,
+                date: utils.getDateInYYYYMMDD(new Date(date)),
+                seller: seller,
               };
               await strapi
                 .query("individual-kachha-purchase")
@@ -108,6 +116,8 @@ module.exports = {
                 purchase_cost: Ip.purchase_cost,
                 total_purchase_cost: Ip.total_purchase_cost,
                 name: Ip.name,
+                date: utils.getDateInYYYYMMDD(new Date(date)),
+                seller: seller,
               };
               await strapi
                 .query("individual-pakka-purchase")
@@ -143,6 +153,8 @@ module.exports = {
             seller: seller,
             total_amt_with_tax: total_amt_with_tax,
             total_amt_without_tax: total_amt_without_tax,
+            invoice_number: invoice_number,
+            bill_no: bill_no,
           };
 
           let newPurchase = await strapi
@@ -161,6 +173,8 @@ module.exports = {
                 purchase_quantity: Ip.purchase_quantity,
                 total_purchase_cost: Ip.total_purchase_cost,
                 raw_material: Ip.raw_material,
+                date: utils.getDateInYYYYMMDD(new Date(date)),
+                seller: seller,
               };
               await strapi
                 .query("individual-kachha-purchase")
@@ -226,6 +240,8 @@ module.exports = {
                 purchase_quantity: Ip.purchase_quantity,
                 total_purchase_cost: Ip.total_purchase_cost,
                 name: Ip.name,
+                date: utils.getDateInYYYYMMDD(new Date(date)),
+                seller: seller,
               };
               await strapi
                 .query("individual-pakka-purchase")

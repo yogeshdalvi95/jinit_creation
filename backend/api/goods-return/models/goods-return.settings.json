@@ -1,8 +1,8 @@
 {
   "kind": "collectionType",
-  "collectionName": "individual_kachha_purchases",
+  "collectionName": "goods_returns",
   "info": {
-    "name": "Individual Kachha Purchase",
+    "name": "Goods Return",
     "description": ""
   },
   "options": {
@@ -12,26 +12,20 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "purchase_cost": {
-      "type": "float"
-    },
-    "total_purchase_cost": {
-      "type": "float"
-    },
     "raw_material": {
       "model": "raw-material"
     },
-    "purchase_quantity": {
-      "type": "float"
-    },
-    "purchase": {
-      "model": "purchases"
+    "quantity": {
+      "type": "biginteger"
     },
     "seller": {
       "model": "seller"
     },
     "date": {
       "type": "date"
+    },
+    "notes": {
+      "type": "text"
     }
   }
 }

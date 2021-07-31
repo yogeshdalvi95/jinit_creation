@@ -19,6 +19,13 @@ export const EDITPURCHASES = "/edit-purchases";
 export const PURCHASES = "/purchases";
 export const VIEWPURCHASES = "/view-purchases";
 
+export const VIEWKACHHAPURCHASEDETAILS = "/view-kachha-purchase-detailss";
+
+export const ADDGOODRETURN = "/return-goods";
+export const VIEWGOODRETURN = "/view-returned-goods";
+export const EDITGOODRETURN = "/edit-returned-goods";
+export const GOODRETURNLIST = "/returned-goods-list";
+
 export const ADMIN = "/admins";
 export const ADDADMIN = "/add-admin";
 

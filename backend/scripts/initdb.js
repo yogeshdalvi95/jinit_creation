@@ -365,12 +365,6 @@ async function init() {
       return result;
     }, {});
 
-    console.log(
-      "rolesAndPermissions ",
-      r,
-      updatedController["users-permissions"]
-    );
-
     return {
       name: r,
       description: r,

@@ -38,14 +38,27 @@ import {
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
-import { convertNumber, isEmptyString } from "../../Utils";
+import {
+  checkEmpty,
+  convertNumber,
+  hasError,
+  isEmptyString,
+  setErrors
+} from "../../Utils";
+import SweetAlert from "react-bootstrap-sweetalert";
+import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
+import classNames from "classnames";
+import validationForm from "./form/PurchasesForm.json";
 
 const useStyles = makeStyles(styles);
+const buttonUseStyles = makeStyles(buttonStyles);
 
 export default function AddPurchases(props) {
   const classes = useStyles();
+  const buttonClasses = buttonUseStyles();
   const history = useHistory();
   const [rawMaterial, setRawMaterial] = useState([]);
+  const [alert, setAlert] = useState(null);
   const [seller, setSeller] = useState([]);
   /** VIMP to check if the data is used for viewing */
   const [isView] = useState(
@@ -76,7 +89,9 @@ export default function AddPurchases(props) {
     total_amt_with_tax_formatted: 0,
     total_amt_without_tax_formatted: 0,
     notes: "",
-    date: new Date()
+    date: new Date(),
+    invoice_number: "",
+    bill_no: ""
   });
 
   const kachhaPurchaseDetails = {
@@ -98,6 +113,7 @@ export default function AddPurchases(props) {
     total_purchase_cost: 0,
     total_purchase_cost_formatted: 0
   };
+  const [error, setError] = React.useState({});
 
   const [individualKachhaPurchase, setIndividualKachhaPurchase] = useState([
     kachhaPurchaseDetails
@@ -106,8 +122,6 @@ export default function AddPurchases(props) {
   const [individualPakkaPurchase, setIndividualPakkaPurchase] = useState([
     pakkaPurchaseDetails
   ]);
-
-  const [openDialog, setOpenDialog] = useState(false);
   const [
     openDialogForSelectingRawMaterial,
     setOpenDialogForSelectingRawMaterial
@@ -146,7 +160,7 @@ export default function AddPurchases(props) {
       type_of_bill: data.purchase.type_of_bill,
       cgst_percent: data.purchase.cgst_percent,
       sgst_percent: data.purchase.sgst_percent,
-      gst_no: data.purchase.gst_no,
+      gst_no: data.purchase.seller ? data.purchase.seller.gst_no : "",
       total_amt_with_tax: data.purchase.total_amt_with_tax,
       total_amt_without_tax: data.purchase.total_amt_without_tax,
       total_amt_with_tax_formatted: convertNumber(
@@ -158,7 +172,9 @@ export default function AddPurchases(props) {
         true
       ),
       notes: data.purchase.notes,
-      date: new Date(data.purchase.date)
+      date: new Date(data.purchase.date),
+      invoice_number: data.purchase.invoice_number,
+      bill_no: data.purchase.bill_no
     }));
 
     let arr = [];
@@ -562,12 +578,58 @@ export default function AddPurchases(props) {
       error: str
     };
   };
+  const handleCheckValidation = event => {
+    event.preventDefault();
+    setBackDrop(true);
+    let isValid = false;
+    let error = {};
+    /** This will set errors as per validations defined in form */
+    error = setErrors(formState, validationForm);
+    /** If no errors then isValid is set true */
+    if (checkEmpty(error)) {
+      setBackDrop(false);
+      setError({});
+      isValid = true;
+    } else {
+      setBackDrop(false);
+      setError(error);
+    }
+    if (isValid) {
+      submit();
+    }
+  };
 
   const submit = () => {
     if (isEdit) {
       addEditData();
     } else {
-      setOpenDialog(true);
+      const confirmBtnClasses = classNames({
+        [buttonClasses.button]: true,
+        [buttonClasses["success"]]: true
+      });
+
+      const cancelBtnClasses = classNames({
+        [buttonClasses.button]: true,
+        [buttonClasses["danger"]]: true
+      });
+
+      setAlert(
+        <SweetAlert
+          warning
+          showCancel
+          confirmBtnText="Yes"
+          confirmBtnCssClass={confirmBtnClasses}
+          confirmBtnBsStyle="outline-{variant}"
+          title="Heads up?"
+          onConfirm={handleAcceptDialog}
+          onCancel={handleCloseDialog}
+          cancelBtnCssClass={cancelBtnClasses}
+          focusCancelBtn
+        >
+          Please make sure you have added the right purchases and the right
+          quantity as the quantity once added cannot be changed.
+        </SweetAlert>
+      );
     }
   };
 
@@ -686,11 +748,11 @@ export default function AddPurchases(props) {
   };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false);
+    setAlert(null);
   };
 
   const handleAcceptDialog = () => {
-    setOpenDialog(false);
+    setAlert(null);
     addEditData();
   };
 
@@ -736,13 +798,14 @@ export default function AddPurchases(props) {
           <KeyboardArrowLeftIcon />
         </FAB>
       </GridItem>
+      {alert}
       <SnackBarComponent
         open={snackBar.show}
         severity={snackBar.severity}
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
-      <DialogBox
+      {/* <DialogBox
         open={openDialog}
         dialogTitle={""}
         handleCancel={handleCloseDialog}
@@ -757,7 +820,7 @@ export default function AddPurchases(props) {
           `Are you sure you
         want to proceed ?`
         ]}
-      ></DialogBox>
+      ></DialogBox> */}
       <DialogBoxForSelectingRawMaterial
         handleCancel={handleCloseDialogForRawMaterial}
         handleClose={handleCloseDialogForRawMaterial}
@@ -803,6 +866,10 @@ export default function AddPurchases(props) {
                       optionKey={"seller_name"}
                       options={seller}
                       onChange={(event, value) => {
+                        delete error["seller"];
+                        setError(error => ({
+                          ...error
+                        }));
                         if (value === null) {
                           setFormState(formState => ({
                             ...formState,
@@ -824,6 +891,17 @@ export default function AddPurchases(props) {
                           })
                         ] || null
                       }
+                      /** For setting errors */
+                      helperTextId={"helperText_seller"}
+                      isHelperText={hasError("seller", error)}
+                      helperText={
+                        hasError("seller", error)
+                          ? error["seller"].map(error => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("seller", error)}
                       formControlProps={{
                         fullWidth: true
                       }}
@@ -851,9 +929,17 @@ export default function AddPurchases(props) {
                       onChange={event => handleStartDateChange(event)}
                       label="Purchase Date"
                       name="date"
-                      disabled={isView || isEdit}
+                      disabled={isView}
                       value={formState.date || new Date()}
                       id="date"
+                      minDate={
+                        formState.type_of_bill === "Kachha"
+                          ? new Date(
+                              new Date().getFullYear(),
+                              new Date().getMonth()
+                            )
+                          : new Date(1900, 0)
+                      }
                       formControlProps={{
                         fullWidth: true
                       }}
@@ -866,9 +952,10 @@ export default function AddPurchases(props) {
                 </>
               ) : null}
             </GridContainer>
-            {formState.type_of_bill && formState.type_of_bill === "Pakka" ? (
+
+            {formState.type_of_bill ? (
               <GridContainer>
-                <GridItem xs={12} sm={12} md={4}>
+                <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     labelText="GST No."
@@ -881,55 +968,70 @@ export default function AddPurchases(props) {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={4}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="CGST(%)"
-                    name="cgst_percent"
-                    type="number"
-                    disabled={isView}
-                    value={formState.cgst_percent}
-                    id="cgst_percent"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={4}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="SGST(%)"
-                    name="sgst_percent"
-                    disabled={isView}
-                    type="number"
-                    value={formState.sgst_percent}
-                    id="sgst_percent"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
+                {formState.type_of_bill === "Pakka" ? (
+                  <GridItem xs={12} sm={12} md={6}>
+                    <CustomInput
+                      labelText="Invoice Number"
+                      name="invoice_number"
+                      onChange={event => handleChange(event)}
+                      value={formState.invoice_number}
+                      id="invoice_number"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                    />
+                  </GridItem>
+                ) : (
+                  <GridItem xs={12} sm={12} md={6}>
+                    <CustomInput
+                      labelText="Bill Number"
+                      name="bill_no"
+                      onChange={event => handleChange(event)}
+                      value={formState.bill_no}
+                      id="bill_no"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                    />
+                  </GridItem>
+                )}
               </GridContainer>
             ) : null}
-            {formState.type_of_bill && formState.type_of_bill !== "" ? (
+
+            {formState.type_of_bill ? (
               <>
                 <GridContainer>
-                  {formState.type_of_bill === "Kachha" ? (
-                    <GridItem xs={12} sm={12} md={4}>
-                      <CustomInput
-                        labelText="Total amount in rupees"
-                        name="total_amt_without_tax"
-                        disabled
-                        value={formState.total_amt_without_tax_formatted}
-                        id="total_amt_without_tax"
-                        formControlProps={{
-                          fullWidth: true
-                        }}
-                      />
-                    </GridItem>
-                  ) : (
+                  {formState.type_of_bill === "Pakka" ? (
                     <>
-                      <GridItem xs={12} sm={12} md={4}>
+                      <GridItem xs={12} sm={12} md={3}>
+                        <CustomInput
+                          onChange={event => handleChange(event)}
+                          labelText="CGST(%)"
+                          name="cgst_percent"
+                          type="number"
+                          disabled={isView}
+                          value={formState.cgst_percent}
+                          id="cgst_percent"
+                          formControlProps={{
+                            fullWidth: true
+                          }}
+                        />
+                      </GridItem>
+                      <GridItem xs={12} sm={12} md={3}>
+                        <CustomInput
+                          onChange={event => handleChange(event)}
+                          labelText="SGST(%)"
+                          name="sgst_percent"
+                          disabled={isView}
+                          type="number"
+                          value={formState.sgst_percent}
+                          id="sgst_percent"
+                          formControlProps={{
+                            fullWidth: true
+                          }}
+                        />
+                      </GridItem>
+                      <GridItem xs={12} sm={12} md={3}>
                         <CustomInput
                           labelText="Total amount in rupees(with tax)"
                           name="total_amt_with_tax"
@@ -941,7 +1043,7 @@ export default function AddPurchases(props) {
                           }}
                         />
                       </GridItem>
-                      <GridItem xs={12} sm={12} md={4}>
+                      <GridItem xs={12} sm={12} md={3}>
                         <CustomInput
                           labelText="Total amount in rupees(without tax)"
                           name="total_amt_without_tax"
@@ -954,6 +1056,19 @@ export default function AddPurchases(props) {
                         />
                       </GridItem>
                     </>
+                  ) : (
+                    <GridItem xs={12} sm={12} md={4}>
+                      <CustomInput
+                        labelText="Total amount in rupees"
+                        name="total_amt_without_tax"
+                        disabled
+                        value={formState.total_amt_without_tax_formatted}
+                        id="total_amt_without_tax"
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                      />
+                    </GridItem>
                   )}
                 </GridContainer>
                 <GridContainer>
@@ -1308,7 +1423,7 @@ export default function AddPurchases(props) {
           </CardBody>
           {isView || isEmptyString(formState.type_of_bill) ? null : (
             <CardFooter>
-              <Button color="primary" onClick={() => submit()}>
+              <Button color="primary" onClick={e => handleCheckValidation(e)}>
                 Save
               </Button>
             </CardFooter>

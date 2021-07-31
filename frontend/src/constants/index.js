@@ -16,5 +16,7 @@ export {
   backend_monthly_sheet,
   apiUrl,
   backend_monthly_sheet_add_update_entries,
-  backend_monthly_sheet_get_selected_data
+  backend_monthly_sheet_get_selected_data,
+  backend_goods_return,
+  backend_individual_kachha_purchase
 } from "./UrlConstants";

@@ -172,17 +172,6 @@ export default function DialogBoxForSelectingRawMaterial(props) {
         <DialogTitle id="dialog-title">Select Raw Material</DialogTitle>
         <DialogContent>
           <DialogContentText id="dialog-description">
-            {/* {props.isWarning ? (
-              <div className={styles.AlertImageDiv}>
-                <span className={styles.alertImageCircle}></span>
-                <span className={styles.alertImageIcon}></span>
-              </div>
-            ) : null}
-
-            <h2 className={styles.highLighter}>Are you sure?</h2>
-            {props.text.map(t => (
-              <div className={styles.secondText}>{t}</div>
-            ))} */}
             <>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
@@ -364,7 +353,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                       })
                     ]}
                     options={{
-                      pageSize: 5,
+                      pageSize: 10,
                       search: false,
                       sorting: true,
                       thirdSortClick: false
@@ -389,9 +378,6 @@ export default function DialogBoxForSelectingRawMaterial(props) {
           <Button onClick={props.handleCancel} color="danger">
             Cancel
           </Button>
-          {/* <Button onClick={props.handleAccept} color="success" autoFocus>
-            Add
-          </Button> */}
         </DialogActions>
       </Dialog>
     </div>

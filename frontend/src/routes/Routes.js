@@ -21,7 +21,12 @@ import {
   EDITPURCHASES,
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS,
-  DAILYUSAGERAWMATERIALS
+  DAILYUSAGERAWMATERIALS,
+  GOODRETURNLIST,
+  ADDGOODRETURN,
+  EDITGOODRETURN,
+  VIEWGOODRETURN,
+  VIEWKACHHAPURCHASEDETAILS
 } from "../paths";
 import {
   Login,
@@ -39,7 +44,10 @@ import {
   AddEditRawMaterial,
   AddEditUnit,
   AddSeller,
-  AddDailyUsage
+  AddDailyUsage,
+  GoodsReturn,
+  AddGoodReturn,
+  KachhaPurchaseDetails
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -113,7 +121,7 @@ const Routes = () => {
           exact
           component={Purchases}
           addComponentPath={ADDPURCHASES}
-          header={"Purchases"}
+          header={"All Purchases"}
           value={0}
         />
         <PrivateRoute
@@ -136,6 +144,13 @@ const Routes = () => {
           exact
           component={AddPurchases}
           header={"View Purchase"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWKACHHAPURCHASEDETAILS}
+          exact
+          component={KachhaPurchaseDetails}
+          header={"Kachha Purchase Details"}
         />
 
         {/** Raw materials */}
@@ -196,18 +211,48 @@ const Routes = () => {
         />
 
         <PrivateRoute
-          openSubMenu={false}
+          openSubMenu={true}
           path={DEPARTMENTS}
           exact
           component={Departments}
           header={"Departments"}
         />
         <PrivateRoute
-          openSubMenu={false}
+          openSubMenu={true}
           path={ADDDEPARTMENTS}
           exact
           component={AddDepartment}
           header={"Add Department"}
+        />
+
+        {/** Goods Return */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={GOODRETURNLIST}
+          exact
+          component={GoodsReturn}
+          header={"Returned Goods"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDGOODRETURN}
+          exact
+          component={AddGoodReturn}
+          header={"Return Goods"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITGOODRETURN}
+          exact
+          component={AddGoodReturn}
+          header={"Edit Returned Goods"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWGOODRETURN}
+          exact
+          component={AddGoodReturn}
+          header={"View Returned Goods"}
         />
 
         {/** Ready Material */}

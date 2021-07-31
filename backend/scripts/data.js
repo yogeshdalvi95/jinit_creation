@@ -635,7 +635,19 @@ const ROLES = {
         action: [],
       },
       {
+        name: "individual-kachha-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "individual-pakka-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "monthly-sheet",
+        action: [],
+      },
+      {
+        name: "goods-return",
         action: [],
       },
       {
@@ -674,6 +686,18 @@ const ROLES = {
     controllers: [
       {
         name: "department",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "individual-kachha-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "individual-pakka-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "goods-return",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
@@ -748,6 +772,18 @@ const ROLES = {
     controllers: [
       {
         name: "department",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "individual-kachha-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "individual-pakka-purchase",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "goods-return",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {

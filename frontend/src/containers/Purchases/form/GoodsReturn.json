@@ -1,0 +1,33 @@
+{
+  "seller": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Seller is required"
+      }
+    }
+  },
+  "raw_material": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Raw Material is required"
+      }
+    }
+  },
+  "quantity": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Quantity is required"
+      },
+      "validPositiveInteger": {
+        "value": "true",
+        "message": "Quantity should be a valid positive number"
+      }
+    }
+  }
+}

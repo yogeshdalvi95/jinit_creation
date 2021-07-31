@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-escape */
 import { mapKeys } from "lodash";
+import { isEmptyString } from "./CommonUtils";
 /**
  * [validateInput description]
  * @param  {String || Number} value  Input's value
@@ -71,6 +72,17 @@ export const validation = (value, inputValidations, type = "text") => {
       case "validateOtpForForgotPassword":
         //change the value and condition for length after length of otp is decided
         if (value.length !== 0 && value.length < validationValue.value) {
+          errors.push(validationValue.message);
+        }
+        break;
+      case "validPositiveInteger":
+        if (
+          isEmptyString(value) ||
+          (!isEmptyString(value) && isNaN(parseFloat(value))) ||
+          (!isEmptyString(value) &&
+            !isNaN(parseFloat(value)) &&
+            parseFloat(value) <= 0)
+        ) {
           errors.push(validationValue.message);
         }
         break;

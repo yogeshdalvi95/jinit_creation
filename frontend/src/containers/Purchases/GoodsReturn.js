@@ -7,8 +7,6 @@ import {
   CardBody,
   CardHeader,
   CustomAutoComplete,
-  CustomDropDown,
-  CustomInput,
   DatePicker,
   FAB,
   GridContainer,
@@ -18,8 +16,8 @@ import {
 } from "../../components";
 // core components
 import {
-  backend_purchases,
-  backend_sellers_for_autocomplete
+  backend_sellers_for_autocomplete,
+  backend_goods_return
 } from "../../constants";
 import { convertNumber, isEmptyString, plainDate } from "../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
@@ -27,15 +25,15 @@ import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet } from "../../api";
 import { useHistory } from "react-router-dom";
-import { VIEWPURCHASES, EDITPURCHASES, ADDPURCHASES } from "../../paths";
-import EditIcon from "@material-ui/icons/Edit";
+import { ADDGOODRETURN, VIEWGOODRETURN, EDITGOODRETURN } from "../../paths";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import { useEffect } from "react";
 import moment from "moment";
+import EditIcon from "@material-ui/icons/Edit";
 
 const useStyles = makeStyles(styles);
-export default function Purchases() {
+export default function GoodsReturn() {
   const classes = useStyles();
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
@@ -45,7 +43,6 @@ export default function Purchases() {
     _sort: "date:desc"
   });
   const [seller, setSeller] = useState([]);
-  console.log("filter", filter);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
@@ -53,31 +50,29 @@ export default function Purchases() {
   });
 
   const columns = [
-    { title: "Type of purchase", field: "type_of_bill" },
     {
-      title: "Purchased From",
+      title: "Raw Material ID",
+      field: "raw_material",
+      render: rowData => (rowData.raw_material ? rowData.raw_material.id : "")
+    },
+    {
+      title: "Raw Material",
+      field: "raw_material",
+      render: rowData => (rowData.raw_material ? rowData.raw_material.name : "")
+    },
+    {
+      title: "Sold To",
       field: "seller",
       render: rowData => (rowData.seller ? rowData.seller.seller_name : "")
     },
     {
-      title: "Invoice Number",
-      field: "invoice_number",
+      title: "Quantity Sold",
+      field: "quantity",
       render: rowData =>
-        rowData.type_of_bill === "Pakka" ? rowData.invoice_number : "-----"
+        isEmptyString(rowData.quantity) ? "0" : rowData.quantity
     },
     {
-      title: "Bill Number",
-      field: "bill_no",
-      render: rowData =>
-        rowData.type_of_bill === "Kachha" ? rowData.bill_no : "-----"
-    },
-    {
-      title: "Total Amount",
-      field: "total_amt_with_tax",
-      render: rowData => convertNumber(rowData.total_amt_with_tax, true)
-    },
-    {
-      title: "Purchase date",
+      title: "Selling Date",
       field: "date",
       render: rowData => plainDate(new Date(rowData.date))
     }
@@ -87,7 +82,7 @@ export default function Purchases() {
     getSellerNames();
   }, []);
 
-  const getPurchasesData = async (page, pageSize) => {
+  const getGoodReturnData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize
@@ -100,7 +95,7 @@ export default function Purchases() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_purchases + "?" + new URLSearchParams(params), {
+      fetch(backend_goods_return + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -132,15 +127,19 @@ export default function Purchases() {
     tableRef.current.onQueryChange();
   };
 
-  const handleClickOpenIndividualPurchase = async (row, isView) => {
+  const handleClickGoodReturnView = async (row, isView) => {
     setBackDrop(true);
-    await providerForGet(backend_purchases + "/" + row.id, {}, Auth.getToken())
+    await providerForGet(
+      backend_goods_return + "/" + row.id,
+      {},
+      Auth.getToken()
+    )
       .then(res => {
         setBackDrop(false);
         if (isView) {
-          history.push(VIEWPURCHASES, { data: res.data, view: true });
+          history.push(VIEWGOODRETURN, { data: res.data, view: true });
         } else {
-          history.push(EDITPURCHASES, { data: res.data, edit: true });
+          history.push(EDITGOODRETURN, { data: res.data, edit: true });
         }
       })
       .catch(err => {
@@ -149,7 +148,7 @@ export default function Purchases() {
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing purchase"
+          message: "Error viewing good return "
         }));
       });
   };
@@ -164,7 +163,7 @@ export default function Purchases() {
   };
 
   const handleAdd = () => {
-    history.push(ADDPURCHASES);
+    history.push(ADDGOODRETURN);
   };
 
   const getSellerNames = value => {
@@ -231,7 +230,6 @@ export default function Purchases() {
       date_gte: startDate
     }));
   };
-
   return (
     <>
       <SnackBarComponent
@@ -261,7 +259,7 @@ export default function Purchases() {
                 </GridItem>
               </GridContainer>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={2}>
+                {/* <GridItem xs={12} sm={12} md={2}>
                   <CustomDropDown
                     id="type_of_bill"
                     onChange={event => handleChange(event)}
@@ -276,8 +274,8 @@ export default function Purchases() {
                       fullWidth: true
                     }}
                   />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                </GridItem> */}
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomAutoComplete
                     id="seller-name"
                     labelText="Seller"
@@ -309,48 +307,11 @@ export default function Purchases() {
                     }
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Total Amount"
-                    value={filter.total_amt_without_tax_contains || ""}
-                    name="total_amt_without_tax_contains"
-                    id="total_amt_without_tax_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Invoice Number"
-                    value={filter.invoice_number_contains || ""}
-                    name="invoice_number_contains"
-                    id="invoice_number_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Bill Number"
-                    value={filter.bill_no_contains || ""}
-                    name="bill_no_contains"
-                    id="bill_no_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-              <GridContainer>
+
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
                     onChange={event => handleStartDateChange(event)}
-                    label="Purchase Date From"
+                    label="Sell Date From"
                     name="date_gte"
                     value={filter.date_gte || null}
                     id="date_gte"
@@ -366,7 +327,7 @@ export default function Purchases() {
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
                     onChange={event => handleEndDateChange(event)}
-                    label="Purchase Date To"
+                    label="Sell Date To"
                     name="date_lte"
                     value={filter.date_lte || null}
                     id="date_lte"
@@ -412,24 +373,27 @@ export default function Purchases() {
               <br />
               <Table
                 tableRef={tableRef}
-                title="Purchases"
+                title="Goods Return"
                 columns={columns}
                 data={async query => {
-                  return await getPurchasesData(query.page + 1, query.pageSize);
+                  return await getGoodReturnData(
+                    query.page + 1,
+                    query.pageSize
+                  );
                 }}
                 actions={[
                   rowData => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      handleClickOpenIndividualPurchase(rowData, false);
+                      handleClickGoodReturnView(rowData, false);
                     }
                   }),
                   rowData => ({
                     icon: () => <VisibilityIcon fontSize="small" />,
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      handleClickOpenIndividualPurchase(rowData, true);
+                      handleClickGoodReturnView(rowData, true);
                     }
                   })
                 ]}
