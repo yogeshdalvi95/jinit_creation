@@ -22,7 +22,12 @@ import {
   ADDREADYMATERIAL,
   EDITREADYMATERIAL,
   VIEWREADYMATERIAL,
-  DAILYUSAGERAWMATERIALS
+  DAILYUSAGERAWMATERIALS,
+  ADDGOODRETURN,
+  EDITGOODRETURN,
+  GOODRETURNLIST,
+  VIEWGOODRETURN,
+  VIEWKACHHAPURCHASEDETAILS
 } from "../paths";
 
 /** Raw material and units */
@@ -61,10 +66,23 @@ const purchasesAndSellersPath = [
   EDITPURCHASES,
   SELLERS,
   EDITSELLER,
-  ADDSELLER
+  ADDSELLER,
+  ADDGOODRETURN,
+  EDITGOODRETURN,
+  GOODRETURNLIST,
+  VIEWGOODRETURN,
+  VIEWKACHHAPURCHASEDETAILS
+];
+
+const goodsReturnPath = [
+  ADDGOODRETURN,
+  EDITGOODRETURN,
+  GOODRETURNLIST,
+  VIEWGOODRETURN
 ];
 
 const purchasesPath = [PURCHASES, ADDPURCHASES, VIEWPURCHASES, EDITPURCHASES];
+const kachhaPurchaseDetailsPath = [VIEWKACHHAPURCHASEDETAILS];
 
 const sellerPath = [SELLERS, EDITSELLER, ADDSELLER];
 /**--------------------------------------------- */
@@ -80,15 +98,27 @@ export const DashboardStaffRoutes = [
     children: [
       {
         path: PURCHASES,
-        name: "Purchases",
+        name: "All Purchases",
         layout: "",
         pathList: purchasesPath
+      },
+      {
+        path: VIEWKACHHAPURCHASEDETAILS,
+        name: "Kachha Purchase Details",
+        layout: "",
+        pathList: kachhaPurchaseDetailsPath
       },
       {
         path: SELLERS,
         name: "Sellers",
         layout: "",
         pathList: sellerPath
+      },
+      {
+        path: GOODRETURNLIST,
+        name: "Goods Return",
+        layout: "",
+        pathList: goodsReturnPath
       }
     ]
   },
@@ -147,15 +177,27 @@ export const DashboardAdminRoutes = [
     children: [
       {
         path: PURCHASES,
-        name: "Purchases",
+        name: "All Purchases",
         layout: "",
         pathList: purchasesPath
+      },
+      {
+        path: VIEWKACHHAPURCHASEDETAILS,
+        name: "Kachha Purchase Details",
+        layout: "",
+        pathList: kachhaPurchaseDetailsPath
       },
       {
         path: SELLERS,
         name: "Sellers",
         layout: "",
         pathList: sellerPath
+      },
+      {
+        path: GOODRETURNLIST,
+        name: "Goods Return",
+        layout: "",
+        pathList: goodsReturnPath
       }
     ]
   },
@@ -221,15 +263,27 @@ export const SuperAdminDashboardRoutes = [
     children: [
       {
         path: PURCHASES,
-        name: "Purchases",
+        name: "All Purchases",
         layout: "",
         pathList: purchasesPath
+      },
+      {
+        path: VIEWKACHHAPURCHASEDETAILS,
+        name: "Kachha Purchase Details",
+        layout: "",
+        pathList: kachhaPurchaseDetailsPath
       },
       {
         path: SELLERS,
         name: "Sellers",
         layout: "",
         pathList: sellerPath
+      },
+      {
+        path: GOODRETURNLIST,
+        name: "Goods Return",
+        layout: "",
+        pathList: goodsReturnPath
       }
     ]
   },

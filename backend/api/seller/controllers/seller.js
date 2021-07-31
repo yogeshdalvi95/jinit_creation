@@ -58,24 +58,11 @@ module.exports = {
       .query("seller")
       .findOne({ seller_name: seller_name });
 
-    let isGstNoAvailable = await strapi
-      .query("seller")
-      .findOne({ gst_no: gst_no });
-
-    console.log(isGstNoAvailable, isNameAvailable, editId);
-
     if (isEdit === "true") {
       if (isNameAvailable && editId != isNameAvailable.id) {
         error = {
           ...error,
           seller_name: ["Seller name already exist"],
-        };
-      }
-
-      if (isGstNoAvailable && editId != isGstNoAvailable.id) {
-        error = {
-          ...error,
-          gst_no: ["Gst number already exist"],
         };
       }
     } else {
@@ -85,14 +72,30 @@ module.exports = {
           seller_name: ["Seller name already exist"],
         };
       }
-      if (isGstNoAvailable) {
-        error = {
-          ...error,
-          gst_no: ["Gst number already exist"],
-        };
+    }
+
+    if (!utils.isEmptyString(gst_no)) {
+      let isGstNoAvailable = await strapi
+        .query("seller")
+        .findOne({ gst_no: gst_no });
+
+      if (isEdit === "true") {
+        if (isGstNoAvailable && editId != isGstNoAvailable.id) {
+          error = {
+            ...error,
+            gst_no: ["Gst number already exist"],
+          };
+        }
+      } else {
+        if (isGstNoAvailable) {
+          error = {
+            ...error,
+            gst_no: ["Gst number already exist"],
+          };
+        }
       }
     }
-    console.log("error ", error);
+
     ctx.send(error);
   },
 };

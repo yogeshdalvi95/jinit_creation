@@ -18,6 +18,7 @@ const buttonStyle = {
   },
 
   button: {
+    textDecoration: "none",
     minHeight: "auto",
     minWidth: "auto",
     backgroundColor: grayColor[0],

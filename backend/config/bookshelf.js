@@ -35,6 +35,11 @@ bookshelf.model("purchases", {
   requireFetch: false,
 });
 
+bookshelf.model("goods-return", {
+  tableName: "goods_return",
+  requireFetch: false,
+});
+
 bookshelf.model("individual-kachha-purchase", {
   tableName: "individual_kachha_purchases",
   requireFetch: false,

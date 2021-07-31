@@ -116,6 +116,7 @@ module.exports = {
     if (isDataPresent) {
       let year = parseInt(isDataPresent.year);
       let month = parseInt(isDataPresent.month);
+      console.log(year, currentYear, month, currentMonth);
       if (year === currentYear && month === currentMonth) {
         let daysInMonth = utils.daysInMonth(month, year);
         let arr = Array.from({ length: daysInMonth }, (_, i) => i + 1);

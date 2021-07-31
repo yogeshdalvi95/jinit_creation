@@ -37,5 +37,8 @@ export { CustomCheckBox } from "./CustomCheckBox";
 export {
   DialogBox,
   DialogBoxForSelectingRawMaterial,
-  DialogForGettingPreviousMonthlyData
+  DialogForGettingPreviousMonthlyData,
+  DialogForSelectingSeller
 } from "./DialogBox";
+export { RawMaterialDetail } from "./RawMaterialDetail";
+export { SellerDetails } from "./SellerDetails";

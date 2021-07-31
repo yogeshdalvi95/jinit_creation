@@ -1,10 +1,10 @@
 {
-  "seller_name": {
+  "seller": {
     "required": true,
     "validations": {
       "required": {
         "value": "true",
-        "message": "Seller Name is required"
+        "message": "Seller is required"
       }
     }
   }

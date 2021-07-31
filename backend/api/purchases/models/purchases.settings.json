@@ -45,6 +45,12 @@
     },
     "total_amt_without_tax": {
       "type": "float"
+    },
+    "invoice_number": {
+      "type": "text"
+    },
+    "bill_no": {
+      "type": "text"
     }
   }
 }

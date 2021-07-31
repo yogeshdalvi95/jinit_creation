@@ -11,4 +11,12 @@ export { Users } from "./Users";
 export { Admin, AddAdmin } from "./Admin";
 export { Staff, AddStaff } from "./Staff";
 export { Departments, AddDepartment } from "./Departments";
-export { Purchases, AddPurchases, Sellers, AddSeller } from "./Purchases";
+export {
+  Purchases,
+  AddPurchases,
+  Sellers,
+  AddSeller,
+  GoodsReturn,
+  AddGoodReturn,
+  KachhaPurchaseDetails
+} from "./Purchases";
