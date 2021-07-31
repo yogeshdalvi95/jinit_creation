@@ -43,7 +43,7 @@ export default function RawMaterials() {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "id:asc"
   });
 
   const [snackBar, setSnackBar] = React.useState({
@@ -53,6 +53,11 @@ export default function RawMaterials() {
   });
 
   const columns = [
+    {
+      title: "Id",
+      field: "id",
+      render: rowData => "#" + rowData.id
+    },
     {
       title: "Name",
       field: "name",
@@ -216,8 +221,25 @@ export default function RawMaterials() {
     history.push(ADDRAWMATERIALS);
   };
 
-  const handleAddDailyCount = row => {
-    history.push(DAILYUSAGERAWMATERIALS);
+  const handleAddDailyCount = rowData => {
+    let bal = "0";
+    if (!rowData.balance) {
+      bal = "0";
+    } else {
+      bal = rowData.balance;
+    }
+    let data = {
+      id: "#" + rowData.id,
+      name: rowData.name,
+      department: rowData.department,
+      color: isEmptyString(rowData.color) ? "---" : rowData.color,
+      size: isEmptyString(rowData.size) ? "---" : rowData.size,
+      bal: bal
+    };
+    history.push(DAILYUSAGERAWMATERIALS, {
+      obj: data,
+      id: rowData.id
+    });
   };
 
   return (
@@ -408,7 +430,7 @@ export default function RawMaterials() {
                       delete filter["is_die"];
                       setFilter(filter => ({
                         ...filter,
-                        _sort: "name:asc"
+                        _sort: "id:asc"
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -445,7 +467,11 @@ export default function RawMaterials() {
                   }),
                   rowData => ({
                     icon: () => <DateRangeIcon fontSize="small" />,
-                    tooltip: "Add Daily Count",
+                    tooltip:
+                      rowData.balance === "0"
+                        ? "Balance is 0, cannot add daily usage"
+                        : "Add Daily Usage",
+                    disabled: rowData.balance === "0" ? true : false,
                     onClick: (event, rowData) => {
                       handleAddDailyCount(rowData);
                     }

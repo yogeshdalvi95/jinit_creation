@@ -678,7 +678,17 @@ const ROLES = {
       },
       {
         name: "monthly-sheet",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "getlatestentries",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "addupdateentries",
+          "getselecteddata",
+        ],
       },
       {
         name: "orders",
@@ -742,7 +752,17 @@ const ROLES = {
       },
       {
         name: "monthly-sheet",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "getlatestentries",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "addupdateentries",
+          "getselecteddata",
+        ],
       },
       {
         name: "orders",

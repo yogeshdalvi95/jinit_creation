@@ -127,6 +127,10 @@ function checkEmpty(obj) {
   return Object.keys(obj).length ? false : true;
 }
 
+function daysInMonth(month, year) {
+  return new Date(year, month, 0).getDate();
+}
+
 module.exports = {
   getRequestParams,
   getPaginatedResponse,
@@ -145,4 +149,5 @@ module.exports = {
   getDateInYYYYMMDD,
   convertNumber,
   checkEmpty,
+  daysInMonth,
 };

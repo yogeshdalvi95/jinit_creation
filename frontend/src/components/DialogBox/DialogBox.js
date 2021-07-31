@@ -20,13 +20,33 @@ export default function DialogBox(props) {
         <DialogContent>
           <DialogContentText id="dialog-description">
             {props.isWarning ? (
-              <div className={styles.AlertImageDiv}>
-                <span className={styles.alertImageCircle}></span>
-                <span className={styles.alertImageIcon}></span>
-              </div>
-            ) : null}
+              <>
+                <div className={styles.AlertImageDiv}>
+                  <span className={styles.alertImageCircle}></span>
+                  <span className={styles.alertImageIcon}></span>
+                </div>
+                <h2 className={styles.highLighter}>
+                  {props.dialogHeader ? props.dialogHeader : ""}
+                </h2>
+                {props.isDatePresent ? (
+                  <h6 className={styles.highLighterH6}>
+                    {props.date ? props.date : ""}
+                  </h6>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <h2 className={styles.highLighter}>
+                  {props.dialogHeader ? props.dialogHeader : ""}
+                </h2>
+                {props.isDatePresent ? (
+                  <h6 className={styles.highLighterH6}>
+                    {props.date ? props.date : ""}
+                  </h6>
+                ) : null}
+              </>
+            )}
 
-            <h2 className={styles.highLighter}>Are you sure?</h2>
             {props.text.map(t => (
               <div className={styles.secondText}>{t}</div>
             ))}
@@ -41,9 +61,16 @@ export default function DialogBox(props) {
           <Button onClick={props.handleCancel} color="danger">
             {props.cancelButton}
           </Button>
-          <Button onClick={props.handleAccept} color="success" autoFocus>
-            {props.acceptButton}
-          </Button>
+          {props.removeAccept ? null : (
+            <Button
+              onClick={props.handleAccept}
+              color="success"
+              autoFocus
+              disabled={props.disableOK}
+            >
+              {props.acceptButton}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </div>

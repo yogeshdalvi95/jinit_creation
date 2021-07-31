@@ -63,7 +63,15 @@ module.exports = {
       .query("raw-material-and-quantity-for-ready-material")
       .findOne({ raw_material: id });
 
-    if (!checkIfPresentInPurchases && !checkIfPresentInReadyMaterial) {
+    const checkIfPresentInMonthlySheet = await strapi
+      .query("monthly-sheet")
+      .findOne({ raw_material: id });
+
+    if (
+      !checkIfPresentInPurchases &&
+      !checkIfPresentInReadyMaterial &&
+      checkIfPresentInMonthlySheet
+    ) {
       await strapi.query("raw-material").delete({ id: id });
       ctx.send(200);
     } else {

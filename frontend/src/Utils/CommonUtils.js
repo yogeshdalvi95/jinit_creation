@@ -12,9 +12,36 @@ export const getInitials = name => {
   return initials;
 };
 
+export function isSameDay(d1, d2) {
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth()
+  );
+}
+
 export const isEmptyString = val => {
   let result = !val || /^\s*$/.test(val);
   return result;
+};
+
+export const getMonthName = val => {
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  return monthNames[parseInt(val) - 1];
 };
 
 export const isNumeric = str => {
@@ -56,3 +83,11 @@ export const convertNumber = (val, isAmount) => {
   }
   return num;
 };
+
+export function formatDate(value) {
+  let date = new Date(value);
+  const day = date.toLocaleString("default", { day: "2-digit" });
+  const month = date.toLocaleString("default", { month: "short" });
+  const year = date.toLocaleString("default", { year: "numeric" });
+  return day + "-" + month + "-" + year;
+}

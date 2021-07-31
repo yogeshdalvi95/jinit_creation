@@ -18,10 +18,11 @@ const useStyles = makeStyles(styles);
 
 export default function GridContainer(props) {
   const classes = useStyles();
-  const { children, noWidth, ...rest } = props;
+  const { children, noWidth, className, ...rest } = props;
   const cardHeaderClasses = classNames({
     [classes.noWidthGrid]: noWidth !== undefined,
-    [classes.grid]: noWidth === undefined || noWidth === null
+    [classes.grid]: noWidth === undefined || noWidth === null,
+    [className]: className !== undefined
   });
   return (
     <Grid container {...rest} className={cardHeaderClasses}>

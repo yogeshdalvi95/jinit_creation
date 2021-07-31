@@ -190,6 +190,33 @@ module.exports = {
                 },
                 { patch: true, transacting: t }
               );
+
+              let currentMonth = new Date().getMonth() + 1;
+              let currentYear = new Date().getFullYear();
+
+              let isCurrentMonthEntryPresent = await strapi
+                .query("monthly-sheet")
+                .findOne({
+                  raw_material: Ip.raw_material,
+                  month: currentMonth,
+                  year: currentYear,
+                });
+
+              if (isCurrentMonthEntryPresent) {
+                let newOpeningBalance =
+                  parseFloat(Ip.purchase_quantity) +
+                  parseFloat(isCurrentMonthEntryPresent.opening_balance);
+
+                await strapi.query("monthly-sheet").update(
+                  { id: isCurrentMonthEntryPresent.id },
+                  {
+                    opening_balance: utils.convertNumber(
+                      newOpeningBalance.toFixed(2)
+                    ),
+                  },
+                  { patch: true, transacting: t }
+                );
+              }
             });
           } else {
             await utils.asyncForEach(pakkaPurchase, async (Ip) => {

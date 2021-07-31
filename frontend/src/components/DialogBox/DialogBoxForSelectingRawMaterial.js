@@ -5,7 +5,6 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { Auth, Button } from "..";
-import styles from "./Dialog.module.css";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { GridContainer, GridItem } from "../Grid";
 import { CustomInput } from "../CustomInput";
@@ -26,10 +25,15 @@ export default function DialogBoxForSelectingRawMaterial(props) {
   const [departments, setDepartments] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "id:asc"
   });
 
   const columns = [
+    {
+      title: "Id",
+      field: "id",
+      render: rowData => "#" + rowData.id
+    },
     {
       title: "Name",
       field: "name",
@@ -300,7 +304,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                           delete filter["is_die"];
                           setFilter(filter => ({
                             ...filter,
-                            _sort: "name:asc"
+                            _sort: "id:asc"
                           }));
                           tableRef.current.onQueryChange();
                         }}
@@ -321,7 +325,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                       );
                     }}
                     actions={[
-                      {
+                      rowData => ({
                         icon: () => <Button color="primary">Select</Button>,
                         tooltip: "Select this raw material",
                         onClick: (event, rowData) => {
@@ -332,6 +336,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                             bal = rowData.balance;
                           }
                           let nameObject = {
+                            id: "#" + rowData.id,
                             name: rowData.name,
                             department: rowData.department,
                             color: isEmptyString(rowData.color)
@@ -342,17 +347,24 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                               : rowData.size,
                             bal: bal
                           };
-                          props.handleAddRawMaterial(
-                            "raw_material",
-                            rowData.value,
-                            props.gridKey,
-                            nameObject
-                          );
+                          if (props.isHandleKey) {
+                            props.handleAddRawMaterial(
+                              "raw_material",
+                              rowData.value,
+                              props.gridKey,
+                              nameObject
+                            );
+                          } else {
+                            props.handleAddRawMaterial(
+                              rowData.value,
+                              nameObject
+                            );
+                          }
                         }
-                      }
+                      })
                     ]}
                     options={{
-                      pageSize: 10,
+                      pageSize: 5,
                       search: false,
                       sorting: true,
                       thirdSortClick: false

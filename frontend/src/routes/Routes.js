@@ -174,7 +174,7 @@ const Routes = () => {
           path={DAILYUSAGERAWMATERIALS}
           exact
           component={AddDailyUsage}
-          header={"Add Daily Usage"}
+          header={"Daily Usage"}
         />
 
         {/** Units */}

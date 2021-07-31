@@ -28,6 +28,18 @@
   overflow-wrap: break-word;
 }
 
+.highLighterH6 {
+  position: relative;
+  max-width: 100%;
+  margin: 0px 0px 0.1em;
+  padding: 0px;
+  font-size: 0.875em;
+  font-weight: 600;
+  text-align: center;
+  text-transform: none;
+  overflow-wrap: break-word;
+}
+
 .AlertImageDiv {
   width: 80px;
   height: 80px;

@@ -14,12 +14,30 @@ const useStyles = makeStyles(styles);
 
 export default function CardBody(props) {
   const classes = useStyles();
-  const { className, children, plain, profile, ...rest } = props;
+  const {
+    className,
+    children,
+    plain,
+    profile,
+    background,
+    formHorizontal,
+    pricing,
+    signup,
+    color,
+    calendar,
+    ...rest
+  } = props;
   const cardBodyClasses = classNames({
     [classes.cardBody]: true,
     [classes.cardBodyPlain]: plain,
     [classes.cardBodyProfile]: profile,
-    [className]: className !== undefined
+    [className]: className !== undefined,
+    [classes.cardBodyBackground]: background,
+    [classes.cardBodyFormHorizontal]: formHorizontal,
+    [classes.cardPricing]: pricing,
+    [classes.cardSignup]: signup,
+    [classes.cardBodyColor]: color,
+    [classes.cardBodyCalendar]: calendar
   });
   return (
     <div className={cardBodyClasses} {...rest}>
@@ -30,7 +48,13 @@ export default function CardBody(props) {
 
 CardBody.propTypes = {
   className: PropTypes.string,
+  background: PropTypes.bool,
   plain: PropTypes.bool,
+  formHorizontal: PropTypes.bool,
+  pricing: PropTypes.bool,
+  signup: PropTypes.bool,
+  color: PropTypes.bool,
   profile: PropTypes.bool,
+  calendar: PropTypes.bool,
   children: PropTypes.node
 };

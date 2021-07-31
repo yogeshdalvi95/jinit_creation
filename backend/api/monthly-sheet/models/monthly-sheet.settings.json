@@ -13,131 +13,147 @@
   "attributes": {
     "month": {
       "type": "enumeration",
-      "enum": [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-      ]
+      "enum": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "required": true
     },
     "year": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "opening_balance": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "total": {
-      "type": "float"
-    },
-    "balance": {
-      "type": "float"
-    },
-    "amount": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "raw_material": {
       "model": "raw-material"
     },
     "day_1": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_2": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_3": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_4": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_5": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_6": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_7": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_8": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_9": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_10": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_11": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_12": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_13": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_14": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_15": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_16": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_17": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_18": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_19": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_20": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_21": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_22": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_23": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_24": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_25": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_26": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_27": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_28": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_29": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_30": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     },
     "day_31": {
-      "type": "float"
+      "type": "float",
+      "default": 0.0
     }
   }
 }
