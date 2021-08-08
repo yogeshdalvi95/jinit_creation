@@ -1,23 +1,56 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import { Auth, Table } from "../../components";
+import {
+  Auth,
+  Card,
+  CardBody,
+  CardHeader,
+  FAB,
+  GridContainer,
+  GridItem,
+  SnackBarComponent,
+  Table
+} from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_ready_materials } from "../../constants";
+import {
+  ADDREADYMATERIAL,
+  EDITREADYMATERIAL,
+  VIEWREADYMATERIAL
+} from "../../paths";
+import { useHistory } from "react-router-dom";
+import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
+import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+import AddIcon from "@material-ui/icons/Add";
+import { convertNumber } from "../../Utils";
+import VisibilityIcon from "@material-ui/icons/Visibility";
+import { providerForGet } from "../../api";
 
+const useStyles = makeStyles(styles);
 export default function ReadyMaterials() {
+  const classes = useStyles();
   const tableRef = React.createRef();
+  const [openBackDrop, setBackDrop] = useState(false);
+  const history = useHistory();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "id:desc"
+  });
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
   });
 
   const columns = [
-    { title: "Name", field: "name" },
-    { title: "Color", field: "color" },
-    { title: "Size", field: "size" },
-    { title: "Department", field: "department" },
-    { title: "Costing", field: "costing" },
-    { title: "Balance", field: "balance" }
+    { title: "id", field: "id", render: rowData => `#${rowData.id}` },
+    { title: "Material No", field: "material_no" },
+    {
+      title: "Price",
+      field: "final_cost",
+      render: rowData => convertNumber(rowData.final_cost, true)
+    }
   ];
 
   const getReadyMaterialsData = async (page, pageSize) => {
@@ -42,32 +75,13 @@ export default function ReadyMaterials() {
       })
         .then(response => response.json())
         .then(result => {
-          let data = convertData(result.data);
           resolve({
-            data: data,
+            data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount
           });
         });
     });
-  };
-
-  const convertData = data => {
-    let arr = [];
-    data.map(d => {
-      let department = d.department.name;
-      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
-
-      arr.push({
-        name: d.name,
-        color: d.color,
-        size: d.size,
-        department: department,
-        costing: costing,
-        balance: d.balance ? d.balance : "0"
-      });
-    });
-    return arr;
   };
 
   const orderFunc = (columnId, direction) => {
@@ -84,33 +98,120 @@ export default function ReadyMaterials() {
     tableRef.current.onQueryChange();
   };
 
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
+  const handleAdd = () => {
+    history.push(ADDREADYMATERIAL);
+  };
+
+  const handleTableAction = async (row, isView) => {
+    setBackDrop(true);
+    await providerForGet(
+      backend_ready_materials + "/" + row.id,
+      {},
+      Auth.getToken()
+    )
+      .then(res => {
+        setBackDrop(false);
+        if (isView) {
+          history.push(VIEWREADYMATERIAL, { data: res.data, view: true });
+        } else {
+          history.push(EDITREADYMATERIAL, { data: res.data, edit: true });
+        }
+      })
+      .catch(err => {
+        setBackDrop(false);
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error viewing ready material"
+        }));
+      });
+  };
   return (
-    <Table
-      tableRef={tableRef}
-      title="Raw Materials"
-      columns={columns}
-      data={async query => {
-        return await getReadyMaterialsData(query.page + 1, query.pageSize);
-      }}
-      actions={[
-        rowData => ({
-          icon: () => <EditOutlinedIcon fontSize="small" />,
-          tooltip: "Edit",
-          onClick: (event, rowData) => {
-            //handleClickOpen(rowData);
-          }
-        })
-      ]}
-      options={{
-        pageSize: 10,
-        actionsColumnIndex: -1,
-        search: false,
-        sorting: true,
-        thirdSortClick: false
-      }}
-      onOrderChange={(orderedColumnId, orderDirection) => {
-        orderFunc(orderedColumnId, orderDirection);
-      }}
-    />
+    <>
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <FAB
+                    color="primary"
+                    align={"end"}
+                    size={"small"}
+                    onClick={() => handleAdd()}
+                  >
+                    <AddIcon />
+                  </FAB>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}></GridItem>
+              </GridContainer>
+              <br />
+              <Table
+                tableRef={tableRef}
+                title="Ready Materials"
+                columns={columns}
+                data={async query => {
+                  return await getReadyMaterialsData(
+                    query.page + 1,
+                    query.pageSize
+                  );
+                }}
+                actions={[
+                  rowData => ({
+                    icon: () => <EditOutlinedIcon fontSize="small" />,
+                    tooltip: "Edit",
+                    onClick: (event, rowData) => {
+                      handleTableAction(rowData, false);
+                    }
+                  }),
+                  rowData => ({
+                    icon: () => <VisibilityIcon fontSize="small" />,
+                    tooltip: "View",
+                    onClick: (event, rowData) => {
+                      handleTableAction(rowData, true);
+                    }
+                  })
+                ]}
+                options={{
+                  pageSize: 10,
+                  actionsColumnIndex: -1,
+                  search: false,
+                  sorting: true,
+                  thirdSortClick: false
+                }}
+                onOrderChange={(orderedColumnId, orderDirection) => {
+                  orderFunc(orderedColumnId, orderDirection);
+                }}
+              />
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
+      <Backdrop className={classes.backdrop} open={openBackDrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </>
   );
 }

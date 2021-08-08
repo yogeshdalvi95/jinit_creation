@@ -8,6 +8,7 @@
         "policies": []
       }
     },
+
     {
       "method": "GET",
       "path": "/raw-material-and-quantity-for-ready-materials/count",
@@ -28,6 +29,30 @@
       "method": "POST",
       "path": "/raw-material-and-quantity-for-ready-materials",
       "handler": "raw-material-and-quantity-for-ready-material.create",
+      "config": {
+        "policies": ["isDuplicateRawMaterial"]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/raw-material-and-quantity-for-ready-materials/update_quantity",
+      "handler": "raw-material-and-quantity-for-ready-material.updateQuantity",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/raw-material-and-quantity-for-ready-materials/add-raw-material",
+      "handler": "raw-material-and-quantity-for-ready-material.addRawMaterialToReadyMaterial",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/raw-material-and-quantity-for-ready-materials/delete-raw-material",
+      "handler": "raw-material-and-quantity-for-ready-material.deleteRawMaterialFromReadyMaterial",
       "config": {
         "policies": []
       }

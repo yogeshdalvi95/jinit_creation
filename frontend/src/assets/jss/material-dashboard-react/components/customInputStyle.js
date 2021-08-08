@@ -64,6 +64,11 @@ const customInputStyle = {
     position: "relative",
     verticalAlign: "unset"
   },
+  noMarginFormControl: {
+    paddingBottom: "10px",
+    position: "relative",
+    verticalAlign: "unset"
+  },
   labelRTL: {
     right: 0,
     transition: "all 200ms cubic-bezier(0.0, 0, 0.2, 1) 0ms",

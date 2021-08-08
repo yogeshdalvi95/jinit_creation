@@ -26,6 +26,7 @@ export default function CustomInput(props) {
     error,
     success,
     rtlActive,
+    noMargin,
     ...rest
   } = props;
 
@@ -43,6 +44,12 @@ export default function CustomInput(props) {
     [classes.marginTop]: labelText === undefined
   });
 
+  const formControlClasses = classNames({
+    [formControlProps.className]: true,
+    [classes.formControl]: noMargin ? false : true,
+    [classes.noMarginFormControl]: noMargin ? true : false
+  });
+
   let newInputProps = {
     maxLength:
       inputProps && inputProps.maxLength ? inputProps.maxLength : undefined,
@@ -52,10 +59,7 @@ export default function CustomInput(props) {
   };
 
   return (
-    <FormControl
-      {...formControlProps}
-      className={formControlProps.className + " " + classes.formControl}
-    >
+    <FormControl {...formControlProps} className={formControlClasses}>
       {labelText !== undefined ? (
         <InputLabel
           className={classes.labelRoot + labelClasses}

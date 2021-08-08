@@ -227,7 +227,6 @@ export default function KachhaPurchaseDetails() {
         date: data.date
       };
       x.push(dataToSend);
-      console.log(dataToSend);
     });
     return x;
   };
