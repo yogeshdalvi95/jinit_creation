@@ -82,10 +82,10 @@ export const setErrors = (objectToCheck, schema) => {
           }
         };
       }
-      const errors = validateInput(
-        objectToCheck.hasOwnProperty(field) ? objectToCheck[field] : "",
-        validations
-      );
+      let value = objectToCheck.hasOwnProperty(field)
+        ? objectToCheck[field]
+        : "";
+      const errors = validateInput(value, validations);
       if (errors.length) {
         formErrors = {
           ...formErrors,
@@ -98,10 +98,10 @@ export const setErrors = (objectToCheck, schema) => {
       !noEmptySpaces.test(objectToCheck[field]) &&
       objectToCheck.hasOwnProperty(field)
     ) {
-      const errors = validateInput(
-        objectToCheck.hasOwnProperty(field),
-        schema[field]["validations"]
-      );
+      let value = objectToCheck.hasOwnProperty(field)
+        ? objectToCheck[field]
+        : "";
+      const errors = validateInput(value, schema[field]["validations"]);
       if (errors.length) {
         formErrors = {
           ...formErrors,

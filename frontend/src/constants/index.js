@@ -18,5 +18,9 @@ export {
   backend_monthly_sheet_add_update_entries,
   backend_monthly_sheet_get_selected_data,
   backend_goods_return,
-  backend_individual_kachha_purchase
+  backend_individual_kachha_purchase,
+  backend_raw_material_and_quantity_for_ready_material,
+  backend_raw_material_and_quantity_for_ready_material_for_update_quantity,
+  backend_raw_material_and_quantity_for_ready_material_for_add_raw_material,
+  backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials
 } from "./UrlConstants";

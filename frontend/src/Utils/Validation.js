@@ -86,6 +86,14 @@ export const validation = (value, inputValidations, type = "text") => {
           errors.push(validationValue.message);
         }
         break;
+      case "validPositiveIntegerExceptZero":
+        if (
+          isNaN(parseFloat(value)) ||
+          (!isNaN(parseFloat(value)) && parseFloat(value) < 0)
+        ) {
+          errors.push(validationValue.message);
+        }
+        break;
       default:
         errors = [];
     }

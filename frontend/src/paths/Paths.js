@@ -38,7 +38,7 @@ export const ADDDEPARTMENTS = "/add-departments";
 export const UNITS = "/units";
 export const ADDUNITS = "/add-unit";
 
-export const LISTREADYMATERIAL = "/list-ready-material";
+export const LISTREADYMATERIAL = "/ready-material";
 export const ADDREADYMATERIAL = "/add-ready-material";
 export const EDITREADYMATERIAL = "/edit-ready-material";
-export const VIEWREADYMATERIAL = "/ready-material";
+export const VIEWREADYMATERIAL = "/view-ready-material";

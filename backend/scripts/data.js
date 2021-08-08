@@ -643,6 +643,20 @@ const ROLES = {
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
+        name: "raw-material-and-quantity-for-ready-material",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "updatequantity",
+          "addrawmaterialtoreadymaterial",
+          "deleterawmaterialfromreadymaterial",
+        ],
+      },
+      {
         name: "monthly-sheet",
         action: [],
       },
@@ -695,6 +709,20 @@ const ROLES = {
       {
         name: "individual-pakka-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "raw-material-and-quantity-for-ready-material",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "updatequantity",
+          "addrawmaterialtoreadymaterial",
+          "deleterawmaterialfromreadymaterial",
+        ],
       },
       {
         name: "goods-return",
@@ -781,6 +809,20 @@ const ROLES = {
       {
         name: "individual-pakka-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "raw-material-and-quantity-for-ready-material",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "updatequantity",
+          "addrawmaterialtoreadymaterial",
+          "deleterawmaterialfromreadymaterial",
+        ],
       },
       {
         name: "goods-return",

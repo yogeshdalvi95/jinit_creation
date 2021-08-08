@@ -45,7 +45,6 @@ export default function Purchases() {
     _sort: "date:desc"
   });
   const [seller, setSeller] = useState([]);
-  console.log("filter", filter);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",

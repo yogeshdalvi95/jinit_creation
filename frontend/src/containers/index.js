@@ -20,3 +20,4 @@ export {
   AddGoodReturn,
   KachhaPurchaseDetails
 } from "./Purchases";
+export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";

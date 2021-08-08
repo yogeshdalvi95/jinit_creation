@@ -26,7 +26,11 @@ import {
   ADDGOODRETURN,
   EDITGOODRETURN,
   VIEWGOODRETURN,
-  VIEWKACHHAPURCHASEDETAILS
+  VIEWKACHHAPURCHASEDETAILS,
+  LISTREADYMATERIAL,
+  ADDREADYMATERIAL,
+  EDITREADYMATERIAL,
+  VIEWREADYMATERIAL
 } from "../paths";
 import {
   Login,
@@ -47,7 +51,9 @@ import {
   AddDailyUsage,
   GoodsReturn,
   AddGoodReturn,
-  KachhaPurchaseDetails
+  KachhaPurchaseDetails,
+  ReadyMaterials,
+  AddEditReadyMaterial
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -256,6 +262,36 @@ const Routes = () => {
         />
 
         {/** Ready Material */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={LISTREADYMATERIAL}
+          exact
+          component={ReadyMaterials}
+          header={"Ready Material"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDREADYMATERIAL}
+          exact
+          component={AddEditReadyMaterial}
+          header={"Add Ready Material"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITREADYMATERIAL}
+          exact
+          component={AddEditReadyMaterial}
+          header={"Edit Ready Material"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWREADYMATERIAL}
+          exact
+          component={AddEditReadyMaterial}
+          header={"Views Ready Material"}
+        />
 
         <PublicRoute path={LOGIN} exact component={Login} />
         <DefaultRoute path="*" exact />

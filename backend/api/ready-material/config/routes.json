@@ -29,7 +29,7 @@
       "path": "/ready-materials",
       "handler": "ready-material.create",
       "config": {
-        "policies": []
+        "policies": ["checkDuplicateReadyMaterialWhileAdding"]
       }
     },
     {
@@ -37,7 +37,7 @@
       "path": "/ready-materials/:id",
       "handler": "ready-material.update",
       "config": {
-        "policies": []
+        "policies": ["checkDuplicateReadyMaterialWhileEditing"]
       }
     },
     {
