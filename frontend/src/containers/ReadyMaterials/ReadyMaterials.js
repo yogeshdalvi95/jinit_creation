@@ -2,9 +2,11 @@ import React, { useState } from "react";
 // @material-ui/core components
 import {
   Auth,
+  Button,
   Card,
   CardBody,
   CardHeader,
+  CustomInput,
   FAB,
   GridContainer,
   GridItem,
@@ -24,7 +26,7 @@ import styles from "../../assets/jss/material-dashboard-react/controllers/common
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { convertNumber } from "../../Utils";
+import { convertNumber, isEmptyString } from "../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { providerForGet } from "../../api";
 
@@ -35,7 +37,7 @@ export default function ReadyMaterials() {
   const [openBackDrop, setBackDrop] = useState(false);
   const history = useHistory();
   const [filter, setFilter] = useState({
-    _sort: "id:desc"
+    _sort: "created_at:desc"
   });
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -165,7 +167,55 @@ export default function ReadyMaterials() {
                 </GridItem>
               </GridContainer>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={2}></GridItem>
+                <GridItem xs={12} sm={3} md={3}>
+                  <CustomInput
+                    onChange={e => {
+                      if (isEmptyString(e.target.value)) {
+                        delete filter["material_no_contains"];
+                        setFilter(filter => ({
+                          ...filter
+                        }));
+                      } else {
+                        setFilter(filter => ({
+                          ...filter,
+                          material_no_contains: e.target.value
+                        }));
+                      }
+                    }}
+                    type="text"
+                    labelText="Material Number"
+                    name="material_no_contains"
+                    noMargin
+                    value={filter["material_no_contains"]}
+                    id="material_no_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+
+                <GridItem xs={12} sm={12} md={4}>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      delete filter["material_no_contains"];
+                      setFilter(filter => ({
+                        ...filter
+                      }));
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </GridItem>
               </GridContainer>
               <br />
               <Table

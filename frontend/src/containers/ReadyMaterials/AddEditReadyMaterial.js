@@ -281,6 +281,7 @@ export default function AddEditReadyMaterial(props) {
           }));
         });
     } else {
+      let setRef = tableRef.current;
       let obj = {
         material_no: formState.material_no,
         final_cost: isEmptyString(formState.final_cost)
@@ -291,18 +292,24 @@ export default function AddEditReadyMaterial(props) {
       };
       await providerForPost(backend_ready_materials, obj, Auth.getToken())
         .then(res => {
+          filter["ready_material"] = res.data.id;
+          setFilter(filter => ({
+            ...filter
+          }));
+          setFormState(formState => ({
+            ...formState,
+            id: res.data.id
+          }));
+          setRef.onQueryChange();
           setSnackBar(snackBar => ({
             ...snackBar,
             show: true,
             severity: "success",
             message: "Ready Material Added Successfully"
           }));
-          setFormState(formState => ({
-            ...formState,
-            id: res.data.id
-          }));
         })
         .catch(err => {
+          setRef.onQueryChange();
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
@@ -634,92 +641,96 @@ export default function AddEditReadyMaterial(props) {
                 </GridItem>
               </GridContainer>
 
-              <GridContainer>
-                <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
-                  <div className={classes.block}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={filter["raw_material.is_die"] ? true : false}
-                          onChange={event => {
-                            if (event.target.checked) {
-                              setFilter(filter => ({
-                                ...filter,
-                                "raw_material.is_die": event.target.checked
-                              }));
-                            } else {
-                              delete filter["raw_material.is_die"];
-                              setFilter(filter => ({
-                                ...filter
-                              }));
+              {formState.id ? (
+                <GridContainer>
+                  <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
+                    <div className={classes.block}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={
+                              filter["raw_material.is_die"] ? true : false
                             }
-                          }}
-                          classes={{
-                            switchBase: classes.switchBase,
-                            checked: classes.switchChecked,
-                            thumb: classes.switchIcon,
-                            track: classes.switchBar
-                          }}
-                        />
-                      }
-                      classes={{
-                        label: classes.label
+                            onChange={event => {
+                              if (event.target.checked) {
+                                setFilter(filter => ({
+                                  ...filter,
+                                  "raw_material.is_die": event.target.checked
+                                }));
+                              } else {
+                                delete filter["raw_material.is_die"];
+                                setFilter(filter => ({
+                                  ...filter
+                                }));
+                              }
+                            }}
+                            classes={{
+                              switchBase: classes.switchBase,
+                              checked: classes.switchChecked,
+                              thumb: classes.switchIcon,
+                              track: classes.switchBar
+                            }}
+                          />
+                        }
+                        classes={{
+                          label: classes.label
+                        }}
+                        label="Search Only Die's"
+                      />
+                    </div>
+                  </GridItem>
+                  <GridItem xs={12} sm={3} md={3}>
+                    <CustomInput
+                      onChange={e => {
+                        if (isEmptyString(e.target.value)) {
+                          delete filter["raw_material.name_contains"];
+                          setFilter(filter => ({
+                            ...filter
+                          }));
+                        } else {
+                          setFilter(filter => ({
+                            ...filter,
+                            "raw_material.name_contains": e.target.value
+                          }));
+                        }
                       }}
-                      label="Search Only Die's"
+                      type="text"
+                      labelText="Raw Material Name"
+                      name="raw_material.name_contains"
+                      noMargin
+                      value={filter["raw_material.name_contains"]}
+                      id="raw_material.name_contains"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
                     />
-                  </div>
-                </GridItem>
-                <GridItem xs={12} sm={3} md={3}>
-                  <CustomInput
-                    onChange={e => {
-                      if (isEmptyString(e.target.value)) {
+                  </GridItem>
+
+                  <GridItem xs={12} sm={12} md={4}>
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        tableRef.current.onQueryChange();
+                      }}
+                    >
+                      Search
+                    </Button>
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        delete filter["raw_material.is_die"];
                         delete filter["raw_material.name_contains"];
                         setFilter(filter => ({
                           ...filter
                         }));
-                      } else {
-                        setFilter(filter => ({
-                          ...filter,
-                          "raw_material.name_contains": e.target.value
-                        }));
-                      }
-                    }}
-                    type="text"
-                    labelText="Raw Material Name"
-                    name="raw_material.name_contains"
-                    noMargin
-                    value={filter["raw_material.name_contains"]}
-                    id="raw_material.name_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-
-                <GridItem xs={12} sm={12} md={4}>
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      tableRef.current.onQueryChange();
-                    }}
-                  >
-                    Search
-                  </Button>
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      delete filter["raw_material.is_die"];
-                      delete filter["raw_material.name_contains"];
-                      setFilter(filter => ({
-                        ...filter
-                      }));
-                      tableRef.current.onQueryChange();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </GridItem>
-              </GridContainer>
+                        tableRef.current.onQueryChange();
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </GridItem>
+                </GridContainer>
+              ) : null}
               <br />
               <Table
                 tableRef={tableRef}
