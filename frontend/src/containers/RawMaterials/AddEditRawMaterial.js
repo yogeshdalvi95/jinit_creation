@@ -12,11 +12,16 @@ import {
   CustomCheckBox,
   CustomInput,
   DialogBox,
+  DialogForSelectingCategory,
+  DialogForSelectingColor,
   FAB,
   GridContainer,
-  GridItem
+  GridItem,
+  SnackBarComponent
 } from "../../components";
 // core components
+import ClearIcon from "@material-ui/icons/Clear";
+import EditIcon from "@material-ui/icons/Edit";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
@@ -31,13 +36,26 @@ import {
   backend_units
 } from "../../constants";
 import { useState } from "react";
-import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
-import { isEmptyString } from "../../Utils";
+import {
+  Backdrop,
+  CircularProgress,
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  Tooltip
+} from "@material-ui/core";
+import { checkEmpty, hasError, isEmptyString, setErrors } from "../../Utils";
+import SweetAlert from "react-bootstrap-sweetalert";
+import classNames from "classnames";
+import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
+import validationForm from "./form/RawMaterialvalidation.json";
 
 const useStyles = makeStyles(styles);
+const buttonUseStyles = makeStyles(buttonStyles);
 
 export default function AddEditRawMaterial(props) {
   const classes = useStyles();
+  const [alert, setAlert] = useState(null);
   const history = useHistory();
   const [departments, setDepartments] = useState([]);
   const [units, setUnits] = useState([]);
@@ -45,7 +63,10 @@ export default function AddEditRawMaterial(props) {
   const [formState, setFormState] = useState({
     id: null,
     name: "",
-    color: "",
+    color: null,
+    category: null,
+    colorName: "",
+    categoryName: "",
     size: "",
     balance: 0,
     costing: 0,
@@ -55,7 +76,23 @@ export default function AddEditRawMaterial(props) {
     is_die: false,
     name_value: []
   });
-  const [openDialog, setOpenDialog] = useState(false);
+
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
+  });
+
+  const buttonClasses = buttonUseStyles();
+  const [error, setError] = React.useState({});
+  const [
+    openDialogForSelectingCategory,
+    setOpenDialogForSelectingCategory
+  ] = useState(false);
+  const [
+    openDialogForSelectingColor,
+    setOpenDialogForSelectingColor
+  ] = useState(false);
 
   /** VIMP to check if the data is used for viewing */
   const [isView] = useState(
@@ -84,7 +121,10 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       id: data.id,
       name: data.name,
-      color: data.color,
+      color: data.color ? data.color.id : null,
+      category: data.category ? data.category.id : null,
+      colorName: data.color ? data.color.name : "",
+      categoryName: data.category ? data.category.name : "",
       size: data.size,
       balance: data.balance,
       costing: data.costing,
@@ -156,9 +196,17 @@ export default function AddEditRawMaterial(props) {
         }));
       }
     }
+    delete error[name];
+    setError(error => ({
+      ...error
+    }));
   };
 
   const handleChange = event => {
+    delete error[event.target.name];
+    setError(error => ({
+      ...error
+    }));
     setFormState(formState => ({
       ...formState,
       [event.target.name]: event.target.value
@@ -212,27 +260,7 @@ export default function AddEditRawMaterial(props) {
           department: formState.department,
           size: formState.size,
           color: formState.color,
-          unit: formState.unit,
-          costing: formState.costing,
-          unit_name: formState.unit_name,
-          is_die: formState.is_die,
-          name_value: arr
-        },
-        Auth.getToken()
-      )
-        .then(res => {
-          history.push(RAWMATERIALSVIEW);
-          setBackDrop(false);
-        })
-        .catch(err => {});
-    } else {
-      await providerForPost(
-        backend_raw_materials,
-        {
-          name: formState.name,
-          department: formState.department,
-          size: formState.size,
-          color: formState.color,
+          category: formState.category,
           unit: formState.unit,
           costing: formState.costing,
           balance: formState.balance,
@@ -246,7 +274,50 @@ export default function AddEditRawMaterial(props) {
           history.push(RAWMATERIALSVIEW);
           setBackDrop(false);
         })
-        .catch(err => {});
+        .catch(err => {
+          setBackDrop(false);
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: err.response.data.message
+              ? err.response.data.message
+              : "Error updating values"
+          }));
+        });
+    } else {
+      await providerForPost(
+        backend_raw_materials,
+        {
+          name: formState.name,
+          department: formState.department,
+          size: formState.size,
+          color: formState.color,
+          category: formState.category,
+          unit: formState.unit,
+          costing: formState.costing,
+          balance: formState.balance,
+          unit_name: formState.unit_name,
+          is_die: formState.is_die,
+          name_value: arr
+        },
+        Auth.getToken()
+      )
+        .then(res => {
+          history.push(RAWMATERIALSVIEW);
+          setBackDrop(false);
+        })
+        .catch(err => {
+          setBackDrop(false);
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: err.response.message
+              ? err.response.message
+              : "Error updating values"
+          }));
+        });
     }
   };
 
@@ -281,39 +352,127 @@ export default function AddEditRawMaterial(props) {
   };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false);
+    setAlert(null);
   };
 
   const handleAcceptDialog = () => {
-    setOpenDialog(false);
+    setAlert(null);
     addButton();
   };
 
-  const submit = () => {
-    if (isEdit) {
-      addButton();
+  const submit = event => {
+    event.preventDefault();
+    setBackDrop(true);
+    let isValid = false;
+    let error = {};
+    /** This will set errors as per validations defined in form */
+    error = setErrors(formState, validationForm);
+
+    if (checkEmpty(error)) {
+      setBackDrop(false);
+      setError({});
+      isValid = true;
     } else {
-      setOpenDialog(true);
+      setBackDrop(false);
+      setError(error);
     }
+
+    if (isValid) {
+      if (isEdit) {
+        addButton();
+      } else {
+        const confirmBtnClasses = classNames({
+          [buttonClasses.button]: true,
+          [buttonClasses["success"]]: true
+        });
+
+        const cancelBtnClasses = classNames({
+          [buttonClasses.button]: true,
+          [buttonClasses["danger"]]: true
+        });
+
+        setAlert(
+          <SweetAlert
+            warning
+            showCancel
+            confirmBtnText="Yes"
+            confirmBtnCssClass={confirmBtnClasses}
+            confirmBtnBsStyle="outline-{variant}"
+            title="Heads up?"
+            onConfirm={handleAcceptDialog}
+            onCancel={handleCloseDialog}
+            cancelBtnCssClass={cancelBtnClasses}
+            focusCancelBtn
+          >
+            Please make sure you have added the right Initial balance as balance
+            once added cannot be edited from here, are you sure you want to
+            proceed?
+          </SweetAlert>
+        );
+      }
+    }
+  };
+
+  const handleCloseDialogForCategory = () => {
+    setOpenDialogForSelectingCategory(false);
+  };
+
+  const handleCloseDialogForColor = () => {
+    setOpenDialogForSelectingColor(false);
+  };
+
+  const handleAddColor = row => {
+    handleCloseDialogForColor();
+    setFormState(formState => ({
+      ...formState,
+      color: row.id,
+      colorName: row.name
+    }));
+  };
+
+  const handleAddCategory = row => {
+    delete error["category"];
+    setError(error => ({
+      ...error
+    }));
+    handleCloseDialogForCategory();
+    setFormState(formState => ({
+      ...formState,
+      category: row.id,
+      categoryName: row.name
+    }));
+  };
+
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
   };
 
   return (
     <>
-      <DialogBox
-        open={openDialog}
-        dialogTitle={""}
-        handleCancel={handleCloseDialog}
-        handleClose={handleCloseDialog}
-        handleAccept={handleAcceptDialog}
-        cancelButton={"Cancel"}
-        acceptButton={"Yes"}
-        isWarning
-        text={[
-          `Please make sure you have added the right Initial balance as balance once added cannot be edited from here.`,
-          `Are you sure you
-        want to proceed ?`
-        ]}
-      ></DialogBox>
+      <DialogForSelectingCategory
+        handleCancel={handleCloseDialogForCategory}
+        handleClose={handleCloseDialogForCategory}
+        handleAddCategory={handleAddCategory}
+        open={openDialogForSelectingCategory}
+      />
+      <DialogForSelectingColor
+        handleCancel={handleCloseDialogForColor}
+        handleClose={handleCloseDialogForColor}
+        handleAddColor={handleAddColor}
+        open={openDialogForSelectingColor}
+      />
+      {alert}
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
           <FAB align={"start"} size={"small"} onClick={onBackClick}>
@@ -328,7 +487,7 @@ export default function AddEditRawMaterial(props) {
             </CardHeader>
             <CardBody>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={5}>
+                <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     labelText="Name"
@@ -339,9 +498,183 @@ export default function AddEditRawMaterial(props) {
                     formControlProps={{
                       fullWidth: true
                     }}
+                    /** For setting errors */
+                    helperTextId={"helperText_name"}
+                    isHelperText={hasError("name", error)}
+                    helperText={
+                      hasError("name", error)
+                        ? error["name"].map(error => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("name", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={5}>
+              </GridContainer>
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={5}
+                  style={{
+                    margin: "27px 10px 0px 13px"
+                  }}
+                >
+                  <GridContainer
+                    style={{
+                      border: "1px solid #C0C0C0",
+                      borderRadius: "10px"
+                    }}
+                  >
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={8}
+                      style={{
+                        margin: "15px 0px 0px"
+                      }}
+                    >
+                      <GridContainer style={{ dispay: "flex" }}>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Category : </b> {formState.categoryName}
+                        </GridItem>
+                      </GridContainer>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={1}>
+                      <Tooltip
+                        title={
+                          formState.category
+                            ? "Change Category "
+                            : "Select Category"
+                        }
+                      >
+                        <IconButton
+                          onClick={() => {
+                            setOpenDialogForSelectingCategory(true);
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={1}>
+                      <IconButton
+                        onClick={() => {
+                          delete error["category"];
+                          setError(error => ({
+                            ...error
+                          }));
+                          setFormState(formState => ({
+                            ...formState,
+                            category: null,
+                            categoryName: ""
+                          }));
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </GridItem>
+                  </GridContainer>
+                  <GridContainer>
+                    <GridItem>
+                      {hasError("category", error) ? (
+                        <GridItem xs={12} sm={12} md={12}>
+                          <FormHelperText
+                            id={"category_helpertext_id"}
+                            error={hasError("category", error)}
+                          >
+                            {hasError("category", error)
+                              ? error["category"].map(error => {
+                                  return error + " ";
+                                })
+                              : null}
+                          </FormHelperText>
+                        </GridItem>
+                      ) : null}
+                    </GridItem>
+                  </GridContainer>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={1}></GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={5}
+                  style={{
+                    margin: "27px 0px 0px"
+                  }}
+                >
+                  <GridContainer
+                    style={{
+                      border: "1px solid #C0C0C0",
+                      borderRadius: "10px"
+                    }}
+                  >
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={8}
+                      style={{
+                        margin: "15px 0px 0px"
+                      }}
+                    >
+                      <GridContainer style={{ dispay: "flex" }}>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Color : </b> {formState.colorName}
+                        </GridItem>
+                      </GridContainer>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={1}>
+                      <Tooltip
+                        title={
+                          formState.category ? "Change Color " : "Select Color"
+                        }
+                      >
+                        <IconButton
+                          onClick={() => {
+                            setOpenDialogForSelectingColor(true);
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={1}>
+                      <IconButton
+                        onClick={() => {
+                          setFormState(formState => ({
+                            ...formState,
+                            color: null,
+                            colorName: ""
+                          }));
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </GridItem>
+                  </GridContainer>
+                  <GridContainer>
+                    <GridItem>
+                      {hasError("color", error) ? (
+                        <GridItem xs={12} sm={12} md={12}>
+                          <FormHelperText
+                            id={"color_helpertext_id"}
+                            error={hasError("color", error)}
+                          >
+                            {hasError("color", error)
+                              ? error["color"].map(error => {
+                                  return error + " ";
+                                })
+                              : null}
+                          </FormHelperText>
+                        </GridItem>
+                      ) : null}
+                    </GridItem>
+                  </GridContainer>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={4}>
                   <CustomAutoComplete
                     id="department-name"
                     labelText="Department"
@@ -362,27 +695,20 @@ export default function AddEditRawMaterial(props) {
                         })
                       ] || null
                     }
+                    /** For setting errors */
+                    helperTextId={"helperText_department"}
+                    isHelperText={hasError("department", error)}
+                    helperText={
+                      hasError("department", error)
+                        ? error["department"].map(error => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("department", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomCheckBox
-                    onChange={event => {
-                      setFormState(formState => ({
-                        ...formState,
-                        is_die: event.target.checked
-                      }));
-                    }}
-                    disabled={isView}
-                    labelText="Die"
-                    name="is_die"
-                    checked={formState.is_die || false}
-                    id="is_die"
-                  />
-                </GridItem>
-              </GridContainer>
-
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={4}>
+                <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     labelText="Size"
@@ -395,20 +721,7 @@ export default function AddEditRawMaterial(props) {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={4}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Color"
-                    name="color"
-                    disabled={isView}
-                    value={formState.color}
-                    id="color"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={4}>
+                <GridItem xs={12} sm={12} md={3}>
                   <CustomAutoComplete
                     id="unit-name"
                     labelText="Unit"
@@ -429,6 +742,32 @@ export default function AddEditRawMaterial(props) {
                     formControlProps={{
                       fullWidth: true
                     }}
+                    /** For setting errors */
+                    helperTextId={"helperText_unit"}
+                    isHelperText={hasError("unit", error)}
+                    helperText={
+                      hasError("unit", error)
+                        ? error["unit"].map(error => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("unit", error)}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomCheckBox
+                    onChange={event => {
+                      setFormState(formState => ({
+                        ...formState,
+                        is_die: event.target.checked
+                      }));
+                    }}
+                    disabled={isView}
+                    labelText="Die"
+                    name="is_die"
+                    checked={formState.is_die || false}
+                    id="is_die"
                   />
                 </GridItem>
               </GridContainer>
@@ -444,6 +783,7 @@ export default function AddEditRawMaterial(props) {
                     formControlProps={{
                       fullWidth: true
                     }}
+                    type="number"
                     value={formState.costing}
                     inputProps={{
                       endAdornment: (
@@ -454,19 +794,42 @@ export default function AddEditRawMaterial(props) {
                         </InputAdornment>
                       )
                     }}
+                    /** For setting errors */
+                    helperTextId={"helperText_costing"}
+                    isHelperText={hasError("costing", error)}
+                    helperText={
+                      hasError("costing", error)
+                        ? error["costing"].map(error => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("costing", error)}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     name="balance"
-                    labelText={isView || isEdit ? "Balance" : "Initial Balance"}
+                    type="number"
+                    labelText={"Balance"}
                     id="balance"
-                    disabled={isView || isEdit}
+                    disabled={isView}
                     value={formState.balance}
                     formControlProps={{
                       fullWidth: true
                     }}
+                    /** For setting errors */
+                    helperTextId={"helperText_balance"}
+                    isHelperText={hasError("balance", error)}
+                    helperText={
+                      hasError("balance", error)
+                        ? error["balance"].map(error => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("balance", error)}
                   />
                 </GridItem>
               </GridContainer>
@@ -547,7 +910,7 @@ export default function AddEditRawMaterial(props) {
             </CardBody>
             {isView ? null : (
               <CardFooter>
-                <Button color="primary" onClick={() => submit()}>
+                <Button color="primary" onClick={e => submit(e)}>
                   Save
                 </Button>
               </CardFooter>

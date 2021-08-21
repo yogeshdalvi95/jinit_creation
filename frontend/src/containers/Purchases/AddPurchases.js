@@ -131,10 +131,11 @@ export default function AddPurchases(props) {
   });
 
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
-    id: "",
+    id: null,
     name: "",
-    department: "",
-    color: "",
+    department: null,
+    color: null,
+    category: null,
     size: "",
     balance: "",
     name_value: []
@@ -196,15 +197,19 @@ export default function AddPurchases(props) {
         } else {
           bal = d.raw_material.balance;
         }
+        console.log("d.raw_material ", d.raw_material);
+        let category = d.raw_material.category
+          ? d.raw_material.category.name
+          : "";
+        let color = d.raw_material.color ? d.raw_material.color.name : "";
         let nameObject = {
           id: "#" + d.raw_material.id,
           name: d.raw_material.name,
           department: d.raw_material.department
             ? d.raw_material.department.name
             : "---",
-          color: isEmptyString(d.raw_material.color)
-            ? "---"
-            : d.raw_material.color,
+          category: isEmptyString(category) ? "---" : category,
+          color: isEmptyString(color) ? "---" : color,
           size: isEmptyString(d.raw_material.size)
             ? "---"
             : d.raw_material.size,
@@ -267,7 +272,14 @@ export default function AddPurchases(props) {
     if (event.target.name === "type_of_bill") {
       setRawMaterialDetails(rawMaterialDetails => ({
         ...rawMaterialDetails,
-        name: ""
+        id: null,
+        name: "",
+        department: null,
+        color: null,
+        category: null,
+        size: "",
+        balance: "",
+        name_value: []
       }));
     }
     if (
@@ -452,8 +464,9 @@ export default function AddPurchases(props) {
             name: value ? value.name : "",
             department: value ? value.department.name : "",
             size: value ? value.size : "",
+            category: objectToAdd.category,
             balance: value ? value.balance : "",
-            color: value ? value.color : "",
+            color: objectToAdd.color,
             name_value: arr
           }));
         } else {
@@ -463,6 +476,7 @@ export default function AddPurchases(props) {
             name: null,
             department: null,
             size: null,
+            category: null,
             balance: null,
             color: null,
             name_value: []
@@ -1153,6 +1167,12 @@ export default function AddPurchases(props) {
                           </GridContainer>
                           <GridContainer>
                             <GridItem xs={12} sm={12} md={8}>
+                              <b>Category : </b>
+                              {Ip.raw_material_name.category}
+                            </GridItem>
+                          </GridContainer>
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={8}>
                               <b>Color :</b> {Ip.raw_material_name.color}
                             </GridItem>
                           </GridContainer>
@@ -1446,6 +1466,9 @@ export default function AddPurchases(props) {
               </GridItem>
               <GridItem xs={12} sm={12} md={12}>
                 <Muted> Department : {rawMaterialDetails.department}</Muted>
+              </GridItem>
+              <GridItem xs={12} sm={12} md={12}>
+                <Muted> Category : {rawMaterialDetails.category}</Muted>
               </GridItem>
               <GridItem xs={12} sm={12} md={12}>
                 <Muted> Color : {rawMaterialDetails.color}</Muted>

@@ -38,7 +38,12 @@ module.exports = {
     if (purchase_detail.type_of_bill === "Kachha") {
       individualPurchase = await strapi
         .query("individual-kachha-purchase")
-        .find({ purchase: id }, ["raw_material", "raw_material.department"]);
+        .find({ purchase: id }, [
+          "raw_material",
+          "raw_material.department",
+          "raw_material.category",
+          "raw_material.color",
+        ]);
     } else {
       individualPurchase = await strapi
         .query("individual-pakka-purchase")

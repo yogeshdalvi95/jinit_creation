@@ -19,7 +19,11 @@
     "images": {
       "collection": "file",
       "via": "related",
-      "allowedTypes": ["images", "files", "videos"],
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
       "plugin": "upload",
       "required": false,
       "pluginOptions": {}
@@ -34,6 +38,10 @@
     },
     "notes": {
       "type": "text"
+    },
+    "total_quantity": {
+      "type": "float",
+      "default": 0
     }
   }
 }

@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sale_returns",
+  "info": {
+    "name": "Sale Return"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "party": {
+      "model": "party"
+    },
+    "date": {
+      "type": "date"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

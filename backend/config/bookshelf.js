@@ -14,6 +14,25 @@ const bookshelf = require("bookshelf")(knex);
 /**
  * Registering models for bookshelf
  */
+bookshelf.model("category", {
+  tableName: "categories",
+  requireFetch: false,
+});
+
+bookshelf.model("color", {
+  tableName: "colors",
+  requireFetch: false,
+});
+
+bookshelf.model("party", {
+  tableName: "parties",
+  requireFetch: false,
+});
+
+bookshelf.model("sale-return", {
+  tableName: "sale_returns",
+  requireFetch: false,
+});
 
 bookshelf.model("department", {
   tableName: "departments",

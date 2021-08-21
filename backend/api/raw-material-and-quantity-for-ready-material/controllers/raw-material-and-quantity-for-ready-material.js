@@ -35,6 +35,8 @@ module.exports = {
           "raw_material",
           "raw_material.department",
           "raw_material.unit",
+          "raw_material.color",
+          "raw_material.category",
         ]);
 
       return {

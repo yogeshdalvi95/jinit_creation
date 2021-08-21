@@ -70,7 +70,7 @@ module.exports = {
     if (
       !checkIfPresentInPurchases &&
       !checkIfPresentInReadyMaterial &&
-      checkIfPresentInMonthlySheet
+      !checkIfPresentInMonthlySheet
     ) {
       await strapi.query("raw-material").delete({ id: id });
       ctx.send(200);

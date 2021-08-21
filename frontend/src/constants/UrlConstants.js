@@ -14,6 +14,10 @@ export const backend_units = `${apiUrl}/units`;
 export const backend_sellers = `${apiUrl}/sellers`;
 export const backend_sellers_for_autocomplete = `${apiUrl}/sellers/getSellerNameForAutoComplete`;
 
+export const backend_category = `${apiUrl}/categories`;
+
+export const backend_color = `${apiUrl}/colors`;
+
 export const backend_raw_materials = `${apiUrl}/raw-materials`;
 export const backend_raw_materials_for_autocomplete = `${apiUrl}/raw-materials/getRawMaterialNameForAutoComplete`;
 

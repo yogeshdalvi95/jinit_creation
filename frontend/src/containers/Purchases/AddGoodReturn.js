@@ -77,6 +77,7 @@ export default function AddGoodReturn(props) {
     raw_material_name: "",
     raw_material_department: "",
     raw_material_color: "",
+    raw_material_category: "",
     raw_material_size: "",
     raw_material_balance: "",
     raw_material_name_value: []
@@ -128,7 +129,14 @@ export default function AddGoodReturn(props) {
       raw_material: data.raw_material ? data.raw_material.id : null,
       raw_material_name: raw_material_data ? raw_material_data.name : "",
       raw_material_department: department,
-      raw_material_color: raw_material_data ? raw_material_data.color : "",
+      raw_material_color:
+        raw_material_data && raw_material_data.color
+          ? raw_material_data.color.name
+          : "",
+      raw_material_category:
+        raw_material_data && raw_material_data.category
+          ? raw_material_data.category.name
+          : "",
       raw_material_size: raw_material_data ? raw_material_data.size : "",
       raw_material_balance: bal,
       raw_material_name_value: raw_material_data
@@ -340,6 +348,7 @@ export default function AddGoodReturn(props) {
         raw_material_name: nameObject.name,
         raw_material_department: nameObject.department,
         raw_material_color: nameObject.color,
+        raw_material_category: nameObject.category,
         raw_material_size: nameObject.size,
         raw_material_balance: nameObject.bal,
         raw_material_name_value: row.name_value
@@ -429,6 +438,12 @@ export default function AddGoodReturn(props) {
                       <GridItem xs={12} sm={12} md={8}>
                         <b>Department : </b>
                         {formState.raw_material_department}
+                      </GridItem>
+                    </GridContainer>
+                    <GridContainer>
+                      <GridItem xs={12} sm={12} md={8}>
+                        <b>Category : </b>
+                        {formState.raw_material_category}
                       </GridItem>
                     </GridContainer>
                     <GridContainer>
@@ -654,6 +669,9 @@ export default function AddGoodReturn(props) {
               </GridItem>
               <GridItem xs={12} sm={12} md={12}>
                 <Muted> Department : {formState.raw_material_department}</Muted>
+              </GridItem>
+              <GridItem xs={12} sm={12} md={12}>
+                <Muted> Category : {formState.raw_material_category}</Muted>
               </GridItem>
               <GridItem xs={12} sm={12} md={12}>
                 <Muted> Color : {formState.raw_material_color}</Muted>

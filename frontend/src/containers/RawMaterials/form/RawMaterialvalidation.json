@@ -1,0 +1,60 @@
+{
+  "name": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Name is required"
+      }
+    }
+  },
+  "category": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Category is required"
+      }
+    }
+  },
+  "costing": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Costing is required"
+      },
+      "validPositiveInteger": {
+        "value": "true",
+        "message": "Quantity cannot be zero"
+      }
+    }
+  },
+  "balance": {
+    "required": true,
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Quantity cannot be negative number"
+      }
+    }
+  },
+  "department": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Department is required"
+      }
+    }
+  },
+  "unit": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Unit is required"
+      }
+    }
+  }
+}

@@ -29,6 +29,12 @@ export default function RawMaterialDetail(props) {
         </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={12} md={8}>
+            <b>Category : </b>
+            {props.raw_material.category}
+          </GridItem>
+        </GridContainer>
+        <GridContainer>
+          <GridItem xs={12} sm={12} md={8}>
             <b>Color :</b> {props.raw_material.color}
           </GridItem>
         </GridContainer>

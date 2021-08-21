@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_ratio_ratios",
+  "info": {
+    "name": "ratio",
+    "icon": "balance-scale"
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "integer",
+      "default": 0
+    },
+    "quantity_completed": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

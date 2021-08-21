@@ -76,24 +76,6 @@ export default function DialogForSelectingSeller(props) {
     tableRef.current.onQueryChange();
   };
 
-  const handleEdit = async row => {
-    // setBackDrop(true);
-    // await providerForGet(backend_sellers + "/" + row.id, {}, Auth.getToken())
-    //   .then(res => {
-    //     setBackDrop(false);
-    //     history.push(EDITSELLER, { data: res.data, edit: true });
-    //   })
-    //   .catch(err => {
-    //     setBackDrop(false);
-    //     setSnackBar(snackBar => ({
-    //       ...snackBar,
-    //       show: true,
-    //       severity: "error",
-    //       message: "Error viewing purchase"
-    //     }));
-    //   });
-  };
-
   const handleChange = event => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
