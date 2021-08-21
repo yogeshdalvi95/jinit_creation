@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/sale-returns",
+      "handler": "sale-return.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-returns/count",
+      "handler": "sale-return.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-returns/:id",
+      "handler": "sale-return.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/sale-returns",
+      "handler": "sale-return.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sale-returns/:id",
+      "handler": "sale-return.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/sale-returns/:id",
+      "handler": "sale-return.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

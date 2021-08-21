@@ -15,39 +15,53 @@
     "order_id": {
       "type": "string"
     },
-    "ready_material": {
-      "model": "ready-material"
-    },
-    "order_placed_for_quantity": {
+    "total_price": {
       "type": "float"
     },
-    "final_price_per_piece": {
-      "type": "float"
-    },
-    "final_price": {
-      "type": "float"
-    },
-    "pending": {
+    "processing": {
       "type": "boolean",
       "default": true
-    },
-    "completed": {
-      "type": "boolean",
-      "default": false
     },
     "partial_completed": {
       "type": "boolean",
       "default": false
     },
-    "completed_quantity": {
-      "type": "float"
-    },
-    "revoked_quantity": {
-      "type": "float"
-    },
     "cancelled": {
       "type": "boolean",
       "default": false
+    },
+    "fully_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "text"
+    },
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "quantity": {
+      "type": "integer"
+    },
+    "ratio": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ratio.ratio"
+    },
+    "buffer_quantity": {
+      "type": "integer"
+    },
+    "price_per_piece": {
+      "type": "float"
+    },
+    "add_cost": {
+      "type": "float"
+    },
+    "completed_quantity": {
+      "type": "integer"
+    },
+    "party": {
+      "model": "party"
     }
   }
 }

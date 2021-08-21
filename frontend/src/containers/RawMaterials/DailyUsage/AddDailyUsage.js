@@ -558,6 +558,12 @@ const AddDailyUsage = props => {
                     </GridContainer>
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={8}>
+                        <b>Category : </b>
+                        {selectedRawMaterial.category}
+                      </GridItem>
+                    </GridContainer>
+                    <GridContainer>
+                      <GridItem xs={12} sm={12} md={8}>
                         <b>Color :</b> {selectedRawMaterial.color}
                       </GridItem>
                     </GridContainer>

@@ -180,6 +180,7 @@ export default function KachhaPurchaseDetails() {
         id: "",
         name: "",
         color: "",
+        category: "",
         size: "",
         unit: "",
         department: ""
@@ -193,7 +194,10 @@ export default function KachhaPurchaseDetails() {
           ...raw_material,
           id: data.raw_material.id,
           name: data.raw_material.name,
-          color: data.raw_material.color,
+          color: data.raw_material.color ? data.raw_material.color.name : "",
+          category: data.raw_material.category
+            ? data.raw_material.category.name
+            : "",
           size: data.raw_material.size,
           unit: data.raw_material.unit ? data.raw_material.unit.name : "--",
           department: data.raw_material.department

@@ -64,8 +64,16 @@ export default function RawMaterials() {
       render: rowData => (isEmptyString(rowData.name) ? "---" : rowData.name)
     },
     {
+      title: "Category",
+      field: "category",
+      sorting: false,
+      render: rowData =>
+        isEmptyString(rowData.category) ? "---" : rowData.category
+    },
+    {
       title: "Color",
       field: "color",
+      sorting: false,
       render: rowData => (isEmptyString(rowData.color) ? "---" : rowData.color)
     },
     {
@@ -76,6 +84,7 @@ export default function RawMaterials() {
     {
       title: "Department",
       field: "department",
+      sorting: false,
       render: rowData =>
         isEmptyString(rowData.department) ? "---" : rowData.department
     },
@@ -140,11 +149,13 @@ export default function RawMaterials() {
     data.map(d => {
       let department = d.department.name;
       let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
-
+      let color = d.color ? d.color.name : "";
+      let category = d.category ? d.category.name : "";
       arr.push({
         id: d.id,
         name: d.name,
-        color: d.color,
+        category: category,
+        color: color,
         size: d.size,
         department: department,
         costing: costing,
@@ -232,6 +243,7 @@ export default function RawMaterials() {
       id: "#" + rowData.id,
       name: rowData.name,
       department: rowData.department,
+      category: isEmptyString(rowData.category) ? "---" : rowData.category,
       color: isEmptyString(rowData.color) ? "---" : rowData.color,
       size: isEmptyString(rowData.size) ? "---" : rowData.size,
       bal: bal
@@ -283,19 +295,31 @@ export default function RawMaterials() {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Category"
+                    value={filter["category.name_contains"] || ""}
+                    name="category.name_contains"
+                    id="category"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     labelText="Color"
-                    value={filter.color_contains || ""}
-                    name="color_contains"
+                    value={filter["color.name_contains"] || ""}
+                    name="color.name_contains"
                     id="color"
                     formControlProps={{
                       fullWidth: true
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={event => handleChange(event)}
                     labelText="Size"
@@ -307,7 +331,7 @@ export default function RawMaterials() {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomAutoComplete
                     id="department-name"
                     labelText="Department"
@@ -421,13 +445,14 @@ export default function RawMaterials() {
                     color="primary"
                     onClick={() => {
                       delete filter["name_contains"];
-                      delete filter["color_contains"];
+                      delete filter["color.name_contains"];
                       delete filter["size_contains"];
                       delete filter["department"];
                       delete filter["costing_contains"];
                       delete filter["balance_gte"];
                       delete filter["balance_lte"];
                       delete filter["is_die"];
+                      delete filter["category.name_contains"];
                       setFilter(filter => ({
                         ...filter,
                         _sort: "id:asc"

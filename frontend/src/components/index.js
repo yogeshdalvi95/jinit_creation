@@ -38,7 +38,9 @@ export {
   DialogBox,
   DialogBoxForSelectingRawMaterial,
   DialogForGettingPreviousMonthlyData,
-  DialogForSelectingSeller
+  DialogForSelectingSeller,
+  DialogForSelectingCategory,
+  DialogForSelectingColor
 } from "./DialogBox";
 export { RawMaterialDetail } from "./RawMaterialDetail";
 export { SellerDetails } from "./SellerDetails";

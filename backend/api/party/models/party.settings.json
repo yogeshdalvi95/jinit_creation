@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "parties",
+  "info": {
+    "name": "Party"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "party_name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "party_email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "party_address": {
+      "type": "text"
+    },
+    "gst_no": {
+      "type": "string"
+    },
+    "extra_details": {
+      "type": "text"
+    }
+  }
+}

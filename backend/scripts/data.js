@@ -642,6 +642,24 @@ const ROLES = {
         name: "individual-pakka-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
+
+      {
+        name: "category",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "color",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "party",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "sale-return",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+
       {
         name: "raw-material-and-quantity-for-ready-material",
         action: [
@@ -698,6 +716,23 @@ const ROLES = {
   },
   Admin: {
     controllers: [
+      {
+        name: "category",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "color",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "party",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "sale-return",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+
       {
         name: "department",
         action: ["find", "create", "update", "findOne", "update", "delete"],
@@ -798,6 +833,22 @@ const ROLES = {
   },
   Staff: {
     controllers: [
+      {
+        name: "category",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "color",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "party",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "sale-return",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
       {
         name: "department",
         action: ["find", "create", "update", "findOne", "update", "delete"],
