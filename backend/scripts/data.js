@@ -653,7 +653,15 @@ const ROLES = {
       },
       {
         name: "party",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "check_duplicate_party",
+        ],
       },
       {
         name: "sale-return",
@@ -696,7 +704,7 @@ const ROLES = {
       },
       {
         name: "ready-material",
-        action: [],
+        action: ["changeiscolordependent"],
       },
       {
         name: "seller",
@@ -726,7 +734,15 @@ const ROLES = {
       },
       {
         name: "party",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "check_duplicate_party",
+        ],
       },
       {
         name: "sale-return",
@@ -779,7 +795,15 @@ const ROLES = {
       },
       {
         name: "orders",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "check_availibility",
+        ],
       },
       {
         name: "purchases",
@@ -799,7 +823,15 @@ const ROLES = {
       },
       {
         name: "ready-material",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "changeiscolordependent",
+        ],
       },
       {
         name: "seller",
@@ -843,7 +875,15 @@ const ROLES = {
       },
       {
         name: "party",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "check_duplicate_party",
+        ],
       },
       {
         name: "sale-return",
@@ -895,7 +935,15 @@ const ROLES = {
       },
       {
         name: "orders",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "check_availibility",
+        ],
       },
       {
         name: "purchases",
@@ -915,7 +963,15 @@ const ROLES = {
       },
       {
         name: "ready-material",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "changeiscolordependent",
+        ],
       },
       {
         name: "seller",

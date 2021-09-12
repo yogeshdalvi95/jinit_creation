@@ -33,6 +33,14 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/ready-materials/change_color_dependency",
+      "handler": "ready-material.changeIsColorDependent",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "PUT",
       "path": "/ready-materials/:id",
       "handler": "ready-material.update",

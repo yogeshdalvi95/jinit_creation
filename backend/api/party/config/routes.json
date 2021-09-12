@@ -10,6 +10,14 @@
     },
     {
       "method": "GET",
+      "path": "/parties/check_duplicate_party",
+      "handler": "party.check_duplicate_party",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/parties/count",
       "handler": "party.count",
       "config": {

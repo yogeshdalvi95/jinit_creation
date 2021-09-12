@@ -5,7 +5,13 @@
  */
 // const { PLUGIN } = require("../../../../config/constants");
 module.exports = async (ctx, next) => {
-  const { material_no } = ctx.request.body;
+  let body = null;
+  if (ctx.request.files) {
+    body = JSON.parse(ctx.request.body.data);
+  } else {
+    body = ctx.request.body;
+  }
+  const { material_no } = body;
   const dependent = await strapi.query("ready-material").find({
     material_no: material_no,
   });

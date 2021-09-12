@@ -1,14 +1,34 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import { Auth, Table } from "../../components";
+import {
+  Auth,
+  Card,
+  CardBody,
+  CardHeader,
+  GridContainer,
+  GridItem,
+  SnackBarComponent,
+  Table
+} from "../../components";
 // core components
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_units } from "../../constants";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
+import { makeStyles } from "@material-ui/core";
+
+const useStyles = makeStyles(styles);
 
 export default function Units() {
+  const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
     _sort: "name:asc"
+  });
+
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
   });
 
   const columns = [{ title: "Name", field: "name" }];
@@ -40,6 +60,14 @@ export default function Units() {
             page: result.page - 1,
             totalCount: result.totalCount
           });
+        })
+        .catch(err => {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error"
+          }));
         });
     });
   };
@@ -58,24 +86,66 @@ export default function Units() {
     tableRef.current.onQueryChange();
   };
 
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
   return (
-    <Table
-      tableRef={tableRef}
-      title="Raw Materials"
-      columns={columns}
-      data={async query => {
-        return await getUnitsData(query.page + 1, query.pageSize);
-      }}
-      options={{
-        pageSize: 10,
-        actionsColumnIndex: -1,
-        search: false,
-        sorting: true,
-        thirdSortClick: false
-      }}
-      onOrderChange={(orderedColumnId, orderDirection) => {
-        orderFunc(orderedColumnId, orderDirection);
-      }}
-    />
+    <>
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <Table
+                    tableRef={tableRef}
+                    title="UNits"
+                    columns={columns}
+                    data={async query => {
+                      return await getUnitsData(query.page + 1, query.pageSize);
+                    }}
+                    localization={{
+                      body: {
+                        editRow: {
+                          deleteText: `Are you sure you want to delete this Admin User?`,
+                          saveTooltip: "Delete"
+                        }
+                      }
+                    }}
+                    actions={[]}
+                    options={{
+                      pageSize: 10,
+                      actionsColumnIndex: -1,
+                      search: false,
+                      sorting: true,
+                      thirdSortClick: false
+                    }}
+                    onOrderChange={(orderedColumnId, orderDirection) => {
+                      orderFunc(orderedColumnId, orderDirection);
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
+    </>
   );
 }

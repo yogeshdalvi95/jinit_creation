@@ -26,6 +26,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_ratio_present": {
+      "type": "boolean",
+      "default": false
+    },
     "cancelled": {
       "type": "boolean",
       "default": false

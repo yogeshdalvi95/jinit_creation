@@ -24,6 +24,10 @@
     "new_price": {
       "type": "float",
       "default": 0
+    },
+    "isColorDependent": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

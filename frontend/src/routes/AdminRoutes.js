@@ -27,7 +27,16 @@ import {
   EDITGOODRETURN,
   GOODRETURNLIST,
   VIEWGOODRETURN,
-  VIEWKACHHAPURCHASEDETAILS
+  VIEWKACHHAPURCHASEDETAILS,
+  ADDORDER,
+  VIEWORDERS,
+  EDITORDER,
+  PARTIES,
+  ADDPARTIES,
+  EDITPARTIES,
+  VIEWSALES,
+  ADDSALES,
+  EDITSALES
 } from "../paths";
 
 /** Raw material and units */
@@ -89,6 +98,21 @@ const sellerPath = [SELLERS, EDITSELLER, ADDSELLER];
 //const sellerPath = [SELLERS, ADDSELLER];
 const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
+
+/**-----order------- */
+const orderPaths = [ADDORDER, VIEWORDERS, EDITORDER];
+
+const salesAllPathList = [
+  PARTIES,
+  ADDPARTIES,
+  EDITPARTIES,
+  VIEWSALES,
+  ADDSALES,
+  EDITSALES
+];
+
+const partiesPathList = [PARTIES, ADDPARTIES, EDITPARTIES];
+const salesPathList = [VIEWSALES, ADDSALES, EDITSALES];
 
 export const DashboardStaffRoutes = [
   {
@@ -159,6 +183,31 @@ export const DashboardStaffRoutes = [
     icon: Dashboard,
     layout: "",
     pathList: readyMaterialPath
+  },
+  {
+    path: VIEWORDERS,
+    name: "Orders",
+    layout: "",
+    pathList: orderPaths
+  },
+  {
+    name: "Sales",
+    layout: "",
+    pathList: salesAllPathList,
+    children: [
+      {
+        path: VIEWSALES,
+        name: "Sales",
+        layout: "",
+        pathList: salesPathList
+      },
+      {
+        path: PARTIES,
+        name: "Parties",
+        layout: "",
+        pathList: partiesPathList
+      }
+    ]
   }
 ];
 
@@ -238,6 +287,31 @@ export const DashboardAdminRoutes = [
     icon: Dashboard,
     layout: "",
     pathList: readyMaterialPath
+  },
+  {
+    path: VIEWORDERS,
+    name: "Orders",
+    layout: "",
+    pathList: orderPaths
+  },
+  {
+    name: "Sales",
+    layout: "",
+    pathList: salesAllPathList,
+    children: [
+      {
+        path: VIEWSALES,
+        name: "Sales",
+        layout: "",
+        pathList: salesPathList
+      },
+      {
+        path: PARTIES,
+        name: "Parties",
+        layout: "",
+        pathList: partiesPathList
+      }
+    ]
   }
 ];
 
@@ -324,5 +398,30 @@ export const SuperAdminDashboardRoutes = [
     icon: Dashboard,
     layout: "",
     pathList: readyMaterialPath
+  },
+  {
+    path: VIEWORDERS,
+    name: "Orders",
+    layout: "",
+    pathList: orderPaths
+  },
+  {
+    name: "Sales",
+    layout: "",
+    pathList: salesAllPathList,
+    children: [
+      {
+        path: VIEWSALES,
+        name: "Sales",
+        layout: "",
+        pathList: salesPathList
+      },
+      {
+        path: PARTIES,
+        name: "Parties",
+        layout: "",
+        pathList: partiesPathList
+      }
+    ]
   }
 ];

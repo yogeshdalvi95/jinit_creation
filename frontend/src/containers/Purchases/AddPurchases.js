@@ -1182,51 +1182,6 @@ export default function AddPurchases(props) {
                               {Ip.raw_material_name.size}
                             </GridItem>
                           </GridContainer>
-
-                          {/* <CustomAutoComplete
-                            id="raw_material"
-                            labelText="Raw Material"
-                            autocompleteId={"raw_material_id"}
-                            optionKey={"name"}
-                            disabled={isView || isEdit}
-                            getOptionLabel={option => {
-                              let bal = "0";
-                              if (!option.balance) {
-                                bal = "0";
-                              } else {
-                                bal = option.balance;
-                              }
-                              return (
-                                option.name +
-                                ", Department: " +
-                                option.department.name +
-                                ", Color: " +
-                                option.color +
-                                ", Size: " +
-                                option.size +
-                                ", Balance: " +
-                                bal
-                              );
-                            }}
-                            options={rawMaterial}
-                            formControlProps={{
-                              fullWidth: true
-                            }}
-                            onChange={(event, value) => {
-                              handleChangeAutoCompleteForRepetableComponent(
-                                "raw_material",
-                                value,
-                                key
-                              );
-                            }}
-                            value={
-                              rawMaterial[
-                                rawMaterial.findIndex(function (item, i) {
-                                  return item.id === Ip.raw_material;
-                                })
-                              ] || null
-                            }
-                          /> */}
                         </GridItem>
                       ) : null}
 

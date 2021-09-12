@@ -6,15 +6,38 @@
 // const { PLUGIN } = require("../../../../config/constants");
 module.exports = async (ctx, next) => {
   const { id } = ctx.params;
-  const { material_no } = ctx.request.body;
+  let body = null;
+
+  if (ctx.request.files) {
+    body = JSON.parse(ctx.request.body.data);
+    const data = await strapi.query("ready-material").findOne({
+      id: id,
+    });
+
+    /** Delete Image */
+    let isImageAlreadyPresent =
+      data.images && data.images.length && data.images[0].url ? true : false;
+    let deleteImageId = null;
+    if (isImageAlreadyPresent) {
+      deleteImageId = data.images[0].id;
+      const file = await strapi.plugins["upload"].services.upload.fetch({
+        id: deleteImageId,
+      });
+      await strapi.plugins["upload"].services.upload.remove(file);
+    }
+  } else {
+    body = ctx.request.body;
+  }
+
+  const { material_no } = body;
   const dependent = await strapi.query("ready-material").findOne({
     material_no: material_no,
   });
   if (dependent) {
-    if (dependent.id == id) {
+    if (body && dependent.id == id) {
       await next();
     } else {
-      return ctx.badRequest(null, "Material Number Already Used");
+      return ctx.badRequest(null, "Material Number Already Used or invalid");
     }
   } else {
     await next();

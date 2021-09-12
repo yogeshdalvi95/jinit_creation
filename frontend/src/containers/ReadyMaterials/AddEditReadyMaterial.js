@@ -17,7 +17,9 @@ import {
   SnackBarComponent,
   Table
 } from "../../components";
-
+import AddOutlinedIcon from "@material-ui/icons/AddOutlined";
+import CheckIcon from "@material-ui/icons/Check";
+import ClearIcon from "@material-ui/icons/Clear";
 // core components
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -30,10 +32,12 @@ import {
   backend_raw_material_and_quantity_for_ready_material,
   backend_ready_materials,
   backend_raw_material_and_quantity_for_ready_material_for_update_quantity,
-  backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials
+  backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials,
+  apiUrl,
+  backend_ready_materials_change_color_dependency
 } from "../../constants";
 import { useState } from "react";
-import { Backdrop, CircularProgress } from "@material-ui/core";
+import { Backdrop, CircularProgress, Input } from "@material-ui/core";
 import {
   checkEmpty,
   convertNumber,
@@ -44,6 +48,7 @@ import {
 import validationForm from "./validationform.json";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
+import no_image_icon from "../../assets/img/no_image_icon.png";
 
 const useStyles = makeStyles(styles);
 
@@ -77,7 +82,13 @@ export default function AddEditReadyMaterial(props) {
     final_cost: 0,
     add_cost: 0,
     notes: "",
-    final_cost_formatted: 0
+    final_cost_formatted: 0,
+    total_quantity: 0,
+    image: null,
+    addNewImageUrl: null,
+    showEditPreviewImage: false,
+    showAddPreviewImage: true,
+    isColorVariationAvailable: false
   });
   const [error, setError] = React.useState({});
 
@@ -138,6 +149,15 @@ export default function AddEditReadyMaterial(props) {
       editable: "never",
       sorting: false,
       render: rowData => convertNumber(rowData.totalCost, true)
+    },
+    {
+      title: "Color Dependent",
+      field: "isColorDependent",
+      editable: "never",
+      sorting: false,
+      render: rowData => {
+        return rowData.isColorDependent ? "true" : "false";
+      }
     }
 
     // {
@@ -164,9 +184,12 @@ export default function AddEditReadyMaterial(props) {
   }, []);
 
   const setData = data => {
+    let isImagePresent =
+      data.images && data.images.length && data.images[0].url ? true : false;
     setFormState(formState => ({
       ...formState,
       material_no: data.material_no,
+      total_quantity: data.total_quantity,
       add_cost: data.add_cost,
       final_cost: data.final_cost,
       final_cost_formatted: convertNumber(
@@ -174,7 +197,11 @@ export default function AddEditReadyMaterial(props) {
         true
       ),
       id: data.id,
-      notes: data.notes
+      notes: data.notes,
+      image: isImagePresent ? data.images[0].url : null,
+      showAddPreviewImage: isImagePresent ? false : true,
+      showEditPreviewImage: isImagePresent ? true : false,
+      isColorVariationAvailable: data.isColorVariationAvailable
     }));
 
     filter["ready_material"] = data.id;
@@ -182,6 +209,16 @@ export default function AddEditReadyMaterial(props) {
       ...filter
     }));
     tableRef.current.onQueryChange();
+  };
+
+  const handleRemoveImage = () => {
+    setFormState(formState => ({
+      ...formState,
+      image: null,
+      showAddPreviewImage: true,
+      showEditPreviewImage: false,
+      addNewImageUrl: null
+    }));
   };
 
   const handleChange = event => {
@@ -238,16 +275,34 @@ export default function AddEditReadyMaterial(props) {
     }
   };
 
+  const createFormData = body => {
+    const data = new FormData();
+    data.append("files.images", formState.image);
+    data.append("data", JSON.stringify(body));
+    return data;
+  };
+
   const submit = async () => {
+    let obj = {
+      material_no: formState.material_no,
+      total_quantity: formState.total_quantity,
+      final_cost: isEmptyString(formState.final_cost)
+        ? 0
+        : formState.final_cost,
+      add_cost: isEmptyString(formState.add_cost) ? 0 : formState.add_cost,
+      notes: formState.notes,
+      isColorVariationAvailable: formState.isColorVariationAvailable
+    };
+
+    if (
+      formState.showAddPreviewImage &&
+      formState.image &&
+      formState.addNewImageUrl
+    ) {
+      obj = createFormData(obj);
+    }
+
     if (formState.id) {
-      let obj = {
-        material_no: formState.material_no,
-        final_cost: isEmptyString(formState.final_cost)
-          ? 0
-          : formState.final_cost,
-        add_cost: isEmptyString(formState.add_cost) ? 0 : formState.add_cost,
-        notes: formState.notes
-      };
       await providerForPut(
         backend_ready_materials,
         formState.id,
@@ -282,18 +337,10 @@ export default function AddEditReadyMaterial(props) {
         });
     } else {
       let setRef = tableRef.current;
-      let obj = {
-        material_no: formState.material_no,
-        final_cost: isEmptyString(formState.final_cost)
-          ? 0
-          : formState.final_cost,
-        add_cost: isEmptyString(formState.add_cost) ? 0 : formState.add_cost,
-        notes: formState.notes
-      };
       await providerForPost(backend_ready_materials, obj, Auth.getToken())
         .then(res => {
-          filter["ready_material"] = res.data.id;
           setFilter(filter => ({
+            ready_material: res.data.id,
             ...filter
           }));
           setFormState(formState => ({
@@ -325,8 +372,6 @@ export default function AddEditReadyMaterial(props) {
         });
     }
   };
-
-  const deletePurchase = (purchase, key) => {};
 
   const snackBarHandleClose = () => {
     setSnackBar(snackBar => ({
@@ -438,17 +483,24 @@ export default function AddEditReadyMaterial(props) {
         unit: "",
         department: ""
       };
+      let unit = data.raw_material.unit ? data.raw_material.unit.name : "--";
+      let department = data.raw_material.department
+        ? data.raw_material.department.name
+        : "--";
+      let color = data.raw_material.color ? data.raw_material.color.name : "";
+      let category = data.raw_material.category
+        ? data.raw_material.category.name
+        : "";
       if (data.raw_material) {
         raw_material = {
           ...raw_material,
           id: data.raw_material.id,
           name: data.raw_material.name,
-          color: data.raw_material.color,
+          category: category,
+          color: color,
           size: data.raw_material.size,
-          unit: data.raw_material.unit ? data.raw_material.unit.name : "--",
-          department: data.raw_material.department
-            ? data.raw_material.department.name
-            : "--",
+          unit: unit,
+          department: department,
           balance: data.raw_material.balance,
           is_die: data.raw_material.is_die
         };
@@ -473,7 +525,8 @@ export default function AddEditReadyMaterial(props) {
         costPerPiece: isEmptyString(data.raw_material.costing)
           ? 0
           : data.raw_material.costing,
-        totalCost: totalCost
+        totalCost: totalCost,
+        isColorDependent: data.isColorDependent
       };
       count = count + 1;
       x.push(dataToSend);
@@ -497,7 +550,87 @@ export default function AddEditReadyMaterial(props) {
     tableRef.current.onQueryChange();
   };
 
-  console.log(filter);
+  const handleFileChange = event => {
+    event.persist();
+    if (event.target.files[0].size <= 1100000) {
+      if (
+        event.target.files[0].type === "image/png" ||
+        event.target.files[0].type === "image/jpeg" ||
+        event.target.files[0].type === "image/jpg"
+      ) {
+        setFormState(formState => ({
+          ...formState,
+          image: event.target.files[0],
+          addNewImageUrl: URL.createObjectURL(event.target.files[0]),
+          showAddPreviewImage: true,
+          showEditPreviewImage: false
+        }));
+      } else {
+        setFormState(formState => ({
+          ...formState,
+          alert: true,
+          severity: "error",
+          errorMessage: "Image should be in PNG,JPG,JPEG format"
+        }));
+      }
+    } else {
+      setFormState(formState => ({
+        ...formState,
+        alert: true,
+        severity: "error",
+        errorMessage: "File size must be less than or equal to 1mb"
+      }));
+    }
+  };
+
+  const handleChangeIsColorDependent = async row => {
+    let setRef = tableRef.current;
+    setBackDrop(true);
+    let status = false;
+    if (row.isColorDependent) {
+      status = false;
+    } else {
+      status = true;
+    }
+    if (row.dataId) {
+      let data = {
+        status: status,
+        id: row.dataId
+      };
+      await providerForPost(
+        backend_ready_materials_change_color_dependency,
+        data,
+        Auth.getToken()
+      )
+        .then(res => {
+          setBackDrop(false);
+        })
+        .catch(err => {
+          let error = "";
+          if (err.response.data.hasOwnProperty("message")) {
+            error = err.response.data.message;
+          } else {
+            error = "Error Adding Changing Color Status";
+          }
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: error
+          }));
+          setBackDrop(false);
+        });
+      setRef.onQueryChange();
+    } else {
+      setBackDrop(false);
+      setSnackBar(snackBar => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: "Error"
+      }));
+    }
+  };
 
   return (
     <GridContainer>
@@ -528,7 +661,7 @@ export default function AddEditReadyMaterial(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   onChange={event => handleChange(event)}
                   labelText="Material Number"
@@ -552,7 +685,7 @@ export default function AddEditReadyMaterial(props) {
                   error={hasError("material_no", error)}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   labelText="Final Cost"
                   name="final_cost_formatted"
@@ -564,7 +697,7 @@ export default function AddEditReadyMaterial(props) {
                   }}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   onChange={event => handleChange(event)}
                   type="number"
@@ -588,6 +721,150 @@ export default function AddEditReadyMaterial(props) {
                   error={hasError("add_cost", error)}
                 />
               </GridItem>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={event => handleChange(event)}
+                  type="number"
+                  labelText="Total Quantity"
+                  name="total_quantity"
+                  disabled={isView}
+                  value={formState.total_quantity}
+                  id="total_quantity"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                  helperTextId={"helperText_total_quantity"}
+                  isHelperText={hasError("total_quantity", error)}
+                  helperText={
+                    hasError("total_quantity", error)
+                      ? error["total_quantity"].map(error => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("total_quantity", error)}
+                />
+              </GridItem>
+            </GridContainer>
+            <GridContainer>
+              <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={
+                          formState.isColorVariationAvailable ? true : false
+                        }
+                        onChange={event => {
+                          setFormState(formState => ({
+                            ...formState,
+                            isColorVariationAvailable: event.target.checked
+                          }));
+                        }}
+                        disabled={isView}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label
+                    }}
+                    label="Is Color Variation Available?"
+                  />
+                </div>
+              </GridItem>
+            </GridContainer>
+            <GridContainer>
+              <GridItem xs={12} md={12} lg={12}>
+                <div className={classes.imageDiv}>
+                  {!formState.showEditPreviewImage &&
+                  formState.showAddPreviewImage &&
+                  formState.image ? (
+                    <img
+                      src={formState.addNewImageUrl}
+                      alt="ready_material_photo"
+                      style={{
+                        height: "15rem",
+                        width: "30rem"
+                      }}
+                      loader={<CircularProgress />}
+                      className={classes.UploadImage}
+                    />
+                  ) : !formState.showEditPreviewImage &&
+                    formState.showAddPreviewImage &&
+                    !formState.image ? (
+                    <img
+                      src={no_image_icon}
+                      alt="ready_material_photo"
+                      style={{
+                        height: "15rem",
+                        width: "30rem"
+                      }}
+                      loader={<CircularProgress />}
+                      className={classes.DefaultNoImage}
+                    />
+                  ) : formState.showEditPreviewImage && formState.image ? (
+                    <>
+                      <img
+                        alt="ready_material_photo"
+                        src={apiUrl + formState.image}
+                        loader={<CircularProgress />}
+                        style={{
+                          height: "15rem",
+                          width: "30rem"
+                        }}
+                        className={classes.UploadImage}
+                      />
+                    </>
+                  ) : null}
+                </div>
+              </GridItem>
+              {isView ? null : (
+                <GridItem xs={12} md={12} lg={12}>
+                  <Input
+                    fullWidth
+                    id={"ready_material_photo"}
+                    name={"ready_material_photo"}
+                    onClick={event => {
+                      event.target.value = null;
+                    }}
+                    onChange={handleFileChange}
+                    required
+                    type={"file"}
+                    inputProps={{ accept: "image/*" }}
+                    variant="outlined"
+                    className={classes.inputFile}
+                  />
+                  <GridContainer>
+                    <GridItem xs={12} md={2} lg={2}>
+                      <label htmlFor={"ready_material_photo"}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          component="span"
+                          startIcon={<AddOutlinedIcon />}
+                        >
+                          Add / Update Image{""}
+                        </Button>
+                      </label>
+                    </GridItem>
+                    {/* <GridItem xs={12} md={2} lg={2}>
+                      <Button
+                        variant="contained"
+                        color="whiteColor"
+                        component="span"
+                        onClick={handleRemoveImage}
+                      >
+                        Remove Image
+                      </Button>
+                    </GridItem> */}
+                  </GridContainer>
+                </GridItem>
+              )}
             </GridContainer>
             <GridContainer>
               <GridItem xs={12} sm={12} md={12}>
@@ -679,6 +956,40 @@ export default function AddEditReadyMaterial(props) {
                       />
                     </div>
                   </GridItem>
+                  <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
+                    <div className={classes.block}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={filter["isColorDependent"] ? true : false}
+                            onChange={event => {
+                              if (event.target.checked) {
+                                setFilter(filter => ({
+                                  ...filter,
+                                  isColorDependent: event.target.checked
+                                }));
+                              } else {
+                                delete filter["isColorDependent"];
+                                setFilter(filter => ({
+                                  ...filter
+                                }));
+                              }
+                            }}
+                            classes={{
+                              switchBase: classes.switchBase,
+                              checked: classes.switchChecked,
+                              thumb: classes.switchIcon,
+                              track: classes.switchBar
+                            }}
+                          />
+                        }
+                        classes={{
+                          label: classes.label
+                        }}
+                        label="Search Color Dependent Raw Material"
+                      />
+                    </div>
+                  </GridItem>
                   <GridItem xs={12} sm={3} md={3}>
                     <CustomInput
                       onChange={e => {
@@ -719,6 +1030,7 @@ export default function AddEditReadyMaterial(props) {
                       color="primary"
                       onClick={() => {
                         delete filter["raw_material.is_die"];
+                        delete filter["isColorDependent"];
                         delete filter["raw_material.name_contains"];
                         setFilter(filter => ({
                           ...filter
@@ -757,10 +1069,42 @@ export default function AddEditReadyMaterial(props) {
                   body: {
                     editRow: {
                       deleteText: `Are you sure you want to delete this Raw Material?`,
-                      saveTooltip: "Delete"
+                      saveTooltip: "Save"
                     }
                   }
                 }}
+                actions={
+                  !isView
+                    ? [
+                        rowData => ({
+                          icon: () =>
+                            rowData.raw_material.color !== "" ? (
+                              rowData.isColorDependent ? (
+                                <ClearIcon color="error" />
+                              ) : (
+                                <CheckIcon />
+                              )
+                            ) : (
+                              <CheckIcon color="disabled" />
+                            ),
+                          disabled:
+                            !rowData.raw_material.color ||
+                            rowData.raw_material.color === "",
+                          tooltip:
+                            rowData.raw_material.color !== ""
+                              ? rowData.isColorDependent
+                                ? "Uncheck if not color dependent"
+                                : "Check if color dependent"
+                              : "Cannot check as raw material doesn't have any color",
+                          onClick: (event, rowData) =>
+                            !rowData.raw_material.color ||
+                            rowData.raw_material.color === ""
+                              ? null
+                              : handleChangeIsColorDependent(rowData)
+                        })
+                      ]
+                    : null
+                }
                 editable={
                   isView
                     ? null

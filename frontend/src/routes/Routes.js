@@ -30,7 +30,14 @@ import {
   LISTREADYMATERIAL,
   ADDREADYMATERIAL,
   EDITREADYMATERIAL,
-  VIEWREADYMATERIAL
+  VIEWREADYMATERIAL,
+  VIEWSALES,
+  PARTIES,
+  ADDPARTIES,
+  EDITPARTIES,
+  VIEWORDERS,
+  ADDORDER,
+  EDITORDER
 } from "../paths";
 import {
   Login,
@@ -53,7 +60,12 @@ import {
   AddGoodReturn,
   KachhaPurchaseDetails,
   ReadyMaterials,
-  AddEditReadyMaterial
+  AddEditReadyMaterial,
+  Sales,
+  Parties,
+  AddParties,
+  AddOrder,
+  ViewOrders
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -291,6 +303,63 @@ const Routes = () => {
           exact
           component={AddEditReadyMaterial}
           header={"Views Ready Material"}
+        />
+
+        {/** SALES */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWSALES}
+          exact
+          component={Sales}
+          header={"View Sales"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={PARTIES}
+          exact
+          component={Parties}
+          header={"View Parties"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDPARTIES}
+          exact
+          component={AddParties}
+          header={"Add Party"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITPARTIES}
+          exact
+          component={AddParties}
+          header={"Edit Party"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDORDER}
+          exact
+          component={AddOrder}
+          header={"Add Order"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITORDER}
+          exact
+          component={AddOrder}
+          header={"Edit Order"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWORDERS}
+          exact
+          component={ViewOrders}
+          header={"View Order"}
         />
 
         <PublicRoute path={LOGIN} exact component={Login} />

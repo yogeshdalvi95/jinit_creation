@@ -1,0 +1,11 @@
+{
+  "party_name": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Party Name is required"
+      }
+    }
+  }
+}

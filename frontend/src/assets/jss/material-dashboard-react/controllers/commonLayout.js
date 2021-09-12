@@ -14,6 +14,29 @@ const styles = {
   extendedIcon: {
     marginRight: "1rem"
   },
+  imageDiv: {
+    width: "max-content",
+    marginRight: "auto",
+    marginTop: "3rem"
+  },
+  inputFile: {
+    display: "none"
+  },
+  DefaultNoImage: {
+    width: "750px",
+    height: "200px",
+    objectFit: "contain",
+    backgroundColor: "#f3f3f3",
+    border: "2px solid #aba5a5 !Important"
+  },
+  UploadImage: {
+    width: "100%",
+    height: "200px",
+    objectFit: "contain",
+    backgroundColor: "#f3f3f3",
+    border: "2px solid #aba5a5 !Important"
+    // marginLeft: "18%"
+  },
   cardCategoryWhite: {
     "&,& a,& a:hover,& a:focus": {
       color: "rgba(255,255,255,.62)",
