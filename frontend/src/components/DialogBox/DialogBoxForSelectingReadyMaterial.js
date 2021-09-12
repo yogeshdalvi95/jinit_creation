@@ -3,47 +3,32 @@ import React, { useState } from "react";
 import {
   Auth,
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   CustomInput,
-  FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent,
   Table
 } from "../../components";
 // core components
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { apiUrl, backend_ready_materials } from "../../constants";
 import {
-  ADDREADYMATERIAL,
-  EDITREADYMATERIAL,
-  VIEWREADYMATERIAL
-} from "../../paths";
-import { useHistory } from "react-router-dom";
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  makeStyles
+} from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
-import ListAltIcon from "@material-ui/icons/ListAlt";
-import AddIcon from "@material-ui/icons/Add";
-import { convertNumber, isEmptyString } from "../../Utils";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import { providerForGet } from "../../api";
 import no_image_icon from "../../assets/img/no_image_icon.png";
 
+import { convertNumber, isEmptyString } from "../../Utils";
 const useStyles = makeStyles(styles);
-export default function ReadyMaterials() {
-  const classes = useStyles();
+
+export default function DialogBoxForSelectingReadyMaterial(props) {
   const tableRef = React.createRef();
-  const [openBackDrop, setBackDrop] = useState(false);
-  const history = useHistory();
+  const classes = useStyles();
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc"
-  });
-  const [snackBar, setSnackBar] = React.useState({
-    show: false,
-    severity: "",
-    message: ""
+    _sort: "id:desc"
   });
 
   const columns = [
@@ -131,74 +116,21 @@ export default function ReadyMaterials() {
     tableRef.current.onQueryChange();
   };
 
-  const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
-      ...snackBar,
-      show: false,
-      severity: "",
-      message: ""
-    }));
-  };
-
-  const handleAdd = () => {
-    history.push(ADDREADYMATERIAL);
-  };
-
-  const handleTableAction = async (row, isView) => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_ready_materials + "/" + row.id,
-      {},
-      Auth.getToken()
-    )
-      .then(res => {
-        setBackDrop(false);
-        if (isView) {
-          history.push(VIEWREADYMATERIAL, { data: res.data, view: true });
-        } else {
-          history.push(EDITREADYMATERIAL, { data: res.data, edit: true });
-        }
-      })
-      .catch(err => {
-        setBackDrop(false);
-        setSnackBar(snackBar => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error viewing ready material"
-        }));
-      });
-  };
   return (
-    <>
-      <SnackBarComponent
-        open={snackBar.show}
-        severity={snackBar.severity}
-        message={snackBar.message}
-        handleClose={snackBarHandleClose}
-      />
-      <GridContainer>
-        <GridItem xs={12} sm={12} md={12}>
-          <Card>
-            <CardHeader color="primary" className={classes.cardHeaderStyles}>
-              <ListAltIcon fontSize="large" />
-              <p className={classes.cardCategoryWhite}></p>
-            </CardHeader>
-            <CardBody>
+    <div>
+      <Dialog
+        open={props.open}
+        onClose={props.handleClose}
+        aria-labelledby="select-raw-material-title"
+        aria-describedby="select-raw-material-dialog-description"
+        maxWidth={"lg"}
+      >
+        <DialogTitle id="dialog-title">Select Raw Material</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="dialog-description">
+            <>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <FAB
-                    color="primary"
-                    align={"end"}
-                    size={"small"}
-                    onClick={() => handleAdd()}
-                  >
-                    <AddIcon />
-                  </FAB>
-                </GridItem>
-              </GridContainer>
-              <GridContainer>
-                <GridItem xs={12} sm={3} md={3}>
+                <GridItem xs={12} sm={3} md={4}>
                   <CustomInput
                     onChange={e => {
                       if (isEmptyString(e.target.value)) {
@@ -217,7 +149,7 @@ export default function ReadyMaterials() {
                     labelText="Material Number"
                     name="material_no_contains"
                     noMargin
-                    value={filter["material_no_contains"]}
+                    value={filter["material_no_contains"] || ""}
                     id="material_no_contains"
                     formControlProps={{
                       fullWidth: true
@@ -225,7 +157,7 @@ export default function ReadyMaterials() {
                   />
                 </GridItem>
 
-                <GridItem xs={12} sm={12} md={4}>
+                <GridItem xs={12} sm={12} md={8}>
                   <Button
                     color="primary"
                     onClick={() => {
@@ -261,23 +193,23 @@ export default function ReadyMaterials() {
                 }}
                 actions={[
                   rowData => ({
-                    icon: () => <EditOutlinedIcon fontSize="small" />,
-                    tooltip: "Edit",
+                    icon: () => <Button color="primary">Select</Button>,
+                    tooltip: "Select this ready material",
                     onClick: (event, rowData) => {
-                      handleTableAction(rowData, false);
-                    }
-                  }),
-                  rowData => ({
-                    icon: () => <VisibilityIcon fontSize="small" />,
-                    tooltip: "View",
-                    onClick: (event, rowData) => {
-                      handleTableAction(rowData, true);
+                      if (props.isHandleKey) {
+                        props.handleAddReadyMaterial(
+                          "raw_material",
+                          rowData,
+                          props.gridKey
+                        );
+                      } else {
+                        props.handleAddReadyMaterial(rowData);
+                      }
                     }
                   })
                 ]}
                 options={{
                   pageSize: 10,
-                  actionsColumnIndex: -1,
                   search: false,
                   sorting: true,
                   thirdSortClick: false
@@ -286,13 +218,10 @@ export default function ReadyMaterials() {
                   orderFunc(orderedColumnId, orderDirection);
                 }}
               />
-            </CardBody>
-          </Card>
-        </GridItem>
-      </GridContainer>
-      <Backdrop className={classes.backdrop} open={openBackDrop}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-    </>
+            </>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

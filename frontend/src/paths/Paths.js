@@ -14,6 +14,10 @@ export const SELLERS = "/sellers";
 export const ADDSELLER = "/add-seller";
 export const EDITSELLER = "/edit-seller";
 
+export const PARTIES = "/parties";
+export const ADDPARTIES = "/add-party";
+export const EDITPARTIES = "/edit-party";
+
 export const ADDPURCHASES = "/add-purchases";
 export const EDITPURCHASES = "/edit-purchases";
 export const PURCHASES = "/purchases";
@@ -42,3 +46,11 @@ export const LISTREADYMATERIAL = "/ready-material";
 export const ADDREADYMATERIAL = "/add-ready-material";
 export const EDITREADYMATERIAL = "/edit-ready-material";
 export const VIEWREADYMATERIAL = "/view-ready-material";
+
+export const VIEWORDERS = "/view-orders";
+export const ADDORDER = "/add-order";
+export const EDITORDER = "/edit-order";
+
+export const VIEWSALES = "/view-sales";
+export const ADDSALES = "/add-sales";
+export const EDITSALES = "/edit-sales";

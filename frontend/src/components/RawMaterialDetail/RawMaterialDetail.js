@@ -2,6 +2,7 @@ import React from "react";
 import { GridContainer, GridItem } from "../Grid";
 
 export default function RawMaterialDetail(props) {
+  console.log("props cajnkabdaksbd ", props);
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -48,6 +49,7 @@ export default function RawMaterialDetail(props) {
           <GridItem xs={12} sm={12} md={8}>
             <b>Balance : </b>
             {props.raw_material.balance}
+            {props.includeUnits ? " " + props.raw_material.unit : null}
           </GridItem>
         </GridContainer>
       </GridItem>

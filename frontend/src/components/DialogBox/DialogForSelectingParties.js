@@ -9,8 +9,7 @@ import {
   Table
 } from "../../components";
 // core components
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_sellers } from "../../constants";
+import { backend_parties } from "../../constants";
 import {
   Dialog,
   DialogContent,
@@ -19,14 +18,14 @@ import {
 } from "@material-ui/core";
 import { isEmptyString } from "../../Utils";
 
-export default function DialogForSelectingSeller(props) {
+export default function DialogForSelectingParties(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "seller_name:asc"
+    _sort: "party_name:asc"
   });
 
   const columns = [
-    { title: "Seller Name", field: "seller_name" },
+    { title: "Party Name", field: "party_name" },
     { title: "GSTIN/UIN", field: "gst_no" },
     { title: "Phone", field: "phone" }
   ];
@@ -44,7 +43,7 @@ export default function DialogForSelectingSeller(props) {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_sellers + "?" + new URLSearchParams(params), {
+      fetch(backend_parties + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -99,7 +98,7 @@ export default function DialogForSelectingSeller(props) {
         aria-describedby="select-raw-material-dialog-description"
         maxWidth={"lg"}
       >
-        <DialogTitle id="dialog-title">Select Seller</DialogTitle>
+        <DialogTitle id="dialog-title">Select Party</DialogTitle>
         <DialogContent>
           <DialogContentText id="dialog-description">
             <GridContainer>
@@ -108,10 +107,10 @@ export default function DialogForSelectingSeller(props) {
                   <GridItem xs={12} sm={12} md={6}>
                     <CustomInput
                       onChange={event => handleChange(event)}
-                      labelText="Seller Name"
-                      value={filter.seller_name_contains || ""}
-                      name="seller_name_contains"
-                      id="seller_name_contains"
+                      labelText="Party Name"
+                      value={filter.party_name_contains || ""}
+                      name="party_name_contains"
+                      id="party_name_contains"
                       formControlProps={{
                         fullWidth: true
                       }}
@@ -136,10 +135,10 @@ export default function DialogForSelectingSeller(props) {
                     <Button
                       color="primary"
                       onClick={() => {
-                        delete filter["seller_name_contains"];
+                        delete filter["party_name_contains"];
                         setFilter(filter => ({
                           ...filter,
-                          _sort: "seller_name:asc"
+                          _sort: "party_name:asc"
                         }));
                         tableRef.current.onQueryChange();
                       }}
@@ -164,7 +163,7 @@ export default function DialogForSelectingSeller(props) {
                       icon: () => <Button color="primary">Select</Button>,
                       tooltip: "Select this Seller",
                       onClick: (event, rowData) => {
-                        props.handleAddSeller(rowData);
+                        props.handleAddParties(rowData);
                       }
                     })
                   ]}

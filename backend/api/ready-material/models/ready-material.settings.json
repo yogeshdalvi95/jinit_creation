@@ -42,6 +42,10 @@
     "total_quantity": {
       "type": "float",
       "default": 0
+    },
+    "isColorVariationAvailable": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

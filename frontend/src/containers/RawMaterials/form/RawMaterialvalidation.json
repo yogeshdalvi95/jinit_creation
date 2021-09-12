@@ -26,7 +26,7 @@
       },
       "validPositiveInteger": {
         "value": "true",
-        "message": "Quantity cannot be zero"
+        "message": "Costing cannot be zero"
       }
     }
   },
@@ -35,7 +35,7 @@
     "validations": {
       "validPositiveIntegerExceptZero": {
         "value": "true",
-        "message": "Quantity cannot be negative number"
+        "message": "Balance cannot be negative number"
       }
     }
   },

@@ -52,4 +52,16 @@ module.exports = {
   //     ctx.throw(500);
   //   }
   // },
+
+  async changeIsColorDependent(ctx) {
+    const { status, id } = ctx.request.body;
+    console.log("status ", status, id, typeof status);
+    await strapi.query("raw-material-and-quantity-for-ready-material").update(
+      { id: id },
+      {
+        isColorDependent: status,
+      }
+    );
+    ctx.send(200);
+  },
 };

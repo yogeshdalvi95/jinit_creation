@@ -1,0 +1,59 @@
+{
+  "order_id": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Order Id is required"
+      }
+    }
+  },
+  "quantity": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Quantity is required"
+      },
+      "validPositiveInteger": {
+        "value": "true",
+        "message": "Quantity cannot be zero"
+      },
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Quantity cannot be negative number"
+      }
+    }
+  },
+  "completed_quantity": {
+    "required": false,
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Completed quantity cannot be negative number"
+      }
+    }
+  },
+  "price_per_piece": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Price Per Piece is required"
+      },
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Price Per Piece cannot be negative number"
+      }
+    }
+  },
+  "buffer_quantity": {
+    "required": false,
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Buffer quantity cannot be negative number"
+      }
+    }
+  }
+}

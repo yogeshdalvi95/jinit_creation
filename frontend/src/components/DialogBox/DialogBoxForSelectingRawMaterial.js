@@ -124,7 +124,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
     let arr = [];
     data.map(d => {
       let department = d.department.name;
-      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
+      let costing = d.costing ? d.costing + "/" + d.unit.name : 0;
       let color = d.color ? d.color.name : "";
       let category = d.category ? d.category.name : "";
       arr.push({

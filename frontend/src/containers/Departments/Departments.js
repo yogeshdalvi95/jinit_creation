@@ -9,16 +9,16 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  SnackBarComponent,
   Table
 } from "../../components";
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_departments } from "../../constants";
+import ListAltIcon from "@material-ui/icons/ListAlt";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { ADDDEPARTMENTS } from "../../paths";
 
 const useStyles = makeStyles(styles);
 
@@ -29,12 +29,13 @@ export default function Departments() {
     _sort: "name:asc"
   });
 
-  const columns = [{ title: "Name", field: "name" }];
+  const [snackBar, setSnackBar] = React.useState({
+    show: false,
+    severity: "",
+    message: ""
+  });
 
-  const history = useHistory();
-  const onAddClick = () => {
-    history.push(ADDDEPARTMENTS);
-  };
+  const columns = [{ title: "Name", field: "name" }];
 
   const getAdminUserData = async (page, pageSize) => {
     let params = {
@@ -63,6 +64,14 @@ export default function Departments() {
             page: result.page - 1,
             totalCount: result.totalCount
           });
+        })
+        .catch(err => {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error"
+          }));
         });
     });
   };
@@ -81,45 +90,69 @@ export default function Departments() {
     tableRef.current.onQueryChange();
   };
 
+  const snackBarHandleClose = () => {
+    setSnackBar(snackBar => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: ""
+    }));
+  };
+
   return (
-    <GridContainer>
-      <GridItem xs={12} sm={12} md={12}>
-        <Card plain>
-          <CardHeader plain color="primary">
-            <h4 className={classes.cardTitleWhite}>Departments</h4>
-            <p className={classes.cardCategoryWhite}>List of all departments</p>
-          </CardHeader>
-          <CardBody>
-            <Table
-              tableRef={tableRef}
-              title="Departments"
-              columns={columns}
-              data={async query => {
-                return await getAdminUserData(query.page + 1, query.pageSize);
-              }}
-              localization={{
-                body: {
-                  editRow: {
-                    deleteText: `Are you sure you want to delete this Admin User?`,
-                    saveTooltip: "Delete"
-                  }
-                }
-              }}
-              actions={[]}
-              options={{
-                pageSize: 10,
-                actionsColumnIndex: -1,
-                search: false,
-                sorting: true,
-                thirdSortClick: false
-              }}
-              onOrderChange={(orderedColumnId, orderDirection) => {
-                orderFunc(orderedColumnId, orderDirection);
-              }}
-            />
-          </CardBody>
-        </Card>
-      </GridItem>
-    </GridContainer>
+    <>
+      <SnackBarComponent
+        open={snackBar.show}
+        severity={snackBar.severity}
+        message={snackBar.message}
+        handleClose={snackBarHandleClose}
+      />
+      <GridContainer>
+        <GridItem xs={12} sm={12} md={12}>
+          <Card>
+            <CardHeader color="primary" className={classes.cardHeaderStyles}>
+              <ListAltIcon fontSize="large" />
+              <p className={classes.cardCategoryWhite}></p>
+            </CardHeader>
+            <CardBody>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <Table
+                    tableRef={tableRef}
+                    title="Departments"
+                    columns={columns}
+                    data={async query => {
+                      return await getAdminUserData(
+                        query.page + 1,
+                        query.pageSize
+                      );
+                    }}
+                    localization={{
+                      body: {
+                        editRow: {
+                          deleteText: `Are you sure you want to delete this Admin User?`,
+                          saveTooltip: "Delete"
+                        }
+                      }
+                    }}
+                    actions={[]}
+                    options={{
+                      pageSize: 10,
+                      actionsColumnIndex: -1,
+                      search: false,
+                      sorting: true,
+                      thirdSortClick: false
+                    }}
+                    onOrderChange={(orderedColumnId, orderDirection) => {
+                      orderFunc(orderedColumnId, orderDirection);
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+            </CardBody>
+          </Card>
+        </GridItem>
+      </GridContainer>
+    </>
   );
 }

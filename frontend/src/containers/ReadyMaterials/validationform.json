@@ -15,5 +15,13 @@
         "message": "Quantity should be a valid positive number"
       }
     }
+  },
+  "total_quantity": {
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Quantity should be a valid positive number"
+      }
+    }
   }
 }
