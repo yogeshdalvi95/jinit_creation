@@ -195,6 +195,9 @@ module.exports = {
               color: color,
             });
 
+          console.log("rmrmrmrmmrmrm", rm);
+          //console.log(raw_material_with_color);
+
           raw_material_with_color = raw_material_with_color.map((rmc) => {
             let raw_material_balance = parseFloat(rmc.balance);
             let required_quantity_pp = parseFloat(rm.quantity);

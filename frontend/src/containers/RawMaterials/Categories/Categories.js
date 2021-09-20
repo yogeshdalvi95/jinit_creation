@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 // @material-ui/core components
+import { makeStyles } from "@material-ui/core/styles";
 import {
   Auth,
   Button,
@@ -12,85 +13,45 @@ import {
   GridItem,
   SnackBarComponent,
   Table
-} from "../../components";
+} from "../../../components";
 // core components
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { apiUrl, backend_ready_materials } from "../../constants";
-import {
-  ADDREADYMATERIAL,
-  EDITREADYMATERIAL,
-  VIEWREADYMATERIAL
-} from "../../paths";
-import { useHistory } from "react-router-dom";
-import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
-import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { convertNumber, isEmptyString } from "../../Utils";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import { providerForGet } from "../../api";
-import no_image_icon from "../../assets/img/no_image_icon.png";
+import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
+import { backend_category } from "../../../constants";
+import ListAltIcon from "@material-ui/icons/ListAlt";
+
+import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
+import { useHistory } from "react-router-dom";
+import {
+  ADDCATEGORIES,
+  ADDCOLOR,
+  EDITCATEGORIES,
+  EDITCOLOR
+} from "../../../paths";
+import { Backdrop, CircularProgress } from "@material-ui/core";
+import { providerForDelete, providerForGet } from "../../../api";
+import { isEmptyString } from "../../../Utils";
 
 const useStyles = makeStyles(styles);
-export default function ReadyMaterials() {
-  const classes = useStyles();
-  const tableRef = React.createRef();
-  const [openBackDrop, setBackDrop] = useState(false);
+
+export default function Categories() {
   const history = useHistory();
+  const classes = useStyles();
+  const [openBackDrop, setBackDrop] = useState(false);
+  const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc"
+    _sort: "name:asc"
   });
+
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
     message: ""
   });
 
-  const columns = [
-    { title: "id", field: "id", render: rowData => `#${rowData.id}` },
-    { title: "Material No", field: "material_no" },
-    {
-      title: "Image",
-      render: rowData => (
-        <div className={classes.imageDivInTable}>
-          {rowData.images && rowData.images.length && rowData.images[0].url ? (
-            <img
-              alt="ready_material_photo"
-              src={apiUrl + rowData.images[0].url}
-              loader={<CircularProgress />}
-              style={{
-                height: "5rem",
-                width: "10rem"
-              }}
-              className={classes.UploadImage}
-            />
-          ) : (
-            <img
-              src={no_image_icon}
-              alt="ready_material_photo"
-              style={{
-                height: "5rem",
-                width: "10rem"
-              }}
-              loader={<CircularProgress />}
-              className={classes.DefaultNoImage}
-            />
-          )}
-        </div>
-      )
-    },
-    {
-      title: "Quantity Available",
-      field: "total_quantity"
-    },
-    {
-      title: "Price",
-      field: "final_cost",
-      render: rowData => convertNumber(rowData.final_cost, true)
-    }
-  ];
+  const columns = [{ title: "Name", field: "name" }];
 
-  const getReadyMaterialsData = async (page, pageSize) => {
+  const getColorData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize
@@ -103,7 +64,7 @@ export default function ReadyMaterials() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_ready_materials + "?" + new URLSearchParams(params), {
+      fetch(backend_category + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -117,6 +78,14 @@ export default function ReadyMaterials() {
             page: result.page - 1,
             totalCount: result.totalCount
           });
+        })
+        .catch(err => {
+          setSnackBar(snackBar => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error"
+          }));
         });
     });
   };
@@ -145,23 +114,15 @@ export default function ReadyMaterials() {
   };
 
   const handleAdd = () => {
-    history.push(ADDREADYMATERIAL);
+    history.push(ADDCATEGORIES);
   };
 
   const handleTableAction = async (row, isView) => {
     setBackDrop(true);
-    await providerForGet(
-      backend_ready_materials + "/" + row.id,
-      {},
-      Auth.getToken()
-    )
+    await providerForGet(backend_category + "/" + row.id, {}, Auth.getToken())
       .then(res => {
         setBackDrop(false);
-        if (isView) {
-          history.push(VIEWREADYMATERIAL, { data: res.data, view: true });
-        } else {
-          history.push(EDITREADYMATERIAL, { data: res.data, edit: true });
-        }
+        history.push(EDITCATEGORIES, { data: res.data, edit: true });
       })
       .catch(err => {
         setBackDrop(false);
@@ -169,10 +130,11 @@ export default function ReadyMaterials() {
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing ready material"
+          message: "Error"
         }));
       });
   };
+
   return (
     <>
       <SnackBarComponent
@@ -206,23 +168,23 @@ export default function ReadyMaterials() {
                   <CustomInput
                     onChange={e => {
                       if (isEmptyString(e.target.value)) {
-                        delete filter["material_no_contains"];
+                        delete filter["name_contains"];
                         setFilter(filter => ({
                           ...filter
                         }));
                       } else {
                         setFilter(filter => ({
                           ...filter,
-                          material_no_contains: e.target.value
+                          name_contains: e.target.value
                         }));
                       }
                     }}
                     type="text"
-                    labelText="Material Number"
-                    name="material_no_contains"
+                    labelText="Category Name"
+                    name="name_contains"
                     noMargin
-                    value={filter["material_no_contains"] || ""}
-                    id="material_no_contains"
+                    value={filter["name_contains"] || ""}
+                    id="name_contains"
                     formControlProps={{
                       fullWidth: true
                     }}
@@ -241,7 +203,7 @@ export default function ReadyMaterials() {
                   <Button
                     color="primary"
                     onClick={() => {
-                      delete filter["material_no_contains"];
+                      delete filter["name_contains"];
                       setFilter(filter => ({
                         ...filter
                       }));
@@ -253,43 +215,75 @@ export default function ReadyMaterials() {
                 </GridItem>
               </GridContainer>
               <br />
-              <Table
-                tableRef={tableRef}
-                title="Ready Materials"
-                columns={columns}
-                data={async query => {
-                  return await getReadyMaterialsData(
-                    query.page + 1,
-                    query.pageSize
-                  );
-                }}
-                actions={[
-                  rowData => ({
-                    icon: () => <EditOutlinedIcon fontSize="small" />,
-                    tooltip: "Edit",
-                    onClick: (event, rowData) => {
-                      handleTableAction(rowData, false);
-                    }
-                  }),
-                  rowData => ({
-                    icon: () => <VisibilityIcon fontSize="small" />,
-                    tooltip: "View",
-                    onClick: (event, rowData) => {
-                      handleTableAction(rowData, true);
-                    }
-                  })
-                ]}
-                options={{
-                  pageSize: 10,
-                  actionsColumnIndex: -1,
-                  search: false,
-                  sorting: true,
-                  thirdSortClick: false
-                }}
-                onOrderChange={(orderedColumnId, orderDirection) => {
-                  orderFunc(orderedColumnId, orderDirection);
-                }}
-              />
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <Table
+                    tableRef={tableRef}
+                    title="Departments"
+                    columns={columns}
+                    data={async query => {
+                      return await getColorData(query.page + 1, query.pageSize);
+                    }}
+                    localization={{
+                      body: {
+                        editRow: {
+                          deleteText: `Are you sure you want to delete this Color?`,
+                          saveTooltip: "Delete"
+                        }
+                      }
+                    }}
+                    actions={[
+                      rowData => ({
+                        icon: () => <EditOutlinedIcon fontSize="small" />,
+                        tooltip: "Edit",
+                        onClick: (event, rowData) => {
+                          handleTableAction(rowData, false);
+                        }
+                      })
+                    ]}
+                    editable={{
+                      onRowDelete: oldData =>
+                        new Promise(resolve => {
+                          setTimeout(async () => {
+                            await providerForDelete(
+                              backend_category,
+                              oldData.id,
+                              Auth.getToken()
+                            )
+                              .then(async res => {
+                                setSnackBar(snackBar => ({
+                                  ...snackBar,
+                                  show: true,
+                                  severity: "success",
+                                  message:
+                                    "Successfully deleted " + oldData.name
+                                }));
+                              })
+                              .catch(err => {
+                                setSnackBar(snackBar => ({
+                                  ...snackBar,
+                                  show: true,
+                                  severity: "error",
+                                  message: "Error deleting " + oldData.name
+                                }));
+                              });
+                            resolve();
+                          }, 1000);
+                        })
+                    }}
+                    options={{
+                      pageSize: 10,
+                      actionsColumnIndex: -1,
+                      search: false,
+                      sorting: true,
+                      thirdSortClick: false
+                    }}
+                    onOrderChange={(orderedColumnId, orderDirection) => {
+                      orderFunc(orderedColumnId, orderDirection);
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
             </CardBody>
           </Card>
         </GridItem>

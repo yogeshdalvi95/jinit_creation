@@ -29,26 +29,26 @@ import {
   VIEWGOODRETURN,
   VIEWKACHHAPURCHASEDETAILS,
   ADDORDER,
-  VIEWORDERS,
   EDITORDER,
   PARTIES,
   ADDPARTIES,
   EDITPARTIES,
   VIEWSALES,
   ADDSALES,
-  EDITSALES
+  EDITSALES,
+  ORDERS,
+  VIEWORDER,
+  COLORS,
+  ADDCOLOR,
+  EDITCOLOR,
+  CATEGORIES,
+  ADDCATEGORIES,
+  EDITCATEGORIES
 } from "../paths";
 
 /** Raw material and units */
-const rawMaterialAndUnitPath = [
-  RAWMATERIALSVIEW,
-  ADDRAWMATERIALS,
-  EDITRAWMATERIALS,
-  UNITS,
-  DEPARTMENTS,
-  ADDDEPARTMENTS,
-  DAILYUSAGERAWMATERIALS
-];
+const colorPath = [COLORS, ADDCOLOR, EDITCOLOR];
+const categoryPath = [CATEGORIES, ADDCATEGORIES, EDITCATEGORIES];
 const rawMaterialPathList = [
   RAWMATERIALSVIEW,
   ADDRAWMATERIALS,
@@ -57,6 +57,15 @@ const rawMaterialPathList = [
 const unitsPathList = [UNITS];
 const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
 const dailyUsage = [DAILYUSAGERAWMATERIALS];
+
+const rawMaterialAndUnitPath = [
+  ...colorPath,
+  ...categoryPath,
+  ...rawMaterialPathList,
+  ...unitsPathList,
+  ...departmentsPath,
+  ...dailyUsage
+];
 
 /**---------------------------- */
 
@@ -100,7 +109,7 @@ const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
 
 /**-----order------- */
-const orderPaths = [ADDORDER, VIEWORDERS, EDITORDER];
+const orderPaths = [ADDORDER, VIEWORDER, ORDERS, EDITORDER];
 
 const salesAllPathList = [
   PARTIES,
@@ -170,6 +179,18 @@ export const DashboardStaffRoutes = [
         pathList: departmentsPath
       },
       {
+        path: CATEGORIES,
+        name: "Categories",
+        layout: "",
+        pathList: categoryPath
+      },
+      {
+        path: COLORS,
+        name: "Colors",
+        layout: "",
+        pathList: colorPath
+      },
+      {
         path: UNITS,
         name: "Units",
         layout: "",
@@ -185,7 +206,7 @@ export const DashboardStaffRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: VIEWORDERS,
+    path: ORDERS,
     name: "Orders",
     layout: "",
     pathList: orderPaths
@@ -274,6 +295,18 @@ export const DashboardAdminRoutes = [
         pathList: departmentsPath
       },
       {
+        path: CATEGORIES,
+        name: "Categories",
+        layout: "",
+        pathList: categoryPath
+      },
+      {
+        path: COLORS,
+        name: "Colors",
+        layout: "",
+        pathList: colorPath
+      },
+      {
         path: UNITS,
         name: "Units",
         layout: "",
@@ -289,7 +322,7 @@ export const DashboardAdminRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: VIEWORDERS,
+    path: ORDERS,
     name: "Orders",
     layout: "",
     pathList: orderPaths
@@ -385,6 +418,18 @@ export const SuperAdminDashboardRoutes = [
         pathList: departmentsPath
       },
       {
+        path: CATEGORIES,
+        name: "Categories",
+        layout: "",
+        pathList: categoryPath
+      },
+      {
+        path: COLORS,
+        name: "Colors",
+        layout: "",
+        pathList: colorPath
+      },
+      {
         path: UNITS,
         name: "Units",
         layout: "",
@@ -400,7 +445,7 @@ export const SuperAdminDashboardRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: VIEWORDERS,
+    path: ORDERS,
     name: "Orders",
     layout: "",
     pathList: orderPaths

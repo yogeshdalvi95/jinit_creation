@@ -4,7 +4,8 @@ export {
   Units,
   AddEditRawMaterial,
   AddEditUnit,
-  AddDailyUsage
+  AddDailyUsage,
+  Color
 } from "./RawMaterials";
 export { Login } from "./Login";
 export { Users } from "./Users";

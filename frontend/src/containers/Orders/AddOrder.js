@@ -39,7 +39,7 @@ import {
   SnackBarComponent
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import { VIEWORDERS } from "../../paths";
+import { ORDERS } from "../../paths";
 import validationForm from "./form/ValidationForm.json";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -219,7 +219,7 @@ export default function AddOrder(props) {
   };
 
   const onBackClick = () => {
-    history.push(VIEWORDERS);
+    history.push(ORDERS);
   };
 
   const handleCloseDialogForReadyMaterial = () => {
@@ -455,7 +455,7 @@ export default function AddOrder(props) {
         Auth.getToken()
       )
         .then(res => {
-          history.push(VIEWORDERS);
+          history.push(ORDERS);
           setBackDrop(false);
         })
         .catch(err => {
@@ -494,7 +494,7 @@ export default function AddOrder(props) {
         Auth.getToken()
       )
         .then(res => {
-          history.push(VIEWORDERS);
+          history.push(ORDERS);
           setBackDrop(false);
         })
         .catch(err => {

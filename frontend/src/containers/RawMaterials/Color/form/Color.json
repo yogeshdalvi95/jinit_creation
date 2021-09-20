@@ -1,0 +1,11 @@
+{
+  "name": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Color name is required"
+      }
+    }
+  }
+}
