@@ -18,7 +18,7 @@ import {
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { ADDORDER, EDITORDER, VIEWORDERS } from "../../paths";
+import { ADDORDER, EDITORDER, VIEWORDER } from "../../paths";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { providerForGet } from "../../api";
@@ -168,7 +168,7 @@ export default function ViewOrders(props) {
       .then(res => {
         setBackDrop(false);
         if (isView) {
-          history.push(VIEWORDERS, { data: res.data, view: true });
+          history.push(VIEWORDER, { data: res.data, view: true });
         } else {
           history.push(EDITORDER, { data: res.data, edit: true });
         }

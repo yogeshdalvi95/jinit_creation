@@ -1,0 +1,11 @@
+{
+  "name": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Category name is required"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "department_sheets",
+  "info": {
+    "name": "Department Sheet"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "model": "orders"
+    }
+  }
+}

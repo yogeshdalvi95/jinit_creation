@@ -35,9 +35,16 @@ import {
   PARTIES,
   ADDPARTIES,
   EDITPARTIES,
-  VIEWORDERS,
   ADDORDER,
-  EDITORDER
+  EDITORDER,
+  VIEWORDER,
+  ORDERS,
+  ADDCOLOR,
+  EDITCOLOR,
+  COLORS,
+  ADDCATEGORIES,
+  EDITCATEGORIES,
+  CATEGORIES
 } from "../paths";
 import {
   Login,
@@ -70,6 +77,12 @@ import {
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
+import {
+  AddEditCategories,
+  AddEditColor,
+  Categories,
+  Color
+} from "../containers/RawMaterials";
 
 const Routes = () => {
   return (
@@ -314,12 +327,13 @@ const Routes = () => {
           header={"View Sales"}
         />
 
+        {/** Parties section */}
         <PrivateRoute
           openSubMenu={true}
           path={PARTIES}
           exact
           component={Parties}
-          header={"View Parties"}
+          header={"Parties"}
         />
 
         <PrivateRoute
@@ -338,6 +352,7 @@ const Routes = () => {
           header={"Edit Party"}
         />
 
+        {/** Orders section */}
         <PrivateRoute
           openSubMenu={true}
           path={ADDORDER}
@@ -356,10 +371,68 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWORDERS}
+          path={VIEWORDER}
+          exact
+          component={AddOrder}
+          header={"View Order"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ORDERS}
           exact
           component={ViewOrders}
-          header={"View Order"}
+          header={"Orders"}
+        />
+
+        {/** Colors */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDCOLOR}
+          exact
+          component={AddEditColor}
+          header={"Add Color"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITCOLOR}
+          exact
+          component={AddEditColor}
+          header={"Edit Color"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={COLORS}
+          exact
+          component={Color}
+          header={"Colors"}
+        />
+
+        {/** Categoris */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDCATEGORIES}
+          exact
+          component={AddEditCategories}
+          header={"Add Category"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITCATEGORIES}
+          exact
+          component={AddEditCategories}
+          header={"Edit Category"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={CATEGORIES}
+          exact
+          component={Categories}
+          header={"Categories"}
         />
 
         <PublicRoute path={LOGIN} exact component={Login} />

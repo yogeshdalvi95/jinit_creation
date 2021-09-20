@@ -47,10 +47,20 @@ export const ADDREADYMATERIAL = "/add-ready-material";
 export const EDITREADYMATERIAL = "/edit-ready-material";
 export const VIEWREADYMATERIAL = "/view-ready-material";
 
-export const VIEWORDERS = "/view-orders";
+export const ORDERS = "/orders";
 export const ADDORDER = "/add-order";
 export const EDITORDER = "/edit-order";
+export const VIEWORDER = "/view-order";
 
 export const VIEWSALES = "/view-sales";
 export const ADDSALES = "/add-sales";
 export const EDITSALES = "/edit-sales";
+export const SALES = "/sales";
+
+export const COLORS = "/colors";
+export const ADDCOLOR = "/add-color";
+export const EDITCOLOR = "/edit-color";
+
+export const CATEGORIES = "/categories";
+export const ADDCATEGORIES = "/add-category";
+export const EDITCATEGORIES = "/edit-category";
