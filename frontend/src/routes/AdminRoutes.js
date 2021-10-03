@@ -43,7 +43,8 @@ import {
   EDITCOLOR,
   CATEGORIES,
   ADDCATEGORIES,
-  EDITCATEGORIES
+  EDITCATEGORIES,
+  DEPARTMENTSHEET
 } from "../paths";
 
 /** Raw material and units */
@@ -109,7 +110,9 @@ const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
 
 /**-----order------- */
-const orderPaths = [ADDORDER, VIEWORDER, ORDERS, EDITORDER];
+const orderPathsList = [ADDORDER, VIEWORDER, ORDERS, EDITORDER];
+const departmentSheetList = [DEPARTMENTSHEET];
+const orderPaths = [...orderPathsList, ...departmentSheetList];
 
 const salesAllPathList = [
   PARTIES,
@@ -206,10 +209,23 @@ export const DashboardStaffRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: ORDERS,
     name: "Orders",
     layout: "",
-    pathList: orderPaths
+    pathList: orderPaths,
+    children: [
+      {
+        path: ORDERS,
+        name: "Orders",
+        layout: "",
+        pathList: orderPathsList
+      },
+      {
+        path: DEPARTMENTSHEET,
+        name: "Department Sheet",
+        layout: "",
+        pathList: departmentSheetList
+      }
+    ]
   },
   {
     name: "Sales",
@@ -322,10 +338,23 @@ export const DashboardAdminRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: ORDERS,
     name: "Orders",
     layout: "",
-    pathList: orderPaths
+    pathList: orderPaths,
+    children: [
+      {
+        path: ORDERS,
+        name: "Orders",
+        layout: "",
+        pathList: orderPathsList
+      },
+      {
+        path: DEPARTMENTSHEET,
+        name: "Department Sheet",
+        layout: "",
+        pathList: departmentSheetList
+      }
+    ]
   },
   {
     name: "Sales",
@@ -445,10 +474,23 @@ export const SuperAdminDashboardRoutes = [
     pathList: readyMaterialPath
   },
   {
-    path: ORDERS,
     name: "Orders",
     layout: "",
-    pathList: orderPaths
+    pathList: orderPaths,
+    children: [
+      {
+        path: ORDERS,
+        name: "Orders",
+        layout: "",
+        pathList: orderPathsList
+      },
+      {
+        path: DEPARTMENTSHEET,
+        name: "Department Sheet",
+        layout: "",
+        pathList: departmentSheetList
+      }
+    ]
   },
   {
     name: "Sales",

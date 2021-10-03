@@ -23,4 +23,4 @@ export {
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
 export { AddParties, Parties, Sales } from "./Sales";
-export { AddOrder, ViewOrders } from "./Orders";
+export { AddOrder, ViewOrders, DepartmentSheet } from "./Orders";

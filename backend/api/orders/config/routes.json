@@ -18,6 +18,14 @@
     },
     {
       "method": "GET",
+      "path": "/orders/department_sheet",
+      "handler": "orders.getDepartmentSheet",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/orders/count",
       "handler": "orders.count",
       "config": {

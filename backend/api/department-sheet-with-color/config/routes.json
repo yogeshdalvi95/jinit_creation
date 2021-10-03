@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/department-sheet-with-colors",
+      "handler": "department-sheet-with-color.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/department-sheet-with-colors/count",
+      "handler": "department-sheet-with-color.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/department-sheet-with-colors/:id",
+      "handler": "department-sheet-with-color.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/department-sheet-with-colors",
+      "handler": "department-sheet-with-color.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/department-sheet-with-colors/:id",
+      "handler": "department-sheet-with-color.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/department-sheet-with-colors/:id",
+      "handler": "department-sheet-with-color.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

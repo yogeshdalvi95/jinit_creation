@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 
-import { makeStyles } from "@material-ui/core";
+import { Icon, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { convertNumber, plainDate } from "../../Utils";
-import { backend_order } from "../../constants";
+import { plainDate } from "../../Utils";
+import {
+  backend_order,
+  backend_order_to_get_department_sheet
+} from "../../constants";
 import {
   Auth,
   Card,
@@ -18,7 +21,7 @@ import {
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { ADDORDER, EDITORDER, VIEWORDER } from "../../paths";
+import { ADDORDER, DEPARTMENTSHEET, EDITORDER, VIEWORDER } from "../../paths";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { providerForGet } from "../../api";
@@ -184,6 +187,28 @@ export default function ViewOrders(props) {
       });
   };
 
+  const handleDepartmentSheet = async row => {
+    setBackDrop(true);
+    await providerForGet(
+      backend_order_to_get_department_sheet + "/" + row.id,
+      {},
+      Auth.getToken()
+    )
+      .then(res => {
+        setBackDrop(false);
+        history.push(DEPARTMENTSHEET, { data: res.data });
+      })
+      .catch(err => {
+        setBackDrop(false);
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error viewing/editing order"
+        }));
+      });
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -242,6 +267,13 @@ export default function ViewOrders(props) {
                         tooltip: "View",
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, true);
+                        }
+                      }),
+                      rowData => ({
+                        icon: () => <Icon fontSize="small">edit_note</Icon>,
+                        tooltip: "Department Sheet",
+                        onClick: (event, rowData) => {
+                          handleDepartmentSheet(rowData);
                         }
                       })
                     ]}

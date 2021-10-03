@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "department_order_sheets",
+  "info": {
+    "name": "Department order sheet",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "order": {
+      "model": "orders"
+    },
+    "remark": {
+      "type": "text"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "platting": {
+      "type": "string"
+    }
+  }
+}

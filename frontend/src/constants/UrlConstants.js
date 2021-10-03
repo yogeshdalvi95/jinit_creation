@@ -42,4 +42,5 @@ export const backend_raw_material_and_quantity_for_ready_material_for_add_raw_ma
 export const backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials = `${apiUrl}/raw-material-and-quantity-for-ready-materials/delete-raw-material`;
 
 export const backend_order = `${apiUrl}/orders`;
+export const backend_order_to_get_department_sheet = `${apiUrl}/orders/department_sheet`;
 export const backend_order_check_raw_material_availibility = `${apiUrl}/orders/check_availibility`;
