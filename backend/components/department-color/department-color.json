@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_department_color_department_colors",
+  "info": {
+    "name": "department_color",
+    "icon": "align-left"
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "string"
+    }
+  }
+}

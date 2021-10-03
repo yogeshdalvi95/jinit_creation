@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/department-order-sheets",
+      "handler": "department-order-sheet.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/department-order-sheets/count",
+      "handler": "department-order-sheet.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/department-order-sheets/:id",
+      "handler": "department-order-sheet.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/department-order-sheets",
+      "handler": "department-order-sheet.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/department-order-sheets/:id",
+      "handler": "department-order-sheet.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/department-order-sheets/:id",
+      "handler": "department-order-sheet.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

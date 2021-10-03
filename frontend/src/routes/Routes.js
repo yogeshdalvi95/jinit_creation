@@ -44,7 +44,8 @@ import {
   COLORS,
   ADDCATEGORIES,
   EDITCATEGORIES,
-  CATEGORIES
+  CATEGORIES,
+  DEPARTMENTSHEET
 } from "../paths";
 import {
   Login,
@@ -72,7 +73,8 @@ import {
   Parties,
   AddParties,
   AddOrder,
-  ViewOrders
+  ViewOrders,
+  DepartmentSheet
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -383,6 +385,14 @@ const Routes = () => {
           exact
           component={ViewOrders}
           header={"Orders"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={DEPARTMENTSHEET}
+          exact
+          component={DepartmentSheet}
+          header={"Department Sheet"}
         />
 
         {/** Colors */}

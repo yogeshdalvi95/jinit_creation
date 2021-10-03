@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "department_sheet_with_colors",
+  "info": {
+    "name": "Department sheet with color",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "in_date": {
+      "type": "date"
+    },
+    "out_date": {
+      "type": "datetime"
+    },
+    "department": {
+      "model": "department"
+    },
+    "department_color": {
+      "type": "component",
+      "repeatable": true,
+      "component": "department-color.department-color"
+    },
+    "department_order_sheet": {
+      "model": "department-order-sheet"
+    }
+  }
+}

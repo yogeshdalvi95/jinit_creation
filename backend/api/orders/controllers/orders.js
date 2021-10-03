@@ -95,7 +95,6 @@ module.exports = {
     parsePreviousCompletedValue = isNaN(parsePreviousCompletedValue)
       ? 0
       : parsePreviousCompletedValue;
-    console.log(parseCompletedValue, parsePreviousCompletedValue);
     let diff = parseCompletedValue - parsePreviousCompletedValue;
 
     if (ready_material_data) {
@@ -111,7 +110,6 @@ module.exports = {
         let oldQuantity = parseFloat(ready_material_data.total_quantity);
         oldQuantity = isNaN(oldQuantity) ? 0 : oldQuantity;
         let quantity = oldQuantity + diff;
-        console.log(diff, oldQuantity, quantity);
 
         await strapi
           .query("ready-material")
@@ -195,9 +193,6 @@ module.exports = {
               color: color,
             });
 
-          console.log("rmrmrmrmmrmrm", rm);
-          //console.log(raw_material_with_color);
-
           raw_material_with_color = raw_material_with_color.map((rmc) => {
             let raw_material_balance = parseFloat(rmc.balance);
             let required_quantity_pp = parseFloat(rm.quantity);
@@ -214,10 +209,9 @@ module.exports = {
               total_remaining_ready_material: parseFloat(remaining_quantity),
             };
           });
-
           dataToSend = {
             ...dataToSend,
-            [r.name]: raw_material_with_color,
+            [r.name]: [...dataToSend[r.name], ...raw_material_with_color],
           };
         }
       });
@@ -250,5 +244,16 @@ module.exports = {
     };
 
     ctx.send(dataToSend);
+  },
+
+  async getDepartmentSheet(ctx) {
+    console.log("akgauygdau");
+    const { id } = ctx.params;
+    const departments = await strapi.query("department").find();
+    console.log(departments);
+    const orderDetail = await strapi.query("orders").findOne({
+      id: id,
+    });
+    console.log(orderDetail);
   },
 };

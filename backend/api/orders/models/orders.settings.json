@@ -66,6 +66,9 @@
     },
     "party": {
       "model": "party"
+    },
+    "nl_no": {
+      "type": "string"
     }
   }
 }
