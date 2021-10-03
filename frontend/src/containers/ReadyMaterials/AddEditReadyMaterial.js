@@ -550,38 +550,97 @@ export default function AddEditReadyMaterial(props) {
     tableRef.current.onQueryChange();
   };
 
-  const handleFileChange = event => {
+  const handleFileChange = async event => {
     event.persist();
-    if (event.target.files[0].size <= 1100000) {
-      if (
-        event.target.files[0].type === "image/png" ||
-        event.target.files[0].type === "image/jpeg" ||
-        event.target.files[0].type === "image/jpg"
-      ) {
-        setFormState(formState => ({
-          ...formState,
-          image: event.target.files[0],
-          addNewImageUrl: URL.createObjectURL(event.target.files[0]),
-          showAddPreviewImage: true,
-          showEditPreviewImage: false
-        }));
+    if (
+      event.target.files[0].type === "image/png" ||
+      event.target.files[0].type === "image/jpeg" ||
+      event.target.files[0].type === "image/jpg"
+    ) {
+      let file = event.target.files[0];
+      let imagePreview = URL.createObjectURL(event.target.files[0]);
+      if (event.target.files[0].size <= 1100000) {
+        imagePreview = URL.createObjectURL(event.target.files[0]);
       } else {
-        setFormState(formState => ({
-          ...formState,
-          alert: true,
-          severity: "error",
-          errorMessage: "Image should be in PNG,JPG,JPEG format"
-        }));
+        setBackDrop(true);
+        imagePreview = await resizeImage(event.target.files[0]);
+        setBackDrop(false);
+        imagePreview = imagePreview.data.link;
       }
-    } else {
       setFormState(formState => ({
         ...formState,
-        alert: true,
+        image: file,
+        addNewImageUrl: imagePreview,
+        showAddPreviewImage: true,
+        showEditPreviewImage: false
+      }));
+    } else {
+      setSnackBar(snackBar => ({
+        ...snackBar,
+        show: true,
         severity: "error",
-        errorMessage: "File size must be less than or equal to 1mb"
+        message: "Image should be in PNG,JPG,JPEG format"
       }));
     }
   };
+
+  const resizeImage = async file =>
+    new Promise((resolve, reject) => {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      let img = new Image();
+      reader.onload = function (e) {
+        img.src = this.result;
+      };
+      img.onload = function () {
+        // Zoom the canvas needed for the image (you can also define the canvas tag directly in the DOM
+        // so that the compressed image can be directly displayed without going to base64)
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d");
+
+        // image original size
+        var originWidth = this.width;
+        var originHeight = this.height;
+
+        // Maximum size limit, you can achieve image compression by setting the width and height
+        var maxWidth = 400,
+          maxHeight = 500;
+        // target size
+        var targetWidth = originWidth,
+          targetHeight = originHeight;
+        // Image size exceeds 300x300 limit
+        if (originWidth > maxWidth || originHeight > maxHeight) {
+          if (originWidth / originHeight > maxWidth / maxHeight) {
+            // wider, size limited by width
+            targetWidth = maxWidth;
+            targetHeight = Math.round(maxWidth * (originHeight / originWidth));
+          } else {
+            targetHeight = maxHeight;
+            targetWidth = Math.round(maxHeight * (originWidth / originHeight));
+          }
+        }
+        // canvas scales the image
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        // clear the canvas
+        context.clearRect(0, 0, targetWidth, targetHeight);
+        // Image Compression
+        context.drawImage(img, 0, 0, targetWidth, targetHeight);
+        // The first parameter is the created img object; the second three parameters are the upper left corner coordinates
+        // and the second two are the canvas area width and height
+
+        // compressed image to base64 url
+        /*canvas.toDataURL(mimeType, qualityArgument), mimeType The default value is 'image/png';
+         * qualityArgument indicates the quality of the exported image. This parameter is valid only when exported to jpeg and webp formats. The default value is 0.92*/
+        var newUrl = canvas.toDataURL("image/jpeg", 0.3); //base64 format
+
+        resolve({
+          data: {
+            link: newUrl
+          }
+        });
+      };
+    });
 
   const handleChangeIsColorDependent = async row => {
     let setRef = tableRef.current;
