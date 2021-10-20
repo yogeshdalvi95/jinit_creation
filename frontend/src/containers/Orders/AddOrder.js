@@ -29,6 +29,7 @@ import {
   CardFooter,
   CardHeader,
   CustomInput,
+  DatePicker,
   DialogBoxForSelectingReadyMaterial,
   DialogForCheckingStockAvailibility,
   DialogForSelectingColor,
@@ -39,7 +40,7 @@ import {
   SnackBarComponent
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import { ORDERS } from "../../paths";
+import { DEPARTMENTSHEET, EDITORDER, ORDERS, VIEWORDER } from "../../paths";
 import validationForm from "./form/ValidationForm.json";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -54,6 +55,7 @@ import {
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { providerForGet, providerForPost, providerForPut } from "../../api";
+import moment from "moment";
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -113,7 +115,10 @@ export default function AddOrder(props) {
     add_cost_formatted: "0",
     completed_quantity: 0,
     previous_completed: 0,
-    total_used_quantity_in_ratio: 0
+    total_used_quantity_in_ratio: 0,
+    nl_no: "",
+    party_no: "",
+    date: new Date()
   });
 
   const [party, setParty] = useState({
@@ -130,15 +135,7 @@ export default function AddOrder(props) {
     availableQuantity: 0,
     isColorVariationAvailable: false
   });
-
-  const ratioIndividualValue = {
-    id: null,
-    color: null,
-    name: "",
-    quantity: 0,
-    quantity_completed: 0
-  };
-
+  const urlParams = new URLSearchParams(window.location.search);
   const [ratio, setRatio] = useState([]);
 
   const [snackBar, setSnackBar] = React.useState({
@@ -148,14 +145,47 @@ export default function AddOrder(props) {
   });
 
   useEffect(() => {
-    if (
-      props.location.state &&
-      (props.location.state.view || props.location.state.edit) &&
-      props.location.state.data
-    ) {
-      setData(props.location.state.data);
+    //window.location.reload();
+
+    let order_id = urlParams.get("oid");
+    if (order_id) {
+      if (
+        props.location.state &&
+        (props.location.state.view || props.location.state.edit)
+      ) {
+        getData(order_id);
+      } else {
+        //window.location.reload();
+        history.push({
+          pathname: VIEWORDER,
+          search: `?oid=${order_id}`,
+          state: { view: true }
+        });
+        window.location.reload();
+        //history.push(`${VIEWORDER}?oid=${order_id}`, { view: true });
+      }
+    } else {
+      //history.push(ORDERS);
     }
   }, []);
+
+  const getData = async order_id => {
+    setBackDrop(true);
+    await providerForGet(backend_order + "/" + order_id, {}, Auth.getToken())
+      .then(res => {
+        setBackDrop(false);
+        setData(res.data);
+      })
+      .catch(err => {
+        setBackDrop(false);
+        setSnackBar(snackBar => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error viewing/editing order"
+        }));
+      });
+  };
 
   const setData = data => {
     setFormState(formState => ({
@@ -174,7 +204,10 @@ export default function AddOrder(props) {
       price_per_piece: data.price_per_piece,
       add_cost: data.add_cost,
       completed_quantity: data.completed_quantity,
-      previous_completed: data.completed_quantity
+      previous_completed: data.completed_quantity,
+      date: new Date(data.date),
+      nl_no: data.nl_no,
+      party_no: data.party_no
     }));
     if (data.ready_material) {
       let ready_material = data.ready_material;
@@ -214,8 +247,6 @@ export default function AddOrder(props) {
       }));
       setRatio(new_arr);
     }
-
-    console.log("data ", data);
   };
 
   const onBackClick = () => {
@@ -450,7 +481,10 @@ export default function AddOrder(props) {
           completed_quantity: formState.completed_quantity,
           previous_completed: formState.previous_completed,
           party: party.id,
-          ratio: arr
+          ratio: arr,
+          party_no: formState.party_no,
+          nl_no: formState.nl_no,
+          date: formState.date
         },
         Auth.getToken()
       )
@@ -489,7 +523,10 @@ export default function AddOrder(props) {
           add_cost: formState.add_cost,
           completed_quantity: formState.completed_quantity,
           party: party.id,
-          ratio: arr
+          ratio: arr,
+          party_no: formState.party_no,
+          nl_no: formState.nl_no,
+          date: formState.date
         },
         Auth.getToken()
       )
@@ -779,6 +816,20 @@ export default function AddOrder(props) {
     }));
   }, [ratio]);
 
+  const handleOrderDate = event => {
+    let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
+    if (date === "Invalid date") {
+      date = null;
+    } else {
+      date = new Date(date).toISOString();
+    }
+
+    setFormState(formState => ({
+      ...formState,
+      date: date
+    }));
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -850,33 +901,36 @@ export default function AddOrder(props) {
                   error={hasError("order_id", error)}
                 />
               </GridItem>
+              {/* 
               <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
-                  onChange={event => handleChangeQuantity(event)}
-                  labelText="Total Quantity"
-                  name="quantity"
-                  disabled={
-                    isView ||
-                    (isEdit && formState.completed_quantity !== 0) ||
-                    formState.cancelled
-                  }
-                  value={formState.quantity}
-                  id="quantity"
+                  onChange={event => handleChange(event)}
+                  labelText="NL No"
+                  name="nl_no"
+                  disabled={isView || formState.cancelled}
+                  value={formState.nl_no}
+                  id="nl_no"
                   formControlProps={{
                     fullWidth: true
                   }}
-                  type="number"
-                  /** For setting errors */
-                  helperTextId={"helperText_quantity"}
-                  isHelperText={hasError("quantity", error)}
-                  helperText={
-                    hasError("quantity", error)
-                      ? error["quantity"].map(error => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("quantity", error)}
+                />
+              </GridItem> */}
+
+              <GridItem xs={12} sm={12} md={4}>
+                <DatePicker
+                  onChange={event => handleOrderDate(event)}
+                  label="OrderDate"
+                  name="order_date"
+                  disabled={isView || formState.cancelled}
+                  value={formState.date || new Date()}
+                  id="order_date"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                  style={{
+                    width: "100%",
+                    marginTop: "1.5rem"
+                  }}
                 />
               </GridItem>
             </GridContainer>
@@ -1252,6 +1306,51 @@ export default function AddOrder(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
+                  onChange={event => handleChange(event)}
+                  labelText="Party Number"
+                  name="party_no"
+                  disabled={isView || formState.cancelled}
+                  value={formState.party_no}
+                  id="party_no"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                />
+              </GridItem>
+            </GridContainer>
+
+            <GridContainer>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={event => handleChangeQuantity(event)}
+                  labelText="Total Quantity"
+                  name="quantity"
+                  disabled={
+                    isView ||
+                    (isEdit && formState.completed_quantity !== 0) ||
+                    formState.cancelled
+                  }
+                  value={formState.quantity}
+                  id="quantity"
+                  formControlProps={{
+                    fullWidth: true
+                  }}
+                  type="number"
+                  /** For setting errors */
+                  helperTextId={"helperText_quantity"}
+                  isHelperText={hasError("quantity", error)}
+                  helperText={
+                    hasError("quantity", error)
+                      ? error["quantity"].map(error => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("quantity", error)}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
                   onChange={event => {
                     let parsedValue = parseFloat(event.target.value);
@@ -1306,7 +1405,7 @@ export default function AddOrder(props) {
                   error={hasError("completed_quantity", error)}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
                   onChange={event => handleChange(event)}
@@ -1328,7 +1427,7 @@ export default function AddOrder(props) {
                   name="remaining_quantity"
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   onChange={event => {
                     let parsedValue = parseFloat(event.target.value);
@@ -1648,11 +1747,26 @@ export default function AddOrder(props) {
             </GridContainer>
             {readyMaterial.id ? (
               <GridContainer>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={4}>
                   <Button color="primary" onClick={() => checkAvailibility()}>
                     Check Stock Availability
                   </Button>
                 </GridItem>
+                {urlParams.get("oid") ? (
+                  <GridItem xs={12} sm={12} md={4}>
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        history.push({
+                          pathname: DEPARTMENTSHEET,
+                          search: `?oid=${urlParams.get("oid")}`
+                        });
+                      }}
+                    >
+                      Check Department Sheet
+                    </Button>
+                  </GridItem>
+                ) : null}
               </GridContainer>
             ) : null}
 
@@ -1682,7 +1796,23 @@ export default function AddOrder(props) {
               </GridItem>
             </GridContainer>
           </CardBody>
-          {isView ? null : (
+          {isView ? (
+            <CardFooter>
+              <Button
+                color="primary"
+                onClick={e => {
+                  history.push({
+                    pathname: EDITORDER,
+                    search: `?oid=${urlParams.get("oid")}`,
+                    state: { edit: true }
+                  });
+                  window.location.reload();
+                }}
+              >
+                Edit
+              </Button>
+            </CardFooter>
+          ) : (
             <CardFooter>
               <Button color="primary" onClick={e => submit(e)}>
                 Save

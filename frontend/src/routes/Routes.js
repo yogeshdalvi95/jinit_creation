@@ -45,7 +45,8 @@ import {
   ADDCATEGORIES,
   EDITCATEGORIES,
   CATEGORIES,
-  DEPARTMENTSHEET
+  DEPARTMENTSHEET,
+  LEDGER
 } from "../paths";
 import {
   Login,
@@ -74,7 +75,8 @@ import {
   AddParties,
   AddOrder,
   ViewOrders,
-  DepartmentSheet
+  DepartmentSheet,
+  Ledger
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -184,6 +186,14 @@ const Routes = () => {
           exact
           component={KachhaPurchaseDetails}
           header={"Kachha Purchase Details"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={LEDGER}
+          exact
+          component={Ledger}
+          header={"Purchase Ledger"}
         />
 
         {/** Raw materials */}

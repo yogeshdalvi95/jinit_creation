@@ -69,6 +69,23 @@ export const plainDate = data => {
   return newDate2;
 };
 
+export const dateToDDMMYYYY = data => {
+  var newDate2 = moment(data).format("DD-MMM-YYYY");
+  return newDate2;
+};
+
+export const getValidDate = date => {
+  if (date) {
+    if (new Date(date) == new Date(1970, 1, 1)) {
+      return null;
+    } else {
+      return date;
+    }
+  } else {
+    return null;
+  }
+};
+
 export const convertNumberToAmount = num => {
   let x = num;
   x = x.toString();

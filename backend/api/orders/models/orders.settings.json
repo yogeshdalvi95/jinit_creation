@@ -69,6 +69,12 @@
     },
     "nl_no": {
       "type": "string"
+    },
+    "date": {
+      "type": "date"
+    },
+    "party_no": {
+      "type": "string"
     }
   }
 }

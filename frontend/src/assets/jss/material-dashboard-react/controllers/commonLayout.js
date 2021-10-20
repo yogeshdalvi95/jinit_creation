@@ -8,8 +8,72 @@ import {
 } from "../../material-dashboard-react";
 
 const styles = {
+  detailPanelGrid: {
+    padding: "1rem !important"
+  },
+  table: {
+    height: "35rem",
+    "& tfoot tr td div:nth-child(1)": {
+      justifyContent: "center",
+      flex: "initial",
+      ...defaultFont,
+      fontWeight: 600,
+      fontSize: "0.75rem",
+      color: "#8A8A97"
+    },
+    "& tfoot tr td ": {
+      border: "none !important",
+      ...defaultFont,
+      fontWeight: 500,
+      fontSize: "1rem",
+      "& > div": {
+        display: "flex",
+        flexWrap: "wrap"
+      }
+    },
+    "& tfoot tr td div:nth-child(2) span": {
+      ...defaultFont,
+      fontWeight: 500,
+      fontSize: "1rem"
+    },
+    "& .MuiTypography-caption": {
+      ...defaultFont,
+      fontWeight: 500,
+      fontSize: "0.75rem",
+      color: "#000"
+    },
+    "& th": {
+      ...defaultFont,
+      color: "#4B5563 !important",
+      fontSize: "12px !important",
+      fontWeight: "500 !important",
+      lineHeight: "12px !important",
+      letterSpacing: "0.15px !important",
+      borderBottom: "1px solid #e0e0e0 !important",
+      padding: "0.7rem !important",
+      textAlign: "left",
+      flexDirection: "row",
+      backgroundColor: "#F4F5F7",
+      height: "20px"
+    },
+    "& td": {
+      ...defaultFont,
+      padding: "0.7rem !important",
+      textAlign: "left",
+      fontSize: "12px !important",
+      fontWeight: "400 !important",
+      lineHeight: "12px !important",
+      letterSpacing: "0.15px !important",
+      border: "none",
+      color: "#1F2937",
+      flexDirection: "row"
+    }
+  },
   switchBox: {
     paddingTop: "0.8rem !important"
+  },
+  switchBoxInFilter: {
+    paddingTop: "2.5rem !important"
   },
   extendedIcon: {
     marginRight: "1rem"

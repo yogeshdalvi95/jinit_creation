@@ -12,7 +12,7 @@ export {
   Success,
   Warning
 } from "./Typography";
-export { Table, CustomTable, CollapsableTable } from "./Table";
+export { Table, CustomTable, CollapsableTable, RatioTable } from "./Table";
 export { Footer } from "./Footer";
 export { CustomInput } from "./CustomInput";
 export { CustomAutoComplete } from "./CustomAutoComplete";

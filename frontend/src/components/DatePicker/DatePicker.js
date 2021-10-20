@@ -20,7 +20,8 @@ const useStyles = makeStyles(styles);
 export default function DatePicker(props) {
   const classes = useStyles();
   const marginTop = classNames({
-    [classes.marginTop]: true
+    [classes.marginTop]: props.noMargin ? false : true,
+    [classes.noMargin]: props.noMargin ? true : false
   });
 
   const underlineClasses = classNames({

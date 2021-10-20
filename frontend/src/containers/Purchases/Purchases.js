@@ -208,13 +208,17 @@ export default function Purchases() {
     let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
     if (endDate === "Invalid date") {
       endDate = null;
+      delete filter["date_lte"];
+      setFilter(filter => ({
+        ...filter
+      }));
     } else {
       endDate = new Date(endDate).toISOString();
+      setFilter(filter => ({
+        ...filter,
+        date_lte: endDate
+      }));
     }
-    setFilter(filter => ({
-      ...filter,
-      date_lte: endDate
-    }));
   };
 
   /** Handle Start Date filter change */
@@ -222,13 +226,17 @@ export default function Purchases() {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
+      delete filter["date_gte"];
+      setFilter(filter => ({
+        ...filter
+      }));
     } else {
       startDate = new Date(startDate).toISOString();
+      setFilter(filter => ({
+        ...filter,
+        date_gte: startDate
+      }));
     }
-    setFilter(filter => ({
-      ...filter,
-      date_gte: startDate
-    }));
   };
 
   return (

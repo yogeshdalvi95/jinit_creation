@@ -6,8 +6,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomAutoComplete,
-  CustomInput,
   DatePicker,
   DialogBoxForSelectingRawMaterial,
   DialogForSelectingSeller,
@@ -21,15 +19,10 @@ import {
 // core components
 import ClearIcon from "@material-ui/icons/Clear";
 import {
-  backend_individual_kachha_purchase,
+  backend_individual_kachha_purchase_ledger,
   backend_sellers_for_autocomplete
 } from "../../constants";
-import {
-  convertNumber,
-  dateToDDMMYYYY,
-  isEmptyString,
-  plainDate
-} from "../../Utils";
+import { convertNumber, dateToDDMMYYYY, isEmptyString } from "../../Utils";
 import {
   Backdrop,
   CircularProgress,
@@ -39,14 +32,12 @@ import {
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet } from "../../api";
 import { useHistory } from "react-router-dom";
-import EditIcon from "@material-ui/icons/Edit";
 import ListAltIcon from "@material-ui/icons/ListAlt";
-import AddIcon from "@material-ui/icons/Add";
 import { useEffect } from "react";
 import moment from "moment";
 
 const useStyles = makeStyles(styles);
-export default function KachhaPurchaseDetails() {
+export default function Ledger() {
   const classes = useStyles();
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
@@ -74,7 +65,6 @@ export default function KachhaPurchaseDetails() {
     _sort: "date:desc"
   });
   const [seller, setSeller] = useState([]);
-  console.log("filter", filter);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
@@ -83,13 +73,13 @@ export default function KachhaPurchaseDetails() {
 
   const columns = [
     {
-      title: "Purchase Date",
+      title: "Date",
       field: "date",
       render: rowData => dateToDDMMYYYY(new Date(rowData.date))
     },
     /** Transaction type */
     {
-      title: "Purchased From",
+      title: "Seller",
       field: "seller",
       width: "100%",
       render: rowData => rowData.seller.name
@@ -117,23 +107,13 @@ export default function KachhaPurchaseDetails() {
         </>
       )
     },
-
     {
-      title: "Purchase Cost Per Raw Material",
-      field: "purchase_cost",
-      width: "1rem",
-      render: rowData =>
-        convertNumber(rowData.purchase_cost, true) +
-        "/" +
-        rowData.raw_material.unit
-    },
-    {
-      title: "Purchase Quantity",
+      title: "Quantity",
       field: "purchase_quantity",
       width: "10%"
     },
     {
-      title: "Total Purchase Cost",
+      title: "Purchase Cost",
       field: "total_purchase_cost",
       width: "10%",
       render: rowData => convertNumber(rowData.total_purchase_cost, true)
@@ -158,7 +138,9 @@ export default function KachhaPurchaseDetails() {
 
     return new Promise((resolve, reject) => {
       fetch(
-        backend_individual_kachha_purchase + "?" + new URLSearchParams(params),
+        backend_individual_kachha_purchase_ledger +
+          "?" +
+          new URLSearchParams(params),
         {
           method: "GET",
           headers: {
@@ -552,33 +534,9 @@ export default function KachhaPurchaseDetails() {
               </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Purchase Quantity"
-                    value={filter.purchase_quantity_contains || ""}
-                    name="purchase_quantity_contains"
-                    id="purchase_quantity_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={event => handleChange(event)}
-                    labelText="Total purchase cost"
-                    value={filter.total_purchase_cost_contains || ""}
-                    name="total_purchase_cost_contains"
-                    id="total_purchase_cost_contains"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
                     onChange={event => handleStartDateChange(event)}
-                    label="Purchase Date From"
+                    label="Date From"
                     name="date_gte"
                     value={filter.date_gte || null}
                     id="date_gte"
@@ -594,7 +552,7 @@ export default function KachhaPurchaseDetails() {
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
                     onChange={event => handleEndDateChange(event)}
-                    label="Purchase Date To"
+                    label="Date To"
                     name="date_lte"
                     value={filter.date_lte || null}
                     id="date_lte"

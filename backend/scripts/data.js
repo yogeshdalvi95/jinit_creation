@@ -803,6 +803,8 @@ const ROLES = {
           "update",
           "delete",
           "check_availibility",
+          "getdepartmentsheet",
+          "createupdatedepartmentsheet",
         ],
       },
       {
@@ -943,6 +945,8 @@ const ROLES = {
           "update",
           "delete",
           "check_availibility",
+          "getdepartmentsheet",
+          "createupdatedepartmentsheet",
         ],
       },
       {

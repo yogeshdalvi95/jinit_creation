@@ -16,7 +16,7 @@
       "type": "date"
     },
     "out_date": {
-      "type": "datetime"
+      "type": "date"
     },
     "department": {
       "model": "department"

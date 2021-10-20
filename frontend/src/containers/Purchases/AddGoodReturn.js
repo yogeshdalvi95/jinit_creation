@@ -580,7 +580,7 @@ export default function AddGoodReturn(props) {
               <GridItem xs={12} sm={12} md={3}>
                 <DatePicker
                   onChange={event => handleStartDateChange(event)}
-                  label="Purchase Date"
+                  label="Selling Date"
                   name="date"
                   disabled={isView || isEdit}
                   value={formState.date || new Date()}
