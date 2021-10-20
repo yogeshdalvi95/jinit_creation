@@ -2,14 +2,15 @@
   "collectionName": "components_department_color_department_colors",
   "info": {
     "name": "department_color",
-    "icon": "align-left"
+    "icon": "align-left",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "color": {
       "model": "color"
     },
-    "quantity": {
+    "value": {
       "type": "string"
     }
   }

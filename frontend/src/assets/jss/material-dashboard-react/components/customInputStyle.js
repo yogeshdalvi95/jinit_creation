@@ -12,6 +12,12 @@ const customInputStyle = {
       backgroundColor: "transparent !important"
     }
   },
+  noMargin: {
+    marginTop: "0px !Important",
+    marginBottom: "0px !Important",
+    paddingBottom: "10px",
+    minWidth: "max-content"
+  },
   underline: {
     "&:hover:not($disabled):before,&:before": {
       borderColor: grayColor[4] + " !important",

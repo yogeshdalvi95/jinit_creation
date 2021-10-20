@@ -1,21 +1,26 @@
 import React, { useState } from "react";
 
-import { Icon, makeStyles } from "@material-ui/core";
+import { FormControlLabel, Icon, makeStyles, Switch } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { plainDate } from "../../Utils";
+import { convertNumber, isEmptyString, dateToDDMMYYYY } from "../../Utils";
 import {
   backend_order,
   backend_order_to_get_department_sheet
 } from "../../constants";
 import {
   Auth,
+  Button,
   Card,
   CardBody,
   CardHeader,
+  CustomDropDown,
+  CustomInput,
+  DatePicker,
   FAB,
   GridContainer,
   GridItem,
+  RatioTable,
   SnackBarComponent,
   Table
 } from "../../components";
@@ -25,6 +30,9 @@ import { ADDORDER, DEPARTMENTSHEET, EDITORDER, VIEWORDER } from "../../paths";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { providerForGet } from "../../api";
+import { useEffect } from "react";
+import moment from "moment";
+import { Typography } from "@mui/material";
 
 const useStyles = makeStyles(styles);
 
@@ -34,7 +42,7 @@ export default function ViewOrders(props) {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc"
+    _sort: "date:desc"
   });
 
   const [snackBar, setSnackBar] = React.useState({
@@ -45,17 +53,17 @@ export default function ViewOrders(props) {
 
   const columns = [
     {
-      title: "Order Id",
+      title: "Order Date",
+      field: "date",
+      render: rowData => dateToDDMMYYYY(new Date(rowData.date))
+    },
+    {
+      title: "Order Number",
       field: "order_id",
       render: rowData => "#" + rowData.order_id
     },
     {
-      title: "Order Date",
-      field: "created_at",
-      render: rowData => plainDate(new Date(rowData.created_at))
-    },
-    {
-      title: "Material",
+      title: "Product",
       sorting: false,
       field: "ready_material",
       render: rowData =>
@@ -68,18 +76,23 @@ export default function ViewOrders(props) {
       render: rowData => (rowData.party ? rowData.party.party_name : "----")
     },
     {
+      title: "Party Number",
+      field: "party_no"
+    },
+    {
       title: "Quantity",
       field: "quantity"
     },
     {
       title: "Quantity saved for later",
-      field: "buffer quantity"
+      field: "buffer_quantity"
     },
     { title: "Completed Quantity", field: "completed_quantity" },
 
     {
       title: "Total Price",
-      field: "total_price"
+      field: "total_price",
+      render: rowData => convertNumber(rowData.total_price, true)
     },
     {
       title: "Status",
@@ -166,47 +179,76 @@ export default function ViewOrders(props) {
   };
 
   const handleTableAction = async (row, isView) => {
-    setBackDrop(true);
-    await providerForGet(backend_order + "/" + row.id, {}, Auth.getToken())
-      .then(res => {
-        setBackDrop(false);
-        if (isView) {
-          history.push(VIEWORDER, { data: res.data, view: true });
-        } else {
-          history.push(EDITORDER, { data: res.data, edit: true });
-        }
-      })
-      .catch(err => {
-        setBackDrop(false);
-        setSnackBar(snackBar => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error viewing/editing order"
-        }));
+    if (isView) {
+      history.push({
+        pathname: VIEWORDER,
+        search: `?oid=${row.id}`,
+        state: { view: true }
       });
+    } else {
+      history.push({
+        pathname: EDITORDER,
+        search: `?oid=${row.id}`,
+        state: { edit: true }
+      });
+    }
   };
 
   const handleDepartmentSheet = async row => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_order_to_get_department_sheet + "/" + row.id,
-      {},
-      Auth.getToken()
-    )
-      .then(res => {
-        setBackDrop(false);
-        history.push(DEPARTMENTSHEET, { data: res.data });
-      })
-      .catch(err => {
-        setBackDrop(false);
-        setSnackBar(snackBar => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error viewing/editing order"
-        }));
-      });
+    history.push({
+      pathname: DEPARTMENTSHEET,
+      search: `?oid=${row.id}`
+    });
+  };
+
+  const handleChange = event => {
+    if (isEmptyString(event.target.value)) {
+      delete filter[event.target.name];
+      setFilter(filter => ({
+        ...filter
+      }));
+    } else {
+      setFilter(filter => ({
+        ...filter,
+        [event.target.name]: event.target.value
+      }));
+    }
+  };
+
+  /** Handle End Date filter change */
+  const handleEndDateChange = event => {
+    let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
+    if (endDate === "Invalid date") {
+      endDate = null;
+      delete filter["date_lte"];
+      setFilter(filter => ({
+        ...filter
+      }));
+    } else {
+      endDate = new Date(endDate).toISOString();
+      setFilter(filter => ({
+        ...filter,
+        date_lte: endDate
+      }));
+    }
+  };
+
+  /** Handle Start Date filter change */
+  const handleStartDateChange = event => {
+    let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
+    if (startDate === "Invalid date") {
+      startDate = null;
+      delete filter["date_gte"];
+      setFilter(filter => ({
+        ...filter
+      }));
+    } else {
+      startDate = new Date(startDate).toISOString();
+      setFilter(filter => ({
+        ...filter,
+        date_gte: startDate
+      }));
+    }
   };
 
   return (
@@ -235,6 +277,287 @@ export default function ViewOrders(props) {
                   >
                     <AddIcon />
                   </FAB>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Order Number"
+                    value={filter.order_id_contains || ""}
+                    name="order_id_contains"
+                    id="order_id_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <DatePicker
+                    onChange={event => handleStartDateChange(event)}
+                    label="Order Date From"
+                    name="date_gte"
+                    value={filter.date_gte || null}
+                    id="date_gte"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%"
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <DatePicker
+                    onChange={event => handleEndDateChange(event)}
+                    label="Order Date To"
+                    name="date_lte"
+                    value={filter.date_lte || null}
+                    id="date_lte"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%"
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Material Number"
+                    value={filter["ready_material.material_no_contains"] || ""}
+                    name="ready_material.material_no_contains"
+                    id="ready_material.material_no_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Party Name"
+                    value={filter["party.party_name_contains"] || ""}
+                    name="party.party_name_contains"
+                    id="party.party_name_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Party Number"
+                    value={filter["party_no_contains"] || ""}
+                    name="party_no_contains"
+                    id="party_no_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Quantity"
+                    value={filter["quantity_contains"] || ""}
+                    name="quantity_contains"
+                    id="quantity_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Quantity saved for later"
+                    value={filter["buffer_quantity_contains"] || ""}
+                    name="buffer_quantity_contains"
+                    id="buffer_quantity_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Completed Quantity"
+                    value={filter["completed_quantity_contains"] || ""}
+                    name="completed_quantity_contains"
+                    id="completed_quantity_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={event => handleChange(event)}
+                    labelText="Total Price"
+                    value={filter["total_price_contains"] || ""}
+                    name="total_price_contains"
+                    id="total_price_contains"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  className={classes.switchBoxInFilter}
+                >
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter["fully_completed"] ? true : false}
+                          onChange={event => {
+                            if (event.target.checked) {
+                              setFilter(filter => ({
+                                ...filter,
+                                fully_completed: event.target.checked
+                              }));
+                            } else {
+                              delete filter["fully_completed"];
+                              setFilter(filter => ({
+                                ...filter
+                              }));
+                            }
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label
+                      }}
+                      label="Completed orders"
+                    />
+                  </div>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  className={classes.switchBoxInFilter}
+                >
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter["partial_completed"] ? true : false}
+                          onChange={event => {
+                            if (event.target.checked) {
+                              setFilter(filter => ({
+                                ...filter,
+                                partial_completed: event.target.checked
+                              }));
+                            } else {
+                              delete filter["partial_completed"];
+                              setFilter(filter => ({
+                                ...filter
+                              }));
+                            }
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label
+                      }}
+                      label="Partial completed orders"
+                    />
+                  </div>
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  className={classes.switchBoxInFilter}
+                >
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter["cancelled"] ? true : false}
+                          onChange={event => {
+                            if (event.target.checked) {
+                              setFilter(filter => ({
+                                ...filter,
+                                cancelled: event.target.checked
+                              }));
+                            } else {
+                              delete filter["cancelled"];
+                              setFilter(filter => ({
+                                ...filter
+                              }));
+                            }
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label
+                      }}
+                      label="Cancelled orders"
+                    />
+                  </div>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={4}
+                  style={{
+                    marginTop: "27px"
+                  }}
+                >
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Search
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      setFilter({
+                        _sort: "date:desc"
+                      });
+                      tableRef.current.onQueryChange();
+                    }}
+                  >
+                    Cancel
+                  </Button>
                 </GridItem>
               </GridContainer>
               <GridContainer>
@@ -277,6 +600,28 @@ export default function ViewOrders(props) {
                         }
                       })
                     ]}
+                    detailPanel={rowData => {
+                      if (rowData.ratio.length) {
+                        return (
+                          <GridContainer className={classes.detailPanelGrid}>
+                            <GridItem xs={12} sm={12} md={12}>
+                              <Typography
+                                variant="h6"
+                                gutterBottom
+                                component="div"
+                              >
+                                Ratio
+                              </Typography>
+                            </GridItem>
+                            <GridItem xs={12} sm={12} md={12}>
+                              <RatioTable title="Ratio" rows={rowData.ratio} />
+                            </GridItem>
+                          </GridContainer>
+                        );
+                      } else {
+                        return null;
+                      }
+                    }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,

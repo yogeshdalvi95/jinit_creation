@@ -6,7 +6,9 @@ export {
   isSameDay,
   formatDate,
   getMonthName,
-  uuidv4
+  uuidv4,
+  getValidDate,
+  dateToDDMMYYYY
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

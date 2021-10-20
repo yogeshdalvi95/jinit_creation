@@ -19,7 +19,8 @@ export {
   AddSeller,
   GoodsReturn,
   AddGoodReturn,
-  KachhaPurchaseDetails
+  KachhaPurchaseDetails,
+  Ledger
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
 export { AddParties, Parties, Sales } from "./Sales";

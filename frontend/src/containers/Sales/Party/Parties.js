@@ -20,7 +20,7 @@ import styles from "../../../assets/jss/material-dashboard-react/controllers/com
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { providerForGet } from "../../../api";
-import { ADDPARTIES, ADDSELLER, EDITSELLER } from "../../../paths";
+import { ADDPARTIES, ADDSELLER, EDITPARTIES, EDITSELLER } from "../../../paths";
 import { isEmptyString } from "../../../Utils";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
@@ -97,7 +97,7 @@ export default function Parties() {
     await providerForGet(backend_parties + "/" + row.id, {}, Auth.getToken())
       .then(res => {
         setBackDrop(false);
-        history.push(EDITSELLER, { data: res.data, edit: true });
+        history.push(EDITPARTIES, { data: res.data, edit: true });
       })
       .catch(err => {
         setBackDrop(false);

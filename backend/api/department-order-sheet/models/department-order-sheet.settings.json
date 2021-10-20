@@ -18,9 +18,6 @@
     "remark": {
       "type": "text"
     },
-    "quantity": {
-      "type": "float"
-    },
     "platting": {
       "type": "string"
     }

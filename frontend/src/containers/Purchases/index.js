@@ -5,3 +5,4 @@ export { default as AddSeller } from "./AddSeller";
 export { default as GoodsReturn } from "./GoodsReturn";
 export { default as AddGoodReturn } from "./AddGoodReturn";
 export { default as KachhaPurchaseDetails } from "./KachhaPurchaseDetails";
+export { default as Ledger } from "./Ledger";
