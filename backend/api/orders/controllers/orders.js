@@ -406,9 +406,35 @@ const getDepartmentSheetDetails = async (id) => {
       });
 
     const departmentColorList = department_order_sheet_with_color.map((i) => {
+      const department_color = colorList.map((c) => {
+        let colorName = c.name;
+        let isColorFound = 0;
+        let dataToSend = {};
+        for (let dc = 0; dc < i.department_color.length; dc++) {
+          if (
+            i.department_color[dc].color &&
+            i.department_color[dc].color.name === colorName
+          ) {
+            dataToSend = {
+              color: c,
+              value: i.department_color[dc].value,
+            };
+            isColorFound = 1;
+            break;
+          }
+        }
+        if (!isColorFound) {
+          dataToSend = {
+            color: c,
+            value: 0,
+          };
+        }
+        return dataToSend;
+      });
+
       return {
         department: i.department,
-        departmentsColor: i.department_color,
+        departmentsColor: department_color,
         in_date: i.in_date,
         out_date: i.out_date,
       };

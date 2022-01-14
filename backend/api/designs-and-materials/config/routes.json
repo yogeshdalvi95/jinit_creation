@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/designs-and-materials",
+      "handler": "designs-and-materials.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/designs-and-materials/count",
+      "handler": "designs-and-materials.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/designs-and-materials/:id",
+      "handler": "designs-and-materials.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/designs-and-materials",
+      "handler": "designs-and-materials.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/designs-and-materials/:id",
+      "handler": "designs-and-materials.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/designs-and-materials/:id",
+      "handler": "designs-and-materials.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

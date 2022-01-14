@@ -23,5 +23,14 @@ export {
   Ledger
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
-export { AddParties, Parties, Sales } from "./Sales";
+export { Designs, AddEditDesign } from "./Designs";
+
+export {
+  AddParties,
+  Parties,
+  Sales,
+  AddEditSales,
+  AddEditSaleReturn,
+  SaleReturn
+} from "./Sales";
 export { AddOrder, ViewOrders, DepartmentSheet } from "./Orders";

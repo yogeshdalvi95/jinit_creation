@@ -1,4 +1,6 @@
 const _ = require("lodash");
+const XLSX = require("XLSX");
+const excel = require("exceljs");
 
 function getRequestParams(params) {
   const page = params.page ? parseInt(params.page) : 1;
@@ -119,6 +121,16 @@ function getDateInYYYYMMDD(date) {
   return today;
 }
 
+function getDateInMMDDYYYY(date) {
+  var today = new Date(date);
+  var dd = String(today.getDate()).padStart(2, "0");
+  var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
+  var yyyy = today.getFullYear();
+
+  today = `${dd}-${mm}-${yyyy}`;
+  return today;
+}
+
 function convertNumber(num) {
   return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
 }
@@ -136,7 +148,25 @@ function isEmptyString(val) {
   return result;
 }
 
+function utilityFunctionForGettingBytesExcelData(data, sheet_name) {
+  var wb = XLSX.utils.book_new();
+  wb.SheetNames.push(sheet_name);
+  var ws = XLSX.utils.json_to_sheet(data);
+  wb.Sheets[sheet_name] = ws;
+  var wbout = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+  return wbout;
+}
+
+function roundNumberTo2digit(num) {
+  if (!isNaN(parseFloat(num))) {
+    return parseFloat(parseFloat(num).toFixed(2));
+  } else {
+    return 0.0;
+  }
+}
+
 module.exports = {
+  roundNumberTo2digit,
   getRequestParams,
   getPaginatedResponse,
   getResponse,
@@ -156,4 +186,6 @@ module.exports = {
   checkEmpty,
   daysInMonth,
   isEmptyString,
+  utilityFunctionForGettingBytesExcelData,
+  getDateInMMDDYYYY,
 };

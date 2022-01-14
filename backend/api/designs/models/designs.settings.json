@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "designs",
+  "info": {
+    "name": "Designs",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "material_no": {
+      "type": "string"
+    },
+    "images": {
+      "collection": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
+      "pluginOptions": {}
+    },
+    "material_price": {
+      "type": "float"
+    },
+    "add_price": {
+      "type": "float"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "colors": {
+      "collection": "color"
+    }
+  }
+}

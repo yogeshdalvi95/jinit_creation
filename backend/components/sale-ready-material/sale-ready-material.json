@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_sale_ready_material_sale_ready_materials",
+  "info": {
+    "name": "sale_ready_material",
+    "icon": "address-book",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "order": {
+      "model": "orders"
+    },
+    "sr_no": {
+      "type": "string"
+    },
+    "price_per_unit": {
+      "type": "float"
+    }
+  }
+}

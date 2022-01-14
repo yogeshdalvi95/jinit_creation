@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sales",
+  "info": {
+    "name": "Sales",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "party": {
+      "model": "party"
+    },
+    "cgst": {
+      "type": "float"
+    },
+    "sgst": {
+      "type": "float"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "is_gst_bill": {
+      "type": "boolean",
+      "default": false
+    },
+    "sale_ready_material": {
+      "type": "component",
+      "repeatable": true,
+      "component": "sale-ready-material.sale-ready-material"
+    },
+    "bill_no": {
+      "type": "string"
+    },
+    "date": {
+      "type": "date"
+    },
+    "add_cost": {
+      "type": "float"
+    },
+    "total_price_of_ready_material": {
+      "type": "float"
+    },
+    "total_price_with_add_cost": {
+      "type": "float"
+    }
+  }
+}

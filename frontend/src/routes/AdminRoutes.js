@@ -45,19 +45,33 @@ import {
   ADDCATEGORIES,
   EDITCATEGORIES,
   DEPARTMENTSHEET,
-  LEDGER
+  LEDGER,
+  SALES,
+  SALERETURN,
+  VIEWSALERETURN,
+  ADDSALERETURN,
+  EDITSALERETURN,
+  DESIGNS,
+  ADDDESIGN,
+  EDITDESIGN,
+  VIEWDESIGN
 } from "../paths";
 
 /** Raw material and units */
-const colorPath = [COLORS, ADDCOLOR, EDITCOLOR];
-const categoryPath = [CATEGORIES, ADDCATEGORIES, EDITCATEGORIES];
+
 const rawMaterialPathList = [
   RAWMATERIALSVIEW,
   ADDRAWMATERIALS,
   EDITRAWMATERIALS
 ];
+
+const colorPath = [COLORS, ADDCOLOR, EDITCOLOR];
+const categoryPath = [CATEGORIES, ADDCATEGORIES, EDITCATEGORIES];
+
 const unitsPathList = [UNITS];
 const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
+
+/** Daily Usage */
 const dailyUsage = [DAILYUSAGERAWMATERIALS];
 
 const rawMaterialAndUnitPath = [
@@ -70,7 +84,6 @@ const rawMaterialAndUnitPath = [
 ];
 
 /**---------------------------- */
-
 const readyMaterialPath = [
   LISTREADYMATERIAL,
   ADDREADYMATERIAL,
@@ -79,17 +92,23 @@ const readyMaterialPath = [
 ];
 
 /** Purchases and sellers path */
-
 const goodsReturnPath = [
   ADDGOODRETURN,
   EDITGOODRETURN,
   GOODRETURNLIST,
   VIEWGOODRETURN
 ];
+
+/** Ledger */
 const ledgerPath = [LEDGER];
+
+/** Purchase  */
 const purchasesPath = [PURCHASES, ADDPURCHASES, VIEWPURCHASES, EDITPURCHASES];
+
+/** Kachha Purchase */
 const kachhaPurchaseDetailsPath = [VIEWKACHHAPURCHASEDETAILS];
 
+/** SellerPath */
 const sellerPath = [SELLERS, EDITSELLER, ADDSELLER];
 
 const purchasesAndSellersPath = [
@@ -110,100 +129,154 @@ const orderPathsList = [ADDORDER, VIEWORDER, ORDERS, EDITORDER];
 const departmentSheetList = [DEPARTMENTSHEET];
 const orderPaths = [...orderPathsList, ...departmentSheetList];
 
-const salesAllPathList = [
-  PARTIES,
-  ADDPARTIES,
-  EDITPARTIES,
-  VIEWSALES,
-  ADDSALES,
-  EDITSALES
-];
-
 const partiesPathList = [PARTIES, ADDPARTIES, EDITPARTIES];
-const salesPathList = [VIEWSALES, ADDSALES, EDITSALES];
+const salesPathList = [SALES, VIEWSALES, ADDSALES, EDITSALES];
 
-const purchaseChild = [
-  {
-    path: PURCHASES,
-    name: "All Purchases",
-    layout: "",
-    pathList: purchasesPath
-  },
-  {
-    path: VIEWKACHHAPURCHASEDETAILS,
-    name: "Kachha Purchase Details",
-    layout: "",
-    pathList: kachhaPurchaseDetailsPath
-  },
-  {
-    path: GOODRETURNLIST,
-    name: "Goods Return",
-    layout: "",
-    pathList: goodsReturnPath
-  },
-  // {
-  //   path: LEDGER,
-  //   name: "Ledger",
-  //   layout: "",
-  //   pathList: ledgerPath
-  // },
-  {
-    path: SELLERS,
-    name: "Sellers",
-    layout: "",
-    pathList: sellerPath
-  }
+const salesReturnPathList = [
+  SALERETURN,
+  VIEWSALERETURN,
+  ADDSALERETURN,
+  EDITSALERETURN
 ];
+
+const salesAllPathList = [
+  ...partiesPathList,
+  ...salesPathList,
+  ...salesReturnPathList
+];
+
+const designPathList = [DESIGNS, ADDDESIGN, EDITDESIGN, VIEWDESIGN];
+
+const rawMaterialsJson = {
+  path: RAWMATERIALSVIEW,
+  name: "Raw Materials",
+  layout: "",
+  pathList: rawMaterialPathList
+};
+
+const dailyUsageJson = {
+  path: DAILYUSAGERAWMATERIALS,
+  name: "Daily Usage",
+  layout: "",
+  pathList: dailyUsage
+};
+
+const goodsReturnJson = {
+  path: GOODRETURNLIST,
+  name: "Goods Return",
+  layout: "",
+  pathList: goodsReturnPath
+};
+
+const sellerJson = {
+  path: SELLERS,
+  name: "Sellers",
+  layout: "",
+  pathList: sellerPath
+};
+
+const purchaseJson = {
+  path: PURCHASES,
+  name: "All Purchases",
+  layout: "",
+  pathList: purchasesPath
+};
+
+const kachhaPurchaseJson = {
+  path: VIEWKACHHAPURCHASEDETAILS,
+  name: "Kachha Purchase Details",
+  layout: "",
+  pathList: kachhaPurchaseDetailsPath
+};
+
+const salesJson = {
+  path: SALES,
+  name: "Sales",
+  layout: "",
+  pathList: salesPathList
+};
+
+const saleReturnJson = {
+  path: SALERETURN,
+  name: "Sale Return",
+  layout: "",
+  pathList: salesReturnPathList
+};
+
+const partiesJson = {
+  path: PARTIES,
+  name: "Parties",
+  layout: "",
+  pathList: partiesPathList
+};
+
+const departmentJson = {
+  path: DEPARTMENTS,
+  name: "Departments",
+  layout: "",
+  pathList: departmentsPath
+};
+
+const categoriesJson = {
+  path: CATEGORIES,
+  name: "Categories",
+  layout: "",
+  pathList: categoryPath
+};
+
+const colorsJson = {
+  path: COLORS,
+  name: "Colors",
+  layout: "",
+  pathList: colorPath
+};
+
+const unitsJson = {
+  path: UNITS,
+  name: "Units",
+  layout: "",
+  pathList: unitsPathList
+};
+
+const ordersJson = {
+  path: ORDERS,
+  name: "Orders",
+  layout: "",
+  pathList: orderPathsList
+};
+
+const departmentSheetJson = {
+  path: DEPARTMENTSHEET,
+  name: "Department Sheet",
+  layout: "",
+  pathList: departmentSheetList
+};
 
 export const DashboardStaffRoutes = [
   {
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: purchaseChild
+    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson]
   },
   {
     name: "Raw Materials",
     layout: "",
     pathList: rawMaterialAndUnitPath,
     children: [
-      {
-        path: RAWMATERIALSVIEW,
-        name: "Raw Materials",
-        layout: "",
-        pathList: rawMaterialPathList
-      },
-      {
-        path: DAILYUSAGERAWMATERIALS,
-        name: "Daily Usage",
-        layout: "",
-        pathList: dailyUsage
-      },
-      {
-        path: DEPARTMENTS,
-        name: "Departments",
-        layout: "",
-        pathList: departmentsPath
-      },
-      {
-        path: CATEGORIES,
-        name: "Categories",
-        layout: "",
-        pathList: categoryPath
-      },
-      {
-        path: COLORS,
-        name: "Colors",
-        layout: "",
-        pathList: colorPath
-      },
-      {
-        path: UNITS,
-        name: "Units",
-        layout: "",
-        pathList: unitsPathList
-      }
+      rawMaterialsJson,
+      dailyUsageJson,
+      departmentJson,
+      categoriesJson,
+      colorsJson,
+      unitsJson
     ]
+  },
+  {
+    path: DESIGNS,
+    name: "Designs",
+    layout: "",
+    pathList: designPathList
   },
   {
     path: LISTREADYMATERIAL,
@@ -216,39 +289,13 @@ export const DashboardStaffRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [
-      {
-        path: ORDERS,
-        name: "Orders",
-        layout: "",
-        pathList: orderPathsList
-      },
-      {
-        path: DEPARTMENTSHEET,
-        name: "Department Sheet",
-        layout: "",
-        pathList: departmentSheetList
-      }
-    ]
+    children: [ordersJson, departmentSheetJson]
   },
   {
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [
-      {
-        path: VIEWSALES,
-        name: "Sales",
-        layout: "",
-        pathList: salesPathList
-      },
-      {
-        path: PARTIES,
-        name: "Parties",
-        layout: "",
-        pathList: partiesPathList
-      }
-    ]
+    children: [salesJson, saleReturnJson, partiesJson]
   }
 ];
 
@@ -264,50 +311,26 @@ export const DashboardAdminRoutes = [
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: purchaseChild
+    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson]
   },
   {
     name: "Raw Materials",
     layout: "",
     pathList: rawMaterialAndUnitPath,
     children: [
-      {
-        path: RAWMATERIALSVIEW,
-        name: "Raw Materials",
-        layout: "",
-        pathList: rawMaterialPathList
-      },
-      {
-        path: DAILYUSAGERAWMATERIALS,
-        name: "Daily Usage",
-        layout: "",
-        pathList: dailyUsage
-      },
-      {
-        path: DEPARTMENTS,
-        name: "Departments",
-        layout: "",
-        pathList: departmentsPath
-      },
-      {
-        path: CATEGORIES,
-        name: "Categories",
-        layout: "",
-        pathList: categoryPath
-      },
-      {
-        path: COLORS,
-        name: "Colors",
-        layout: "",
-        pathList: colorPath
-      },
-      {
-        path: UNITS,
-        name: "Units",
-        layout: "",
-        pathList: unitsPathList
-      }
+      rawMaterialsJson,
+      dailyUsageJson,
+      departmentJson,
+      categoriesJson,
+      colorsJson,
+      unitsJson
     ]
+  },
+  {
+    path: DESIGNS,
+    name: "Designs",
+    layout: "",
+    pathList: designPathList
   },
   {
     path: LISTREADYMATERIAL,
@@ -320,39 +343,13 @@ export const DashboardAdminRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [
-      {
-        path: ORDERS,
-        name: "Orders",
-        layout: "",
-        pathList: orderPathsList
-      },
-      {
-        path: DEPARTMENTSHEET,
-        name: "Department Sheet",
-        layout: "",
-        pathList: departmentSheetList
-      }
-    ]
+    children: [ordersJson, departmentSheetJson]
   },
   {
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [
-      {
-        path: VIEWSALES,
-        name: "Sales",
-        layout: "",
-        pathList: salesPathList
-      },
-      {
-        path: PARTIES,
-        name: "Parties",
-        layout: "",
-        pathList: partiesPathList
-      }
-    ]
+    children: [salesJson, saleReturnJson, partiesJson]
   }
 ];
 
@@ -375,50 +372,26 @@ export const SuperAdminDashboardRoutes = [
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: purchaseChild
+    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson]
   },
   {
     name: "Raw Materials",
     layout: "",
     pathList: rawMaterialAndUnitPath,
     children: [
-      {
-        path: RAWMATERIALSVIEW,
-        name: "Raw Materials",
-        layout: "",
-        pathList: rawMaterialPathList
-      },
-      {
-        path: DAILYUSAGERAWMATERIALS,
-        name: "Daily Usage",
-        layout: "",
-        pathList: dailyUsage
-      },
-      {
-        path: DEPARTMENTS,
-        name: "Departments",
-        layout: "",
-        pathList: departmentsPath
-      },
-      {
-        path: CATEGORIES,
-        name: "Categories",
-        layout: "",
-        pathList: categoryPath
-      },
-      {
-        path: COLORS,
-        name: "Colors",
-        layout: "",
-        pathList: colorPath
-      },
-      {
-        path: UNITS,
-        name: "Units",
-        layout: "",
-        pathList: unitsPathList
-      }
+      rawMaterialsJson,
+      dailyUsageJson,
+      departmentJson,
+      categoriesJson,
+      colorsJson,
+      unitsJson
     ]
+  },
+  {
+    path: DESIGNS,
+    name: "Designs",
+    layout: "",
+    pathList: designPathList
   },
   {
     path: LISTREADYMATERIAL,
@@ -431,38 +404,12 @@ export const SuperAdminDashboardRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [
-      {
-        path: ORDERS,
-        name: "Orders",
-        layout: "",
-        pathList: orderPathsList
-      },
-      {
-        path: DEPARTMENTSHEET,
-        name: "Department Sheet",
-        layout: "",
-        pathList: departmentSheetList
-      }
-    ]
+    children: [ordersJson, departmentSheetJson]
   },
   {
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [
-      {
-        path: VIEWSALES,
-        name: "Sales",
-        layout: "",
-        pathList: salesPathList
-      },
-      {
-        path: PARTIES,
-        name: "Parties",
-        layout: "",
-        pathList: partiesPathList
-      }
-    ]
+    children: [salesJson, saleReturnJson, partiesJson]
   }
 ];

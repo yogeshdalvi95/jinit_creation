@@ -1,0 +1,27 @@
+{
+  "material_no": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Material Number is required"
+      }
+    }
+  },
+  "add_cost": {
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Quantity should be a valid positive number"
+      }
+    }
+  },
+  "total_quantity": {
+    "validations": {
+      "validPositiveIntegerExceptZero": {
+        "value": "true",
+        "message": "Quantity should be a valid positive number"
+      }
+    }
+  }
+}

@@ -31,8 +31,17 @@ export const backend_monthly_sheet_add_update_entries = `${apiUrl}/monthly-sheet
 
 export const backend_goods_return = `${apiUrl}/goods-returns`;
 
+export const backend_sales = `${apiUrl}/sales`;
+export const backend_sales_export_data = `${apiUrl}/sales/export/downloadExcelData`;
+
+export const backend_sale_return = `${apiUrl}/sale-returns`;
+
 export const backend_individual_kachha_purchase = `${apiUrl}/individual-kachha-purchases`;
 export const backend_individual_kachha_purchase_ledger = `${apiUrl}/individual-kachha-purchases/ledger`;
+
+export const backend_designs = `${apiUrl}/designs`;
+
+export const backend_designs_and_materials = `${apiUrl}/designs-and-materials`;
 
 export const backend_ready_materials = `${apiUrl}/ready-materials`;
 export const backend_ready_materials_change_color_dependency = `${apiUrl}/ready-materials/change_color_dependency`;

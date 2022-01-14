@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "sale_returns",
   "info": {
-    "name": "Sale Return"
+    "name": "Sale Return",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -11,12 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "ready_material": {
-      "model": "ready-material"
-    },
-    "quantity": {
-      "type": "float"
-    },
     "party": {
       "model": "party"
     },
@@ -25,6 +20,20 @@
     },
     "notes": {
       "type": "text"
+    },
+    "sale_return_component": {
+      "type": "component",
+      "repeatable": true,
+      "component": "sale-return-component.sale-return-component"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "total_price_of_ready_material": {
+      "type": "float"
+    },
+    "add_cost": {
+      "type": "float"
     }
   }
 }

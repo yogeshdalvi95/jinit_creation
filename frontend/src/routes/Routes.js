@@ -46,7 +46,19 @@ import {
   EDITCATEGORIES,
   CATEGORIES,
   DEPARTMENTSHEET,
-  LEDGER
+  LEDGER,
+  SALES,
+  ADDSALES,
+  EDITSALES,
+  NOTFOUNDPAGE,
+  SALERETURN,
+  ADDSALERETURN,
+  EDITSALERETURN,
+  VIEWSALERETURN,
+  DESIGNS,
+  ADDDESIGN,
+  EDITDESIGN,
+  VIEWDESIGN
 } from "../paths";
 import {
   Login,
@@ -76,7 +88,12 @@ import {
   AddOrder,
   ViewOrders,
   DepartmentSheet,
-  Ledger
+  Ledger,
+  AddEditSales,
+  SaleReturn,
+  AddEditSaleReturn,
+  Designs,
+  AddEditDesign
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -87,6 +104,11 @@ import {
   Categories,
   Color
 } from "../containers/RawMaterials";
+import EditRoute from "./EditRoute";
+import ViewRoute from "./ViewRoute";
+import { backend_sales } from "../constants";
+import { NotFoundPage } from "../components";
+import NotFoundRoute from "./NotFoundRoute";
 
 const Routes = () => {
   return (
@@ -298,6 +320,38 @@ const Routes = () => {
           header={"View Returned Goods"}
         />
 
+        {/** Designs */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={DESIGNS}
+          exact
+          component={Designs}
+          header={"Designs"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDDESIGN}
+          exact
+          component={AddEditDesign}
+          header={"Add Design"}
+        />
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITDESIGN}
+          exact
+          component={AddEditDesign}
+          header={"Edit Design"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWDESIGN}
+          exact
+          component={AddEditDesign}
+          header={"View Design"}
+        />
+
         {/** Ready Material */}
         <PrivateRoute
           openSubMenu={true}
@@ -328,40 +382,6 @@ const Routes = () => {
           exact
           component={AddEditReadyMaterial}
           header={"Views Ready Material"}
-        />
-
-        {/** SALES */}
-        <PrivateRoute
-          openSubMenu={true}
-          path={VIEWSALES}
-          exact
-          component={Sales}
-          header={"View Sales"}
-        />
-
-        {/** Parties section */}
-        <PrivateRoute
-          openSubMenu={true}
-          path={PARTIES}
-          exact
-          component={Parties}
-          header={"Parties"}
-        />
-
-        <PrivateRoute
-          openSubMenu={true}
-          path={ADDPARTIES}
-          exact
-          component={AddParties}
-          header={"Add Party"}
-        />
-
-        <PrivateRoute
-          openSubMenu={true}
-          path={EDITPARTIES}
-          exact
-          component={AddParties}
-          header={"Edit Party"}
         />
 
         {/** Orders section */}
@@ -453,6 +473,109 @@ const Routes = () => {
           exact
           component={Categories}
           header={"Categories"}
+        />
+
+        {/** SALES */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={SALES}
+          exact
+          component={Sales}
+          header={"Sales"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDSALES}
+          exact
+          component={AddEditSales}
+          header={"Add Sale"}
+        />
+
+        <EditRoute
+          openSubMenu={true}
+          path={EDITSALES}
+          exact
+          component={AddEditSales}
+          header={"Edit Sale"}
+          defaultPathToPush={SALES}
+        />
+
+        <ViewRoute
+          openSubMenu={true}
+          path={VIEWSALES}
+          exact
+          component={AddEditSales}
+          header={"View Sale"}
+          defaultPathToPush={SALES}
+        />
+
+        {/** Sale return  */}
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={SALERETURN}
+          exact
+          component={SaleReturn}
+          header={"Sale Return"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDSALERETURN}
+          exact
+          component={AddEditSaleReturn}
+          header={"Add Sale Return"}
+        />
+
+        <EditRoute
+          openSubMenu={true}
+          path={EDITSALERETURN}
+          exact
+          component={AddEditSaleReturn}
+          header={"Edit Sale Return"}
+          defaultPathToPush={SALERETURN}
+        />
+
+        <ViewRoute
+          openSubMenu={true}
+          path={VIEWSALERETURN}
+          exact
+          component={AddEditSaleReturn}
+          header={"View Sale"}
+          defaultPathToPush={SALERETURN}
+        />
+
+        {/** Parties section */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={PARTIES}
+          exact
+          component={Parties}
+          header={"Parties"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDPARTIES}
+          exact
+          component={AddParties}
+          header={"Add Party"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITPARTIES}
+          exact
+          component={AddParties}
+          header={"Edit Party"}
+        />
+
+        <NotFoundRoute
+          openSubMenu={true}
+          path={NOTFOUNDPAGE}
+          exact
+          header={""}
         />
 
         <PublicRoute path={LOGIN} exact component={Login} />

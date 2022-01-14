@@ -31,5 +31,10 @@ export {
   backend_order,
   backend_order_check_raw_material_availibility,
   backend_order_to_get_department_sheet,
-  backend_individual_kachha_purchase_ledger
+  backend_individual_kachha_purchase_ledger,
+  backend_sales,
+  backend_sale_return,
+  backend_designs,
+  backend_designs_and_materials,
+  backend_sales_export_data
 } from "./UrlConstants";

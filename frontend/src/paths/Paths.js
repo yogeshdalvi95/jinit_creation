@@ -59,6 +59,16 @@ export const ADDSALES = "/add-sales";
 export const EDITSALES = "/edit-sales";
 export const SALES = "/sales";
 
+export const VIEWSALERETURN = "/view-sale-return";
+export const ADDSALERETURN = "/add-sale-return";
+export const EDITSALERETURN = "/edit-sale-return";
+export const SALERETURN = "/sale-return";
+
+export const VIEWDESIGN = "/view-design";
+export const ADDDESIGN = "/add-design";
+export const EDITDESIGN = "/edit-design";
+export const DESIGNS = "/designs";
+
 export const COLORS = "/colors";
 export const ADDCOLOR = "/add-color";
 export const EDITCOLOR = "/edit-color";
@@ -68,3 +78,5 @@ export const ADDCATEGORIES = "/add-category";
 export const EDITCATEGORIES = "/edit-category";
 
 export const LEDGER = "/ledger";
+
+export const NOTFOUNDPAGE = "/404";

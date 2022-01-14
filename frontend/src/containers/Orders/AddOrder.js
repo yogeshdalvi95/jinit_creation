@@ -90,6 +90,7 @@ export default function AddOrder(props) {
   const [isEdit] = useState(
     props.location.state ? props.location.state.edit : false
   );
+
   const buttonClasses = buttonUseStyles();
 
   const [
@@ -459,7 +460,6 @@ export default function AddOrder(props) {
     let arr = getRatio();
     setBackDrop(true);
     if (isEdit) {
-      console.log(formState);
       await providerForPut(
         backend_order,
         formState.id,
@@ -919,7 +919,7 @@ export default function AddOrder(props) {
               <GridItem xs={12} sm={12} md={4}>
                 <DatePicker
                   onChange={event => handleOrderDate(event)}
-                  label="OrderDate"
+                  label="Order Date"
                   name="order_date"
                   disabled={isView || formState.cancelled}
                   value={formState.date || new Date()}

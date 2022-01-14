@@ -1,0 +1,20 @@
+{
+  "party": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Party is required"
+      }
+    }
+  },
+  "bill_no": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Bill number is required"
+      }
+    }
+  }
+}

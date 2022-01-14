@@ -11,22 +11,27 @@ import {
 // core components
 import { apiUrl, backend_ready_materials } from "../../constants";
 import {
+  Backdrop,
   CircularProgress,
   Dialog,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  makeStyles
+  makeStyles,
+  Typography
 } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import no_image_icon from "../../assets/img/no_image_icon.png";
 
 import { convertNumber, isEmptyString } from "../../Utils";
+import { useEffect } from "react";
 const useStyles = makeStyles(styles);
 
 export default function DialogBoxForSelectingReadyMaterial(props) {
   const tableRef = React.createRef();
+  const [openBackDrop, setBackDrop] = useState(false);
   const classes = useStyles();
+  const [selectedReadyMaterial, setSeletedReadyMaterial] = useState([]);
   const [filter, setFilter] = useState({
     _sort: "id:desc"
   });
@@ -65,11 +70,27 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
       )
     },
     {
+      title: "Available Quantity",
+      field: "total_quantity"
+    },
+    {
       title: "Price",
       field: "final_cost",
       render: rowData => convertNumber(rowData.final_cost, true)
     }
   ];
+
+  useEffect(() => {
+    setBackDrop(true);
+    let arr = [];
+    if (props.selectedReadyMaterial.length) {
+      arr = props.selectedReadyMaterial.map(r => {
+        return r.ready_material.id;
+      });
+    }
+    setSeletedReadyMaterial(arr);
+    setBackDrop(false);
+  }, []);
 
   const getReadyMaterialsData = async (page, pageSize) => {
     let params = {
@@ -193,17 +214,32 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                 }}
                 actions={[
                   rowData => ({
-                    icon: () => <Button color="primary">Select</Button>,
-                    tooltip: "Select this ready material",
+                    icon: () =>
+                      selectedReadyMaterial.includes(rowData.id) ||
+                      (props.noAddAvailableQuantites &&
+                        !parseInt(rowData.total_quantity)) ? null : (
+                        <Button color="primary">Select</Button>
+                      ),
+                    tooltip: selectedReadyMaterial.includes(rowData.id)
+                      ? "Already added"
+                      : "Select this ready material",
                     onClick: (event, rowData) => {
-                      if (props.isHandleKey) {
-                        props.handleAddReadyMaterial(
-                          "raw_material",
-                          rowData,
-                          props.gridKey
-                        );
-                      } else {
-                        props.handleAddReadyMaterial(rowData);
+                      if (
+                        !(
+                          selectedReadyMaterial.includes(rowData.id) ||
+                          (props.noAddAvailableQuantites &&
+                            !parseInt(rowData.total_quantity))
+                        )
+                      ) {
+                        if (props.isHandleKey) {
+                          props.handleAddReadyMaterial(
+                            "ready_material",
+                            rowData,
+                            props.gridKey
+                          );
+                        } else {
+                          props.handleAddReadyMaterial(rowData);
+                        }
                       }
                     }
                   })
@@ -212,7 +248,15 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                   pageSize: 10,
                   search: false,
                   sorting: true,
-                  thirdSortClick: false
+                  thirdSortClick: false,
+                  rowStyle: rowData => ({
+                    backgroundColor:
+                      selectedReadyMaterial.includes(rowData.id) ||
+                      (props.noAddAvailableQuantites &&
+                        !parseInt(rowData.total_quantity))
+                        ? "#F3F3F3"
+                        : "#FFFFFF"
+                  })
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);
@@ -221,6 +265,9 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
             </>
           </DialogContentText>
         </DialogContent>
+        <Backdrop className={classes.backdrop} open={openBackDrop}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Dialog>
     </div>
   );

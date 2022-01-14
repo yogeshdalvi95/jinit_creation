@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "designs_and_materials",
+  "info": {
+    "name": "Designs and Materials",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "design": {
+      "model": "designs"
+    },
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "per_piece_price": {
+      "type": "float"
+    }
+  }
+}

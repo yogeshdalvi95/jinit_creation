@@ -635,6 +635,14 @@ const ROLES = {
         action: [],
       },
       {
+        name: "designs",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "designs-and-materials",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "individual-kachha-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
@@ -666,6 +674,18 @@ const ROLES = {
       {
         name: "sale-return",
         action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "sales",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getexcelsheetforexport",
+        ],
       },
 
       {
@@ -725,6 +745,14 @@ const ROLES = {
   Admin: {
     controllers: [
       {
+        name: "designs",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "designs-and-materials",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "category",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
@@ -748,7 +776,18 @@ const ROLES = {
         name: "sale-return",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
-
+      {
+        name: "sales",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getexcelsheetforexport",
+        ],
+      },
       {
         name: "department",
         action: ["find", "create", "update", "findOne", "update", "delete"],
@@ -868,6 +907,14 @@ const ROLES = {
   Staff: {
     controllers: [
       {
+        name: "designs",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "designs-and-materials",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "category",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
@@ -890,6 +937,18 @@ const ROLES = {
       {
         name: "sale-return",
         action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "sales",
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getexcelsheetforexport",
+        ],
       },
       {
         name: "department",

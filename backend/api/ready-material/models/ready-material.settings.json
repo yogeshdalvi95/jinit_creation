@@ -46,6 +46,9 @@
     "isColorVariationAvailable": {
       "type": "boolean",
       "default": false
+    },
+    "total_returned_quantity": {
+      "type": "float"
     }
   }
 }

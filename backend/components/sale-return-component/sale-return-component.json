@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_sale_return_component_sale_return_components",
+  "info": {
+    "name": "sale_return_component",
+    "icon": "align-justify",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "total_price": {
+      "type": "float"
+    }
+  }
+}

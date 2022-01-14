@@ -65,7 +65,7 @@ export const onlyUnique = (value, index, self) => {
 };
 
 export const plainDate = data => {
-  var newDate2 = moment(data).format("MMMM Do YYYY");
+  var newDate2 = moment(data).format("DD-MM-YYYY");
   return newDate2;
 };
 
