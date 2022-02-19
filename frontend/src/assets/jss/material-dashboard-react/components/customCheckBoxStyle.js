@@ -3,43 +3,43 @@ import {
   dangerColor,
   successColor,
   grayColor,
-  defaultFont
+  defaultFont,
 } from "../../material-dashboard-react.js";
 
 const customInputStyle = {
   disabled: {
     "&:before": {
-      backgroundColor: "transparent !important"
-    }
+      backgroundColor: "transparent !important",
+    },
   },
   primaryColor: {
-    color: primaryColor[0] + " !Important"
+    color: primaryColor[0] + " !Important",
   },
   errorColor: {
-    color: dangerColor[0] + " !Important"
+    color: dangerColor[0] + " !Important",
   },
   disabledColor: {
-    color: grayColor[3] + " !important"
+    color: grayColor[3] + " !important",
   },
 
   underline: {
     "&:hover:not($disabled):before,&:before": {
       borderColor: grayColor[4] + " !important",
-      borderWidth: "1px !important"
+      borderWidth: "1px !important",
     },
     "&:after": {
-      borderColor: primaryColor[0]
-    }
+      borderColor: primaryColor[0],
+    },
   },
   underlineError: {
     "&:after": {
-      borderColor: dangerColor[0]
-    }
+      borderColor: dangerColor[0],
+    },
   },
   underlineSuccess: {
     "&:after": {
-      borderColor: successColor[0]
-    }
+      borderColor: successColor[0],
+    },
   },
   labelRoot: {
     ...defaultFont,
@@ -47,13 +47,13 @@ const customInputStyle = {
     fontWeight: "400",
     fontSize: "14px",
     lineHeight: "1.42857",
-    letterSpacing: "unset"
+    letterSpacing: "unset",
   },
   labelRootError: {
-    color: dangerColor[0] + " !important"
+    color: dangerColor[0] + " !important",
   },
   labelRootSuccess: {
-    color: successColor[0]
+    color: successColor[0],
   },
   feedback: {
     top: "18px",
@@ -63,21 +63,21 @@ const customInputStyle = {
     width: "24px",
     height: "24px",
     textAlign: "center",
-    pointerEvents: "none"
+    pointerEvents: "none",
   },
   marginTop: {
-    marginTop: "16px"
+    marginTop: "16px",
   },
   formControl: {
     paddingBottom: "10px",
     margin: "27px 0 0 0",
     position: "relative",
-    verticalAlign: "unset"
+    verticalAlign: "unset",
   },
   input: {
     color: grayColor[7] + " !important",
-    fontSize: "0.900rem"
-  }
+    fontSize: "0.800rem",
+  },
 };
 
 export default customInputStyle;

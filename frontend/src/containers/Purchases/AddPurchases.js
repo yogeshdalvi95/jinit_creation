@@ -18,7 +18,7 @@ import {
   GridContainer,
   GridItem,
   Muted,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../components";
 import moment from "moment";
 
@@ -34,7 +34,7 @@ import { providerForGet, providerForPost } from "../../api";
 import {
   backend_purchases,
   backend_raw_materials,
-  backend_sellers
+  backend_sellers,
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
@@ -43,7 +43,7 @@ import {
   convertNumber,
   hasError,
   isEmptyString,
-  setErrors
+  setErrors,
 } from "../../Utils";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -73,7 +73,7 @@ export default function AddPurchases(props) {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const [openBackDrop, setBackDrop] = useState(false);
@@ -91,7 +91,7 @@ export default function AddPurchases(props) {
     notes: "",
     date: new Date(),
     invoice_number: "",
-    bill_no: ""
+    bill_no: "",
   });
 
   const kachhaPurchaseDetails = {
@@ -102,7 +102,7 @@ export default function AddPurchases(props) {
     purchase_quantity: 0,
     purchase_unit: "",
     total_purchase_cost: 0,
-    total_purchase_cost_formatted: 0
+    total_purchase_cost_formatted: 0,
   };
 
   const pakkaPurchaseDetails = {
@@ -111,23 +111,23 @@ export default function AddPurchases(props) {
     purchase_cost: 0,
     purchase_quantity: 0,
     total_purchase_cost: 0,
-    total_purchase_cost_formatted: 0
+    total_purchase_cost_formatted: 0,
   };
   const [error, setError] = React.useState({});
 
   const [individualKachhaPurchase, setIndividualKachhaPurchase] = useState([
-    kachhaPurchaseDetails
+    kachhaPurchaseDetails,
   ]);
 
   const [individualPakkaPurchase, setIndividualPakkaPurchase] = useState([
-    pakkaPurchaseDetails
+    pakkaPurchaseDetails,
   ]);
   const [
     openDialogForSelectingRawMaterial,
-    setOpenDialogForSelectingRawMaterial
+    setOpenDialogForSelectingRawMaterial,
   ] = useState({
     key: null,
-    status: false
+    status: false,
   });
 
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
@@ -138,7 +138,7 @@ export default function AddPurchases(props) {
     category: null,
     size: "",
     balance: "",
-    name_value: []
+    name_value: [],
   });
 
   useEffect(() => {
@@ -153,8 +153,8 @@ export default function AddPurchases(props) {
     getSellerName();
   }, []);
 
-  const setData = data => {
-    setFormState(formState => ({
+  const setData = (data) => {
+    setFormState((formState) => ({
       ...formState,
       id: data.purchase.id,
       seller: data.purchase.seller ? data.purchase.seller.id : null,
@@ -175,11 +175,11 @@ export default function AddPurchases(props) {
       notes: data.purchase.notes,
       date: new Date(data.purchase.date),
       invoice_number: data.purchase.invoice_number,
-      bill_no: data.purchase.bill_no
+      bill_no: data.purchase.bill_no,
     }));
 
     let arr = [];
-    arr = data.individualPurchase.map(d => {
+    arr = data.individualPurchase.map((d) => {
       let object = {
         id: d.id,
         purchase_cost: d.purchase_cost,
@@ -188,7 +188,7 @@ export default function AddPurchases(props) {
         total_purchase_cost_formatted: convertNumber(
           d.total_purchase_cost,
           true
-        )
+        ),
       };
       if (data.purchase.type_of_bill === "Kachha") {
         let bal = "0";
@@ -213,18 +213,18 @@ export default function AddPurchases(props) {
           size: isEmptyString(d.raw_material.size)
             ? "---"
             : d.raw_material.size,
-          bal: bal
+          bal: bal,
         };
         object = {
           ...object,
           raw_material: d.raw_material ? d.raw_material.id : null,
           purchase_unit: d.unit,
-          raw_material_name: nameObject
+          raw_material_name: nameObject,
         };
       } else {
         object = {
           ...object,
-          name: d.name
+          name: d.name,
         };
       }
       return object;
@@ -241,15 +241,15 @@ export default function AddPurchases(props) {
     await providerForGet(
       backend_sellers,
       {
-        pageSize: -1
+        pageSize: -1,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setSeller(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => {});
+      .catch((err) => {});
   };
 
   const getRawMaterial = async () => {
@@ -257,20 +257,20 @@ export default function AddPurchases(props) {
     await providerForGet(
       backend_raw_materials,
       {
-        pageSize: -1
+        pageSize: -1,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setRawMaterial(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => {});
+      .catch((err) => {});
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (event.target.name === "type_of_bill") {
-      setRawMaterialDetails(rawMaterialDetails => ({
+      setRawMaterialDetails((rawMaterialDetails) => ({
         ...rawMaterialDetails,
         id: null,
         name: "",
@@ -279,7 +279,7 @@ export default function AddPurchases(props) {
         category: null,
         size: "",
         balance: "",
-        name_value: []
+        name_value: [],
       }));
     }
     if (
@@ -288,9 +288,9 @@ export default function AddPurchases(props) {
     ) {
       calculateNewTax(event.target.name, event.target.value);
     }
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -335,12 +335,12 @@ export default function AddPurchases(props) {
       true
     );
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_amt_with_tax: totalCostWithTax,
       total_amt_with_tax_formatted: totalCostWithTaxFormatted,
       total_amt_without_tax: total_amt_without_tax,
-      total_amt_without_tax_formatted: total_amt_without_tax_formatted
+      total_amt_without_tax_formatted: total_amt_without_tax_formatted,
     }));
   };
 
@@ -417,7 +417,7 @@ export default function AddPurchases(props) {
       totalCostWithOutTax: totalCostWithOutTax,
       perRawMaterialFormatted: perRawMaterialFormatted,
       totalCostWithTaxFormatted: totalCostWithTaxFormatted,
-      totalCostWithOutTaxFormatted: totalCostWithOutTaxFormatted
+      totalCostWithOutTaxFormatted: totalCostWithOutTaxFormatted,
     };
   };
 
@@ -446,19 +446,19 @@ export default function AddPurchases(props) {
       setIndividualKachhaPurchase([
         ...individualKachhaPurchase.slice(0, key),
         object,
-        ...individualKachhaPurchase.slice(key + 1)
+        ...individualKachhaPurchase.slice(key + 1),
       ]);
 
       if (name === "raw_material") {
         if (value) {
           let arr = [];
-          value.name_value.map(nv => {
+          value.name_value.map((nv) => {
             arr.push({
               name: nv.name,
-              value: nv.value
+              value: nv.value,
             });
           });
-          setRawMaterialDetails(rawMaterialDetails => ({
+          setRawMaterialDetails((rawMaterialDetails) => ({
             ...rawMaterialDetails,
             id: "#" + value.id,
             name: value ? value.name : "",
@@ -467,10 +467,10 @@ export default function AddPurchases(props) {
             category: objectToAdd.category,
             balance: value ? value.balance : "",
             color: objectToAdd.color,
-            name_value: arr
+            name_value: arr,
           }));
         } else {
-          setRawMaterialDetails(rawMaterialDetails => ({
+          setRawMaterialDetails((rawMaterialDetails) => ({
             ...rawMaterialDetails,
             id: null,
             name: null,
@@ -479,7 +479,7 @@ export default function AddPurchases(props) {
             category: null,
             balance: null,
             color: null,
-            name_value: []
+            name_value: [],
           }));
         }
       }
@@ -511,21 +511,21 @@ export default function AddPurchases(props) {
         totalCostWithOutTax,
         perRawMaterialFormatted,
         totalCostWithTaxFormatted,
-        totalCostWithOutTaxFormatted
+        totalCostWithOutTaxFormatted,
       } = calculateTotalCost(name, value, object, purchaseArr, key);
 
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         total_amt_with_tax: totalCostWithTax,
         total_amt_without_tax: totalCostWithOutTax,
         total_amt_with_tax_formatted: totalCostWithTaxFormatted,
-        total_amt_without_tax_formatted: totalCostWithOutTaxFormatted
+        total_amt_without_tax_formatted: totalCostWithOutTaxFormatted,
       }));
 
       object = {
         ...object,
         total_purchase_cost: perRawMaterial,
-        total_purchase_cost_formatted: perRawMaterialFormatted
+        total_purchase_cost_formatted: perRawMaterialFormatted,
       };
     }
 
@@ -534,13 +534,13 @@ export default function AddPurchases(props) {
       setIndividualKachhaPurchase([
         ...individualKachhaPurchase.slice(0, key),
         object,
-        ...individualKachhaPurchase.slice(key + 1)
+        ...individualKachhaPurchase.slice(key + 1),
       ]);
     } else {
       setIndividualPakkaPurchase([
         ...individualPakkaPurchase.slice(0, key),
         object,
-        ...individualPakkaPurchase.slice(key + 1)
+        ...individualPakkaPurchase.slice(key + 1),
       ]);
     }
   };
@@ -589,10 +589,10 @@ export default function AddPurchases(props) {
     return {
       arr: finalArr,
       status: status,
-      error: str
+      error: str,
     };
   };
-  const handleCheckValidation = event => {
+  const handleCheckValidation = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -619,12 +619,12 @@ export default function AddPurchases(props) {
     } else {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true
+        [buttonClasses["success"]]: true,
       });
 
       const cancelBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true
+        [buttonClasses["danger"]]: true,
       });
 
       setAlert(
@@ -657,42 +657,42 @@ export default function AddPurchases(props) {
         obj = {
           purchases: formState,
           kachhaPurchase: arr,
-          pakkaPurchase: individualPakkaPurchase
+          pakkaPurchase: individualPakkaPurchase,
         };
       } else {
         obj = {
           purchases: formState,
           kachhaPurchase: individualKachhaPurchase,
-          pakkaPurchase: arr
+          pakkaPurchase: arr,
         };
       }
       setBackDrop(true);
       await providerForPost(backend_purchases, obj, Auth.getToken())
-        .then(res => {
+        .then((res) => {
           history.push(PURCHASES);
           setBackDrop(false);
         })
-        .catch(err => {});
+        .catch((err) => {});
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: error
+        message: error,
       }));
     }
   };
 
-  const addNewPurchase = type => {
+  const addNewPurchase = (type) => {
     if (type === "Kachha") {
       setIndividualKachhaPurchase([
         ...individualKachhaPurchase,
-        kachhaPurchaseDetails
+        kachhaPurchaseDetails,
       ]);
     } else {
       setIndividualPakkaPurchase([
         ...individualPakkaPurchase,
-        pakkaPurchaseDetails
+        pakkaPurchaseDetails,
       ]);
     }
   };
@@ -731,33 +731,33 @@ export default function AddPurchases(props) {
       true
     );
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_amt_with_tax: total_amt_with_tax,
       total_amt_with_tax_formatted: total_amt_with_tax_formatted,
       total_amt_without_tax: total_amt_without_tax,
-      total_amt_without_tax_formatted: total_amt_without_tax_formatted
+      total_amt_without_tax_formatted: total_amt_without_tax_formatted,
     }));
 
     if (purchase === "Kachha") {
       setIndividualKachhaPurchase([
         ...individualKachhaPurchase.slice(0, key),
-        ...individualKachhaPurchase.slice(key + 1)
+        ...individualKachhaPurchase.slice(key + 1),
       ]);
     } else if (purchase === "Pakka") {
       setIndividualPakkaPurchase([
         ...individualPakkaPurchase.slice(0, key),
-        ...individualPakkaPurchase.slice(key + 1)
+        ...individualPakkaPurchase.slice(key + 1),
       ]);
     }
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -773,35 +773,35 @@ export default function AddPurchases(props) {
   const handleCloseDialogForRawMaterial = () => {
     setOpenDialogForSelectingRawMaterial({
       key: null,
-      status: false
+      status: false,
     });
   };
 
   const handleAcceptDialogForRawMaterial = () => {
     setOpenDialogForSelectingRawMaterial({
       key: null,
-      status: false
+      status: false,
     });
     //addEditData();
   };
 
-  const addChangeRawMaterial = key => {
+  const addChangeRawMaterial = (key) => {
     setOpenDialogForSelectingRawMaterial({
       key: key,
-      status: true
+      status: true,
     });
   };
 
-  const handleStartDateChange = event => {
+  const handleStartDateChange = (event) => {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
     } else {
       startDate = new Date(startDate).toISOString();
     }
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      date: startDate
+      date: startDate,
     }));
   };
 
@@ -856,16 +856,16 @@ export default function AddPurchases(props) {
                 <CustomDropDown
                   id="type_of_bill"
                   disabled={isView || isEdit}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   labelText="Type of Purchase"
                   name="type_of_bill"
                   value={formState.type_of_bill}
                   nameValue={[
                     { name: "Pakka", value: "Pakka" },
-                    { name: "Kachha", value: "Kachha" }
+                    { name: "Kachha", value: "Kachha" },
                   ]}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                 />
               </GridItem>
@@ -881,20 +881,20 @@ export default function AddPurchases(props) {
                       options={seller}
                       onChange={(event, value) => {
                         delete error["seller"];
-                        setError(error => ({
-                          ...error
+                        setError((error) => ({
+                          ...error,
                         }));
                         if (value === null) {
-                          setFormState(formState => ({
+                          setFormState((formState) => ({
                             ...formState,
                             seller: null,
-                            gst_no: ""
+                            gst_no: "",
                           }));
                         } else {
-                          setFormState(formState => ({
+                          setFormState((formState) => ({
                             ...formState,
                             seller: value.id,
-                            gst_no: value.gst_no
+                            gst_no: value.gst_no,
                           }));
                         }
                       }}
@@ -910,14 +910,14 @@ export default function AddPurchases(props) {
                       isHelperText={hasError("seller", error)}
                       helperText={
                         hasError("seller", error)
-                          ? error["seller"].map(error => {
+                          ? error["seller"].map((error) => {
                               return error + " ";
                             })
                           : null
                       }
                       error={hasError("seller", error)}
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -940,7 +940,7 @@ export default function AddPurchases(props) {
                   </GridItem> */}
                   <GridItem xs={12} sm={12} md={3}>
                     <DatePicker
-                      onChange={event => handleStartDateChange(event)}
+                      onChange={(event) => handleStartDateChange(event)}
                       label="Purchase Date"
                       name="date"
                       disabled={isView}
@@ -955,11 +955,11 @@ export default function AddPurchases(props) {
                           : new Date(1900, 0)
                       }
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       style={{
                         marginTop: "1.5rem",
-                        width: "100%"
+                        width: "100%",
                       }}
                     />
                   </GridItem>
@@ -971,14 +971,14 @@ export default function AddPurchases(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="GST No."
                     name="gst_no"
                     disabled
                     value={formState.gst_no}
                     id="gst_no"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -987,11 +987,11 @@ export default function AddPurchases(props) {
                     <CustomInput
                       labelText="Invoice Number"
                       name="invoice_number"
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       value={formState.invoice_number}
                       id="invoice_number"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -1000,11 +1000,11 @@ export default function AddPurchases(props) {
                     <CustomInput
                       labelText="Bill Number"
                       name="bill_no"
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       value={formState.bill_no}
                       id="bill_no"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -1019,7 +1019,7 @@ export default function AddPurchases(props) {
                     <>
                       <GridItem xs={12} sm={12} md={3}>
                         <CustomInput
-                          onChange={event => handleChange(event)}
+                          onChange={(event) => handleChange(event)}
                           labelText="CGST(%)"
                           name="cgst_percent"
                           type="number"
@@ -1027,13 +1027,13 @@ export default function AddPurchases(props) {
                           value={formState.cgst_percent}
                           id="cgst_percent"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
                       <GridItem xs={12} sm={12} md={3}>
                         <CustomInput
-                          onChange={event => handleChange(event)}
+                          onChange={(event) => handleChange(event)}
                           labelText="SGST(%)"
                           name="sgst_percent"
                           disabled={isView}
@@ -1041,7 +1041,7 @@ export default function AddPurchases(props) {
                           value={formState.sgst_percent}
                           id="sgst_percent"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1053,7 +1053,7 @@ export default function AddPurchases(props) {
                           value={formState.total_amt_with_tax_formatted}
                           id="total_amt_with_tax"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1065,7 +1065,7 @@ export default function AddPurchases(props) {
                           value={formState.total_amt_without_tax_formatted}
                           id="total_amt_without_tax"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1079,7 +1079,7 @@ export default function AddPurchases(props) {
                         value={formState.total_amt_without_tax_formatted}
                         id="total_amt_without_tax"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                       />
                     </GridItem>
@@ -1091,14 +1091,14 @@ export default function AddPurchases(props) {
                       labelText="Notes"
                       id="notes"
                       name="notes"
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       value={formState.notes}
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       inputProps={{
                         multiline: true,
-                        rows: 3
+                        rows: 3,
                       }}
                     />
                   </GridItem>
@@ -1146,7 +1146,7 @@ export default function AddPurchases(props) {
                           sm={12}
                           md={8}
                           style={{
-                            margin: "27px 0px 0px"
+                            margin: "27px 0px 0px",
                           }}
                         >
                           <GridContainer style={{ dispay: "flex" }}>
@@ -1191,7 +1191,7 @@ export default function AddPurchases(props) {
                           sm={12}
                           md={4}
                           style={{
-                            margin: "27px 0px 0px"
+                            margin: "27px 0px 0px",
                           }}
                         >
                           <Button
@@ -1210,7 +1210,7 @@ export default function AddPurchases(props) {
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={6}>
                         <CustomInput
-                          onChange={event =>
+                          onChange={(event) =>
                             handleChangeForRepetableComponent(event, key)
                           }
                           type="number"
@@ -1220,7 +1220,7 @@ export default function AddPurchases(props) {
                           value={Ip.purchase_cost}
                           id="purchase_cost"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                           inputProps={{
                             endAdornment: (
@@ -1229,13 +1229,13 @@ export default function AddPurchases(props) {
                                   ? "/" + Ip.purchase_unit
                                   : ""}
                               </InputAdornment>
-                            )
+                            ),
                           }}
                         />
                       </GridItem>
                       <GridItem xs={12} sm={12} md={6}>
                         <CustomInput
-                          onChange={event =>
+                          onChange={(event) =>
                             handleChangeForRepetableComponent(event, key)
                           }
                           type="number"
@@ -1245,7 +1245,7 @@ export default function AddPurchases(props) {
                           value={Ip.purchase_quantity}
                           id="purchase_quantity"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1259,7 +1259,7 @@ export default function AddPurchases(props) {
                           value={Ip.total_purchase_cost_formatted}
                           id="quantity"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1310,7 +1310,7 @@ export default function AddPurchases(props) {
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={12}>
                         <CustomInput
-                          onChange={event =>
+                          onChange={(event) =>
                             handleChangeForRepetableComponent(event, key)
                           }
                           labelText="Item Name"
@@ -1319,7 +1319,7 @@ export default function AddPurchases(props) {
                           value={Ip.name}
                           id={"item_name" + key}
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1327,7 +1327,7 @@ export default function AddPurchases(props) {
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={6}>
                         <CustomInput
-                          onChange={event =>
+                          onChange={(event) =>
                             handleChangeForRepetableComponent(event, key)
                           }
                           labelText="Purchase cost per unit"
@@ -1337,7 +1337,7 @@ export default function AddPurchases(props) {
                           value={Ip.purchase_cost}
                           id="purchase_cost"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1348,12 +1348,12 @@ export default function AddPurchases(props) {
                           disabled={isView || isEdit}
                           name="purchase_quantity"
                           value={Ip.purchase_quantity}
-                          onChange={event =>
+                          onChange={(event) =>
                             handleChangeForRepetableComponent(event, key)
                           }
                           id="quantity"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1367,7 +1367,7 @@ export default function AddPurchases(props) {
                           value={Ip.total_purchase_cost_formatted}
                           id="quantity"
                           formControlProps={{
-                            fullWidth: true
+                            fullWidth: true,
                           }}
                         />
                       </GridItem>
@@ -1398,7 +1398,7 @@ export default function AddPurchases(props) {
           </CardBody>
           {isView || isEmptyString(formState.type_of_bill) ? null : (
             <CardFooter>
-              <Button color="primary" onClick={e => handleCheckValidation(e)}>
+              <Button color="primary" onClick={(e) => handleCheckValidation(e)}>
                 Save
               </Button>
             </CardFooter>
@@ -1439,7 +1439,7 @@ export default function AddPurchases(props) {
                     : rawMaterialDetails.balance}
                 </Muted>
               </GridItem>
-              {rawMaterialDetails.name_value.map(nv => (
+              {rawMaterialDetails.name_value.map((nv) => (
                 <GridItem xs={12} sm={12} md={12}>
                   <Muted>
                     {" "}

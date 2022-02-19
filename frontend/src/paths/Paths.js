@@ -65,9 +65,18 @@ export const EDITSALERETURN = "/edit-sale-return";
 export const SALERETURN = "/sale-return";
 
 export const VIEWDESIGN = "/view-design";
-export const ADDDESIGN = "/add-design";
 export const EDITDESIGN = "/edit-design";
+export const ADDDESIGN = "/add-design";
 export const DESIGNS = "/designs";
+export const VIEWDESIGNID = `${VIEWDESIGN}/:id`;
+export const EDITDESIGNID = `${EDITDESIGN}/:id`;
+
+export const SELECTRAWMATERIALSWOHASH = "select-raw-materials";
+export const SELECTREADYMATERIALSWOHASH = "select-ready-materials";
+export const SELECTRAWMATERIALS = `/${SELECTRAWMATERIALSWOHASH}`;
+export const SELECTREADYMATERIALS = `/${SELECTREADYMATERIALSWOHASH}`;
+export const SELECTRAWMATERIALSID = `${EDITDESIGN}${SELECTRAWMATERIALS}/:id`;
+export const SELECTREADYMATERIALSID = `${EDITDESIGN}${SELECTREADYMATERIALS}/:id`;
 
 export const COLORS = "/colors";
 export const ADDCOLOR = "/add-color";

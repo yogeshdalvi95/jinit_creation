@@ -29,7 +29,7 @@
       "path": "/designs",
       "handler": "designs.create",
       "config": {
-        "policies": []
+        "policies": ["checkDuplicateDesignWhileAdding"]
       }
     },
     {
@@ -37,7 +37,7 @@
       "path": "/designs/:id",
       "handler": "designs.update",
       "config": {
-        "policies": []
+        "policies": ["checkDuplicateDesignWhileEditing"]
       }
     },
     {

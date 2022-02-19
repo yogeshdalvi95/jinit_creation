@@ -1,6 +1,6 @@
 "use strict";
 const utils = require("../../../config/utils");
-
+const _ = require("lodash");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -21,7 +21,10 @@ module.exports = {
     query["_limit"] = _limit;
     query["_start"] = _start;
 
-    const data = await strapi.query("color").find(query);
+    const data = await strapi
+      .query("color")
+      .find(query)
+      .then((res) => res.map((r) => _.omit(r, ["created_by", "updated_by"])));
 
     return {
       data: data, // your data array

@@ -57,8 +57,10 @@ import {
   VIEWSALERETURN,
   DESIGNS,
   ADDDESIGN,
-  EDITDESIGN,
-  VIEWDESIGN
+  VIEWDESIGNID,
+  EDITDESIGNID,
+  SELECTRAWMATERIALSID,
+  SELECTREADYMATERIALSID,
 } from "../paths";
 import {
   Login,
@@ -93,7 +95,8 @@ import {
   SaleReturn,
   AddEditSaleReturn,
   Designs,
-  AddEditDesign
+  AddEditDesign,
+  DesignMaterials,
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -102,13 +105,12 @@ import {
   AddEditCategories,
   AddEditColor,
   Categories,
-  Color
+  Color,
 } from "../containers/RawMaterials";
 import EditRoute from "./EditRoute";
 import ViewRoute from "./ViewRoute";
-import { backend_sales } from "../constants";
-import { NotFoundPage } from "../components";
 import NotFoundRoute from "./NotFoundRoute";
+import RouteWithTabLayout from "./RouteWithTabLayout";
 
 const Routes = () => {
   return (
@@ -336,20 +338,44 @@ const Routes = () => {
           component={AddEditDesign}
           header={"Add Design"}
         />
+
         <PrivateRoute
           openSubMenu={true}
-          path={EDITDESIGN}
+          path={EDITDESIGNID}
           exact
           component={AddEditDesign}
           header={"Edit Design"}
+          isDependent={true}
+          isEdit={true}
         />
 
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWDESIGN}
+          path={VIEWDESIGNID}
           exact
           component={AddEditDesign}
           header={"View Design"}
+          isDependent={true}
+          isView={true}
+        />
+
+        {/** Material for design */}
+        <RouteWithTabLayout
+          openSubMenu={true}
+          path={SELECTRAWMATERIALSID}
+          exact
+          component={DesignMaterials}
+          header={"Select Raw Materials For Design"}
+          isColor={false}
+        />
+
+        <RouteWithTabLayout
+          openSubMenu={true}
+          path={SELECTREADYMATERIALSID}
+          exact
+          component={DesignMaterials}
+          header={"Select Ready Materials For Design"}
+          isColor={false}
         />
 
         {/** Ready Material */}

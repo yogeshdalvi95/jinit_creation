@@ -8,7 +8,9 @@ export {
   getMonthName,
   uuidv4,
   getValidDate,
-  dateToDDMMYYYY
+  dateToDDMMYYYY,
+  getInitials,
+  getRoutesOnLogin,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,
@@ -16,5 +18,5 @@ export {
   checkEmpty,
   hasError,
   setErrors,
-  showError
+  showError,
 } from "./FormUtilities";

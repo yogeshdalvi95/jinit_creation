@@ -109,7 +109,6 @@ export default function AddEditSales(props) {
   });
 
   const [readyMaterialArray, setReadyMaterialArray] = useState([]);
-  const [ogAddedReadyMaterial, setOgAddedReadyMaterial] = useState([]);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -316,11 +315,10 @@ export default function AddEditSales(props) {
       message:
         isQuantityValid && isPPPValid
           ? quantity_to_add_deduct
-            ? `No of ready material ${
-                quantity_to_add_deduct < 0
-                  ? "to be added back to stock"
-                  : "to be deducted from stock"
-              }: ${Math.abs(quantity_to_add_deduct)}`
+            ? `No of ready material ${quantity_to_add_deduct < 0
+              ? "to be added back to stock"
+              : "to be deducted from stock"
+            }: ${Math.abs(quantity_to_add_deduct)}`
             : ""
           : ""
     };
@@ -587,11 +585,10 @@ export default function AddEditSales(props) {
       quantity_to_add_deduct: quantity_to_add_deduct,
       message: isValid
         ? quantity_to_add_deduct
-          ? `No of ready material ${
-              quantity_to_add_deduct < 0
-                ? "to be added back to stock"
-                : "to be deducted from stock"
-            }: ${Math.abs(quantity_to_add_deduct)}`
+          ? `No of ready material ${quantity_to_add_deduct < 0
+            ? "to be added back to stock"
+            : "to be deducted from stock"
+          }: ${Math.abs(quantity_to_add_deduct)}`
           : ""
         : ""
     };
@@ -767,7 +764,7 @@ export default function AddEditSales(props) {
       });
   };
 
-  const checkRepeatableComponent = () => {};
+  const checkRepeatableComponent = () => { };
 
   return (
     <React.Fragment>
@@ -824,8 +821,8 @@ export default function AddEditSales(props) {
                     helperText={
                       hasError("bill_no", error)
                         ? error["bill_no"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("bill_no", error)}
@@ -898,8 +895,8 @@ export default function AddEditSales(props) {
                         helperText={
                           hasError("party_name", error)
                             ? error["party_name"].map(error => {
-                                return error + " ";
-                              })
+                              return error + " ";
+                            })
                             : null
                         }
                         error={hasError("party_name", error)}
@@ -921,8 +918,8 @@ export default function AddEditSales(props) {
                         helperText={
                           hasError("party_gst_no", error)
                             ? error["party_gst_no"].map(error => {
-                                return error + " ";
-                              })
+                              return error + " ";
+                            })
                             : null
                         }
                         error={hasError("party_gst_no", error)}
@@ -946,8 +943,8 @@ export default function AddEditSales(props) {
                         helperText={
                           hasError("party_address", error)
                             ? error["party_address"].map(error => {
-                                return error + " ";
-                              })
+                              return error + " ";
+                            })
                             : null
                         }
                         error={hasError("party_address", error)}
@@ -1026,8 +1023,8 @@ export default function AddEditSales(props) {
                               >
                                 {hasError("party", error)
                                   ? error["party"].map(error => {
-                                      return error + " ";
-                                    })
+                                    return error + " ";
+                                  })
                                   : null}
                               </FormHelperText>
                             </GridItem>
@@ -1056,8 +1053,8 @@ export default function AddEditSales(props) {
                     helperText={
                       hasError("cgst", error)
                         ? error["cgst"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("cgst", error)}
@@ -1080,8 +1077,8 @@ export default function AddEditSales(props) {
                     helperText={
                       hasError("sgst", error)
                         ? error["sgst"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("sgst", error)}
@@ -1105,8 +1102,8 @@ export default function AddEditSales(props) {
                     helperText={
                       hasError("add_cost", error)
                         ? error["add_cost"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("add_cost", error)}
@@ -1129,8 +1126,8 @@ export default function AddEditSales(props) {
                     helperText={
                       hasError("total_price", error)
                         ? error["total_price"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("total_price", error)}
@@ -1199,8 +1196,8 @@ export default function AddEditSales(props) {
                                   <GridItem xs={12} sm={12} md={12}>
                                     <div className={classes.imageDivInTable}>
                                       {Ip.ready_material.images &&
-                                      Ip.ready_material.images.length &&
-                                      Ip.ready_material.images[0].url ? (
+                                        Ip.ready_material.images.length &&
+                                        Ip.ready_material.images[0].url ? (
                                         <img
                                           alt="ready_material_photo"
                                           src={
@@ -1272,10 +1269,10 @@ export default function AddEditSales(props) {
                                 helperText={
                                   hasError("quantity" + key, readyMaterialError)
                                     ? readyMaterialError["quantity" + key].map(
-                                        error => {
-                                          return error + " ";
-                                        }
-                                      )
+                                      error => {
+                                        return error + " ";
+                                      }
+                                    )
                                     : null
                                 }
                                 error={hasError(
@@ -1309,10 +1306,10 @@ export default function AddEditSales(props) {
                                     readyMaterialError
                                   )
                                     ? readyMaterialError[
-                                        "price_per_unit" + key
-                                      ].map(error => {
-                                        return error + " ";
-                                      })
+                                      "price_per_unit" + key
+                                    ].map(error => {
+                                      return error + " ";
+                                    })
                                     : null
                                 }
                                 error={hasError(

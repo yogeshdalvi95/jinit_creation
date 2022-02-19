@@ -4,12 +4,12 @@ import {
   primaryColor,
   whiteColor,
   blackColor,
-  hexToRgb
+  hexToRgb,
 } from "../../material-dashboard-react";
 
 const styles = {
   detailPanelGrid: {
-    padding: "1rem !important"
+    padding: "1rem !important",
   },
   table: {
     height: "35rem",
@@ -19,7 +19,7 @@ const styles = {
       ...defaultFont,
       fontWeight: 600,
       fontSize: "0.75rem",
-      color: "#8A8A97"
+      color: "#8A8A97",
     },
     "& tfoot tr td ": {
       border: "none !important",
@@ -28,19 +28,19 @@ const styles = {
       fontSize: "1rem",
       "& > div": {
         display: "flex",
-        flexWrap: "wrap"
-      }
+        flexWrap: "wrap",
+      },
     },
     "& tfoot tr td div:nth-child(2) span": {
       ...defaultFont,
       fontWeight: 500,
-      fontSize: "1rem"
+      fontSize: "1rem",
     },
     "& .MuiTypography-caption": {
       ...defaultFont,
       fontWeight: 500,
       fontSize: "0.75rem",
-      color: "#000"
+      color: "#000",
     },
     "& th": {
       ...defaultFont,
@@ -54,7 +54,7 @@ const styles = {
       textAlign: "left",
       flexDirection: "row",
       backgroundColor: "#F4F5F7",
-      height: "20px"
+      height: "20px",
     },
     "& td": {
       ...defaultFont,
@@ -66,39 +66,39 @@ const styles = {
       letterSpacing: "0.15px !important",
       border: "none",
       color: "#1F2937",
-      flexDirection: "row"
-    }
+      flexDirection: "row",
+    },
   },
   switchBox: {
-    paddingTop: "0.8rem !important"
+    paddingTop: "0.8rem !important",
   },
   switchBoxInFilter: {
-    paddingTop: "2.5rem !important"
+    paddingTop: "2.5rem !important",
   },
   extendedIcon: {
-    marginRight: "1rem"
+    marginRight: "1rem",
   },
   imageDiv: {
     width: "max-content",
     marginRight: "auto",
-    marginTop: "3rem"
+    marginTop: "3rem",
   },
   inputFile: {
-    display: "none"
+    display: "none",
   },
   DefaultNoImage: {
     width: "750px",
     height: "200px",
     objectFit: "contain",
     backgroundColor: "#f3f3f3",
-    border: "2px solid #aba5a5 !Important"
+    border: "2px solid #aba5a5 !Important",
   },
   UploadImage: {
     width: "100%",
     height: "200px",
     objectFit: "contain",
     backgroundColor: "#f3f3f3",
-    border: "2px solid #aba5a5 !Important"
+    border: "2px solid #aba5a5 !Important",
     // marginLeft: "18%"
   },
   cardCategoryWhite: {
@@ -107,20 +107,20 @@ const styles = {
       margin: "0",
       fontSize: "14px",
       marginTop: "0",
-      marginBottom: "0"
+      marginBottom: "0",
     },
     "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
-    }
+      color: "#FFFFFF",
+    },
   },
   componentBorder: {
     margin: "0.5rem",
     border: "0.5px solid " + grayColor[4],
-    borderRadius: "0.5rem"
+    borderRadius: "0.5rem",
   },
   backdrop: {
     zIndex: 1000,
-    color: "#fff"
+    color: "#fff",
   },
   cardTitleWhite: {
     color: "#FFFFFF",
@@ -134,30 +134,30 @@ const styles = {
       color: "#777",
       fontSize: "65%",
       fontWeight: "400",
-      lineHeight: "1"
-    }
+      lineHeight: "1",
+    },
   },
   cardHeaderStyles: {
-    width: "max-content"
+    width: "max-content",
   },
   addDeleteFabButon: {
     marginTop: "auto",
-    display: "flex"
+    display: "flex",
   },
   typo: {
     paddingLeft: "25%",
     marginBottom: "40px",
-    position: "relative"
+    position: "relative",
   },
   typo1: {
     paddingLeft: "1rem",
-    position: "relative"
+    position: "relative",
   },
   h5: {
     fontWeight: 600,
     fontSize: "1.25em",
     fontFamily: "Montserrat !important",
-    color: "#8A8A97 !important"
+    color: "#8A8A97 !important",
   },
   note: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -170,7 +170,7 @@ const styles = {
     left: "0",
     marginLeft: "20px",
     position: "absolute",
-    width: "260px"
+    width: "260px",
   },
   title: {
     ...defaultFont,
@@ -182,35 +182,35 @@ const styles = {
     color: "inherit",
     margin: "0",
     "&:hover,&:focus": {
-      background: "transparent"
-    }
+      background: "transparent",
+    },
   },
   switchBase: {
-    color: primaryColor[0] + "!important"
+    color: primaryColor[0] + "!important",
   },
   switchIcon: {
     boxShadow: "0 1px 3px 1px rgba(" + hexToRgb(blackColor) + ", 0.4)",
     color: whiteColor + " !important",
-    border: "1px solid rgba(" + hexToRgb(blackColor) + ", .54)"
+    border: "1px solid rgba(" + hexToRgb(blackColor) + ", .54)",
   },
   switchIconChecked: {
     borderColor: primaryColor[0],
-    transform: "translateX(0px)!important"
+    transform: "translateX(0px)!important",
   },
   switchBar: {
     width: "30px",
     height: "15px",
     backgroundColor: "rgb(" + hexToRgb(grayColor[18]) + ")",
     borderRadius: "15px",
-    opacity: "0.7!important"
+    opacity: "0.7!important",
   },
   switchChecked: {
     "& + $switchBar": {
-      backgroundColor: "rgba(" + hexToRgb(primaryColor[0]) + ", 1) !important"
+      backgroundColor: "rgba(" + hexToRgb(primaryColor[0]) + ", 1) !important",
     },
     "& $switchIcon": {
-      borderColor: primaryColor[0]
-    }
+      borderColor: primaryColor[0],
+    },
   },
   label: {
     cursor: "pointer",
@@ -219,8 +219,26 @@ const styles = {
     fontSize: "14px",
     lineHeight: "1.428571429",
     fontWeight: "400",
-    display: "inline-flex"
-  }
+    display: "inline-flex",
+  },
+  addIconOnImage: {
+    transform: "translate(-110%, -700%)",
+    cursor: "pointer",
+    padding: "7px",
+    paddingRight: "2px",
+  },
+  editIconOnImage: {
+    transform: "translate(-215%, -700%)",
+    cursor: "pointer",
+    padding: "7px",
+    paddingRight: "2px",
+  },
+  deleteIconOnImage: {
+    transform: "translate(-215%, -700%)",
+    cursor: "pointer",
+    padding: "7px",
+    paddingRight: "2px",
+  },
 };
 
 export default styles;

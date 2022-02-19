@@ -1,46 +1,57 @@
 import * as React from "react";
 import { Route } from "react-router-dom";
 import { Layout } from "../hoc";
-import { Auth as auth } from "../components";
+import { Auth as auth, NotFoundPage } from "../components";
 import { Redirect } from "react-router-dom";
 import { LOGIN } from "../paths";
-import {
-  DashboardAdminRoutes,
-  DashboardStaffRoutes,
-  SuperAdminDashboardRoutes
-} from "./AdminRoutes";
+import { getRoutesOnLogin } from "../Utils";
 
 const PrivateRoute = ({
   component: Component,
   computedMatch: ComputedMatch,
-  header: Header,
-  openSubMenu: OpenSubMenu,
+  header,
+  openSubMenu,
+  defaultPathToPush: DefaultPathToPush,
+  isDependent = false,
   ...otherProps
 }) => {
   if (auth.getToken() !== null) {
-    let routes = [];
-    if (auth.getUserInfo().role.name === process.env.REACT_APP_SUPER_ADMIN) {
-      routes = SuperAdminDashboardRoutes;
-    } else if (auth.getUserInfo().role.name === process.env.REACT_APP_ADMIN) {
-      routes = DashboardAdminRoutes;
-    } else {
-      routes = DashboardStaffRoutes;
+    let routes = getRoutesOnLogin(auth);
+    let id = [];
+    if (isDependent) {
+      id = otherProps?.location?.pathname
+        ? otherProps.location.pathname.match(/\d+/g)
+        : [];
     }
+
     return (
       <>
         <Route
-          render={otherProps => (
+          render={(props) => (
             <>
               <Layout
                 dashboardRoutes={routes}
-                header={Header}
-                openSubMenu={OpenSubMenu}
+                header={header}
+                openSubMenu={openSubMenu}
               >
-                <Component
-                  {...otherProps}
-                  urlParams={ComputedMatch}
-                  header={Header}
-                />
+                {isDependent && id && id.length && (
+                  <Component
+                    {...props}
+                    urlParams={ComputedMatch}
+                    header={header}
+                    id={id[id.length - 1]}
+                    {...otherProps}
+                  />
+                )}
+                {isDependent && (!id || (id && !id.length)) && <NotFoundPage />}
+                {!isDependent && (
+                  <Component
+                    {...props}
+                    urlParams={ComputedMatch}
+                    header={header}
+                    {...otherProps}
+                  />
+                )}
               </Layout>
             </>
           )}
@@ -53,7 +64,7 @@ const PrivateRoute = ({
       <React.Fragment>
         <Redirect
           to={{
-            pathname: LOGIN
+            pathname: LOGIN,
           }}
         />
       </React.Fragment>

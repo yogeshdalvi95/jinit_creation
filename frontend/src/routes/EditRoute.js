@@ -7,7 +7,7 @@ import { LOGIN } from "../paths";
 import {
   DashboardAdminRoutes,
   DashboardStaffRoutes,
-  SuperAdminDashboardRoutes
+  SuperAdminDashboardRoutes,
 } from "./AdminRoutes";
 
 const EditRoute = ({
@@ -29,13 +29,15 @@ const EditRoute = ({
       routes = DashboardStaffRoutes;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let id = urlParams.get("id");
-    if (id) {
+    let id = otherProps?.location?.pathname
+      ? otherProps.location.pathname.match(/\d+/g)
+      : null;
+
+    if (id.length) {
       return (
         <>
           <Route
-            render={otherProps => (
+            render={(props) => (
               <>
                 <Layout
                   dashboardRoutes={routes}
@@ -43,10 +45,10 @@ const EditRoute = ({
                   openSubMenu={OpenSubMenu}
                 >
                   <Component
-                    {...otherProps}
+                    {...props}
                     urlParams={ComputedMatch}
                     header={Header}
-                    id={id}
+                    id={id[id.length - 1]}
                     isEdit={true}
                   />
                 </Layout>
@@ -65,7 +67,7 @@ const EditRoute = ({
       <React.Fragment>
         <Redirect
           to={{
-            pathname: LOGIN
+            pathname: LOGIN,
           }}
         />
       </React.Fragment>

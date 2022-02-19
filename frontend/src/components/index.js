@@ -47,3 +47,4 @@ export {
 } from "./DialogBox";
 export { RawMaterialDetail } from "./RawMaterialDetail";
 export { SellerDetails } from "./SellerDetails";
+export { MultiSelect } from "./MultiSelect"

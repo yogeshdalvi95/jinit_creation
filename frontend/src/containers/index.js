@@ -5,7 +5,7 @@ export {
   AddEditRawMaterial,
   AddEditUnit,
   AddDailyUsage,
-  Color
+  Color,
 } from "./RawMaterials";
 export { Login } from "./Login";
 export { Users } from "./Users";
@@ -20,10 +20,10 @@ export {
   GoodsReturn,
   AddGoodReturn,
   KachhaPurchaseDetails,
-  Ledger
+  Ledger,
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
-export { Designs, AddEditDesign } from "./Designs";
+export { Designs, AddEditDesign, DesignMaterials } from "./Designs";
 
 export {
   AddParties,
@@ -31,6 +31,6 @@ export {
   Sales,
   AddEditSales,
   AddEditSaleReturn,
-  SaleReturn
+  SaleReturn,
 } from "./Sales";
 export { AddOrder, ViewOrders, DepartmentSheet } from "./Orders";

@@ -243,17 +243,25 @@ module.exports = {
             [`day_${day}`]: value,
           };
 
-          monthlySheetValue = await strapi
-            .query("monthly-sheet")
-            .update({ id: isDataPresent.id }, objToUpdate, {
+          if (!isNaN(parseFloat(total)) && !parseFloat(total)) {
+            await strapi.query("monthly-sheet").delete({ id: isDataPresent.id }, {
               transacting: t,
               patch: true,
             })
-            .then((model) => model)
-            .catch((err) => {
-              console.log(err);
-              throw 500;
-            });
+          } else {
+            monthlySheetValue = await strapi
+              .query("monthly-sheet")
+              .update({ id: isDataPresent.id }, objToUpdate, {
+                transacting: t,
+                patch: true,
+              })
+              .then((model) => model)
+              .catch((err) => {
+                console.log(err);
+                throw 500;
+              });
+          }
+
         } else {
           total = value;
           objToUpdate = {

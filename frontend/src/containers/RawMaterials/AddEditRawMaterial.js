@@ -148,7 +148,7 @@ export default function AddEditRawMaterial(props) {
         setUnits(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => {});
+      .catch(err => { });
   };
 
   const getDepartmentData = async () => {
@@ -164,7 +164,7 @@ export default function AddEditRawMaterial(props) {
         setDepartments(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => {});
+      .catch(err => { });
   };
 
   const handleChangeAutoComplete = async (name, event, value) => {
@@ -403,9 +403,9 @@ export default function AddEditRawMaterial(props) {
             cancelBtnCssClass={cancelBtnClasses}
             focusCancelBtn
           >
-            Please make sure you have added the right Initial balance as balance
-            once added cannot be edited from here, are you sure you want to
-            proceed?
+            Please make sure you have added the right Initial balance.
+            Balance once added can be edited only if you haven't added any entry in the monthly sheet or in the purchases table for this particular raw material.
+            Do you want to proceed?
           </SweetAlert>
         );
       }
@@ -503,8 +503,8 @@ export default function AddEditRawMaterial(props) {
                     helperText={
                       hasError("name", error)
                         ? error["name"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("name", error)}
@@ -585,8 +585,8 @@ export default function AddEditRawMaterial(props) {
                           >
                             {hasError("category", error)
                               ? error["category"].map(error => {
-                                  return error + " ";
-                                })
+                                return error + " ";
+                              })
                               : null}
                           </FormHelperText>
                         </GridItem>
@@ -662,8 +662,8 @@ export default function AddEditRawMaterial(props) {
                           >
                             {hasError("color", error)
                               ? error["color"].map(error => {
-                                  return error + " ";
-                                })
+                                return error + " ";
+                              })
                               : null}
                           </FormHelperText>
                         </GridItem>
@@ -689,9 +689,9 @@ export default function AddEditRawMaterial(props) {
                     }}
                     value={
                       departments[
-                        departments.findIndex(function (item, i) {
-                          return item.id === formState.department;
-                        })
+                      departments.findIndex(function (item, i) {
+                        return item.id === formState.department;
+                      })
                       ] || null
                     }
                     /** For setting errors */
@@ -700,8 +700,8 @@ export default function AddEditRawMaterial(props) {
                     helperText={
                       hasError("department", error)
                         ? error["department"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("department", error)}
@@ -733,9 +733,9 @@ export default function AddEditRawMaterial(props) {
                     }}
                     value={
                       units[
-                        units.findIndex(function (item, i) {
-                          return item.id === formState.unit;
-                        })
+                      units.findIndex(function (item, i) {
+                        return item.id === formState.unit;
+                      })
                       ] || null
                     }
                     formControlProps={{
@@ -747,8 +747,8 @@ export default function AddEditRawMaterial(props) {
                     helperText={
                       hasError("unit", error)
                         ? error["unit"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("unit", error)}
@@ -799,8 +799,8 @@ export default function AddEditRawMaterial(props) {
                     helperText={
                       hasError("costing", error)
                         ? error["costing"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("costing", error)}
@@ -824,8 +824,8 @@ export default function AddEditRawMaterial(props) {
                     helperText={
                       hasError("balance", error)
                         ? error["balance"].map(error => {
-                            return error + " ";
-                          })
+                          return error + " ";
+                        })
                         : null
                     }
                     error={hasError("balance", error)}

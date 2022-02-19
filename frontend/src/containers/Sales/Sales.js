@@ -2,7 +2,7 @@ import {
   Backdrop,
   CircularProgress,
   IconButton,
-  makeStyles
+  makeStyles,
 } from "@material-ui/core";
 import { saveAs } from "file-saver";
 import React, { useState } from "react";
@@ -22,7 +22,7 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import { ADDSALES, EDITSALES, VIEWSALES } from "../../paths";
@@ -32,7 +32,7 @@ import {
   hasError,
   isEmptyString,
   plainDate,
-  dateToDDMMYYYY
+  dateToDDMMYYYY,
 } from "../../Utils";
 import { backend_sales } from "../../constants";
 import EditIcon from "@material-ui/icons/Edit";
@@ -47,7 +47,7 @@ export default function Sales() {
   const tableRef = React.createRef();
   const history = useHistory();
   const [filter, setFilter] = useState({
-    _sort: "date:desc"
+    _sort: "date:desc",
   });
   const classes = useStyles();
   const [openBackDrop, setBackDrop] = useState(false);
@@ -55,7 +55,7 @@ export default function Sales() {
     id: null,
     party_name: "",
     gst_no: "",
-    address: ""
+    address: "",
   });
 
   const [error, setError] = useState({});
@@ -63,43 +63,41 @@ export default function Sales() {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
-  const [
-    openDialogForSelectingParties,
-    setOpenDialogForSelectingParties
-  ] = useState(false);
+  const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
+    useState(false);
 
   const columns = [
     {
       title: "Bill Date",
       field: "date",
-      render: rowData => plainDate(new Date(rowData.date))
+      render: (rowData) => plainDate(new Date(rowData.date)),
     },
     { title: "Bill No", field: "bill_no" },
     {
       title: "Party Name",
-      field: "party.party_name"
+      field: "party.party_name",
     },
     {
       title: "Is GST Bill?",
       field: "party.party_name",
-      render: rowData => (rowData.is_gst_bill ? "Yes" : "No")
+      render: (rowData) => (rowData.is_gst_bill ? "Yes" : "No"),
     },
     {
       title: "Total Price",
       field: "total_price",
-      render: rowData => convertNumber(rowData.total_price, true)
-    }
+      render: (rowData) => convertNumber(rowData.total_price, true),
+    },
   ];
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -110,10 +108,10 @@ export default function Sales() {
   const getSaleData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -124,15 +122,15 @@ export default function Sales() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
@@ -145,82 +143,82 @@ export default function Sales() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
 
   /** Handle End Date filter change */
-  const handleEndDateChange = event => {
+  const handleEndDateChange = (event) => {
     delete error["date_lte"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
     if (endDate === "Invalid date") {
       endDate = null;
       delete filter["date_lte"];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
       endDate = new Date(endDate).toISOString();
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        date_lte: endDate
+        date_lte: endDate,
       }));
     }
   };
 
   /** Handle Start Date filter change */
-  const handleStartDateChange = event => {
+  const handleStartDateChange = (event) => {
     delete error["date_gte"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
       delete filter["date_gte"];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
       startDate = new Date(startDate).toISOString();
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        date_gte: startDate
+        date_gte: startDate,
       }));
     }
   };
 
-  const handleAddParties = data => {
-    setParty(party => ({
+  const handleAddParties = (data) => {
+    setParty((party) => ({
       ...party,
       gst_no: data.gst_no,
       id: data.id,
       party_name: data.party_name,
-      address: data.party_address
+      address: data.party_address,
     }));
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      party: data.id
+      party: data.id,
     }));
     handleCloseDialogForParties();
   };
@@ -232,21 +230,21 @@ export default function Sales() {
   const downloadExcelData = async () => {
     let isDatePresent = true;
     if (!filter.hasOwnProperty("date_gte")) {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        date_gte: ["Please select from date"]
+        date_gte: ["Please select from date"],
       }));
       isDatePresent = false;
     } else {
       delete error["date_gte"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
     }
     if (!filter.hasOwnProperty("date_lte")) {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        date_lte: ["Please select to date"]
+        date_lte: ["Please select to date"],
       }));
       isDatePresent = false;
     }
@@ -257,11 +255,11 @@ export default function Sales() {
           backend_sales_export_data,
           {
             fromDate: filter["date_gte"],
-            toDate: filter["date_lte"]
+            toDate: filter["date_lte"],
           },
           Auth.getToken()
         )
-          .then(res => {
+          .then((res) => {
             saveAs(
               new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
               `sales_data_from_${dateToDDMMYYYY(
@@ -270,19 +268,19 @@ export default function Sales() {
             );
             setBackDrop(false);
           })
-          .catch(err => {
+          .catch((err) => {
             setBackDrop(false);
-            setSnackBar(snackBar => ({
+            setSnackBar((snackBar) => ({
               ...snackBar,
               show: true,
               severity: "error",
-              message: "Error while exporting data"
+              message: "Error while exporting data",
             }));
           });
       } else {
-        setError(error => ({
+        setError((error) => ({
           ...error,
-          date_gte: ["From date cannot be greater than to date"]
+          date_gte: ["From date cannot be greater than to date"],
         }));
       }
     }
@@ -333,24 +331,24 @@ export default function Sales() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleStartDateChange(event)}
+                    onChange={(event) => handleStartDateChange(event)}
                     label="Sell date from"
                     name="date_gte"
                     value={filter.date_gte || null}
                     id="date_gte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_date_gte"}
                     isHelperText={hasError("date_gte", error)}
                     helperText={
                       hasError("date_gte", error)
-                        ? error["date_gte"].map(error => {
+                        ? error["date_gte"].map((error) => {
                             return error + " ";
                           })
                         : null
@@ -360,24 +358,24 @@ export default function Sales() {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleEndDateChange(event)}
+                    onChange={(event) => handleEndDateChange(event)}
                     label="Sale date to"
                     name="date_lte"
                     value={filter.date_lte || null}
                     id="date_lte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_date_lte"}
                     isHelperText={hasError("date_lte", error)}
                     helperText={
                       hasError("date_lte", error)
-                        ? error["date_lte"].map(error => {
+                        ? error["date_lte"].map((error) => {
                             return error + " ";
                           })
                         : null
@@ -387,53 +385,53 @@ export default function Sales() {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Bill Number"
                     value={filter.bill_no_contains || ""}
                     name="bill_no_contains"
                     id="bill_no_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomDropDown
                     id="is_gst_bill"
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="GST Bill?"
                     name="is_gst_bill"
                     value={filter.is_gst_bill || ""}
                     nameValue={[
                       { name: "Yes", value: "true" },
-                      { name: "No", value: "false" }
+                      { name: "No", value: "false" },
                     ]}
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Total Price From"
                     value={filter.total_price_gte || ""}
                     name="total_price_gte"
                     id="total_price_gte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Total Price To"
                     value={filter.total_price_lte || ""}
                     name="total_price_lte"
                     id="total_price_lte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -444,13 +442,13 @@ export default function Sales() {
                   sm={12}
                   md={7}
                   style={{
-                    margin: "27px 0px 0px"
+                    margin: "27px 0px 0px",
                   }}
                 >
                   <GridContainer
                     style={{
                       border: "1px solid #C0C0C0",
-                      borderRadius: "10px"
+                      borderRadius: "10px",
                     }}
                   >
                     <GridItem
@@ -458,7 +456,7 @@ export default function Sales() {
                       sm={12}
                       md={7}
                       style={{
-                        margin: "5px 0px 0px 0px"
+                        margin: "5px 0px 0px 0px",
                       }}
                     >
                       <GridContainer style={{ dispay: "flex" }}>
@@ -492,16 +490,16 @@ export default function Sales() {
                     <GridItem xs={12} sm={12} md={2}>
                       <IconButton
                         onClick={() => {
-                          setParty(party => ({
+                          setParty((party) => ({
                             ...party,
                             gst_no: "",
                             id: null,
                             party_name: "",
-                            address: ""
+                            address: "",
                           }));
                           delete filter["party"];
-                          setFilter(filter => ({
-                            ...filter
+                          setFilter((filter) => ({
+                            ...filter,
                           }));
                         }}
                       >
@@ -515,7 +513,7 @@ export default function Sales() {
                   sm={12}
                   md={4}
                   style={{
-                    marginTop: "27px"
+                    marginTop: "27px",
                   }}
                 >
                   <Button
@@ -531,7 +529,7 @@ export default function Sales() {
                     color="primary"
                     onClick={() => {
                       setFilter({
-                        _sort: "date:desc"
+                        _sort: "date:desc",
                       });
                       tableRef.current.onQueryChange();
                     }}
@@ -553,25 +551,24 @@ export default function Sales() {
                 tableRef={tableRef}
                 title="Sales"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getSaleData(query.page + 1, query.pageSize);
                 }}
                 actions={[
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      console.log(`${EDITSALES}?id=${rowData.id}`);
                       history.push(`${EDITSALES}?id=${rowData.id}`);
-                    }
+                    },
                   }),
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <VisibilityIcon fontSize="small" />,
                     tooltip: "View",
                     onClick: (event, rowData) => {
                       history.push(`${VIEWSALES}?id=${rowData.id}`);
-                    }
-                  })
+                    },
+                  }),
                 ]}
                 options={{
                   pageSize: 10,
@@ -579,7 +576,7 @@ export default function Sales() {
                   search: false,
                   sorting: true,
                   thirdSortClick: false,
-                  pageSizeOptions: [10, 20, 50]
+                  pageSizeOptions: [10, 20, 50],
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);

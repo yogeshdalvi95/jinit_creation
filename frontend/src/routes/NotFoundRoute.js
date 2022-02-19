@@ -6,7 +6,7 @@ import { Layout } from "../hoc";
 import {
   DashboardAdminRoutes,
   DashboardStaffRoutes,
-  SuperAdminDashboardRoutes
+  SuperAdminDashboardRoutes,
 } from "./AdminRoutes";
 
 const NotFoundRoute = ({
@@ -15,7 +15,6 @@ const NotFoundRoute = ({
   ...otherProps
 }) => {
   if (auth.getToken() !== null) {
-    console.log("Hrrererere");
     let routes = [];
     if (auth.getUserInfo().role.name === process.env.REACT_APP_SUPER_ADMIN) {
       routes = SuperAdminDashboardRoutes;
@@ -26,7 +25,7 @@ const NotFoundRoute = ({
     }
     return (
       <Route
-        render={otherProps => (
+        render={(otherProps) => (
           <>
             <Layout
               dashboardRoutes={routes}

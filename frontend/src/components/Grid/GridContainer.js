@@ -9,9 +9,9 @@ import classNames from "classnames";
 const styles = {
   grid: {
     margin: "0 -15px !important",
-    width: "unset"
+    width: "unset",
   },
-  noWidthGrid: {}
+  noWidthGrid: {},
 };
 
 const useStyles = makeStyles(styles);
@@ -22,7 +22,7 @@ export default function GridContainer(props) {
   const cardHeaderClasses = classNames({
     [classes.noWidthGrid]: noWidth !== undefined,
     [classes.grid]: noWidth === undefined || noWidth === null,
-    [className]: className !== undefined
+    [className]: className !== undefined,
   });
   return (
     <Grid container {...rest} className={cardHeaderClasses}>
@@ -32,5 +32,5 @@ export default function GridContainer(props) {
 }
 
 GridContainer.propTypes = {
-  children: PropTypes.node
+  children: PropTypes.node,
 };

@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_color_quantity_color_quantities",
+  "info": {
+    "name": "color-quantity",
+    "icon": "address-card"
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "float"
+    }
+  }
+}

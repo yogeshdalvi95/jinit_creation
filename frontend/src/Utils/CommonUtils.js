@@ -1,6 +1,11 @@
 import moment from "moment";
+import {
+  DashboardAdminRoutes,
+  DashboardStaffRoutes,
+  SuperAdminDashboardRoutes,
+} from "../routes/AdminRoutes";
 
-export const getInitials = name => {
+export const getInitials = (name) => {
   let rgx = new RegExp(/(\p{L}{1})\p{L}+/, "gu");
 
   let initials = [...name.matchAll(rgx)] || [];
@@ -20,12 +25,12 @@ export function isSameDay(d1, d2) {
   );
 }
 
-export const isEmptyString = val => {
+export const isEmptyString = (val) => {
   let result = !val || /^\s*$/.test(val);
   return result;
 };
 
-export const getMonthName = val => {
+export const getMonthName = (val) => {
   const monthNames = [
     "January",
     "February",
@@ -38,13 +43,13 @@ export const getMonthName = val => {
     "September",
     "October",
     "November",
-    "December"
+    "December",
   ];
 
   return monthNames[parseInt(val) - 1];
 };
 
-export const isNumeric = str => {
+export const isNumeric = (str) => {
   if (typeof str != "string") return false; // we only process strings!
   return (
     !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
@@ -64,17 +69,17 @@ export const onlyUnique = (value, index, self) => {
   return self.indexOf(value) === index;
 };
 
-export const plainDate = data => {
+export const plainDate = (data) => {
   var newDate2 = moment(data).format("DD-MM-YYYY");
   return newDate2;
 };
 
-export const dateToDDMMYYYY = data => {
+export const dateToDDMMYYYY = (data) => {
   var newDate2 = moment(data).format("DD-MMM-YYYY");
   return newDate2;
 };
 
-export const getValidDate = date => {
+export const getValidDate = (date) => {
   if (date) {
     if (new Date(date) == new Date(1970, 1, 1)) {
       return null;
@@ -86,7 +91,7 @@ export const getValidDate = date => {
   }
 };
 
-export const convertNumberToAmount = num => {
+export const convertNumberToAmount = (num) => {
   let x = num;
   x = x.toString();
   var lastThree = x.substring(x.length - 3);
@@ -101,7 +106,7 @@ export const convertNumber = (val, isAmount) => {
   if (isAmount) {
     num = new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "INR"
+      currency: "INR",
     }).format(val);
   } else {
     num = new Intl.NumberFormat("en-IN", {}).format(val);
@@ -115,4 +120,16 @@ export function formatDate(value) {
   const month = date.toLocaleString("default", { month: "short" });
   const year = date.toLocaleString("default", { year: "numeric" });
   return day + "-" + month + "-" + year;
+}
+
+export function getRoutesOnLogin(auth) {
+  let routes = [];
+  if (auth.getUserInfo().role.name === process.env.REACT_APP_SUPER_ADMIN) {
+    routes = SuperAdminDashboardRoutes;
+  } else if (auth.getUserInfo().role.name === process.env.REACT_APP_ADMIN) {
+    routes = DashboardAdminRoutes;
+  } else {
+    routes = DashboardStaffRoutes;
+  }
+  return routes;
 }

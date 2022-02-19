@@ -30,4 +30,39 @@ module.exports = {
       totalCount: count, // total row number
     };
   },
+
+  async getSelectedRawMaterials(ctx) {
+    const { design, isColor, isRawMaterial } = ctx.request.query;
+
+    let query = {};
+    if (isRawMaterial) {
+      query = {
+        ...query,
+        ready_material: {
+          $null: true,
+        },
+      };
+    } else {
+      query = {
+        ...query,
+        raw_material: {
+          $null: true,
+        },
+      };
+    }
+    if (!isColor) {
+      query = {
+        ...query,
+        color: {
+          $null: true,
+        },
+      };
+    }
+    const data = await strapi.db.query("api::designs-and-material").find(
+      {
+        where: query,
+      },
+      ["id"]
+    );
+  },
 };

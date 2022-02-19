@@ -15,7 +15,7 @@ import {
   GridItem,
   RawMaterialDetail,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 import AddOutlinedIcon from "@material-ui/icons/AddOutlined";
 import CheckIcon from "@material-ui/icons/Check";
@@ -34,7 +34,7 @@ import {
   backend_raw_material_and_quantity_for_ready_material_for_update_quantity,
   backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials,
   apiUrl,
-  backend_ready_materials_change_color_dependency
+  backend_ready_materials_change_color_dependency,
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, Input } from "@material-ui/core";
@@ -43,7 +43,7 @@ import {
   convertNumber,
   hasError,
   isEmptyString,
-  setErrors
+  setErrors,
 } from "../../Utils";
 import validationForm from "./validationform.json";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -57,7 +57,7 @@ export default function AddEditReadyMaterial(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
     ready_material: null,
-    _sort: "updated_at:desc"
+    _sort: "updated_at:desc",
   });
   const history = useHistory();
   /** VIMP to check if the data is used for viewing */
@@ -72,7 +72,7 @@ export default function AddEditReadyMaterial(props) {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const [openBackDrop, setBackDrop] = useState(false);
@@ -88,7 +88,7 @@ export default function AddEditReadyMaterial(props) {
     addNewImageUrl: null,
     showEditPreviewImage: false,
     showAddPreviewImage: true,
-    isColorVariationAvailable: false
+    isColorVariationAvailable: false,
   });
   const [error, setError] = React.useState({});
 
@@ -98,39 +98,39 @@ export default function AddEditReadyMaterial(props) {
       field: "raw_material.id",
       editable: "never",
       sorting: false,
-      render: rowData =>
-        rowData.raw_material ? "# " + rowData.raw_material.id : "---"
+      render: (rowData) =>
+        rowData.raw_material ? "# " + rowData.raw_material.id : "---",
     },
     {
       title: "Name",
       editable: "never",
       sorting: false,
-      render: rowData => (rowData.name ? rowData.name : "---")
+      render: (rowData) => (rowData.name ? rowData.name : "---"),
     },
     {
       title: "Die ? ",
       field: "is_die",
       editable: "never",
       sorting: false,
-      render: rowData =>
-        rowData.raw_material && rowData.raw_material.is_die ? "Yes" : "No"
+      render: (rowData) =>
+        rowData.raw_material && rowData.raw_material.is_die ? "Yes" : "No",
     },
     {
       title: "Cost Per Raw Material",
       field: "costPerPiece",
       editable: "never",
       sorting: false,
-      render: rowData =>
-        rowData.costPerPiece + " / " + rowData.raw_material.unit
+      render: (rowData) =>
+        rowData.costPerPiece + " / " + rowData.raw_material.unit,
     },
     {
       title: "Quantity",
       field: "quantity",
       sorting: false,
-      render: rowData => rowData.quantity,
-      editComponent: props => (
+      render: (rowData) => rowData.quantity,
+      editComponent: (props) => (
         <CustomInput
-          onChange={e => props.onChange(e.target.value)}
+          onChange={(e) => props.onChange(e.target.value)}
           type="number"
           labelText="Quantity"
           name="quantity"
@@ -138,27 +138,27 @@ export default function AddEditReadyMaterial(props) {
           id="quantity"
           noMargin
           formControlProps={{
-            fullWidth: true
+            fullWidth: true,
           }}
         />
-      )
+      ),
     },
     {
       title: "Total Cost",
       field: "totalCost",
       editable: "never",
       sorting: false,
-      render: rowData => convertNumber(rowData.totalCost, true)
+      render: (rowData) => convertNumber(rowData.totalCost, true),
     },
     {
       title: "Color Dependent",
       field: "isColorDependent",
       editable: "never",
       sorting: false,
-      render: rowData => {
+      render: (rowData) => {
         return rowData.isColorDependent ? "true" : "false";
-      }
-    }
+      },
+    },
 
     // {
     //   title: "Price per unit",
@@ -170,7 +170,7 @@ export default function AddEditReadyMaterial(props) {
 
   const [
     openDialogForSelectingRawMaterial,
-    setOpenDialogForSelectingRawMaterial
+    setOpenDialogForSelectingRawMaterial,
   ] = useState(false);
 
   useEffect(() => {
@@ -183,10 +183,10 @@ export default function AddEditReadyMaterial(props) {
     }
   }, []);
 
-  const setData = data => {
+  const setData = (data) => {
     let isImagePresent =
       data.images && data.images.length && data.images[0].url ? true : false;
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       material_no: data.material_no,
       total_quantity: data.total_quantity,
@@ -201,27 +201,27 @@ export default function AddEditReadyMaterial(props) {
       image: isImagePresent ? data.images[0].url : null,
       showAddPreviewImage: isImagePresent ? false : true,
       showEditPreviewImage: isImagePresent ? true : false,
-      isColorVariationAvailable: data.isColorVariationAvailable
+      isColorVariationAvailable: data.isColorVariationAvailable,
     }));
 
     filter["ready_material"] = data.id;
-    setFilter(filter => ({
-      ...filter
+    setFilter((filter) => ({
+      ...filter,
     }));
     tableRef.current.onQueryChange();
   };
 
   const handleRemoveImage = () => {
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       image: null,
       showAddPreviewImage: true,
       showEditPreviewImage: false,
-      addNewImageUrl: null
+      addNewImageUrl: null,
     }));
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     let isValid = true;
     let final_cost = formState.final_cost;
     let val = 0;
@@ -234,27 +234,27 @@ export default function AddEditReadyMaterial(props) {
       let oldValue = formState.add_cost;
       final_cost = final_cost - oldValue;
       final_cost = final_cost + val;
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         final_cost: final_cost,
         add_cost: val,
-        final_cost_formatted: convertNumber(final_cost.toFixed(2), true)
+        final_cost_formatted: convertNumber(final_cost.toFixed(2), true),
       }));
     }
 
     if (isValid) {
       delete error[event.target.name];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
 
-  const handleCheckValidation = event => {
+  const handleCheckValidation = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -275,7 +275,7 @@ export default function AddEditReadyMaterial(props) {
     }
   };
 
-  const createFormData = body => {
+  const createFormData = (body) => {
     const data = new FormData();
     data.append("files.images", formState.image);
     data.append("data", JSON.stringify(body));
@@ -291,7 +291,7 @@ export default function AddEditReadyMaterial(props) {
         : formState.final_cost,
       add_cost: isEmptyString(formState.add_cost) ? 0 : formState.add_cost,
       notes: formState.notes,
-      isColorVariationAvailable: formState.isColorVariationAvailable
+      isColorVariationAvailable: formState.isColorVariationAvailable,
     };
 
     if (
@@ -309,53 +309,53 @@ export default function AddEditReadyMaterial(props) {
         obj,
         Auth.getToken()
       )
-        .then(res => {
-          setSnackBar(snackBar => ({
+        .then((res) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "success",
-            message: "Ready Material Edited Successfully"
+            message: "Ready Material Edited Successfully",
           }));
-          setFormState(formState => ({
+          setFormState((formState) => ({
             ...formState,
-            id: res.data.id
+            id: res.data.id,
           }));
         })
-        .catch(err => {
+        .catch((err) => {
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
           } else {
             error = "Error Adding Raw Material";
           }
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: error
+            message: error,
           }));
         });
     } else {
       let setRef = tableRef.current;
       await providerForPost(backend_ready_materials, obj, Auth.getToken())
-        .then(res => {
-          setFilter(filter => ({
+        .then((res) => {
+          setFilter((filter) => ({
             ready_material: res.data.id,
-            ...filter
+            ...filter,
           }));
-          setFormState(formState => ({
+          setFormState((formState) => ({
             ...formState,
-            id: res.data.id
+            id: res.data.id,
           }));
           setRef.onQueryChange();
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "success",
-            message: "Ready Material Added Successfully"
+            message: "Ready Material Added Successfully",
           }));
         })
-        .catch(err => {
+        .catch((err) => {
           setRef.onQueryChange();
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
@@ -363,22 +363,22 @@ export default function AddEditReadyMaterial(props) {
           } else {
             error = "Error Adding Raw Material";
           }
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: error
+            message: error,
           }));
         });
     }
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -394,39 +394,39 @@ export default function AddEditReadyMaterial(props) {
       let data = {
         ready_material: formState.id,
         raw_material: val.id,
-        quantity: 0
+        quantity: 0,
       };
       await providerForPost(
         backend_raw_material_and_quantity_for_ready_material,
         data,
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
           } else {
             error = "Error Adding Raw Material";
           }
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: error
+            message: error,
           }));
           setBackDrop(false);
         });
       setRef.onQueryChange();
     } else {
       setBackDrop(false);
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Ready Material Not added"
+        message: "Ready Material Not added",
       }));
     }
   };
@@ -438,10 +438,10 @@ export default function AddEditReadyMaterial(props) {
   const getRawMaterialsData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -456,16 +456,16 @@ export default function AddEditReadyMaterial(props) {
           method: "GET",
           headers: {
             "content-type": "application/json",
-            Authorization: "Bearer " + Auth.getToken()
-          }
+            Authorization: "Bearer " + Auth.getToken(),
+          },
         }
       )
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: convertData(result.data, page),
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
@@ -474,14 +474,14 @@ export default function AddEditReadyMaterial(props) {
   const convertData = (allData, page) => {
     let x = [];
     let count = 0;
-    allData.map(data => {
+    allData.map((data) => {
       let raw_material = {
         id: "",
         name: "",
         color: "",
         size: "",
         unit: "",
-        department: ""
+        department: "",
       };
       let unit = data.raw_material.unit ? data.raw_material.unit.name : "--";
       let department = data.raw_material.department
@@ -502,7 +502,7 @@ export default function AddEditReadyMaterial(props) {
           unit: unit,
           department: department,
           balance: data.raw_material.balance,
-          is_die: data.raw_material.is_die
+          is_die: data.raw_material.is_die,
         };
       }
       let quantity = 0;
@@ -526,7 +526,7 @@ export default function AddEditReadyMaterial(props) {
           ? 0
           : data.raw_material.costing,
         totalCost: totalCost,
-        isColorDependent: data.isColorDependent
+        isColorDependent: data.isColorDependent,
       };
       count = count + 1;
       x.push(dataToSend);
@@ -534,23 +534,7 @@ export default function AddEditReadyMaterial(props) {
     return x;
   };
 
-  const handleEditRawMaterial = () => {};
-
-  const orderFunc = (columnId, direction) => {
-    let orderByColumn;
-    let orderBy = "";
-    if (columnId >= 0) {
-      orderByColumn = columns[columnId]["field"];
-    }
-    orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
-      ...filter,
-      _sort: orderBy
-    }));
-    tableRef.current.onQueryChange();
-  };
-
-  const handleFileChange = async event => {
+  const handleFileChange = async (event) => {
     event.persist();
     if (
       event.target.files[0].type === "image/png" ||
@@ -567,24 +551,24 @@ export default function AddEditReadyMaterial(props) {
         setBackDrop(false);
         imagePreview = imagePreview.data.link;
       }
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         image: file,
         addNewImageUrl: imagePreview,
         showAddPreviewImage: true,
-        showEditPreviewImage: false
+        showEditPreviewImage: false,
       }));
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Image should be in PNG,JPG,JPEG format"
+        message: "Image should be in PNG,JPG,JPEG format",
       }));
     }
   };
 
-  const resizeImage = async file =>
+  const resizeImage = async (file) =>
     new Promise((resolve, reject) => {
       var reader = new FileReader();
       reader.readAsDataURL(file);
@@ -636,13 +620,13 @@ export default function AddEditReadyMaterial(props) {
 
         resolve({
           data: {
-            link: newUrl
-          }
+            link: newUrl,
+          },
         });
       };
     });
 
-  const handleChangeIsColorDependent = async row => {
+  const handleChangeIsColorDependent = async (row) => {
     let setRef = tableRef.current;
     setBackDrop(true);
     let status = false;
@@ -654,39 +638,39 @@ export default function AddEditReadyMaterial(props) {
     if (row.dataId) {
       let data = {
         status: status,
-        id: row.dataId
+        id: row.dataId,
       };
       await providerForPost(
         backend_ready_materials_change_color_dependency,
         data,
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
           } else {
             error = "Error Adding Changing Color Status";
           }
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: error
+            message: error,
           }));
           setBackDrop(false);
         });
       setRef.onQueryChange();
     } else {
       setBackDrop(false);
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Error"
+        message: "Error",
       }));
     }
   };
@@ -722,21 +706,21 @@ export default function AddEditReadyMaterial(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   labelText="Material Number"
                   name="material_no"
                   disabled={isView}
                   value={formState.material_no}
                   id="material_no"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   /** For setting errors */
                   helperTextId={"helperText_material_no"}
                   isHelperText={hasError("material_no", error)}
                   helperText={
                     hasError("material_no", error)
-                      ? error["material_no"].map(error => {
+                      ? error["material_no"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -752,13 +736,13 @@ export default function AddEditReadyMaterial(props) {
                   value={formState.final_cost_formatted}
                   id="final_cost_formatted"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                 />
               </GridItem>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   type="number"
                   labelText="Additional Cost"
                   name="add_cost"
@@ -766,13 +750,13 @@ export default function AddEditReadyMaterial(props) {
                   value={formState.add_cost}
                   id="add_cost"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   helperTextId={"helperText_add_cost"}
                   isHelperText={hasError("add_cost", error)}
                   helperText={
                     hasError("add_cost", error)
-                      ? error["add_cost"].map(error => {
+                      ? error["add_cost"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -782,7 +766,7 @@ export default function AddEditReadyMaterial(props) {
               </GridItem>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   type="number"
                   labelText="Total Quantity"
                   name="total_quantity"
@@ -790,13 +774,13 @@ export default function AddEditReadyMaterial(props) {
                   value={formState.total_quantity}
                   id="total_quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   helperTextId={"helperText_total_quantity"}
                   isHelperText={hasError("total_quantity", error)}
                   helperText={
                     hasError("total_quantity", error)
-                      ? error["total_quantity"].map(error => {
+                      ? error["total_quantity"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -814,10 +798,10 @@ export default function AddEditReadyMaterial(props) {
                         checked={
                           formState.isColorVariationAvailable ? true : false
                         }
-                        onChange={event => {
-                          setFormState(formState => ({
+                        onChange={(event) => {
+                          setFormState((formState) => ({
                             ...formState,
-                            isColorVariationAvailable: event.target.checked
+                            isColorVariationAvailable: event.target.checked,
                           }));
                         }}
                         disabled={isView}
@@ -825,12 +809,12 @@ export default function AddEditReadyMaterial(props) {
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
                           thumb: classes.switchIcon,
-                          track: classes.switchBar
+                          track: classes.switchBar,
                         }}
                       />
                     }
                     classes={{
-                      label: classes.label
+                      label: classes.label,
                     }}
                     label="Is Color Variation Available?"
                   />
@@ -848,7 +832,7 @@ export default function AddEditReadyMaterial(props) {
                       alt="ready_material_photo"
                       style={{
                         height: "15rem",
-                        width: "30rem"
+                        width: "30rem",
                       }}
                       loader={<CircularProgress />}
                       className={classes.UploadImage}
@@ -861,7 +845,7 @@ export default function AddEditReadyMaterial(props) {
                       alt="ready_material_photo"
                       style={{
                         height: "15rem",
-                        width: "30rem"
+                        width: "30rem",
                       }}
                       loader={<CircularProgress />}
                       className={classes.DefaultNoImage}
@@ -874,7 +858,7 @@ export default function AddEditReadyMaterial(props) {
                         loader={<CircularProgress />}
                         style={{
                           height: "15rem",
-                          width: "30rem"
+                          width: "30rem",
                         }}
                         className={classes.UploadImage}
                       />
@@ -888,7 +872,7 @@ export default function AddEditReadyMaterial(props) {
                     fullWidth
                     id={"ready_material_photo"}
                     name={"ready_material_photo"}
-                    onClick={event => {
+                    onClick={(event) => {
                       event.target.value = null;
                     }}
                     onChange={handleFileChange}
@@ -932,21 +916,24 @@ export default function AddEditReadyMaterial(props) {
                   id="notes"
                   name="notes"
                   disabled={isView}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   value={formState.notes}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   inputProps={{
                     multiline: true,
-                    rows: 3
+                    rows: 3,
                   }}
                 />
               </GridItem>
             </GridContainer>
             {isView ? null : (
               <CardFooter>
-                <Button color="primary" onClick={e => handleCheckValidation(e)}>
+                <Button
+                  color="primary"
+                  onClick={(e) => handleCheckValidation(e)}
+                >
                   {formState.id ? "Save" : "Save and Add Raw Materials"}
                 </Button>
               </CardFooter>
@@ -976,329 +963,7 @@ export default function AddEditReadyMaterial(props) {
                   </div>
                 </GridItem>
               </GridContainer>
-
-              {formState.id ? (
-                <GridContainer>
-                  <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
-                    <div className={classes.block}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={
-                              filter["raw_material.is_die"] ? true : false
-                            }
-                            onChange={event => {
-                              if (event.target.checked) {
-                                setFilter(filter => ({
-                                  ...filter,
-                                  "raw_material.is_die": event.target.checked
-                                }));
-                              } else {
-                                delete filter["raw_material.is_die"];
-                                setFilter(filter => ({
-                                  ...filter
-                                }));
-                              }
-                            }}
-                            classes={{
-                              switchBase: classes.switchBase,
-                              checked: classes.switchChecked,
-                              thumb: classes.switchIcon,
-                              track: classes.switchBar
-                            }}
-                          />
-                        }
-                        classes={{
-                          label: classes.label
-                        }}
-                        label="Search Only Die's"
-                      />
-                    </div>
-                  </GridItem>
-                  <GridItem xs={12} sm={3} md={3} className={classes.switchBox}>
-                    <div className={classes.block}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={filter["isColorDependent"] ? true : false}
-                            onChange={event => {
-                              if (event.target.checked) {
-                                setFilter(filter => ({
-                                  ...filter,
-                                  isColorDependent: event.target.checked
-                                }));
-                              } else {
-                                delete filter["isColorDependent"];
-                                setFilter(filter => ({
-                                  ...filter
-                                }));
-                              }
-                            }}
-                            classes={{
-                              switchBase: classes.switchBase,
-                              checked: classes.switchChecked,
-                              thumb: classes.switchIcon,
-                              track: classes.switchBar
-                            }}
-                          />
-                        }
-                        classes={{
-                          label: classes.label
-                        }}
-                        label="Search Color Dependent Raw Material"
-                      />
-                    </div>
-                  </GridItem>
-                  <GridItem xs={12} sm={3} md={3}>
-                    <CustomInput
-                      onChange={e => {
-                        if (isEmptyString(e.target.value)) {
-                          delete filter["raw_material.name_contains"];
-                          setFilter(filter => ({
-                            ...filter
-                          }));
-                        } else {
-                          setFilter(filter => ({
-                            ...filter,
-                            "raw_material.name_contains": e.target.value
-                          }));
-                        }
-                      }}
-                      type="text"
-                      labelText="Raw Material Name"
-                      name="raw_material.name_contains"
-                      noMargin
-                      value={filter["raw_material.name_contains"]}
-                      id="raw_material.name_contains"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-
-                  <GridItem xs={12} sm={12} md={4}>
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        tableRef.current.onQueryChange();
-                      }}
-                    >
-                      Search
-                    </Button>
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        delete filter["raw_material.is_die"];
-                        delete filter["isColorDependent"];
-                        delete filter["raw_material.name_contains"];
-                        setFilter(filter => ({
-                          ...filter
-                        }));
-                        tableRef.current.onQueryChange();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </GridItem>
-                </GridContainer>
-              ) : null}
               <br />
-              <Table
-                tableRef={tableRef}
-                title="Raw Materials"
-                columns={columns}
-                data={async query => {
-                  return await getRawMaterialsData(
-                    query.page + 1,
-                    query.pageSize
-                  );
-                }}
-                detailPanel={rowData => {
-                  return (
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <RawMaterialDetail
-                          raw_material={rowData.raw_material}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                  );
-                }}
-                localization={{
-                  body: {
-                    editRow: {
-                      deleteText: `Are you sure you want to delete this Raw Material?`,
-                      saveTooltip: "Save"
-                    }
-                  }
-                }}
-                actions={
-                  !isView
-                    ? [
-                        rowData => ({
-                          icon: () =>
-                            rowData.raw_material.color !== "" ? (
-                              rowData.isColorDependent ? (
-                                <ClearIcon color="error" />
-                              ) : (
-                                <CheckIcon />
-                              )
-                            ) : (
-                              <CheckIcon color="disabled" />
-                            ),
-                          disabled:
-                            !rowData.raw_material.color ||
-                            rowData.raw_material.color === "",
-                          tooltip:
-                            rowData.raw_material.color !== ""
-                              ? rowData.isColorDependent
-                                ? "Uncheck if not color dependent"
-                                : "Check if color dependent"
-                              : "Cannot check as raw material doesn't have any color",
-                          onClick: (event, rowData) =>
-                            !rowData.raw_material.color ||
-                            rowData.raw_material.color === ""
-                              ? null
-                              : handleChangeIsColorDependent(rowData)
-                        })
-                      ]
-                    : null
-                }
-                editable={
-                  isView
-                    ? null
-                    : {
-                        onRowUpdate: (newData, oldData) =>
-                          new Promise((resolve, reject) => {
-                            setTimeout(async () => {
-                              let num = parseFloat(newData.quantity);
-                              let isError = false;
-                              if (!isNaN(num)) {
-                                if (num <= 0) {
-                                  isError = true;
-                                }
-                              } else {
-                                isError = true;
-                              }
-                              if (isError) {
-                                setSnackBar(snackBar => ({
-                                  ...snackBar,
-                                  show: true,
-                                  severity: "error",
-                                  message:
-                                    "Quantity should be a positive number"
-                                }));
-                              } else {
-                                let obj = {
-                                  id: newData.dataId,
-                                  newQuantity: newData.quantity,
-                                  oldQuantity: oldData.quantity,
-                                  costPerPiece: newData.costPerPiece,
-                                  ready_material: formState.id
-                                };
-                                await providerForPost(
-                                  backend_raw_material_and_quantity_for_ready_material_for_update_quantity,
-                                  obj,
-                                  Auth.getToken()
-                                )
-                                  .then(res => {
-                                    setFormState(formState => ({
-                                      ...formState,
-                                      final_cost: res.data.final_cost,
-                                      final_cost_formatted: convertNumber(
-                                        parseFloat(res.data.final_cost).toFixed(
-                                          2
-                                        ),
-                                        true
-                                      )
-                                    }));
-                                  })
-                                  .catch(err => {
-                                    setSnackBar(snackBar => ({
-                                      ...snackBar,
-                                      show: true,
-                                      severity: "error",
-                                      message:
-                                        "Error updating quantity of " +
-                                        oldData.name
-                                    }));
-                                  });
-                              }
-                              resolve();
-                            }, 1000);
-                          }),
-                        onRowDelete: oldData =>
-                          new Promise(resolve => {
-                            setTimeout(async () => {
-                              let body = {
-                                id: oldData.dataId,
-                                quantity: oldData.quantity,
-                                costPerPiece: oldData.costPerPiece,
-                                ready_material: formState.id
-                              };
-                              await providerForPost(
-                                backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials,
-                                body,
-                                Auth.getToken()
-                              )
-                                .then(async res => {
-                                  setSnackBar(snackBar => ({
-                                    ...snackBar,
-                                    show: true,
-                                    severity: "success",
-                                    message:
-                                      "Successfully deleted " + oldData.name
-                                  }));
-                                  setFormState(formState => ({
-                                    ...formState,
-                                    final_cost: res.data.final_cost,
-                                    final_cost_formatted: convertNumber(
-                                      parseFloat(res.data.final_cost).toFixed(
-                                        2
-                                      ),
-                                      true
-                                    )
-                                  }));
-                                })
-                                .catch(err => {
-                                  setSnackBar(snackBar => ({
-                                    ...snackBar,
-                                    show: true,
-                                    severity: "error",
-                                    message: "Error deleting " + oldData.name
-                                  }));
-                                });
-                              resolve();
-                            }, 1000);
-                          })
-                      }
-                }
-                options={{
-                  pageSizeOptions: [20],
-                  pageSize: 20,
-                  actionsColumnIndex: -1,
-                  search: false,
-                  sorting: true,
-                  thirdSortClick: false,
-                  headerStyle: {
-                    fontFamily: "Montserrat",
-                    fontWeight: 500,
-                    color: "#8A8A97",
-                    borderBottom: "solid #E0E0E0 2px",
-                    fontSize: "1rem"
-                  },
-                  paginationStyle: {
-                    justifyContent: "center"
-                  },
-                  rowStyle: rowData => ({
-                    backgroundColor:
-                      !isView && rowData.isLatest ? "#F3F3F3" : "#FFFFFF"
-                  })
-                }}
-                onOrderChange={(orderedColumnId, orderDirection) => {
-                  orderFunc(orderedColumnId, orderDirection);
-                }}
-              />
             </>
           </CardBody>
         </Card>

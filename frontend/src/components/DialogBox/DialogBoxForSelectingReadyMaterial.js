@@ -6,7 +6,7 @@ import {
   CustomInput,
   GridContainer,
   GridItem,
-  Table
+  Table,
 } from "../../components";
 // core components
 import { apiUrl, backend_ready_materials } from "../../constants";
@@ -18,7 +18,7 @@ import {
   DialogContentText,
   DialogTitle,
   makeStyles,
-  Typography
+  Typography,
 } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import no_image_icon from "../../assets/img/no_image_icon.png";
@@ -33,15 +33,14 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
   const classes = useStyles();
   const [selectedReadyMaterial, setSeletedReadyMaterial] = useState([]);
   const [filter, setFilter] = useState({
-    _sort: "id:desc"
+    _sort: "id:desc",
   });
 
   const columns = [
-    { title: "id", field: "id", render: rowData => `#${rowData.id}` },
     { title: "Material No", field: "material_no" },
     {
       title: "Image",
-      render: rowData => (
+      render: (rowData) => (
         <div className={classes.imageDivInTable}>
           {rowData.images && rowData.images.length && rowData.images[0].url ? (
             <img
@@ -50,7 +49,7 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
               loader={<CircularProgress />}
               style={{
                 height: "5rem",
-                width: "10rem"
+                width: "10rem",
               }}
               className={classes.UploadImage}
             />
@@ -60,31 +59,31 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
               alt="ready_material_photo"
               style={{
                 height: "5rem",
-                width: "10rem"
+                width: "10rem",
               }}
               loader={<CircularProgress />}
               className={classes.DefaultNoImage}
             />
           )}
         </div>
-      )
+      ),
     },
     {
       title: "Available Quantity",
-      field: "total_quantity"
+      field: "total_quantity",
     },
     {
       title: "Price",
       field: "final_cost",
-      render: rowData => convertNumber(rowData.final_cost, true)
-    }
+      render: (rowData) => convertNumber(rowData.final_cost, true),
+    },
   ];
 
   useEffect(() => {
     setBackDrop(true);
     let arr = [];
-    if (props.selectedReadyMaterial.length) {
-      arr = props.selectedReadyMaterial.map(r => {
+    if (props?.selectedReadyMaterial?.length) {
+      arr = props.selectedReadyMaterial.map((r) => {
         return r.ready_material.id;
       });
     }
@@ -95,10 +94,10 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
   const getReadyMaterialsData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -109,15 +108,15 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
@@ -130,9 +129,9 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
@@ -146,23 +145,23 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
         aria-describedby="select-raw-material-dialog-description"
         maxWidth={"lg"}
       >
-        <DialogTitle id="dialog-title">Select Raw Material</DialogTitle>
+        <DialogTitle id="dialog-title">Select Ready Material</DialogTitle>
         <DialogContent>
           <DialogContentText id="dialog-description">
             <>
               <GridContainer>
                 <GridItem xs={12} sm={3} md={4}>
                   <CustomInput
-                    onChange={e => {
+                    onChange={(e) => {
                       if (isEmptyString(e.target.value)) {
                         delete filter["material_no_contains"];
-                        setFilter(filter => ({
-                          ...filter
+                        setFilter((filter) => ({
+                          ...filter,
                         }));
                       } else {
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          material_no_contains: e.target.value
+                          material_no_contains: e.target.value,
                         }));
                       }
                     }}
@@ -173,7 +172,7 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                     value={filter["material_no_contains"] || ""}
                     id="material_no_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -191,8 +190,8 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                     color="primary"
                     onClick={() => {
                       delete filter["material_no_contains"];
-                      setFilter(filter => ({
-                        ...filter
+                      setFilter((filter) => ({
+                        ...filter,
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -206,14 +205,14 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                 tableRef={tableRef}
                 title="Ready Materials"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getReadyMaterialsData(
                     query.page + 1,
                     query.pageSize
                   );
                 }}
                 actions={[
-                  rowData => ({
+                  (rowData) => ({
                     icon: () =>
                       selectedReadyMaterial.includes(rowData.id) ||
                       (props.noAddAvailableQuantites &&
@@ -241,22 +240,22 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
                           props.handleAddReadyMaterial(rowData);
                         }
                       }
-                    }
-                  })
+                    },
+                  }),
                 ]}
                 options={{
                   pageSize: 10,
                   search: false,
                   sorting: true,
                   thirdSortClick: false,
-                  rowStyle: rowData => ({
+                  rowStyle: (rowData) => ({
                     backgroundColor:
                       selectedReadyMaterial.includes(rowData.id) ||
                       (props.noAddAvailableQuantites &&
                         !parseInt(rowData.total_quantity))
                         ? "#F3F3F3"
-                        : "#FFFFFF"
-                  })
+                        : "#FFFFFF",
+                  }),
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);
