@@ -18,6 +18,14 @@
     },
     {
       "method": "GET",
+      "path": "/designs-and-materials/get-material-count",
+      "handler": "designs-and-materials.getMaterialCount",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/designs-and-materials/:id",
       "handler": "designs-and-materials.findOne",
       "config": {

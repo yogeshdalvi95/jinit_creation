@@ -6,7 +6,7 @@ import {
   CustomInput,
   GridContainer,
   GridItem,
-  Table
+  Table,
 } from "../../components";
 // core components
 import { backend_category } from "../../constants";
@@ -14,14 +14,14 @@ import {
   Dialog,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from "@material-ui/core";
 import { isEmptyString } from "../../Utils";
 
 export default function DialogForSelectingCategory(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "name:asc",
   });
 
   const columns = [{ title: "Category Name", field: "name" }];
@@ -29,10 +29,10 @@ export default function DialogForSelectingCategory(props) {
   const getCategoryData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -43,15 +43,15 @@ export default function DialogForSelectingCategory(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
@@ -64,23 +64,23 @@ export default function DialogForSelectingCategory(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -98,26 +98,25 @@ export default function DialogForSelectingCategory(props) {
         <DialogContent>
           <DialogContentText id="dialog-description">
             <GridContainer>
-              <GridItem xs={12} sm={12} md={12}>
+              <GridItem xs={12} md={12}>
                 <GridContainer>
-                  <GridItem xs={12} sm={12} md={6}>
+                  <GridItem xs={12} md={6}>
                     <CustomInput
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       labelText="Category Name"
                       value={filter.name_contains || ""}
                       name="name_contains"
                       id="name_contains"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
                   <GridItem
                     xs={12}
-                    sm={12}
-                    md={3}
+                    md={2}
                     style={{
-                      marginTop: "27px"
+                      marginTop: "27px",
                     }}
                   >
                     <Button
@@ -131,19 +130,18 @@ export default function DialogForSelectingCategory(props) {
                   </GridItem>
                   <GridItem
                     xs={12}
-                    sm={12}
-                    md={3}
+                    md={2}
                     style={{
-                      marginTop: "27px"
+                      marginTop: "27px",
                     }}
                   >
                     <Button
                       color="primary"
                       onClick={() => {
                         delete filter["name_contains"];
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          _sort: "name:asc"
+                          _sort: "name:asc",
                         }));
                         tableRef.current.onQueryChange();
                       }}
@@ -152,31 +150,32 @@ export default function DialogForSelectingCategory(props) {
                     </Button>
                   </GridItem>
                 </GridContainer>
-
+              </GridItem>
+              <GridItem xs={12} md={12}>
                 <Table
                   tableRef={tableRef}
                   title="Categories"
                   columns={columns}
-                  data={async query => {
+                  data={async (query) => {
                     return await getCategoryData(
                       query.page + 1,
                       query.pageSize
                     );
                   }}
                   actions={[
-                    rowData => ({
+                    (rowData) => ({
                       icon: () => <Button color="primary">Select</Button>,
                       tooltip: "Select this Category",
                       onClick: (event, rowData) => {
                         props.handleAddCategory(rowData);
-                      }
-                    })
+                      },
+                    }),
                   ]}
                   options={{
                     pageSize: 10,
                     search: false,
                     sorting: true,
-                    thirdSortClick: false
+                    thirdSortClick: false,
                   }}
                   onOrderChange={(orderedColumnId, orderDirection) => {
                     orderFunc(orderedColumnId, orderDirection);

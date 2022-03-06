@@ -239,6 +239,9 @@ const styles = {
     padding: "7px",
     paddingRight: "2px",
   },
+  colorPrimary: {
+    color: primaryColor[0],
+  },
 };
 
 export default styles;

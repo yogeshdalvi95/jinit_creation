@@ -10,7 +10,8 @@ const { sanitizeEntity } = require("strapi-utils");
 
 module.exports = {
   async find(ctx) {
-    const { page, query, pageSize } = utils.getRequestParams(ctx.request.query);
+    const { filterId, filterBy, ...otherParams } = ctx.request.query;
+    const { page, query, pageSize } = utils.getRequestParams(otherParams);
     let _limit = 10;
     let _start = 0;
 
@@ -24,6 +25,29 @@ module.exports = {
     query["_start"] = _start;
 
     const data = await strapi.query("raw-material").find(query);
+
+    let rawMaterialIdsToFilter = [];
+    console.log(ctx.request.query, filterBy, filterId);
+    if (filterId && filterBy) {
+      if (filterBy == "design") {
+        rawMaterialIdsToFilter = await strapi
+          .query("designs-and-materials")
+          .find(
+            {
+              id: filterId,
+              isRawMaterial: true,
+            },
+            []
+          )
+          .then((res) => {
+            console.log(res);
+            return res.map((r) => r.raw_material);
+          })
+          .catch((err) => {});
+      }
+    }
+
+    console.log(rawMaterialIdsToFilter);
 
     return {
       data: data, // your data array

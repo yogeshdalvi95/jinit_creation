@@ -57,6 +57,9 @@ import {
   VIEWDESIGN,
   EDITDESIGNID,
   VIEWDESIGNID,
+  SELECTRAWMATERIALS,
+  SELECTRAWMATERIALSID,
+  SELECTREADYMATERIALSID,
 } from "../paths";
 
 /** Raw material and units */
@@ -154,6 +157,8 @@ const designPathList = [
   VIEWDESIGN,
   EDITDESIGNID,
   VIEWDESIGNID,
+  SELECTRAWMATERIALSID,
+  SELECTREADYMATERIALSID,
 ];
 
 const rawMaterialsJson = {

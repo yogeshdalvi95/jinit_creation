@@ -9,6 +9,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.58",
     "@material-ui/styles": "^4.11.4",
+    "@mui/icons-material": "^5.4.4",
     "@mui/material": "^5.0.4",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -32,7 +33,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "PORT=3001 react-scripts start",
+    "start": "PORT=3006 react-scripts start",
     "build": "react-scripts build --max-old-space-size=8192",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

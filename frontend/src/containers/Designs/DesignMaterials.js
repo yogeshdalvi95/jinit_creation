@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from "react";
-import EditIcon from "@material-ui/icons/Edit";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import AddOutlinedIcon from "@material-ui/icons/AddOutlined";
-import CheckIcon from "@material-ui/icons/Check";
-import ClearIcon from "@material-ui/icons/Clear";
 import {
   Backdrop,
   CircularProgress,
   FormControlLabel,
+  IconButton,
   makeStyles,
   Switch,
+  Tooltip,
 } from "@material-ui/core";
-import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useHistory } from "react-router-dom";
+import ClearIcon from "@material-ui/icons/Clear";
+import EditIcon from "@material-ui/icons/Edit";
 
 // @material-ui/core components
 import {
   Auth,
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   CustomInput,
   DialogBoxForSelectingRawMaterial,
   DialogBoxForSelectingReadyMaterial,
@@ -30,23 +26,38 @@ import {
   GridItem,
   SnackBarComponent,
   Table,
+  RawMaterialDetail,
+  DialogForSelectingCategory,
+  CustomAutoComplete,
 } from "../../components";
 import {
-  apiUrl,
-  backend_designs,
+  backend_departments,
   backend_designs_and_materials,
 } from "../../constants";
-import { ADDDESIGN, EDITDESIGN, VIEWDESIGN } from "../../paths";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { checkEmpty, convertNumber, isEmptyString } from "../../Utils";
-import { providerForPost } from "../../api";
+import { convertNumber, isEmptyString } from "../../Utils";
+import {
+  providerForDelete,
+  providerForGet,
+  providerForPost,
+  providerForPut,
+} from "../../api";
+import { EDITDESIGN } from "../../paths";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 
 export default function DesignMaterials(props) {
   const useStyles = makeStyles(styles);
+  const theme = useTheme();
   const classes = useStyles();
+  const [error, setError] = React.useState({});
+  const history = useHistory();
   const tableRef = React.createRef();
   const [openBackDrop, setOpenBackDrop] = useState(false);
-  const history = useHistory();
+  const [departments, setDepartments] = useState([]);
+  const [colors] = useState(props?.designData?.colors);
+  const [selectedColor, setSelectedColor] = useState({});
+  const isSmallerScreen = useMediaQuery(theme.breakpoints.down("md"));
+  console.log(isSmallerScreen);
   const [filter, setFilter] = useState({
     _sort: "updated_at:desc",
     isRawMaterial: props?.isRawMaterial,
@@ -70,34 +81,67 @@ export default function DesignMaterials(props) {
     setOpenDialogForSelectingReadyMaterial,
   ] = useState(false);
 
+  const [openDialogForSelectingCategory, setOpenDialogForSelectingCategory] =
+    useState(false);
+
+  const [filterData, setFilterData] = useState({});
+
+  useEffect(() => {
+    getDepartmentData();
+  }, []);
+
+  const getDepartmentData = async () => {
+    setOpenBackDrop(true);
+    await providerForGet(
+      backend_departments,
+      {
+        pageSize: -1,
+      },
+      Auth.getToken()
+    )
+      .then((res) => {
+        setDepartments(res.data.data);
+        setOpenBackDrop(false);
+      })
+      .catch((err) => {});
+  };
+
   const columnsForRawMaterial = [
     {
       title: "Raw Material",
       editable: "never",
       sorting: false,
+      align: "center",
       render: (rowData) =>
-        rowData?.raw_material?.name ? rowData?.raw_material?.name : "---",
-    },
-    {
-      title: "Die?",
-      field: "is_die",
-      editable: "never",
-      sorting: false,
-      render: (rowData) => (rowData?.raw_material?.is_die ? "Yes" : "No"),
+        rowData?.totalRow
+          ? ""
+          : rowData?.raw_material?.name
+          ? rowData?.raw_material?.name
+          : "---",
     },
     {
       title: `Price Per Piece`,
       editable: "never",
       sorting: false,
+      headerStyle: {
+        textAlign: "center",
+      },
+      cellStyle: {
+        textAlign: "right",
+      },
       render: (rowData) => {
         let value = "";
-        if (
-          !rowData?.price_per_piece ||
-          isEmptyString(rowData?.price_per_piece)
-        ) {
-          value = rowData?.raw_material?.costing;
+        if (rowData?.totalRow) {
+          value = "";
         } else {
-          value = rowData?.price_per_piece;
+          if (
+            !rowData?.price_per_piece ||
+            isEmptyString(rowData?.price_per_piece)
+          ) {
+            value = rowData?.raw_material?.costing;
+          } else {
+            value = rowData?.price_per_piece;
+          }
         }
         return value;
       },
@@ -105,8 +149,14 @@ export default function DesignMaterials(props) {
     {
       title: "Quantity",
       field: "quantity",
+      headerStyle: {
+        textAlign: "center",
+      },
+      cellStyle: {
+        textAlign: "right",
+      },
       sorting: false,
-      render: (rowData) => rowData.quantity,
+      render: (rowData) => (rowData?.totalRow ? "" : rowData.quantity),
       editComponent: (props) => (
         <CustomInput
           onChange={(e) => props.onChange(e.target.value)}
@@ -125,6 +175,12 @@ export default function DesignMaterials(props) {
     {
       title: "Total Cost",
       editable: "never",
+      headerStyle: {
+        textAlign: "center",
+      },
+      cellStyle: {
+        textAlign: "right",
+      },
       sorting: false,
       render: (rowData) => convertNumber(rowData.total_price, true),
     },
@@ -135,7 +191,8 @@ export default function DesignMaterials(props) {
       title: "Ready Material",
       editable: "never",
       sorting: false,
-      render: (rowData) => rowData?.ready_material?.material_no,
+      render: (rowData) =>
+        rowData?.totalRow ? "" : rowData?.ready_material?.material_no,
     },
     {
       title: `Price Per Piece`,
@@ -143,13 +200,17 @@ export default function DesignMaterials(props) {
       sorting: false,
       render: (rowData) => {
         let value = "";
-        if (
-          !rowData?.price_per_piece ||
-          isEmptyString(rowData?.price_per_piece)
-        ) {
-          value = rowData?.ready_material?.price_per_piece;
+        if (rowData?.totalRow) {
+          value = "";
         } else {
-          value = rowData?.price_per_piece;
+          if (
+            !rowData?.price_per_piece ||
+            isEmptyString(rowData?.price_per_piece)
+          ) {
+            value = rowData?.ready_material?.price_per_piece;
+          } else {
+            value = rowData?.price_per_piece;
+          }
         }
         return value;
       },
@@ -157,7 +218,7 @@ export default function DesignMaterials(props) {
     {
       title: "Quantity",
       sorting: false,
-      render: (rowData) => rowData.quantity,
+      render: (rowData) => (rowData?.totalRow ? "" : rowData.quantity),
       editComponent: (props) => (
         <CustomInput
           onChange={(e) => props.onChange(e.target.value)}
@@ -204,7 +265,13 @@ export default function DesignMaterials(props) {
         .then((response) => response.json())
         .then((result) => {
           resolve({
-            data: result.data,
+            data: [
+              ...result.data,
+              // {
+              //   totalRow: true,
+              //   total_price: props?.designData?.material_price,
+              // },
+            ],
             page: result.page - 1,
             totalCount: result.totalCount,
           });
@@ -212,87 +279,75 @@ export default function DesignMaterials(props) {
     });
   };
 
-  // const updateQuantity = async (newData, oldData) => {
-  //   let num = parseFloat(newData.quantity);
-  //   let isError = false;
-  //   if (!isNaN(num)) {
-  //     if (num <= 0) {
-  //       isError = true;
-  //     }
-  //   } else {
-  //     isError = true;
-  //   }
-  //   if (isError) {
-  //     setSnackBar((snackBar) => ({
-  //       ...snackBar,
-  //       show: true,
-  //       severity: "error",
-  //       message: "Quantity should be a positive number",
-  //     }));
-  //   } else {
-  //     let obj = {
-  //       id: newData.dataId,
-  //       newQuantity: newData.quantity,
-  //       oldQuantity: oldData.quantity,
-  //       costPerPiece: newData.costPerPiece,
-  //       ready_material: formState.id,
-  //     };
-  //     await providerForPost(backend_designs_and_materials, obj, Auth.getToken())
-  //       .then((res) => {
-  //         setFormState((formState) => ({
-  //           ...formState,
-  //           final_cost: res.data.final_cost,
-  //           final_cost_formatted: convertNumber(
-  //             parseFloat(res.data.final_cost).toFixed(2),
-  //             true
-  //           ),
-  //         }));
-  //         tableRef.current.onQueryChange();
-  //       })
-  //       .catch((err) => {
-  //         setSnackBar((snackBar) => ({
-  //           ...snackBar,
-  //           show: true,
-  //           severity: "error",
-  //           message: "Error updating quantity of " + oldData.name,
-  //         }));
-  //       });
-  //   }
-  // };
+  const updateQuantity = async (newData, oldData) => {
+    let num = parseFloat(newData.quantity);
+    let isError = false;
+    if (!isNaN(num)) {
+      if (num <= 0) {
+        isError = true;
+      }
+    } else {
+      isError = true;
+    }
+    if (isError) {
+      setSnackBar((snackBar) => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: "Quantity should be a positive number",
+      }));
+    } else {
+      let obj = {
+        total_price: num * parseFloat(newData.price_per_piece),
+        quantity: num,
+      };
+      await providerForPut(
+        backend_designs_and_materials,
+        newData.id,
+        obj,
+        Auth.getToken()
+      )
+        .then((res) => {
+          tableRef.current.onQueryChange();
+          props.updateDesign();
+        })
+        .catch((err) => {
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message:
+              "Error updating quantity of " + oldData?.raw_material?.name,
+          }));
+        });
+    }
+  };
 
-  // const onRowDelete = async (oldData) => {
-  //   let body = {
-  //     id: oldData.dataId,
-  //     quantity: oldData.quantity,
-  //     costPerPiece: oldData.costPerPiece,
-  //     ready_material: formState.id,
-  //   };
-  //   await providerForPost(backend_designs_and_materials, body, Auth.getToken())
-  //     .then(async (res) => {
-  //       setSnackBar((snackBar) => ({
-  //         ...snackBar,
-  //         show: true,
-  //         severity: "success",
-  //         message: "Successfully deleted " + oldData.name,
-  //       }));
-  //       setFormState((formState) => ({
-  //         ...formState,
-  //         final_cost: res.data.final_cost,
-  //         final_cost_formatted: convertNumber(
-  //           parseFloat(res.data.final_cost).toFixed(2),
-  //           true
-  //         ),
-  //       }));
-  //     })
-  //     .catch((err) => {
-  //       setSnackBar((snackBar) => ({
-  //         ...snackBar,
-  //         show: true,
-  //         severity: "error",
-  //         message: "Error deleting " + oldData.name,
-  //       }));
-  //     });
-  // };
+  const onRowDelete = async (oldData) => {
+    await providerForDelete(
+      backend_designs_and_materials,
+      oldData.id,
+      Auth.getToken()
+    )
+      .then(async (res) => {
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "success",
+          message: "Successfully deleted " + oldData?.raw_material?.name,
+        }));
+        tableRef.current.onQueryChange();
+        props.updateDesign();
+      })
+      .catch((err) => {
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error deleting " + oldData?.raw_material?.name,
+        }));
+      });
+  };
 
   const snackBarHandleClose = () => {
     setSnackBar((snackBar) => ({
@@ -365,6 +420,7 @@ export default function DesignMaterials(props) {
               filter.isRawMaterial ? "Raw" : "Ready"
             } Material added successfully`,
           }));
+          props.updateDesign();
         })
         .catch((err) => {
           let error = "";
@@ -395,6 +451,22 @@ export default function DesignMaterials(props) {
     }
   };
 
+  const handleAddCategory = (row) => {
+    delete error["category"];
+    setError((error) => ({
+      ...error,
+    }));
+    setFilterData((filterData) => ({
+      ...filterData,
+      categoryName: row.name,
+    }));
+    setFilter((filter) => ({
+      ...filter,
+      "raw_material.category": row.id,
+    }));
+    setOpenDialogForSelectingCategory(false);
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -403,97 +475,285 @@ export default function DesignMaterials(props) {
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
+      <DialogForSelectingCategory
+        handleCancel={() => setOpenDialogForSelectingCategory(false)}
+        handleClose={() => setOpenDialogForSelectingCategory(false)}
+        handleAddCategory={handleAddCategory}
+        open={openDialogForSelectingCategory}
+      />
       <DialogBoxForSelectingRawMaterial
         handleCancel={handleCloseDialogForDesignMaterial}
         handleClose={handleCloseDialogForDesignMaterial}
         handleAddRawMaterial={addDesign}
         open={openDialogForSelectingRawMaterial}
+        filterId={filter.design}
+        filterBy="design"
       />
       <DialogBoxForSelectingReadyMaterial
         handleCancel={handleCloseDialogForDesignMaterial}
         handleClose={handleCloseDialogForDesignMaterial}
         handleAddReadyMaterial={addDesign}
         open={openDialogForSelectingReadyMaterial}
+        filterId={filter.design}
+        filterBy="design"
       />
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
           <GridContainer>
-            <GridItem xs={12} sm={12} md={12}>
+            <GridItem
+              xs={12}
+              sm={12}
+              md={12}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <FAB
+                color="primary"
+                align={"start"}
+                size={"small"}
+                toolTip={"Back to design"}
+                onClick={() => {
+                  history.push({
+                    pathname: `${EDITDESIGN}/${filter.design}`,
+                  });
+                }}
+              >
+                <ArrowBackIcon />
+              </FAB>
               <FAB
                 color="primary"
                 align={"end"}
                 size={"small"}
+                toolTip={"Add ready material"}
                 onClick={() => handleAddDesignMaterial()}
               >
                 <AddIcon />
               </FAB>
             </GridItem>
-          </GridContainer>
-          <GridContainer>
-            <GridItem xs={12} sm={2} md={2}>
-              <CustomInput
-                onChange={(e) => {
-                  if (isEmptyString(e.target.value)) {
-                    delete filter["raw_material.name_contains"];
-                    setFilter((filter) => ({
-                      ...filter,
-                    }));
-                  } else {
-                    setFilter((filter) => ({
-                      ...filter,
-                      "raw_material.name_contains": e.target.value,
-                    }));
-                  }
+            <GridItem
+              xs={12}
+              sm={12}
+              md={12}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Box
+                sx={{
+                  mt: "auto",
+                  mb: "auto",
                 }}
-                type="text"
-                labelText="Raw Material Name"
-                name="raw_material.name_contains"
-                noMargin
-                value={filter["raw_material.name_contains"]}
-                id="raw_material.name_contains"
-                formControlProps={{
-                  fullWidth: true,
-                }}
-              />
-            </GridItem>
-            {filter.isRawMaterial ? (
-              <GridItem xs={12} sm={2} md={2} className={classes.switchBox}>
-                <div className={classes.block}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={filter["raw_material.is_die"] ? true : false}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            setFilter((filter) => ({
-                              ...filter,
-                              "raw_material.is_die": event.target.checked,
-                            }));
-                          } else {
-                            delete filter["raw_material.is_die"];
-                            setFilter((filter) => ({
-                              ...filter,
-                            }));
-                          }
-                        }}
-                        classes={{
-                          switchBase: classes.switchBase,
-                          checked: classes.switchChecked,
-                          thumb: classes.switchIcon,
-                          track: classes.switchBar,
-                        }}
-                      />
+              >
+                {`${filter.isColor ? "Color : " + selectedColor.name : ""}`}
+              </Box>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomAutoComplete
+                  id="color"
+                  labelText="Select Color"
+                  autocompleteId={"color"}
+                  optionKey={"name"}
+                  options={colors}
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  noMarginTop
+                  onChange={(event, value) => {
+                    if (value !== null) {
+                      setFilter((filter) => ({
+                        ...filter,
+                        isColor: true,
+                        color: value.id,
+                      }));
+                      setSelectedColor(value);
+                    } else {
+                      delete filter.color;
+                      setFilter((filter) => ({
+                        ...filter,
+                        isColor: false,
+                      }));
+                      setSelectedColor({});
                     }
-                    classes={{
-                      label: classes.label,
-                    }}
-                    label="Search Only Die's"
-                  />
-                </div>
+                    tableRef.current.onQueryChange();
+                  }}
+                  value={
+                    colors[
+                      colors.findIndex(function (item, i) {
+                        return item.id === filter.color;
+                      })
+                    ] || null
+                  }
+                />
               </GridItem>
+            </GridItem>
+          </GridContainer>
+          <br />
+          <GridContainer>
+            {filter.isRawMaterial ? (
+              <>
+                <GridItem xs={12} sm={2} md={2}>
+                  <CustomInput
+                    onChange={(e) => {
+                      if (isEmptyString(e.target.value)) {
+                        delete filter["raw_material.name_contains"];
+                        setFilter((filter) => ({
+                          ...filter,
+                        }));
+                      } else {
+                        setFilter((filter) => ({
+                          ...filter,
+                          "raw_material.name_contains": e.target.value,
+                        }));
+                      }
+                    }}
+                    type="text"
+                    labelText="Raw Material Name"
+                    name="raw_material.name_contains"
+                    noMargin
+                    value={filter["raw_material.name_contains"]}
+                    id="raw_material.name_contains"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomAutoComplete
+                    id="department-name"
+                    labelText="Department"
+                    autocompleteId={"department"}
+                    optionKey={"name"}
+                    options={departments}
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    noMarginTop
+                    onChange={(event, value) => {
+                      if (value !== null) {
+                        setFilter((filter) => ({
+                          ...filter,
+                          "raw_material.department": value.id,
+                        }));
+                      } else {
+                        delete filter.department;
+                        setFilter((filter) => ({
+                          ...filter,
+                        }));
+                      }
+                    }}
+                    value={
+                      departments[
+                        departments.findIndex(function (item, i) {
+                          return item.id === filter["raw_material.department"];
+                        })
+                      ] || null
+                    }
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  style={{
+                    padding: "0px 15px",
+                    marginTop: isSmallerScreen ? "20px" : "0px",
+                  }}
+                >
+                  <GridContainer
+                    style={{
+                      border: "1px solid #C0C0C0",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <GridItem
+                      xs={8}
+                      sm={8}
+                      md={8}
+                      style={{
+                        margin: "15px 0px 0px",
+                      }}
+                    >
+                      <GridContainer style={{ dispay: "flex" }}>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Category : </b> {filterData?.categoryName}
+                        </GridItem>
+                      </GridContainer>
+                    </GridItem>
+                    <GridItem xs={1} sm={1} md={1}>
+                      <Tooltip
+                        title={
+                          filter["raw_material.category"]
+                            ? "Change Category "
+                            : "Select Category"
+                        }
+                      >
+                        <IconButton
+                          onClick={() => {
+                            setOpenDialogForSelectingCategory(true);
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </GridItem>
+                    <GridItem xs={1} sm={1} md={1}>
+                      <IconButton
+                        onClick={() => {
+                          delete filterData["categoryName"];
+                          setFilterData((filterData) => ({
+                            ...filterData,
+                          }));
+                          delete filter["raw_material.category"];
+                          setFilter((filter) => ({
+                            ...filter,
+                          }));
+                        }}
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </GridItem>
+                  </GridContainer>
+                </GridItem>
+                <GridItem xs={12} sm={2} md={2} className={classes.switchBox}>
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={filter["raw_material.is_die"] ? true : false}
+                          onChange={(event) => {
+                            if (event.target.checked) {
+                              setFilter((filter) => ({
+                                ...filter,
+                                "raw_material.is_die": event.target.checked,
+                              }));
+                            } else {
+                              delete filter["raw_material.is_die"];
+                              setFilter((filter) => ({
+                                ...filter,
+                              }));
+                            }
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar,
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label,
+                      }}
+                      label="Search Only Die's"
+                    />
+                  </div>
+                </GridItem>
+              </>
             ) : null}
 
-            <GridItem xs={12} sm={12} md={4}>
+            <GridItem xs={12} sm={12} md={3}>
               <Button
                 color="primary"
                 onClick={() => {
@@ -506,8 +766,13 @@ export default function DesignMaterials(props) {
                 color="primary"
                 onClick={() => {
                   delete filter["raw_material.is_die"];
-                  delete filter["isColorDependent"];
                   delete filter["raw_material.name_contains"];
+                  delete filter["raw_material.department"];
+                  delete filter["raw_material.category"];
+                  delete filterData["categoryName"];
+                  setFilterData((filterData) => ({
+                    ...filterData,
+                  }));
                   setFilter((filter) => ({
                     ...filter,
                   }));
@@ -544,17 +809,30 @@ export default function DesignMaterials(props) {
               onRowUpdate: (newData, oldData) =>
                 new Promise((resolve, reject) => {
                   setTimeout(async () => {
-                    //updateQuantity(newData, oldData);
+                    updateQuantity(newData, oldData);
                     resolve();
                   }, 1000);
                 }),
               onRowDelete: (oldData) =>
                 new Promise((resolve) => {
                   setTimeout(async () => {
-                    //onRowDelete(oldData);
+                    onRowDelete(oldData);
                     resolve();
                   }, 1000);
                 }),
+            }}
+            detailPanel={(rowData) => {
+              if (rowData.totalRow) {
+                return null;
+              } else {
+                return (
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={6}>
+                      <RawMaterialDetail raw_material={rowData.raw_material} />
+                    </GridItem>
+                  </GridContainer>
+                );
+              }
             }}
             options={{
               pageSizeOptions: [20],
@@ -585,7 +863,7 @@ export default function DesignMaterials(props) {
                 return {
                   backgroundColor:
                     isZeroPage && data?.id && data.id === rowData.id
-                      ? "#F3F3F3"
+                      ? "#d3d2d2"
                       : "#FFFFFF",
                 };
               },

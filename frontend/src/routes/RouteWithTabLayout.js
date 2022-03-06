@@ -11,7 +11,12 @@ import { useLocation } from "react-router-dom";
 
 import styles from "../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { Layout } from "../hoc";
-import { Auth as auth, NotFoundPage } from "../components";
+import {
+  Auth as auth,
+  GridContainer,
+  GridItem,
+  NotFoundPage,
+} from "../components";
 import {
   EDITDESIGN,
   LOGIN,
@@ -20,7 +25,7 @@ import {
   SELECTREADYMATERIALS,
   SELECTREADYMATERIALSWOHASH,
 } from "../paths";
-import { getRoutesOnLogin } from "../Utils";
+import { convertNumber, getRoutesOnLogin } from "../Utils";
 import { primaryColor } from "../assets/jss/material-dashboard-react";
 import { useEffect } from "react/cjs/react.development";
 import { providerForGet } from "../api";
@@ -41,7 +46,6 @@ const getDesignId = (pathName) => {
 const RouteWithTabLayout = ({
   component: Component,
   computedMatch: ComputedMatch,
-  header,
   openSubMenu,
   ...otherProps
 }) => {
@@ -50,7 +54,10 @@ const RouteWithTabLayout = ({
   const history = useHistory();
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
+  const [header, setHeader] = React.useState("");
   const [loader, setLoader] = React.useState(true);
+  const [loaderForUpdateDesign, setLoaderForUpdateDesign] =
+    React.useState(false);
   const [pageNotFound, setPageNotFound] = React.useState(false);
   const [formState, setFormState] = React.useState({
     designId: getDesignId(
@@ -145,18 +152,19 @@ const RouteWithTabLayout = ({
       }
       setFormState((formState) => ({
         ...formState,
-        isRawMaterial: dependencyObject?.isRawMaterial,
-        isReadyMaterial: dependencyObject?.isReadyMaterial,
+        isRawMaterial: dependencyObject.isRawMaterial,
+        isReadyMaterial: dependencyObject.isReadyMaterial,
         designData: data,
         routes: dependencyObject.routes,
       }));
+      console.log(data);
+      setHeader(
+        `Select ${dependencyObject.isRawMaterial ? "Raw" : "Ready"} Material`
+      );
     }
     setValue(dependencyObject.isRawMaterial ? 0 : 1);
     setLoader(false);
-    console.log(dependencyObject);
   };
-
-  console.log(formState);
 
   const handleChange = (event, newValue) => {
     let value = null;
@@ -174,6 +182,39 @@ const RouteWithTabLayout = ({
     }
   };
 
+  const updateDesign = async () => {
+    setLoaderForUpdateDesign(true);
+    await providerForGet(
+      backend_designs + "/" + formState.designId,
+      {},
+      auth.getToken()
+    )
+      .then((res) => {
+        setLoaderForUpdateDesign(false);
+        setFormState((formState) => ({
+          ...formState,
+          designData: res.data,
+        }));
+      })
+      .catch((err) => {
+        setLoaderForUpdateDesign(false);
+        setPageNotFound(true);
+      });
+  };
+
+  const getLoader = () => {
+    return (
+      <CircularProgress
+        color="primary"
+        className={classes.colorPrimary}
+        size={20}
+        style={{
+          marginLeft: "10px",
+        }}
+      />
+    );
+  };
+
   if (auth.getToken() !== null) {
     return (
       <>
@@ -185,66 +226,89 @@ const RouteWithTabLayout = ({
                 header={header}
                 openSubMenu={openSubMenu}
               >
-                {
-                  loader ? (
-                    <Backdrop className={classes.backdrop} open={loader}>
-                      <CircularProgress color="inherit" />
-                    </Backdrop>
-                  ) : pageNotFound ? (
-                    <NotFoundPage />
-                  ) : (
-                    <Box sx={{ width: "100%" }}>
-                      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                        <StyledTabs
-                          value={value}
-                          onChange={handleChange}
-                          variant="scrollable"
-                          scrollButtons
-                          allowScrollButtonsMobile
-                          TabIndicatorProps={{
-                            children: (
-                              <span className="MuiTabs-indicatorSpan" />
-                            ),
-                          }}
-                        >
-                          {tabs.map((t) => (
-                            <StyledTab label={t} />
-                          ))}
-                        </StyledTabs>
-                      </Box>
-                      <Box>
-                        <Component
-                          {...props}
-                          urlParams={ComputedMatch}
-                          header={header}
-                          id={formState.designId}
-                          designData={formState.designData}
-                          isRawMaterial={formState.isRawMaterial}
-                          isReadyMaterial={formState.isReadyMaterial}
-                          {...otherProps}
-                        />
-                      </Box>
+                {loader ? (
+                  <Backdrop className={classes.backdrop} open={loader}>
+                    <CircularProgress color="inherit" />
+                  </Backdrop>
+                ) : pageNotFound ? (
+                  <NotFoundPage />
+                ) : (
+                  <Box sx={{ width: "100%" }}>
+                    <GridContainer style={{ dispay: "flex" }}>
+                      <GridItem>
+                        <b>Design No : </b> {formState?.designData?.material_no}
+                      </GridItem>
+                      <GridItem
+                        style={{
+                          display: "flex",
+                        }}
+                      >
+                        <b>Material Price : </b>{" "}
+                        {loaderForUpdateDesign
+                          ? getLoader()
+                          : convertNumber(
+                              formState?.designData?.material_price,
+                              true
+                            )}
+                      </GridItem>
+                      <GridItem
+                        style={{
+                          display: "flex",
+                        }}
+                      >
+                        <b>Add. Price : </b>{" "}
+                        {loaderForUpdateDesign
+                          ? getLoader()
+                          : convertNumber(
+                              formState?.designData?.add_price,
+                              true
+                            )}
+                      </GridItem>
+                      <GridItem
+                        style={{
+                          display: "flex",
+                        }}
+                      >
+                        <b>Total Price : </b>{" "}
+                        {loaderForUpdateDesign
+                          ? getLoader()
+                          : convertNumber(
+                              formState?.designData?.total_price,
+                              true
+                            )}
+                      </GridItem>
+                    </GridContainer>
+                    <br />
+                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                      <StyledTabs
+                        value={value}
+                        onChange={handleChange}
+                        variant="scrollable"
+                        scrollButtons
+                        allowScrollButtonsMobile
+                        TabIndicatorProps={{
+                          children: <span className="MuiTabs-indicatorSpan" />,
+                        }}
+                      >
+                        {tabs.map((t) => (
+                          <StyledTab label={t} />
+                        ))}
+                      </StyledTabs>
                     </Box>
-                  )
-                  /* {isDependent && id && id.length && (
-                    <Component
-                      {...props}
-                      urlParams={ComputedMatch}
-                      header={header}
-                      id={id[id.length - 1]}
-                      {...otherProps}
-                    />
-                  )}
-                  {isDependent && (!id || (id && !id.length)) && <NotFoundPage />}
-                  {!isDependent && (
-                    <Component
-                      {...props}
-                      urlParams={ComputedMatch}
-                      header={header}
-                      {...otherProps}
-                    />
-                  )} */
-                }
+                    <Box>
+                      <Component
+                        {...props}
+                        urlParams={ComputedMatch}
+                        id={formState.designId}
+                        designData={formState.designData}
+                        isRawMaterial={formState.isRawMaterial}
+                        isReadyMaterial={formState.isReadyMaterial}
+                        updateDesign={updateDesign}
+                        {...otherProps}
+                      />
+                    </Box>
+                  </Box>
+                )}
               </Layout>
             </>
           )}

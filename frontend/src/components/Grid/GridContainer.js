@@ -24,6 +24,7 @@ export default function GridContainer(props) {
     [classes.grid]: noWidth === undefined || noWidth === null,
     [className]: className !== undefined,
   });
+
   return (
     <Grid container {...rest} className={cardHeaderClasses}>
       {children}

@@ -21,13 +21,171 @@ module.exports = {
     query["_limit"] = _limit;
     query["_start"] = _start;
 
-    const data = await strapi.query("designs-and-materials").find(query);
-
+    const data = await strapi
+      .query("designs-and-materials")
+      .find(query, [
+        "raw_material",
+        "raw_material.department",
+        "raw_material.unit",
+        "raw_material.color",
+        "raw_material.category",
+        "ready_material",
+        "design",
+      ]);
+    console.log("data ", data);
     return {
       data: data, // your data array
       page: page, // current page number
       pageSize: pageSize,
       totalCount: count, // total row number
+    };
+  },
+
+  async create(ctx) {
+    const { total_price, design } = ctx.request.body;
+    await bookshelf.transaction(async (t) => {
+      await strapi
+        .query("designs-and-materials")
+        .create(ctx.request.body, { transacting: t })
+        .then((model) => model)
+        .catch((err) => {
+          console.log(err);
+          throw 500;
+        });
+
+      let designData = await strapi.query("designs").findOne({
+        id: design,
+      });
+
+      let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
+        ? 0
+        : parseFloat(designData.material_price);
+
+      designMaterialPrice = designMaterialPrice + parseFloat(total_price);
+      let totalDesignPrice =
+        designMaterialPrice + parseFloat(designData?.add_price);
+
+      await strapi.query("designs").update(
+        { id: design },
+        {
+          material_price: designMaterialPrice,
+          total_price: totalDesignPrice,
+        },
+        { patch: true, transacting: t }
+      );
+    });
+    ctx.send(200);
+  },
+
+  async update(ctx) {
+    const { total_price } = ctx.request.body;
+    const { id } = ctx.params;
+    await bookshelf.transaction(async (t) => {
+      let designMaterialData = await strapi
+        .query("designs-and-materials")
+        .findOne({
+          id: id,
+        });
+
+      let oldTotalPrice = isNaN(parseFloat(designMaterialData?.total_price))
+        ? 0
+        : parseFloat(designMaterialData.total_price);
+
+      let designId = designMaterialData?.design?.id;
+      let designData = await strapi.query("designs").findOne({
+        id: designId,
+      });
+
+      let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
+        ? 0
+        : parseFloat(designData.material_price);
+
+      let tempDesignMaterialPrice = designMaterialPrice - oldTotalPrice;
+      let newDesignMaterialPrice =
+        tempDesignMaterialPrice + parseFloat(total_price);
+      let totalDesignPrice =
+        newDesignMaterialPrice + parseFloat(designData?.add_price);
+      await strapi.query("designs").update(
+        { id: designId },
+        {
+          material_price: newDesignMaterialPrice,
+          total_price: totalDesignPrice,
+        },
+        { patch: true, transacting: t }
+      );
+      await strapi
+        .query("designs-and-materials")
+        .update({ id: id }, ctx.request.body, { patch: true, transacting: t });
+    });
+    ctx.send(200);
+  },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    await bookshelf.transaction(async (t) => {
+      let designMaterialData = await strapi
+        .query("designs-and-materials")
+        .findOne({
+          id: id,
+        });
+
+      let oldTotalPrice = isNaN(parseFloat(designMaterialData?.total_price))
+        ? 0
+        : parseFloat(designMaterialData.total_price);
+
+      let designId = designMaterialData?.design?.id;
+      let designData = await strapi.query("designs").findOne({
+        id: designId,
+      });
+
+      let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
+        ? 0
+        : parseFloat(designData.material_price);
+
+      let newDesignMaterialPrice = designMaterialPrice - oldTotalPrice;
+      let totalDesignPrice =
+        newDesignMaterialPrice + parseFloat(designData?.add_price);
+      await strapi.query("designs").update(
+        { id: designId },
+        {
+          material_price: newDesignMaterialPrice,
+          total_price: totalDesignPrice,
+        },
+        { patch: true, transacting: t }
+      );
+      await strapi
+        .query("designs-and-materials")
+        .delete({ id: id }, { patch: true, transacting: t });
+    });
+    ctx.send(200);
+  },
+
+  async getMaterialCount(ctx) {
+    const { designId, isRawMaterial } = ctx.request.query;
+    let ids = [];
+    let params = {
+      isRawMaterial: isRawMaterial,
+    };
+    if (isRawMaterial) {
+      const result = await strapi
+        .query("designs-and-materials")
+        .model.fetchAll({
+          columns: ["raw_material"],
+
+          withRelated: [
+            {
+              raw_material: (qb) => {
+                qb.columns("id");
+              },
+            },
+          ],
+        })
+        .then((res) => res.toJSON())
+        .catch((err) => {});
+      console.log(result);
+    }
+    return {
+      ids: ids,
     };
   },
 
