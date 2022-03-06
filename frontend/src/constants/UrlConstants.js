@@ -42,6 +42,7 @@ export const backend_individual_kachha_purchase_ledger = `${apiUrl}/individual-k
 export const backend_designs = `${apiUrl}/designs`;
 
 export const backend_designs_and_materials = `${apiUrl}/designs-and-materials`;
+export const backend_designs_and_materials_get_material_count = `${apiUrl}/designs-and-materials/get-material-count`;
 
 export const backend_ready_materials = `${apiUrl}/ready-materials`;
 export const backend_ready_materials_change_color_dependency = `${apiUrl}/ready-materials/change_color_dependency`;

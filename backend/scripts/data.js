@@ -31,7 +31,15 @@ const ROLES = {
       },
       {
         name: "designs-and-materials",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getmaterialcount",
+        ],
       },
       {
         name: "individual-kachha-purchase",
@@ -141,7 +149,15 @@ const ROLES = {
       },
       {
         name: "designs-and-materials",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getmaterialcount",
+        ],
       },
       {
         name: "category",
@@ -303,7 +319,15 @@ const ROLES = {
       },
       {
         name: "designs-and-materials",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "getmaterialcount",
+        ],
       },
       {
         name: "category",

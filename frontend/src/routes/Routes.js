@@ -365,7 +365,7 @@ const Routes = () => {
           path={SELECTRAWMATERIALSID}
           exact
           component={DesignMaterials}
-          header={"Select Raw Materials For Design"}
+          header={""}
           isColor={false}
         />
 

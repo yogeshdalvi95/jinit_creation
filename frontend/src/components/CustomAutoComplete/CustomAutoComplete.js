@@ -8,7 +8,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 // @material-ui/icons
 import {
   primaryColor,
-  grayColor
+  grayColor,
 } from "../../assets/jss/material-dashboard-react.js";
 // core components
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
@@ -62,11 +62,12 @@ export default function CustomAutoComplete(props) {
     onTextFieldValueChange,
     isInputPropsPresent,
     inputRef,
+    noMarginTop,
     ...rest
   } = props;
 
   const marginTop = classNames({
-    [classes.marginTop]: labelText === undefined
+    [classes.marginTop]: labelText === undefined,
   });
 
   return (
@@ -74,7 +75,7 @@ export default function CustomAutoComplete(props) {
       id={autocompleteId}
       options={options}
       getOptionLabel={
-        getOptionLabel ? getOptionLabel : option => option[optionKey]
+        getOptionLabel ? getOptionLabel : (option) => option[optionKey]
       }
       onHighlightChange={onHighlightChange ? onHighlightChange : null}
       onChange={onChange}
@@ -84,9 +85,9 @@ export default function CustomAutoComplete(props) {
         root: marginTop,
         input: classes.input,
         popper: classes.input,
-        listbox: classes.input
+        listbox: classes.input,
       }}
-      renderInput={params => (
+      renderInput={(params) => (
         <>
           {isInputPropsPresent ? (
             <StyledTextField
@@ -94,14 +95,14 @@ export default function CustomAutoComplete(props) {
               inputRef={inputRef}
               {...params}
               style={{
-                margin: "27px 0 0 0"
+                margin: noMarginTop ? "0" : "27px 0 0 0",
               }}
               onChange={onTextFieldValueChange}
               label={labelText}
               margin="normal"
               InputProps={{
                 ...params.InputProps,
-                ...inputProps
+                ...inputProps,
               }}
             />
           ) : (
@@ -110,7 +111,7 @@ export default function CustomAutoComplete(props) {
               inputRef={inputRef}
               {...params}
               style={{
-                margin: "27px 0 0 0"
+                margin: noMarginTop ? "0" : "27px 0 0 0",
               }}
               onChange={onTextFieldValueChange}
               label={labelText}
@@ -136,5 +137,5 @@ CustomAutoComplete.propTypes = {
   formControlProps: PropTypes.object,
   error: PropTypes.bool,
   success: PropTypes.bool,
-  rtlActive: PropTypes.bool
+  rtlActive: PropTypes.bool,
 };

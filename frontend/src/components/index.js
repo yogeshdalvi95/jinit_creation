@@ -10,7 +10,7 @@ export {
   Primary,
   Quote,
   Success,
-  Warning
+  Warning,
 } from "./Typography";
 export { Table, CustomTable, CollapsableTable, RatioTable } from "./Table";
 export { Footer } from "./Footer";
@@ -26,7 +26,7 @@ export {
   CardBody,
   CardFooter,
   CardHeader,
-  CardIcon
+  CardIcon,
 } from "./Card";
 export { SnackbarContent, SnackBarComponent } from "./Snackbar";
 export { FAB } from "./FAB";
@@ -43,8 +43,9 @@ export {
   DialogForSelectingColor,
   DialogBoxForSelectingReadyMaterial,
   DialogForSelectingParties,
-  DialogForCheckingStockAvailibility
+  DialogForCheckingStockAvailibility,
 } from "./DialogBox";
 export { RawMaterialDetail } from "./RawMaterialDetail";
+export { DesignData } from "./DesignData";
 export { SellerDetails } from "./SellerDetails";
-export { MultiSelect } from "./MultiSelect"
+export { MultiSelect } from "./MultiSelect";

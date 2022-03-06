@@ -27,19 +27,24 @@ export default function Sidebar(props) {
   const classes = useStyles();
   let location = useLocation();
   const [subMenu, setSubMenu] = React.useState({
-    open: props.openSubMenu
+    open: props.openSubMenu,
   });
 
   function handleClick(name) {
-    setSubMenu(subMenu => ({
+    setSubMenu((subMenu) => ({
       ...subMenu,
-      [name]: !subMenu[name]
+      [name]: !subMenu[name],
     }));
   }
 
   // verifies if routeName is the one active (in browser input)
   function activeRoute(pathList) {
-    return pathList.indexOf(location.pathname) > -1;
+    if (location.pathname.match(/[\/]\d+$/g)) {
+      let result = location.pathname.replace(/[\/]\d+$/g, "/:id");
+      return pathList.indexOf(result) > -1;
+    } else {
+      return pathList.indexOf(location.pathname) > -1;
+    }
   }
 
   /** Set all the parent menu keys in subMenu variable when the parent menu has children */
@@ -53,42 +58,43 @@ export default function Sidebar(props) {
       if (routes[i].children && routes[i].children.length) {
         temp_sub_menu = {
           ...temp_sub_menu,
-          [routes[i].name]: value
+          [routes[i].name]: value,
         };
       }
     }
     setSubMenu(temp_sub_menu);
   }, [routes]);
 
-  const getLinks = arr => {
+  const getLinks = (arr) => {
     return (
       <List className={classes.list}>
         {arr.map((prop, key) => {
           const isExpandable = prop.children && prop.children.length > 0;
           var activePro = " ";
           var listItemClasses;
+          console.log("prop.pathList ", prop.pathList);
           listItemClasses = classNames({
-            [" " + classes[color]]: activeRoute(prop.pathList)
+            [" " + classes[color]]: activeRoute(prop.pathList),
           });
 
           var listItemClassesWhenChildren = classNames({
-            [" " + classes["transparent"]]: activeRoute(prop.pathList)
+            [" " + classes["transparent"]]: activeRoute(prop.pathList),
           });
 
           const whiteFontClasses = classNames({
-            [" " + classes.whiteFont]: activeRoute(prop.pathList)
+            [" " + classes.whiteFont]: activeRoute(prop.pathList),
           });
 
           const MenuItemChildren = isExpandable ? (
             <Collapse in={subMenu[prop.name]} timeout="auto" unmountOnExit>
               <Divider
                 style={{
-                  color: "#FFFFFF"
+                  color: "#FFFFFF",
                 }}
               />
               <div
                 style={{
-                  marginLeft: "1rem"
+                  marginLeft: "1rem",
                 }}
               >
                 {getLinks(prop.children)}
@@ -102,7 +108,7 @@ export default function Sidebar(props) {
                 <ListItem
                   className={classes.itemLink + listItemClassesWhenChildren}
                   style={{
-                    display: "flex"
+                    display: "flex",
                   }}
                   button
                   onClick={() => {
@@ -117,7 +123,7 @@ export default function Sidebar(props) {
                   {isExpandable && !subMenu[prop.name] && (
                     <IconExpandMore
                       style={{
-                        color: "#FFFFFF"
+                        color: "#FFFFFF",
                       }}
                       onClick={() => {
                         handleClick(prop.name);
@@ -127,7 +133,7 @@ export default function Sidebar(props) {
                   {isExpandable && subMenu[prop.name] && (
                     <IconExpandLess
                       style={{
-                        color: "#FFFFFF"
+                        color: "#FFFFFF",
                       }}
                       onClick={() => {
                         handleClick(prop.name);
@@ -184,12 +190,12 @@ export default function Sidebar(props) {
           open={props.open}
           classes={{
             paper: classNames(classes.drawerPaper, {
-              [classes.drawerPaperRTL]: props.rtlActive
-            })
+              [classes.drawerPaperRTL]: props.rtlActive,
+            }),
           }}
           onClose={props.handleDrawerToggle}
           ModalProps={{
-            keepMounted: true // Better open performance on mobile.
+            keepMounted: true, // Better open performance on mobile.
           }}
         >
           {brand}
@@ -212,8 +218,8 @@ export default function Sidebar(props) {
           open
           classes={{
             paper: classNames(classes.drawerPaper, {
-              [classes.drawerPaperRTL]: props.rtlActive
-            })
+              [classes.drawerPaperRTL]: props.rtlActive,
+            }),
           }}
         >
           {brand}
@@ -238,5 +244,5 @@ Sidebar.propTypes = {
   image: PropTypes.string,
   logoText: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object),
-  open: PropTypes.bool
+  open: PropTypes.bool,
 };
