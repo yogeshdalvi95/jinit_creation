@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "purchase_payments",
+  "info": {
+    "name": "Purchase Payments"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "seller": {
+      "model": "seller"
+    },
+    "amount": {
+      "type": "float"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "payment_date": {
+      "type": "date"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/ready-material-and-colors",
+      "handler": "ready-material-and-color.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ready-material-and-colors/count",
+      "handler": "ready-material-and-color.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ready-material-and-colors/:id",
+      "handler": "ready-material-and-color.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/ready-material-and-colors",
+      "handler": "ready-material-and-color.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/ready-material-and-colors/:id",
+      "handler": "ready-material-and-color.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/ready-material-and-colors/:id",
+      "handler": "ready-material-and-color.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

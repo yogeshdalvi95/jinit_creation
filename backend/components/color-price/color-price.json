@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_color_price_color_prices",
+  "info": {
+    "name": "Color Price",
+    "icon": "align-center",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "color": {
+      "model": "color"
+    },
+    "color_price": {
+      "type": "float"
+    }
+  }
+}

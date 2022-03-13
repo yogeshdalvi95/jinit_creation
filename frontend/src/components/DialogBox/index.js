@@ -7,3 +7,4 @@ export { default as DialogForSelectingCategory } from "./DialogForSelectingCateg
 export { default as DialogForSelectingColor } from "./DialogForSelectingColor";
 export { default as DialogBoxForSelectingReadyMaterial } from "./DialogBoxForSelectingReadyMaterial";
 export { default as DialogForCheckingStockAvailibility } from "./DialogForCheckingStockAvailibility";
+export { default as DialogBoxForDuplicatingDesign } from "./DialogBoxForDuplicatingDesign";

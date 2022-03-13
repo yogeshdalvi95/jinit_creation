@@ -15,18 +15,11 @@
     "order_id": {
       "type": "string"
     },
-    "total_price": {
-      "type": "float"
-    },
     "processing": {
       "type": "boolean",
       "default": true
     },
     "partial_completed": {
-      "type": "boolean",
-      "default": false
-    },
-    "is_ratio_present": {
       "type": "boolean",
       "default": false
     },
@@ -41,34 +34,20 @@
     "notes": {
       "type": "text"
     },
-    "ready_material": {
-      "model": "ready-material"
+    "design": {
+      "model": "designs"
     },
     "quantity": {
       "type": "integer"
     },
-    "ratio": {
-      "type": "component",
-      "repeatable": true,
-      "component": "ratio.ratio"
-    },
     "buffer_quantity": {
       "type": "integer"
-    },
-    "price_per_piece": {
-      "type": "float"
-    },
-    "add_cost": {
-      "type": "float"
     },
     "completed_quantity": {
       "type": "integer"
     },
     "party": {
       "model": "party"
-    },
-    "nl_no": {
-      "type": "string"
     },
     "date": {
       "type": "date"

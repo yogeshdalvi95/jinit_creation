@@ -8,7 +8,7 @@ import {
   IconButton,
   makeStyles,
   Switch,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -19,7 +19,7 @@ import {
   hasError,
   isEmptyString,
   setErrors,
-  uuidv4
+  uuidv4,
 } from "../../Utils";
 import {
   Auth,
@@ -37,7 +37,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import { DEPARTMENTSHEET, EDITORDER, ORDERS, VIEWORDER } from "../../paths";
@@ -50,7 +50,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import {
   apiUrl,
   backend_order,
-  backend_order_check_raw_material_availibility
+  backend_order_check_raw_material_availibility,
 } from "../../constants";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -65,21 +65,15 @@ export default function AddOrder(props) {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [alert, setAlert] = useState(null);
-  const [
-    openDialogForSelectingReadyMaterial,
-    setOpenDialogForSelectingReadyMaterial
-  ] = useState(false);
-  const [
-    openDialogForStockAvailibility,
-    setOpenDialogForStockAvailibility
-  ] = useState(false);
+  const [openDialogForSelectingDesign, setOpenDialogForSelectingDesign] =
+    useState(false);
+  const [openDialogForStockAvailibility, setOpenDialogForStockAvailibility] =
+    useState(false);
 
   const [availibleStocks, setAvailibleStocks] = useState({});
 
-  const [
-    openDialogForSelectingColor,
-    setOpenDialogForSelectingColor
-  ] = useState(false);
+  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
+    useState(false);
 
   const [error, setError] = React.useState({});
 
@@ -93,10 +87,8 @@ export default function AddOrder(props) {
 
   const buttonClasses = buttonUseStyles();
 
-  const [
-    openDialogForSelectingParties,
-    setOpenDialogForSelectingParties
-  ] = useState(false);
+  const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
+    useState(false);
   const [formState, setFormState] = useState({
     id: null,
     order_id: uuidv4(),
@@ -119,13 +111,13 @@ export default function AddOrder(props) {
     total_used_quantity_in_ratio: 0,
     nl_no: "",
     party_no: "",
-    date: new Date()
+    date: new Date(),
   });
 
   const [party, setParty] = useState({
     id: null,
     party_name: "",
-    gst_no: ""
+    gst_no: "",
   });
 
   const [readyMaterial, setReadyMaterial] = useState({
@@ -134,7 +126,7 @@ export default function AddOrder(props) {
     total_cost: 0,
     images: null,
     availableQuantity: 0,
-    isColorVariationAvailable: false
+    isColorVariationAvailable: false,
   });
   const urlParams = new URLSearchParams(window.location.search);
   const [ratio, setRatio] = useState([]);
@@ -142,7 +134,7 @@ export default function AddOrder(props) {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   useEffect(() => {
@@ -160,7 +152,7 @@ export default function AddOrder(props) {
         history.push({
           pathname: VIEWORDER,
           search: `?oid=${order_id}`,
-          state: { view: true }
+          state: { view: true },
         });
         window.location.reload();
         //history.push(`${VIEWORDER}?oid=${order_id}`, { view: true });
@@ -170,26 +162,26 @@ export default function AddOrder(props) {
     }
   }, []);
 
-  const getData = async order_id => {
+  const getData = async (order_id) => {
     setBackDrop(true);
     await providerForGet(backend_order + "/" + order_id, {}, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         setBackDrop(false);
         setData(res.data);
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing/editing order"
+          message: "Error viewing/editing order",
         }));
       });
   };
 
-  const setData = data => {
-    setFormState(formState => ({
+  const setData = (data) => {
+    setFormState((formState) => ({
       ...formState,
       id: data.id,
       order_id: data.order_id,
@@ -208,7 +200,7 @@ export default function AddOrder(props) {
       previous_completed: data.completed_quantity,
       date: new Date(data.date),
       nl_no: data.nl_no,
-      party_no: data.party_no
+      party_no: data.party_no,
     }));
     if (data.ready_material) {
       let ready_material = data.ready_material;
@@ -218,7 +210,7 @@ export default function AddOrder(props) {
         total_cost: ready_material.final_cost,
         images: ready_material.images,
         availableQuantity: ready_material.total_quantity,
-        isColorVariationAvailable: ready_material.isColorVariationAvailable
+        isColorVariationAvailable: ready_material.isColorVariationAvailable,
       });
     }
     if (data.party) {
@@ -226,25 +218,25 @@ export default function AddOrder(props) {
       setParty({
         id: party.id,
         party_name: party.party_name,
-        gst_no: party.gst_no
+        gst_no: party.gst_no,
       });
     }
 
     if (data.ratio && data.ratio.length) {
       let arr = data.ratio;
       let new_arr = [];
-      new_arr = arr.map(r => {
+      new_arr = arr.map((r) => {
         return {
           id: r.id,
           color: r.color ? r.color.id : null,
           name: r.color ? r.color.name : null,
           quantity: r.quantity,
-          quantity_completed: r.quantity_completed
+          quantity_completed: r.quantity_completed,
         };
       });
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
-        is_ratio_present: new_arr.length ? true : false
+        is_ratio_present: new_arr.length ? true : false,
       }));
       setRatio(new_arr);
     }
@@ -254,24 +246,24 @@ export default function AddOrder(props) {
     history.push(ORDERS);
   };
 
-  const handleCloseDialogForReadyMaterial = () => {
-    setOpenDialogForSelectingReadyMaterial(false);
+  const handleCloseDialogForDesign = () => {
+    setOpenDialogForSelectingDesign(false);
   };
 
-  const handleAddReadyMaterial = data => {
-    setReadyMaterial(readyMaterial => ({
+  const handleAddDesign = (data) => {
+    setReadyMaterial((readyMaterial) => ({
       ...readyMaterial,
       id: data.id,
       material_no: data.material_no,
       availableQuantity: data.total_quantity,
       images: data.images,
       total_cost: data.final_cost,
-      isColorVariationAvailable: data.isColorVariationAvailable
+      isColorVariationAvailable: data.isColorVariationAvailable,
     }));
 
     delete error["ready_material"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     /** Price Calculation */
     let quantity = isNaN(parseFloat(formState.quantity))
@@ -284,38 +276,38 @@ export default function AddOrder(props) {
       ? 0
       : parseFloat(formState.add_cost);
     let total_price = quantity * ppp + add_cost;
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       price_per_piece: ppp,
-      total_price: total_price
+      total_price: total_price,
     }));
-    handleCloseDialogForReadyMaterial();
+    handleCloseDialogForDesign();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     let isValid = true;
     if (isValid) {
       delete error[event.target.name];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
 
-  const submit = event => {
+  const submit = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -334,16 +326,16 @@ export default function AddOrder(props) {
 
     if (!readyMaterial.id || !party.id) {
       if (!readyMaterial.id) {
-        setError(error => ({
+        setError((error) => ({
           ...error,
-          ready_material: ["Ready Material is required"]
+          ready_material: ["Ready Material is required"],
         }));
       }
 
       if (!party.id) {
-        setError(error => ({
+        setError((error) => ({
           ...error,
-          party: ["Party is required"]
+          party: ["Party is required"],
         }));
       }
       isValid = false;
@@ -352,12 +344,12 @@ export default function AddOrder(props) {
     if (isValid) {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true
+        [buttonClasses["success"]]: true,
       });
 
       const cancelBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true
+        [buttonClasses["danger"]]: true,
       });
 
       if (isEdit) {
@@ -433,7 +425,7 @@ export default function AddOrder(props) {
   const getRatio = () => {
     let arr = ratio;
     let newArr = [];
-    arr.map(nv => {
+    arr.map((nv) => {
       if (nv.color && nv.name && !isEmptyString(nv.name)) {
         if (nv.id) {
           newArr.push({
@@ -441,14 +433,14 @@ export default function AddOrder(props) {
             color: nv.color,
             name: nv.name,
             quantity: nv.quantity,
-            quantity_completed: nv.quantity_completed
+            quantity_completed: nv.quantity_completed,
           });
         } else {
           newArr.push({
             color: nv.color,
             name: nv.name,
             quantity: nv.quantity,
-            quantity_completed: nv.quantity_completed
+            quantity_completed: nv.quantity_completed,
           });
         }
       }
@@ -484,23 +476,23 @@ export default function AddOrder(props) {
           ratio: arr,
           party_no: formState.party_no,
           nl_no: formState.nl_no,
-          date: formState.date
+          date: formState.date,
         },
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           history.push(ORDERS);
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
             message: err.response.message
               ? err.response.message
-              : "Error editing new order"
+              : "Error editing new order",
           }));
         });
     } else {
@@ -526,30 +518,30 @@ export default function AddOrder(props) {
           ratio: arr,
           party_no: formState.party_no,
           nl_no: formState.nl_no,
-          date: formState.date
+          date: formState.date,
         },
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           history.push(ORDERS);
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
             message: err.response.message
               ? err.response.message
-              : "Error adding new order"
+              : "Error adding new order",
           }));
         });
     }
   };
 
-  const openReadyMaterialDialogFunction = status => {
-    setOpenDialogForSelectingReadyMaterial(status);
+  const openDesignDialogFunction = (status) => {
+    setOpenDialogForSelectingDesign(status);
   };
 
   const openDialogForSelectingParty = () => {
@@ -560,26 +552,26 @@ export default function AddOrder(props) {
     setOpenDialogForSelectingParties(false);
   };
 
-  const handleAddParties = data => {
-    setParty(party => ({
+  const handleAddParties = (data) => {
+    setParty((party) => ({
       ...party,
       gst_no: data.gst_no,
       id: data.id,
-      party_name: data.party_name
+      party_name: data.party_name,
     }));
     delete error["party"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     handleCloseDialogForParties();
   };
 
-  const handleChangePricePerPiece = event => {
+  const handleChangePricePerPiece = (event) => {
     let value = event.target.value;
     if (value == "" || value >= 0) {
       delete error["price_per_piece"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
 
       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -590,25 +582,25 @@ export default function AddOrder(props) {
         ? 0
         : parseFloat(formState.add_cost);
       let final_value = quantity * new_value + add_cost;
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         price_per_piece: value,
-        total_price: final_value
+        total_price: final_value,
       }));
     } else {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        price_per_piece: ["Price Per Piece cannot be negative"]
+        price_per_piece: ["Price Per Piece cannot be negative"],
       }));
     }
   };
 
-  const handleChangeAddCost = event => {
+  const handleChangeAddCost = (event) => {
     let value = event.target.value;
     if (value == "" || value >= 0) {
       delete error["add_cost"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
 
       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -620,25 +612,25 @@ export default function AddOrder(props) {
         : parseFloat(formState.add_cost);
       total_price = total_price - old_add_cost;
       let final_value = total_price + new_value;
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         add_cost: value,
-        total_price: final_value
+        total_price: final_value,
       }));
     } else {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        quantity: ["Add. Cost cannot be negative"]
+        quantity: ["Add. Cost cannot be negative"],
       }));
     }
   };
 
-  const handleChangeTotalQuantity = event => {
+  const handleChangeTotalQuantity = (event) => {
     let value = event.target.value;
     if (value == "" || value >= 0) {
       delete error["quantity"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
       if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
         let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -647,26 +639,26 @@ export default function AddOrder(props) {
           : parseFloat(formState.completed_quantity);
 
         let buffer_quantity = new_value - completed_quantity;
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
           quantity: value,
-          buffer_quantity: buffer_quantity
+          buffer_quantity: buffer_quantity,
         }));
       }
     } else {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        quantity: ["Quantity cannot be negative"]
+        quantity: ["Quantity cannot be negative"],
       }));
     }
   };
 
-  const handleChangeQuantity = event => {
+  const handleChangeQuantity = (event) => {
     let value = event.target.value;
     if (value == "" || value >= 0) {
       delete error["quantity"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
 
       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -678,25 +670,25 @@ export default function AddOrder(props) {
         : parseFloat(formState.add_cost);
       let final_value = price_per_piece * new_value + add_cost;
 
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         quantity: value,
-        total_price: final_value
+        total_price: final_value,
       }));
     } else {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        quantity: ["Quantity cannot be negative"]
+        quantity: ["Quantity cannot be negative"],
       }));
     }
   };
 
-  const handleChangeCompletedQuantity = event => {
+  const handleChangeCompletedQuantity = (event) => {
     let value = event.target.value;
     if (value == "" || value >= 0) {
       delete error["completed_quantity"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
       if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
         let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
@@ -710,16 +702,16 @@ export default function AddOrder(props) {
           : parseFloat(formState.completed_quantity);
         let buffer_quantity = quantity + old_completed_quantity;
         buffer_quantity = quantity - new_value;
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
           completed_quantity: value,
-          buffer_quantity: buffer_quantity
+          buffer_quantity: buffer_quantity,
         }));
       }
     } else {
-      setError(error => ({
+      setError((error) => ({
         ...error,
-        completed_quantity: ["Completed Quantity cannot be negative"]
+        completed_quantity: ["Completed Quantity cannot be negative"],
       }));
     }
   };
@@ -732,7 +724,7 @@ export default function AddOrder(props) {
     setOpenDialogForSelectingColor(false);
   };
 
-  const handleSelectColor = data => {
+  const handleSelectColor = (data) => {
     let i = 0;
     let isPresent = false;
     while (i < ratio.length) {
@@ -749,16 +741,16 @@ export default function AddOrder(props) {
           color: data.id,
           name: data.name,
           quantity: 0,
-          quantity_completed: 0
+          quantity_completed: 0,
         },
-        ...ratio
+        ...ratio,
       ]);
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Color already present"
+        message: "Color already present",
       }));
     }
     setOpenDialogForSelectingColor(false);
@@ -770,7 +762,7 @@ export default function AddOrder(props) {
     let obj = ratio[k];
     obj = {
       ...obj,
-      [name]: parseFloat(value)
+      [name]: parseFloat(value),
     };
     setRatio([...ratio.slice(0, k), obj, ...ratio.slice(k + 1)]);
   };
@@ -784,23 +776,22 @@ export default function AddOrder(props) {
         ratio: ratio && ratio.length ? ratio : [],
         remaining_quantity:
           parseFloat(formState.quantity) -
-          parseFloat(formState.completed_quantity)
+          parseFloat(formState.completed_quantity),
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setOpenDialogForStockAvailibility(true);
         setAvailibleStocks(res.data);
-        console.log(res.data);
         setBackDrop(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error"
+          message: "Error",
         }));
       });
   };
@@ -810,13 +801,13 @@ export default function AddOrder(props) {
   };
 
   useEffect(() => {
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      is_ratio_present: ratio && ratio.length ? true : false
+      is_ratio_present: ratio && ratio.length ? true : false,
     }));
   }, [ratio]);
 
-  const handleOrderDate = event => {
+  const handleOrderDate = (event) => {
     let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (date === "Invalid date") {
       date = null;
@@ -824,9 +815,9 @@ export default function AddOrder(props) {
       date = new Date(date).toISOString();
     }
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      date: date
+      date: date,
     }));
   };
 
@@ -845,11 +836,11 @@ export default function AddOrder(props) {
       />
       {alert}
       <DialogBoxForSelectingReadyMaterial
-        handleCancel={handleCloseDialogForReadyMaterial}
-        handleClose={handleCloseDialogForReadyMaterial}
-        handleAddReadyMaterial={handleAddReadyMaterial}
+        handleCancel={handleCloseDialogForDesign}
+        handleClose={handleCloseDialogForDesign}
+        handleAddDesign={handleAddDesign}
         isHandleKey={false}
-        open={openDialogForSelectingReadyMaterial}
+        open={openDialogForSelectingDesign}
       />
       <DialogForSelectingParties
         handleCancel={handleCloseDialogForParties}
@@ -879,21 +870,21 @@ export default function AddOrder(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={6}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   labelText="Order ID"
                   name="order_id"
                   disabled={isView || isEdit || formState.cancelled}
                   value={formState.order_id}
                   id="order_id"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   /** For setting errors */
                   helperTextId={"helperText_order_id"}
                   isHelperText={hasError("order_id", error)}
                   helperText={
                     hasError("order_id", error)
-                      ? error["order_id"].map(error => {
+                      ? error["order_id"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -918,18 +909,18 @@ export default function AddOrder(props) {
 
               <GridItem xs={12} sm={12} md={4}>
                 <DatePicker
-                  onChange={event => handleOrderDate(event)}
+                  onChange={(event) => handleOrderDate(event)}
                   label="Order Date"
                   name="order_date"
                   disabled={isView || formState.cancelled}
                   value={formState.date || new Date()}
                   id="order_date"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   style={{
                     width: "100%",
-                    marginTop: "1.5rem"
+                    marginTop: "1.5rem",
                   }}
                 />
               </GridItem>
@@ -940,7 +931,7 @@ export default function AddOrder(props) {
                 sm={12}
                 md={12}
                 style={{
-                  margin: "20px 10px 20px 13px"
+                  margin: "20px 10px 20px 13px",
                 }}
               >
                 <GridContainer>
@@ -949,10 +940,10 @@ export default function AddOrder(props) {
                     sm={12}
                     md={12}
                     style={{
-                      margin: "0px 0px 10px 0px"
+                      margin: "0px 0px 10px 0px",
                     }}
                   >
-                    <b>Ready Material : </b>
+                    <b>Design : </b>
                   </GridItem>
                 </GridContainer>
 
@@ -960,7 +951,7 @@ export default function AddOrder(props) {
                   style={{
                     margin: "2px 2px 2px 2px",
                     border: "1px solid #C0C0C0",
-                    borderRadius: "10px"
+                    borderRadius: "10px",
                   }}
                 >
                   <GridItem
@@ -968,13 +959,13 @@ export default function AddOrder(props) {
                     sm={12}
                     md={10}
                     style={{
-                      margin: "15px 0px 10px 0px"
+                      margin: "15px 0px 10px 0px",
                     }}
                   >
                     {readyMaterial.id ? (
                       <div
                         style={{
-                          textAlign: "center"
+                          textAlign: "center",
                         }}
                       >
                         <GridContainer>
@@ -989,7 +980,7 @@ export default function AddOrder(props) {
                                   loader={<CircularProgress />}
                                   style={{
                                     height: "10rem",
-                                    width: "20rem"
+                                    width: "20rem",
                                   }}
                                   className={classes.UploadImage}
                                 />
@@ -999,7 +990,7 @@ export default function AddOrder(props) {
                                   alt="ready_material_photo"
                                   style={{
                                     height: "10rem",
-                                    width: "20rem"
+                                    width: "20rem",
                                   }}
                                   loader={<CircularProgress />}
                                   className={classes.DefaultNoImage}
@@ -1029,7 +1020,7 @@ export default function AddOrder(props) {
                     ) : (
                       <GridContainer style={{ dispay: "flex" }}>
                         <GridItem xs={12} sm={12} md={12}>
-                          No Ready Material Selected
+                          No Design Selected
                         </GridItem>
                       </GridContainer>
                     )}
@@ -1037,15 +1028,13 @@ export default function AddOrder(props) {
                   <GridItem xs={12} sm={12} md={1}>
                     <Tooltip
                       title={
-                        readyMaterial.id
-                          ? "Change Ready Material "
-                          : "Select Ready Material"
+                        readyMaterial.id ? "Change Design " : "Select Design"
                       }
                     >
                       <IconButton
                         disabled={isView || isEdit || formState.cancelled}
                         onClick={() => {
-                          openReadyMaterialDialogFunction(true);
+                          openDesignDialogFunction(true);
                         }}
                       >
                         <EditIcon />
@@ -1057,22 +1046,32 @@ export default function AddOrder(props) {
                       disabled={isView || isEdit || formState.cancelled}
                       onClick={() => {
                         delete error["ready_material"];
-                        setError(error => ({
-                          ...error
+                        setError((error) => ({
+                          ...error,
                         }));
-                        setReadyMaterial(readyMaterial => ({
+                        setReadyMaterial((readyMaterial) => ({
                           ...readyMaterial,
                           id: null,
                           availableQuantity: 0,
                           images: null,
                           total_cost: 0,
-                          isColorVariationAvailable: false
+                          isColorVariationAvailable: false,
                         }));
                       }}
                     >
                       <ClearIcon />
                     </IconButton>
                   </GridItem>
+                  {/* <Button
+                    component="span"
+                    className={
+                      formState.image
+                        ? classes.editIconOnImage
+                        : classes.addIconOnImage
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </Button> */}
                 </GridContainer>
                 <GridContainer>
                   <GridItem>
@@ -1083,7 +1082,7 @@ export default function AddOrder(props) {
                           error={hasError("ready_material", error)}
                         >
                           {hasError("ready_material", error)
-                            ? error["ready_material"].map(error => {
+                            ? error["ready_material"].map((error) => {
                                 return error + " ";
                               })
                             : null}
@@ -1100,7 +1099,7 @@ export default function AddOrder(props) {
                 sm={12}
                 md={12}
                 style={{
-                  margin: "20px 10px 0px 13px"
+                  margin: "20px 10px 0px 13px",
                 }}
               >
                 <GridContainer>
@@ -1109,7 +1108,7 @@ export default function AddOrder(props) {
                     sm={12}
                     md={12}
                     style={{
-                      margin: "0px 0px 10px 0px"
+                      margin: "0px 0px 10px 0px",
                     }}
                   >
                     <b>Party : </b>
@@ -1120,7 +1119,7 @@ export default function AddOrder(props) {
                   style={{
                     margin: "2px 2px 0px 2px",
                     border: "1px solid #C0C0C0",
-                    borderRadius: "10px"
+                    borderRadius: "10px",
                   }}
                 >
                   <GridItem
@@ -1128,7 +1127,7 @@ export default function AddOrder(props) {
                     sm={12}
                     md={10}
                     style={{
-                      margin: "15px 0px 10px 0px"
+                      margin: "15px 0px 10px 0px",
                     }}
                   >
                     {party.id ? (
@@ -1169,14 +1168,14 @@ export default function AddOrder(props) {
                       disabled={isView || isEdit || formState.cancelled}
                       onClick={() => {
                         delete error["party"];
-                        setError(error => ({
-                          ...error
+                        setError((error) => ({
+                          ...error,
                         }));
-                        setParty(party => ({
+                        setParty((party) => ({
                           ...party,
                           gst_no: "",
                           id: null,
-                          party_name: ""
+                          party_name: "",
                         }));
                       }}
                     >
@@ -1193,7 +1192,7 @@ export default function AddOrder(props) {
                           error={hasError("party", error)}
                         >
                           {hasError("party", error)
-                            ? error["party"].map(error => {
+                            ? error["party"].map((error) => {
                                 return error + " ";
                               })
                             : null}
@@ -1225,13 +1224,13 @@ export default function AddOrder(props) {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={3}>
                     <CustomInput
-                      onChange={event => handleChangePricePerPiece(event)}
+                      onChange={(event) => handleChangePricePerPiece(event)}
                       labelText="Price Per Piece"
                       disabled={isView || isEdit || formState.cancelled}
                       value={formState.price_per_piece}
                       id="price_per_piece"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       type="number"
                       /** For setting errors */
@@ -1239,7 +1238,7 @@ export default function AddOrder(props) {
                       isHelperText={hasError("price_per_piece", error)}
                       helperText={
                         hasError("price_per_piece", error)
-                          ? error["price_per_piece"].map(error => {
+                          ? error["price_per_piece"].map((error) => {
                               return error + " ";
                             })
                           : null
@@ -1252,7 +1251,7 @@ export default function AddOrder(props) {
                     sm={12}
                     md={3}
                     style={{
-                      margin: "45px 0 0 0"
+                      margin: "45px 0 0 0",
                     }}
                   >
                     {convertNumber(
@@ -1264,13 +1263,13 @@ export default function AddOrder(props) {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={3}>
                     <CustomInput
-                      onChange={event => handleChangeAddCost(event)}
+                      onChange={(event) => handleChangeAddCost(event)}
                       labelText="Additional Cost"
                       disabled={isView || formState.cancelled}
                       value={formState.add_cost}
                       id="add_cost"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       type="number"
                       /** For setting errors */
@@ -1278,7 +1277,7 @@ export default function AddOrder(props) {
                       isHelperText={hasError("add_cost", error)}
                       helperText={
                         hasError("add_cost", error)
-                          ? error["add_cost"].map(error => {
+                          ? error["add_cost"].map((error) => {
                               return error + " ";
                             })
                           : null
@@ -1291,7 +1290,7 @@ export default function AddOrder(props) {
                     sm={12}
                     md={3}
                     style={{
-                      margin: "45px 0 0 0"
+                      margin: "45px 0 0 0",
                     }}
                   >
                     {convertNumber(
@@ -1306,14 +1305,14 @@ export default function AddOrder(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   labelText="Party Number"
                   name="party_no"
                   disabled={isView || formState.cancelled}
                   value={formState.party_no}
                   id="party_no"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                 />
               </GridItem>
@@ -1322,7 +1321,7 @@ export default function AddOrder(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => handleChangeQuantity(event)}
+                  onChange={(event) => handleChangeQuantity(event)}
                   labelText="Total Quantity"
                   name="quantity"
                   disabled={
@@ -1333,7 +1332,7 @@ export default function AddOrder(props) {
                   value={formState.quantity}
                   id="quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   type="number"
                   /** For setting errors */
@@ -1341,7 +1340,7 @@ export default function AddOrder(props) {
                   isHelperText={hasError("quantity", error)}
                   helperText={
                     hasError("quantity", error)
-                      ? error["quantity"].map(error => {
+                      ? error["quantity"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -1352,7 +1351,7 @@ export default function AddOrder(props) {
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={event => {
+                  onChange={(event) => {
                     let parsedValue = parseFloat(event.target.value);
                     let parsedTotalQuantity = parseFloat(formState.quantity);
                     if (
@@ -1361,10 +1360,10 @@ export default function AddOrder(props) {
                     ) {
                       handleChange(event);
                       if (parsedValue === parsedTotalQuantity) {
-                        setFormState(formState => ({
+                        setFormState((formState) => ({
                           ...formState,
                           partial_completed: false,
-                          fully_completed: true
+                          fully_completed: true,
                         }));
                       } else {
                         let partial_completed = false;
@@ -1373,10 +1372,10 @@ export default function AddOrder(props) {
                         } else {
                           partial_completed = true;
                         }
-                        setFormState(formState => ({
+                        setFormState((formState) => ({
                           ...formState,
                           partial_completed: partial_completed,
-                          fully_completed: false
+                          fully_completed: false,
                         }));
                       }
                     }
@@ -1388,7 +1387,7 @@ export default function AddOrder(props) {
                   value={formState.completed_quantity}
                   id="completed_quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   name="completed_quantity"
                   type="number"
@@ -1397,7 +1396,7 @@ export default function AddOrder(props) {
                   isHelperText={hasError("completed_quantity", error)}
                   helperText={
                     hasError("completed_quantity", error)
-                      ? error["completed_quantity"].map(error => {
+                      ? error["completed_quantity"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -1408,7 +1407,7 @@ export default function AddOrder(props) {
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   labelText="Remaining Quantity"
                   disabled={true}
                   value={
@@ -1422,14 +1421,14 @@ export default function AddOrder(props) {
                   }
                   id="remaining_quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   name="remaining_quantity"
                 />
               </GridItem>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => {
+                  onChange={(event) => {
                     let parsedValue = parseFloat(event.target.value);
                     let parsedCompleted = parseFloat(
                       formState.completed_quantity
@@ -1451,7 +1450,7 @@ export default function AddOrder(props) {
                   value={formState.buffer_quantity}
                   id="buffer_quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   name="buffer_quantity"
                   type="number"
@@ -1460,7 +1459,7 @@ export default function AddOrder(props) {
                   isHelperText={hasError("buffer_quantity", error)}
                   helperText={
                     hasError("buffer_quantity", error)
-                      ? error["buffer_quantity"].map(error => {
+                      ? error["buffer_quantity"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -1476,10 +1475,10 @@ export default function AddOrder(props) {
                     control={
                       <Switch
                         checked={formState.cancelled ? true : false}
-                        onChange={event => {
-                          setFormState(formState => ({
+                        onChange={(event) => {
+                          setFormState((formState) => ({
                             ...formState,
-                            cancelled: event.target.checked
+                            cancelled: event.target.checked,
                           }));
                         }}
                         disabled={
@@ -1490,12 +1489,12 @@ export default function AddOrder(props) {
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
                           thumb: classes.switchIcon,
-                          track: classes.switchBar
+                          track: classes.switchBar,
                         }}
                       />
                     }
                     classes={{
-                      label: classes.label
+                      label: classes.label,
                     }}
                     label="Cancelled"
                   />
@@ -1518,12 +1517,12 @@ export default function AddOrder(props) {
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
                           thumb: classes.switchIcon,
-                          track: classes.switchBar
+                          track: classes.switchBar,
                         }}
                       />
                     }
                     classes={{
-                      label: classes.label
+                      label: classes.label,
                     }}
                     label="Fully Completed"
                   />
@@ -1540,12 +1539,12 @@ export default function AddOrder(props) {
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
                           thumb: classes.switchIcon,
-                          track: classes.switchBar
+                          track: classes.switchBar,
                         }}
                       />
                     }
                     classes={{
-                      label: classes.label
+                      label: classes.label,
                     }}
                     label="Partial Completed"
                   />
@@ -1577,14 +1576,14 @@ export default function AddOrder(props) {
                       sm={12}
                       md={12}
                       style={{
-                        margin: "20px 10px 20px 13px"
+                        margin: "20px 10px 20px 13px",
                       }}
                     >
                       <GridContainer
                         style={{
                           margin: "1px 1px 1px 1px",
                           border: "1px solid #C0C0C0",
-                          borderRadius: "10px"
+                          borderRadius: "10px",
                         }}
                       >
                         <GridItem xs={12} sm={12} md={12}>
@@ -1599,13 +1598,13 @@ export default function AddOrder(props) {
                                     disabled={true}
                                     value={r.name}
                                     formControlProps={{
-                                      fullWidth: true
+                                      fullWidth: true,
                                     }}
                                   />
                                 </GridItem>
                                 <GridItem xs={12} sm={12} md={3}>
                                   <CustomInput
-                                    onChange={event =>
+                                    onChange={(event) =>
                                       handleChangeRepeatableComponent(
                                         event,
                                         key
@@ -1618,7 +1617,7 @@ export default function AddOrder(props) {
                                     value={r.quantity}
                                     id="quantity"
                                     formControlProps={{
-                                      fullWidth: true
+                                      fullWidth: true,
                                     }}
                                     type="number"
                                     name="quantity"
@@ -1627,9 +1626,11 @@ export default function AddOrder(props) {
                                     isHelperText={hasError("quantity_error", r)}
                                     helperText={
                                       hasError("quantity_error", error)
-                                        ? error["quantity_error"].map(error => {
-                                            return error + " ";
-                                          })
+                                        ? error["quantity_error"].map(
+                                            (error) => {
+                                              return error + " ";
+                                            }
+                                          )
                                         : null
                                     }
                                     error={hasError("quantity_error", error)}
@@ -1637,7 +1638,7 @@ export default function AddOrder(props) {
                                 </GridItem>
                                 <GridItem xs={12} sm={12} md={3}>
                                   <CustomInput
-                                    onChange={event => {
+                                    onChange={(event) => {
                                       let parsedValue = parseFloat(
                                         event.target.value
                                       );
@@ -1660,7 +1661,7 @@ export default function AddOrder(props) {
                                     value={r.quantity_completed}
                                     id="quantity_completed"
                                     formControlProps={{
-                                      fullWidth: true
+                                      fullWidth: true,
                                     }}
                                     name="quantity_completed"
                                     type="number"
@@ -1675,7 +1676,7 @@ export default function AddOrder(props) {
                                     helperText={
                                       hasError("quantity_completed", error)
                                         ? error["quantity_completed"].map(
-                                            error => {
+                                            (error) => {
                                               return error + " ";
                                             }
                                           )
@@ -1708,7 +1709,7 @@ export default function AddOrder(props) {
                                       onClick={() => {
                                         setRatio([
                                           ...ratio.slice(0, key),
-                                          ...ratio.slice(key + 1)
+                                          ...ratio.slice(key + 1),
                                         ]);
                                       }}
                                     >
@@ -1733,14 +1734,14 @@ export default function AddOrder(props) {
                   id="notes"
                   name="notes"
                   disabled={isView}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   value={formState.notes}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   inputProps={{
                     multiline: true,
-                    rows: 3
+                    rows: 3,
                   }}
                 />
               </GridItem>
@@ -1759,7 +1760,7 @@ export default function AddOrder(props) {
                       onClick={() => {
                         history.push({
                           pathname: DEPARTMENTSHEET,
-                          search: `?oid=${urlParams.get("oid")}`
+                          search: `?oid=${urlParams.get("oid")}`,
                         });
                       }}
                     >
@@ -1776,7 +1777,7 @@ export default function AddOrder(props) {
                 sm={12}
                 md={3}
                 style={{
-                  margin: "30px 0 0 0"
+                  margin: "30px 0 0 0",
                 }}
               >
                 <b>Total Price W/O Tax : </b>
@@ -1786,7 +1787,7 @@ export default function AddOrder(props) {
                 sm={12}
                 md={3}
                 style={{
-                  margin: "30px 0 0 0"
+                  margin: "30px 0 0 0",
                 }}
               >
                 {convertNumber(
@@ -1800,11 +1801,11 @@ export default function AddOrder(props) {
             <CardFooter>
               <Button
                 color="primary"
-                onClick={e => {
+                onClick={(e) => {
                   history.push({
                     pathname: EDITORDER,
                     search: `?oid=${urlParams.get("oid")}`,
-                    state: { edit: true }
+                    state: { edit: true },
                   });
                   window.location.reload();
                 }}
@@ -1814,7 +1815,7 @@ export default function AddOrder(props) {
             </CardFooter>
           ) : (
             <CardFooter>
-              <Button color="primary" onClick={e => submit(e)}>
+              <Button color="primary" onClick={(e) => submit(e)}>
                 Save
               </Button>
             </CardFooter>

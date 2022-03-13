@@ -14,20 +14,20 @@ import {
   RawMaterialDetail,
   SellerDetails,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
 import ClearIcon from "@material-ui/icons/Clear";
 import {
   backend_individual_kachha_purchase_ledger,
-  backend_sellers_for_autocomplete
+  backend_sellers_for_autocomplete,
 } from "../../constants";
 import { convertNumber, dateToDDMMYYYY, isEmptyString } from "../../Utils";
 import {
   Backdrop,
   CircularProgress,
   IconButton,
-  makeStyles
+  makeStyles,
 } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { providerForGet } from "../../api";
@@ -44,54 +44,52 @@ export default function Ledger() {
   const tableRef = React.createRef();
   const [rawMaterialDetails, setRawMaterialDetails] = useState({
     id: "",
-    name: ""
+    name: "",
   });
 
   const [sellerDetails, setSellerDetails] = useState({
     id: "",
-    name: ""
+    name: "",
   });
 
   const [
     openDialogForSelectingRawMaterial,
-    setOpenDialogForSelectingRawMaterial
+    setOpenDialogForSelectingRawMaterial,
   ] = useState(false);
-  const [
-    openDialogForSelectingSeller,
-    setOpenDialogForSelectingSeller
-  ] = useState(false);
+  const [openDialogForSelectingSeller, setOpenDialogForSelectingSeller] =
+    useState(false);
 
   const [filter, setFilter] = useState({
-    _sort: "date:desc"
+    _sort: "date:desc",
   });
   const [seller, setSeller] = useState([]);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [
     {
       title: "Date",
       field: "date",
-      render: rowData => dateToDDMMYYYY(new Date(rowData.date))
+      render: (rowData) => dateToDDMMYYYY(new Date(rowData.date)),
     },
     /** Transaction type */
     {
       title: "Seller",
       field: "seller",
       width: "100%",
-      render: rowData => rowData.seller.name
+      render: (rowData) => rowData.seller.name,
     },
     {
       title: "Raw Material",
       field: "raw_material",
       headerStyle: {
         width: 120,
-        minWidth: 200
+        minWidth: 200,
       },
-      render: rowData => (
+      render: (rowData) => (
         <>
           <GridContainer style={{ dispay: "flex" }}>
             <GridItem xs={12} sm={12} md={8}>
@@ -105,19 +103,19 @@ export default function Ledger() {
             </GridItem>
           </GridContainer>
         </>
-      )
+      ),
     },
     {
       title: "Quantity",
       field: "purchase_quantity",
-      width: "10%"
+      width: "10%",
     },
     {
       title: "Purchase Cost",
       field: "total_purchase_cost",
       width: "10%",
-      render: rowData => convertNumber(rowData.total_purchase_cost, true)
-    }
+      render: (rowData) => convertNumber(rowData.total_purchase_cost, true),
+    },
   ];
 
   useEffect(() => {
@@ -127,10 +125,10 @@ export default function Ledger() {
   const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -145,25 +143,24 @@ export default function Ledger() {
           method: "GET",
           headers: {
             "content-type": "application/json",
-            Authorization: "Bearer " + Auth.getToken()
-          }
+            Authorization: "Bearer " + Auth.getToken(),
+          },
         }
       )
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: convertData(result.data),
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
   };
 
-  const convertData = allData => {
-    //console.log("data ", data);
+  const convertData = (allData) => {
     let x = [];
-    allData.map(data => {
+    allData.map((data) => {
       let bill_no = "";
       let raw_material = {
         id: "",
@@ -172,11 +169,11 @@ export default function Ledger() {
         category: "",
         size: "",
         unit: "",
-        department: ""
+        department: "",
       };
       let seller = {
         name: "",
-        gst_no: ""
+        gst_no: "",
       };
       if (data.raw_material) {
         raw_material = {
@@ -192,13 +189,13 @@ export default function Ledger() {
           department: data.raw_material.department
             ? data.raw_material.department.name
             : "--",
-          balance: data.raw_material.balance
+          balance: data.raw_material.balance,
         };
       }
       if (data.seller) {
         seller = {
           name: data.seller.seller_name,
-          gst_no: data.seller.gst_no
+          gst_no: data.seller.gst_no,
         };
       }
       if (data.purchase) {
@@ -217,7 +214,7 @@ export default function Ledger() {
         total_purchase_cost: isEmptyString(data.total_purchase_cost)
           ? 0
           : data.total_purchase_cost,
-        date: data.date
+        date: data.date,
       };
       x.push(dataToSend);
     });
@@ -231,9 +228,9 @@ export default function Ledger() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
@@ -241,76 +238,76 @@ export default function Ledger() {
   const handleClickOpenIndividualPurchase = async (row, isView) => {};
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
-  const getSellerNames = value => {
+  const getSellerNames = (value) => {
     let paginationFilter = {
-      pageSize: -1
+      pageSize: -1,
     };
     providerForGet(
       backend_sellers_for_autocomplete,
       paginationFilter,
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setSeller(res.data.data);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error getting seller info"
+          message: "Error getting seller info",
         }));
       });
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
 
   /** Handle End Date filter change */
-  const handleEndDateChange = event => {
+  const handleEndDateChange = (event) => {
     let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
     if (endDate === "Invalid date") {
       endDate = null;
     } else {
       endDate = new Date(endDate).toISOString();
     }
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      date_lte: endDate
+      date_lte: endDate,
     }));
   };
 
   /** Handle Start Date filter change */
-  const handleStartDateChange = event => {
+  const handleStartDateChange = (event) => {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
     } else {
       startDate = new Date(startDate).toISOString();
     }
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      date_gte: startDate
+      date_gte: startDate,
     }));
   };
 
@@ -319,24 +316,24 @@ export default function Ledger() {
   };
 
   /** Seller Dialog boxes */
-  const handeAddSeller = row => {
+  const handeAddSeller = (row) => {
     setOpenDialogForSelectingSeller(false);
     if (row) {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        seller: row.id
+        seller: row.id,
       }));
-      setSellerDetails(sellerDetails => ({
+      setSellerDetails((sellerDetails) => ({
         ...sellerDetails,
         id: row.id,
-        name: row.seller_name
+        name: row.seller_name,
       }));
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Invalid Seller"
+        message: "Invalid Seller",
       }));
     }
   };
@@ -344,21 +341,21 @@ export default function Ledger() {
   const handleAddRawMaterial = (row, nameObject) => {
     setOpenDialogForSelectingRawMaterial(false);
     if (row) {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        raw_material: row.id
+        raw_material: row.id,
       }));
-      setRawMaterialDetails(rawMaterialDetails => ({
+      setRawMaterialDetails((rawMaterialDetails) => ({
         ...rawMaterialDetails,
         id: row.id,
-        name: nameObject.name
+        name: nameObject.name,
       }));
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Invalid Raw Material"
+        message: "Invalid Raw Material",
       }));
     }
   };
@@ -370,17 +367,17 @@ export default function Ledger() {
 
   const cancelFilters = () => {
     setFilter({
-      _sort: "date:desc"
+      _sort: "date:desc",
     });
-    setSellerDetails(sellerDetails => ({
+    setSellerDetails((sellerDetails) => ({
       ...sellerDetails,
       id: null,
-      name: ""
+      name: "",
     }));
-    setRawMaterialDetails(rawMaterialDetails => ({
+    setRawMaterialDetails((rawMaterialDetails) => ({
       ...rawMaterialDetails,
       id: null,
-      name: ""
+      name: "",
     }));
     tableRef.current.onQueryChange();
   };
@@ -419,13 +416,13 @@ export default function Ledger() {
                   sm={12}
                   md={5}
                   style={{
-                    margin: "27px 0px 0px"
+                    margin: "27px 0px 0px",
                   }}
                 >
                   <GridContainer
                     style={{
                       border: "1px solid #C0C0C0",
-                      borderRadius: "10px"
+                      borderRadius: "10px",
                     }}
                   >
                     <GridItem
@@ -433,7 +430,7 @@ export default function Ledger() {
                       sm={12}
                       md={5}
                       style={{
-                        margin: "15px 0px 0px"
+                        margin: "15px 0px 0px",
                       }}
                     >
                       <GridContainer style={{ dispay: "flex" }}>
@@ -457,14 +454,14 @@ export default function Ledger() {
                     <GridItem xs={12} sm={12} md={2}>
                       <IconButton
                         onClick={() => {
-                          setRawMaterialDetails(rawMaterialDetails => ({
+                          setRawMaterialDetails((rawMaterialDetails) => ({
                             ...rawMaterialDetails,
                             id: null,
-                            name: ""
+                            name: "",
                           }));
                           delete filter["raw_material"];
-                          setFilter(filter => ({
-                            ...filter
+                          setFilter((filter) => ({
+                            ...filter,
                           }));
                         }}
                       >
@@ -479,13 +476,13 @@ export default function Ledger() {
                   sm={12}
                   md={5}
                   style={{
-                    margin: "27px 0px 0px"
+                    margin: "27px 0px 0px",
                   }}
                 >
                   <GridContainer
                     style={{
                       border: "1px solid #C0C0C0",
-                      borderRadius: "10px"
+                      borderRadius: "10px",
                     }}
                   >
                     <GridItem
@@ -493,7 +490,7 @@ export default function Ledger() {
                       sm={12}
                       md={6}
                       style={{
-                        margin: "15px 0px 0px"
+                        margin: "15px 0px 0px",
                       }}
                     >
                       <GridContainer style={{ dispay: "flex" }}>
@@ -515,14 +512,14 @@ export default function Ledger() {
                     <GridItem xs={12} sm={12} md={2}>
                       <IconButton
                         onClick={() => {
-                          setSellerDetails(sellerDetails => ({
+                          setSellerDetails((sellerDetails) => ({
                             ...sellerDetails,
                             id: null,
-                            name: ""
+                            name: "",
                           }));
                           delete filter["seller"];
-                          setFilter(filter => ({
-                            ...filter
+                          setFilter((filter) => ({
+                            ...filter,
                           }));
                         }}
                       >
@@ -535,33 +532,33 @@ export default function Ledger() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleStartDateChange(event)}
+                    onChange={(event) => handleStartDateChange(event)}
                     label="Date From"
                     name="date_gte"
                     value={filter.date_gte || null}
                     id="date_gte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleEndDateChange(event)}
+                    onChange={(event) => handleEndDateChange(event)}
                     label="Date To"
                     name="date_lte"
                     value={filter.date_lte || null}
                     id="date_lte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                   />
                 </GridItem>
@@ -570,7 +567,7 @@ export default function Ledger() {
                   sm={12}
                   md={4}
                   style={{
-                    marginTop: "27px"
+                    marginTop: "27px",
                   }}
                 >
                   <Button
@@ -597,10 +594,10 @@ export default function Ledger() {
                 tableRef={tableRef}
                 title="Kachha Purchase Details"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getPurchasesData(query.page + 1, query.pageSize);
                 }}
-                detailPanel={rowData => {
+                detailPanel={(rowData) => {
                   return (
                     <GridContainer>
                       <GridItem xs={12} sm={12} md={6}>
@@ -619,7 +616,7 @@ export default function Ledger() {
                   actionsColumnIndex: -1,
                   search: false,
                   sorting: true,
-                  thirdSortClick: false
+                  thirdSortClick: false,
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);

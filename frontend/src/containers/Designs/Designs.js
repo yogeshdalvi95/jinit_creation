@@ -7,6 +7,7 @@ import {
   CardBody,
   CardHeader,
   CustomInput,
+  DialogBoxForDuplicatingDesign,
   FAB,
   GridContainer,
   GridItem,
@@ -14,26 +15,33 @@ import {
   Table,
 } from "../../components";
 // core components
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { apiUrl, backend_designs } from "../../constants";
 import { ADDDESIGN, EDITDESIGN, VIEWDESIGN } from "../../paths";
 import { useHistory } from "react-router-dom";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
+import { CircularProgress, makeStyles } from "@material-ui/core";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import { convertNumber, isEmptyString } from "../../Utils";
 import no_image_icon from "../../assets/img/no_image_icon.png";
+import { providerForDelete } from "../../api";
 
 const useStyles = makeStyles(styles);
 export default function Designs() {
   const classes = useStyles();
   const tableRef = React.createRef();
-  const [openBackDrop, setBackDrop] = useState(false);
+  const [openDuplicateDialog, setOpenDuplicateDialog] = useState({
+    status: false,
+    designNumber: "",
+    designId: null,
+  });
   const history = useHistory();
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc",
+    _sort: "updated_at:desc",
   });
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -42,9 +50,16 @@ export default function Designs() {
   });
 
   const columns = [
-    { title: "Material No", field: "material_no" },
+    {
+      title: "Material No",
+      field: "material_no",
+      sorting: false,
+      align: "center",
+    },
     {
       title: "Image",
+      sorting: false,
+      align: "center",
       render: (rowData) => (
         <div className={classes.imageDivInTable}>
           {rowData.images && rowData.images.length && rowData.images[0].url ? (
@@ -76,6 +91,8 @@ export default function Designs() {
     {
       title: "Price",
       field: "total_price",
+      align: "center",
+      sorting: false,
       render: (rowData) => convertNumber(rowData.total_price, true),
     },
   ];
@@ -138,6 +155,29 @@ export default function Designs() {
     history.push(ADDDESIGN);
   };
 
+  const onRowDelete = async (data) => {
+    let setRef = tableRef.current;
+    await providerForDelete(backend_designs, data.id, Auth.getToken())
+      .then((res) => {
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "success",
+          message: "Successfully deleted design " + data?.material_no,
+        }));
+        setRef.onQueryChange();
+      })
+      .catch((err) => {
+        console.log("err ", err);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error deleting design " + data?.material_no,
+        }));
+      });
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -145,6 +185,13 @@ export default function Designs() {
         severity={snackBar.severity}
         message={snackBar.message}
         handleClose={snackBarHandleClose}
+      />
+      <DialogBoxForDuplicatingDesign
+        handleCancel={() => setOpenDuplicateDialog(false)}
+        handleClose={() => setOpenDuplicateDialog(false)}
+        open={openDuplicateDialog.status}
+        designNumber={openDuplicateDialog.designNumber}
+        designId={openDuplicateDialog.designId}
       />
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
@@ -225,6 +272,14 @@ export default function Designs() {
                 data={async (query) => {
                   return await getDesignData(query.page + 1, query.pageSize);
                 }}
+                localization={{
+                  body: {
+                    editRow: {
+                      deleteText: `Are you sure you want to delete this design?`,
+                      saveTooltip: "Save",
+                    },
+                  },
+                }}
                 actions={[
                   (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
@@ -240,7 +295,28 @@ export default function Designs() {
                       history.push(`${VIEWDESIGN}/${rowData.id}`);
                     },
                   }),
+                  (rowData) => ({
+                    icon: () => <FileCopyIcon fontSize="small" />,
+                    tooltip: "Duplicate",
+                    onClick: (event, rowData) => {
+                      setOpenDuplicateDialog((openDuplicateDialog) => ({
+                        ...openDuplicateDialog,
+                        status: true,
+                        designNumber: rowData.material_no,
+                        designId: rowData.id,
+                      }));
+                    },
+                  }),
                 ]}
+                editable={{
+                  onRowDelete: (oldData) =>
+                    new Promise((resolve) => {
+                      setTimeout(async () => {
+                        onRowDelete(oldData);
+                        resolve();
+                      }, 1000);
+                    }),
+                }}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,
@@ -256,9 +332,6 @@ export default function Designs() {
           </Card>
         </GridItem>
       </GridContainer>
-      <Backdrop className={classes.backdrop} open={openBackDrop}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
     </>
   );
 }

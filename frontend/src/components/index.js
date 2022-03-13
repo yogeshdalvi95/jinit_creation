@@ -44,6 +44,7 @@ export {
   DialogBoxForSelectingReadyMaterial,
   DialogForSelectingParties,
   DialogForCheckingStockAvailibility,
+  DialogBoxForDuplicatingDesign,
 } from "./DialogBox";
 export { RawMaterialDetail } from "./RawMaterialDetail";
 export { DesignData } from "./DesignData";

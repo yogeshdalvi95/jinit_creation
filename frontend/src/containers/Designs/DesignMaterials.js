@@ -55,9 +55,9 @@ export default function DesignMaterials(props) {
   const [openBackDrop, setOpenBackDrop] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [colors] = useState(props?.designData?.colors);
+  const [colorPrice] = useState(props?.designData?.color_price);
   const [selectedColor, setSelectedColor] = useState({});
   const isSmallerScreen = useMediaQuery(theme.breakpoints.down("md"));
-  console.log(isSmallerScreen);
   const [filter, setFilter] = useState({
     _sort: "updated_at:desc",
     isRawMaterial: props?.isRawMaterial,
@@ -535,58 +535,49 @@ export default function DesignMaterials(props) {
             <GridItem
               xs={12}
               sm={12}
-              md={12}
+              md={3}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
+                marginLeft: "auto",
               }}
             >
-              <Box
-                sx={{
-                  mt: "auto",
-                  mb: "auto",
+              <CustomAutoComplete
+                id="color"
+                labelText="Select Color"
+                autocompleteId={"color"}
+                optionKey={"name"}
+                options={colors}
+                formControlProps={{
+                  fullWidth: true,
                 }}
-              >
-                {`${filter.isColor ? "Color : " + selectedColor.name : ""}`}
-              </Box>
-              <GridItem xs={12} sm={12} md={3}>
-                <CustomAutoComplete
-                  id="color"
-                  labelText="Select Color"
-                  autocompleteId={"color"}
-                  optionKey={"name"}
-                  options={colors}
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  noMarginTop
-                  onChange={(event, value) => {
-                    if (value !== null) {
-                      setFilter((filter) => ({
-                        ...filter,
-                        isColor: true,
-                        color: value.id,
-                      }));
-                      setSelectedColor(value);
-                    } else {
-                      delete filter.color;
-                      setFilter((filter) => ({
-                        ...filter,
-                        isColor: false,
-                      }));
-                      setSelectedColor({});
-                    }
-                    tableRef.current.onQueryChange();
-                  }}
-                  value={
-                    colors[
-                      colors.findIndex(function (item, i) {
-                        return item.id === filter.color;
-                      })
-                    ] || null
+                noMarginTop
+                onChange={(event, value) => {
+                  if (value !== null) {
+                    setFilter((filter) => ({
+                      ...filter,
+                      isColor: true,
+                      color: value.id,
+                    }));
+                    setSelectedColor(value);
+                    props.setColor(true, value);
+                  } else {
+                    delete filter.color;
+                    setFilter((filter) => ({
+                      ...filter,
+                      isColor: false,
+                    }));
+                    setSelectedColor({});
+                    props.setColor(false, null);
                   }
-                />
-              </GridItem>
+                  tableRef.current.onQueryChange();
+                }}
+                value={
+                  colors[
+                    colors.findIndex(function (item, i) {
+                      return item.id === filter.color;
+                    })
+                  ] || null
+                }
+              />
             </GridItem>
           </GridContainer>
           <br />

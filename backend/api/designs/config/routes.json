@@ -33,6 +33,15 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/designs/duplicate-design",
+      "handler": "designs.duplicateDesign",
+      "config": {
+        "policies": []
+      }
+    },
+
+    {
       "method": "PUT",
       "path": "/designs/:id",
       "handler": "designs.update",

@@ -68,6 +68,7 @@ export default function AddEditDesign(props) {
     addNewImageUrl: null,
     showEditPreviewImage: false,
     showAddPreviewImage: true,
+    color_price: [],
   });
   const [error, setError] = React.useState({});
 
@@ -128,6 +129,7 @@ export default function AddEditDesign(props) {
       showAddPreviewImage: isImagePresent ? false : true,
       showEditPreviewImage: isImagePresent ? true : false,
       isColorVariationAvailable: data.isColorVariationAvailable,
+      color_price: data.color_price,
     }));
   };
 
@@ -216,6 +218,25 @@ export default function AddEditDesign(props) {
         : formState.material_price,
       notes: formState.notes,
       colors: formState.colors,
+      color_price: formState.color_price,
+    };
+
+    let colors = [...obj.colors];
+    let colorPrice = [...obj.color_price];
+
+    let colorArray = colors.map((element) => element.id);
+    let colorPriceArray = colorPrice.map((element) => element.color.id);
+    let noOfColorsNewlyAdded = colorArray.filter(
+      (x) => !colorPriceArray.includes(x)
+    );
+    let noOfColorsRemoved = colorPriceArray.filter(
+      (x) => !colorArray.includes(x)
+    );
+
+    obj = {
+      ...obj,
+      noOfColorsNewlyAdded: noOfColorsNewlyAdded,
+      noOfColorsRemoved: noOfColorsRemoved,
     };
 
     if (
@@ -239,6 +260,7 @@ export default function AddEditDesign(props) {
             ...formState,
             id: res.data.id,
           }));
+          getEditViewData(res.data.id);
         })
         .catch((err) => {
           let error = "";
@@ -261,6 +283,7 @@ export default function AddEditDesign(props) {
             ...formState,
             id: res.data.id,
           }));
+          getEditViewData(res.data.id);
           setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
@@ -401,7 +424,6 @@ export default function AddEditDesign(props) {
   };
 
   const handleChangeColor = (event, newValue) => {
-    console.log("newValue", newValue, event.target);
     setFormState((formState) => ({
       ...formState,
       colors: newValue,
@@ -479,9 +501,9 @@ export default function AddEditDesign(props) {
                   error={hasError("add_price", error)}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
+              {/* <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  labelText="Material Price"
+                  labelText="Common Material Price"
                   name="material_price"
                   disabled
                   value={formState.material_price}
@@ -490,19 +512,19 @@ export default function AddEditDesign(props) {
                     fullWidth: true,
                   }}
                 />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
+              </GridItem> */}
+              {/* <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   labelText="Total Price"
                   name="total_price"
                   disabled
-                  value={formState.total_price}
+                  value={parseFloat(formState.material_price) + parseFloat()}
                   id="total_price"
                   formControlProps={{
                     fullWidth: true,
                   }}
                 />
-              </GridItem>
+              </GridItem> */}
             </GridContainer>
             <GridContainer>
               <GridItem xs={12} md={12} lg={12} style={{ overflowX: "auto" }}>

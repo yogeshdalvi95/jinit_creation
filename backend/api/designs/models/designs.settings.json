@@ -33,14 +33,16 @@
     "add_price": {
       "type": "float"
     },
-    "total_price": {
-      "type": "float"
-    },
     "notes": {
       "type": "text"
     },
     "colors": {
       "collection": "color"
+    },
+    "color_price": {
+      "type": "component",
+      "repeatable": true,
+      "component": "color-price.color-price"
     }
   }
 }

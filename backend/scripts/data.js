@@ -27,7 +27,15 @@ const ROLES = {
       },
       {
         name: "designs",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "duplicatedesign",
+        ],
       },
       {
         name: "designs-and-materials",
@@ -145,7 +153,15 @@ const ROLES = {
     controllers: [
       {
         name: "designs",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "duplicatedesign",
+        ],
       },
       {
         name: "designs-and-materials",
@@ -315,7 +331,15 @@ const ROLES = {
     controllers: [
       {
         name: "designs",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "duplicatedesign",
+        ],
       },
       {
         name: "designs-and-materials",
