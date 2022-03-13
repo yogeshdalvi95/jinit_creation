@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ready_material_and_colors",
+  "info": {
+    "name": "Ready Material And Color",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ready_material": {
+      "model": "ready-material"
+    },
+    "design": {
+      "model": "designs"
+    },
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "price": {
+      "type": "float"
+    }
+  }
+}

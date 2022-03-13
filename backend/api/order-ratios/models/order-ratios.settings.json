@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_ratios",
+  "info": {
+    "name": "Order Ratios",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "design": {
+      "model": "designs"
+    },
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "float"
+    },
+    "quantity_completed": {
+      "type": "float"
+    },
+    "order": {
+      "model": "orders"
+    }
+  }
+}

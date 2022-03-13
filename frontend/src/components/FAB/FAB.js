@@ -35,11 +35,17 @@ export default function FAB(props) {
 
   return (
     <div className={rootClasses}>
-      <Tooltip title={props.toolTip}>
+      {props.toolTip ? (
+        <Tooltip title={props.toolTip}>
+          <Fab color={color} className={btnClasses} {...rest}>
+            {children}
+          </Fab>
+        </Tooltip>
+      ) : (
         <Fab color={color} className={btnClasses} {...rest}>
           {children}
         </Fab>
-      </Tooltip>
+      )}
     </div>
   );
 }

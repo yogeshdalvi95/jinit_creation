@@ -15,7 +15,7 @@ import {
   DialogForGettingPreviousMonthlyData,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../../components";
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -24,7 +24,7 @@ import {
   Backdrop,
   CircularProgress,
   makeStyles,
-  Typography
+  Typography,
 } from "@material-ui/core";
 import calenderStyles from "./CalenderStyles.module.css";
 import { useEffect } from "react";
@@ -32,7 +32,7 @@ import { providerForGet, providerForPost } from "../../../api";
 import {
   backend_monthly_sheet_latest_entries,
   backend_monthly_sheet_add_update_entries,
-  backend_monthly_sheet_get_selected_data
+  backend_monthly_sheet_get_selected_data,
 } from "../../../constants";
 import { isEmptyString, formatDate } from "../../../Utils";
 import auth from "../../../components/Auth";
@@ -41,7 +41,7 @@ import { Children } from "react";
 const useStyles = makeStyles(styles);
 const localizer = momentLocalizer(moment);
 
-const AddDailyUsage = props => {
+const AddDailyUsage = (props) => {
   const classes = useStyles();
 
   const [modal, setModal] = useState({
@@ -53,7 +53,7 @@ const AddDailyUsage = props => {
     text: "",
     diff: 0,
     disableOk: true,
-    isDeduct: true
+    isDeduct: true,
   });
 
   const [monthlyData, setMonthlyData] = useState({
@@ -64,7 +64,7 @@ const AddDailyUsage = props => {
     total: 0,
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
-    isEditable: false
+    isEditable: false,
   });
 
   const [openBackDrop, setBackDrop] = useState(false);
@@ -80,26 +80,26 @@ const AddDailyUsage = props => {
   );
   const [
     openDialogForSelectingRawMaterial,
-    setOpenDialogForSelectingRawMaterial
+    setOpenDialogForSelectingRawMaterial,
   ] = useState(false);
 
   const [
     openDialogForSelectingPreviousMonth,
-    setOpenDialogForSelectingPreviousMonth
+    setOpenDialogForSelectingPreviousMonth,
   ] = useState(false);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -116,8 +116,8 @@ const AddDailyUsage = props => {
       { raw_material: id },
       Auth.getToken()
     )
-      .then(res => {
-        setMonthlyData(monthlyData => ({
+      .then((res) => {
+        setMonthlyData((monthlyData) => ({
           ...monthlyData,
           data: res.data.data,
           currentMonth: new Date(res.data.currentMonth),
@@ -126,22 +126,22 @@ const AddDailyUsage = props => {
           total: res.data.total,
           month: res.data.month,
           year: res.data.year,
-          isEditable: res.data.isEditable
+          isEditable: res.data.isEditable,
         }));
         setBackDrop(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error"
+          message: "Error",
         }));
       });
   };
 
-  const changeRawMaterial = key => {
+  const changeRawMaterial = (key) => {
     setOpenDialogForSelectingRawMaterial(true);
   };
 
@@ -157,12 +157,12 @@ const AddDailyUsage = props => {
   };
 
   /** For Adding value */
-  const addNewEventAlert = slotInfo => {
+  const addNewEventAlert = (slotInfo) => {
     if (
       new Date(slotInfo.start).getMonth() + 1 === monthlyData.month &&
       slotInfo.start < moment().toDate()
     ) {
-      setModal(modal => ({
+      setModal((modal) => ({
         ...modal,
         open: true,
         date: slotInfo.start,
@@ -171,18 +171,18 @@ const AddDailyUsage = props => {
         disableOk: true,
         inputValue: 0,
         isDeduct: true,
-        oldValue: 0
+        oldValue: 0,
       }));
     }
   };
 
   /** Selected event for edit or view */
-  const selectedEvent = event => {
+  const selectedEvent = (event) => {
     if (new Date(event.start).getMonth() + 1 === monthlyData.month) {
       let oldValue = isNaN(parseFloat(event.title))
         ? 0
         : parseFloat(event.title);
-      setModal(modal => ({
+      setModal((modal) => ({
         ...modal,
         open: true,
         date: event.start,
@@ -191,13 +191,13 @@ const AddDailyUsage = props => {
         disableOk: true,
         inputValue: oldValue,
         isDeduct: true,
-        oldValue: oldValue
+        oldValue: oldValue,
       }));
     }
   };
 
   const closeDialog = () => {
-    setModal(modal => ({
+    setModal((modal) => ({
       ...modal,
       open: false,
       date: null,
@@ -207,16 +207,16 @@ const AddDailyUsage = props => {
       disableOk: true,
       isDeduct: true,
       text: "",
-      diff: 0
+      diff: 0,
     }));
   };
 
-  const handleChangeNoOFUsage = newValue => {
+  const handleChangeNoOFUsage = (newValue) => {
     if (isEmptyString(newValue)) {
-      setModal(modal => ({
+      setModal((modal) => ({
         ...modal,
         disableOk: true,
-        inputValue: newValue
+        inputValue: newValue,
       }));
     } else {
       let parsedNewValue = parseFloat(newValue);
@@ -224,7 +224,7 @@ const AddDailyUsage = props => {
         if (modal.isEdit) {
           let diff = parsedNewValue - modal.oldValue;
           if (diff < 0) {
-            setModal(modal => ({
+            setModal((modal) => ({
               ...modal,
               disableOk: false,
               inputValue: parsedNewValue,
@@ -232,63 +232,63 @@ const AddDailyUsage = props => {
               text: `This will add ${Math.abs(
                 diff
               )} quantity back to the stocks`,
-              isDeduct: false
+              isDeduct: false,
             }));
           } else if (diff > 0) {
             if (diff <= parseFloat(monthlyData.finalBalance)) {
-              setModal(modal => ({
+              setModal((modal) => ({
                 ...modal,
                 disableOk: false,
                 inputValue: parsedNewValue,
                 diff: diff,
                 text: `This will deduct ${diff} quantity from the stocks`,
-                isDeduct: true
+                isDeduct: true,
               }));
             } else {
-              setModal(modal => ({
+              setModal((modal) => ({
                 ...modal,
                 disableOk: true,
                 diff: diff,
                 inputValue: parsedNewValue,
                 text: `Quantity to deduct cannot be more than the current balance`,
-                isDeduct: true
+                isDeduct: true,
               }));
             }
           } else {
-            setModal(modal => ({
+            setModal((modal) => ({
               ...modal,
               disableOk: true,
               inputValue: parsedNewValue,
               diff: diff,
               text: `No difference between new quantity and old quantity`,
-              isDeduct: false
+              isDeduct: false,
             }));
           }
         } else {
           if (parsedNewValue <= parseFloat(monthlyData.finalBalance)) {
-            setModal(modal => ({
+            setModal((modal) => ({
               ...modal,
               disableOk: false,
               inputValue: parsedNewValue,
               text: "",
-              isDeduct: true
+              isDeduct: true,
             }));
           } else {
-            setModal(modal => ({
+            setModal((modal) => ({
               ...modal,
               disableOk: true,
               inputValue: parsedNewValue,
               text: `Quantity to deduct cannot be more than the current balance`,
-              isDeduct: true
+              isDeduct: true,
             }));
           }
         }
       } else {
-        setModal(modal => ({
+        setModal((modal) => ({
           ...modal,
           disableOk: true,
           inputValue: "",
-          text: "Quantity cannot be negative"
+          text: "Quantity cannot be negative",
         }));
       }
     }
@@ -305,25 +305,25 @@ const AddDailyUsage = props => {
         newValue: modal.inputValue,
         isDeduct: modal.isDeduct,
         date: modal.date,
-        raw_material: selectedRawMaterialId
+        raw_material: selectedRawMaterialId,
       },
       auth.getToken()
     )
-      .then(res => {
-        setMonthlyData(monthlyData => ({
+      .then((res) => {
+        setMonthlyData((monthlyData) => ({
           ...monthlyData,
           data: res.data.data,
           total: res.data.total,
-          finalBalance: res.data.finalBalance
+          finalBalance: res.data.finalBalance,
         }));
         setBackDrop(false);
       })
-      .catch(err => {
-        setSnackBar(snackBar => ({
+      .catch((err) => {
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error"
+          message: "Error",
         }));
         setBackDrop(false);
       });
@@ -333,18 +333,18 @@ const AddDailyUsage = props => {
     setOpenDialogForSelectingPreviousMonth(false);
   };
 
-  const getPreviosMonthData = async id => {
+  const getPreviosMonthData = async (id) => {
     setBackDrop(true);
     handleCloseDialogForPreviousMonthModal();
     providerForGet(
       backend_monthly_sheet_get_selected_data,
       {
-        id: id
+        id: id,
       },
       auth.getToken()
     )
-      .then(res => {
-        setMonthlyData(monthlyData => ({
+      .then((res) => {
+        setMonthlyData((monthlyData) => ({
           ...monthlyData,
           data: res.data.data,
           currentMonth: new Date(res.data.currentMonth),
@@ -353,23 +353,23 @@ const AddDailyUsage = props => {
           total: res.data.total,
           month: res.data.month,
           year: res.data.year,
-          isEditable: res.data.isEditable
+          isEditable: res.data.isEditable,
         }));
         setBackDrop(false);
       })
-      .catch(err => {
-        setSnackBar(snackBar => ({
+      .catch((err) => {
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error"
+          message: "Error",
         }));
         setBackDrop(false);
       });
   };
 
   /** Custom Tool Bar */
-  const CustomToolbar = toolbar => {
+  const CustomToolbar = (toolbar) => {
     const label = () => {
       const date = moment(toolbar.date);
       return (
@@ -406,11 +406,10 @@ const AddDailyUsage = props => {
       return React.cloneElement(Children.only(children), {
         style: {
           ...children.style,
-          backgroundColor: "#DDD"
-        }
+          backgroundColor: "#DDD",
+        },
       });
     } else {
-      //console.log(moment1);
       return React.cloneElement(Children.only(children), {
         style: {
           ...children.style,
@@ -418,8 +417,8 @@ const AddDailyUsage = props => {
             ? "#eaf6ff"
             : value < moment().toDate()
             ? "#ffffff"
-            : "#DDD"
-        }
+            : "#DDD",
+        },
       });
     }
   };
@@ -485,7 +484,7 @@ const AddDailyUsage = props => {
               </span>
             ) : (
               <CustomInput
-                onChange={event => {
+                onChange={(event) => {
                   handleChangeNoOFUsage(event.target.value);
                 }}
                 labelText={modal.isEdit ? "New Quantity" : "Add Quantity"}
@@ -494,7 +493,7 @@ const AddDailyUsage = props => {
                 name="usage"
                 id="usage"
                 formControlProps={{
-                  fullWidth: true
+                  fullWidth: true,
                 }}
               />
             )}
@@ -537,7 +536,7 @@ const AddDailyUsage = props => {
                     sm={12}
                     md={12}
                     style={{
-                      margin: "27px 0px 0px"
+                      margin: "27px 0px 0px",
                     }}
                   >
                     <GridContainer style={{ dispay: "flex" }}>
@@ -598,7 +597,7 @@ const AddDailyUsage = props => {
                   sm={12}
                   md={12}
                   style={{
-                    margin: "27px 0px 0px"
+                    margin: "27px 0px 0px",
                   }}
                 >
                   <Button
@@ -641,7 +640,7 @@ const AddDailyUsage = props => {
                       sm={12}
                       md={12}
                       style={{
-                        margin: "27px 0px 0px"
+                        margin: "27px 0px 0px",
                       }}
                     >
                       <div style={{ height: "500pt" }}>
@@ -656,14 +655,16 @@ const AddDailyUsage = props => {
                           views={{ month: true }}
                           components={{
                             toolbar: CustomToolbar,
-                            dateCellWrapper: ColoredDateCellWrapper
+                            dateCellWrapper: ColoredDateCellWrapper,
                           }}
-                          eventPropGetter={e => {
+                          eventPropGetter={(e) => {
                             const backgroundColor = "#32CD32";
                             return { style: { backgroundColor } };
                           }}
-                          onSelectEvent={event => selectedEvent(event)}
-                          onSelectSlot={slotInfo => addNewEventAlert(slotInfo)}
+                          onSelectEvent={(event) => selectedEvent(event)}
+                          onSelectSlot={(slotInfo) =>
+                            addNewEventAlert(slotInfo)
+                          }
                         />
                       </div>
                     </GridItem>

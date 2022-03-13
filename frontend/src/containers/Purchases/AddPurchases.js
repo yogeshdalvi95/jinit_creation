@@ -197,7 +197,6 @@ export default function AddPurchases(props) {
         } else {
           bal = d.raw_material.balance;
         }
-        console.log("d.raw_material ", d.raw_material);
         let category = d.raw_material.category
           ? d.raw_material.category.name
           : "";

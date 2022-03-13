@@ -40,6 +40,7 @@ export const backend_individual_kachha_purchase = `${apiUrl}/individual-kachha-p
 export const backend_individual_kachha_purchase_ledger = `${apiUrl}/individual-kachha-purchases/ledger`;
 
 export const backend_designs = `${apiUrl}/designs`;
+export const backend_duplicate_designs = `${apiUrl}/designs/duplicate-design`;
 
 export const backend_designs_and_materials = `${apiUrl}/designs-and-materials`;
 export const backend_designs_and_materials_get_material_count = `${apiUrl}/designs-and-materials/get-material-count`;

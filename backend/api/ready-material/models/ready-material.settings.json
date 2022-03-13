@@ -28,27 +28,14 @@
       "required": false,
       "pluginOptions": {}
     },
-    "quantity": {
-      "type": "float",
-      "default": 0
-    },
-    "isColorVariationAvailable": {
-      "type": "boolean",
-      "default": false
-    },
-    "price_per_piece": {
-      "type": "float"
-    },
-    "total_price": {
-      "type": "float"
-    },
     "design": {
       "model": "designs"
     },
-    "color_quantity": {
-      "type": "component",
-      "repeatable": true,
-      "component": "color-quantity.color-quantity"
+    "price": {
+      "type": "float"
+    },
+    "total_quantity": {
+      "type": "float"
     }
   }
 }

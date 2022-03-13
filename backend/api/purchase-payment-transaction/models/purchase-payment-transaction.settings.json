@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "purchase_payment_transactions",
+  "info": {
+    "name": "Purchase Payment Transaction",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "purchase": {
+      "model": "purchases"
+    },
+    "purchase_payment": {
+      "model": "purchase-payments"
+    },
+    "goods_return": {
+      "model": "goods-return"
+    },
+    "seller": {
+      "model": "seller"
+    },
+    "transaction_date": {
+      "type": "date"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "transactrion_amount": {
+      "type": "float"
+    },
+    "is_purchase": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_payment": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_goods_return": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

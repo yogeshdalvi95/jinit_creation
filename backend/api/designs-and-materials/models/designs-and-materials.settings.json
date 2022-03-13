@@ -27,9 +27,6 @@
     "quantity": {
       "type": "float"
     },
-    "price_per_piece": {
-      "type": "float"
-    },
     "total_price": {
       "type": "float"
     },

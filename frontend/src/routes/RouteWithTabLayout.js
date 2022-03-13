@@ -68,6 +68,11 @@ const RouteWithTabLayout = ({
     isReadyMaterial: null,
     designData: {},
   });
+  const [selectedColor, setSelectedColor] = React.useState({
+    isColorSelected: false,
+    selectedColor: null,
+    selectedColorPrice: null,
+  });
 
   const tabs = ["Raw Materials", "Ready Materials"];
 
@@ -102,6 +107,25 @@ const RouteWithTabLayout = ({
       );
     }
   });
+
+  const setColor = (isColorSelected, colorSelected) => {
+    let color_price = formState.designData.color_price
+      ? formState.designData.color_price
+      : [];
+    let selectedColorPrice = null;
+    for (let i = 0; i < color_price.length; i++) {
+      if (color_price[i].color === colorSelected.id) {
+        selectedColorPrice = color_price[i];
+        break;
+      }
+    }
+    setSelectedColor((selectedColor) => ({
+      ...selectedColor,
+      isColorSelected: isColorSelected,
+      selectedColor: isColorSelected ? colorSelected : null,
+      selectedColorPrice: selectedColorPrice,
+    }));
+  };
 
   const setValues = async () => {
     let data = {};
@@ -157,7 +181,6 @@ const RouteWithTabLayout = ({
         designData: data,
         routes: dependencyObject.routes,
       }));
-      console.log(data);
       setHeader(
         `Select ${dependencyObject.isRawMaterial ? "Raw" : "Ready"} Material`
       );
@@ -215,6 +238,89 @@ const RouteWithTabLayout = ({
     );
   };
 
+  const calculateTotalPrice = () => {
+    if (formState?.designData?.colors?.length) {
+      let color = selectedColor.selectedColor;
+      let colorPrice = selectedColor.selectedColorPrice;
+      return (
+        <>
+          {/* <GridItem xs={12}>
+            <>
+              {" "}
+              <b>Total Price of all the common materials: </b> ( i.e price of
+              all the common materials present across all the colors including
+              add. price ):{" "}
+            </>
+            <b></b>
+            {loaderForUpdateDesign
+              ? getLoader()
+              : convertNumber(
+                  parseFloat(
+                    formState?.designData?.material_price +
+                      formState?.designData?.add_price
+                  ).toFixed(2),
+                  true
+                )}
+          </GridItem> */}
+          {selectedColor.isColorSelected ? (
+            <>
+              <GridItem xs={12}>
+                <>
+                  {" "}
+                  <b>
+                    Price of all the raw materials required for color '
+                    {color?.name}'
+                  </b>{" "}
+                  ( i.e price excludes add. price ):{" "}
+                  {loaderForUpdateDesign
+                    ? getLoader()
+                    : convertNumber(
+                        parseFloat(colorPrice?.color_price).toFixed(2),
+                        true
+                      )}
+                </>
+              </GridItem>
+              <GridItem xs={12}>
+                <>
+                  {" "}
+                  <b>Total Price for color '{color?.name}': </b> ( i.e price of
+                  all the common raw materials + price of raw materials required
+                  for color '{color?.name}' + add. price ):{" "}
+                </>
+                <b></b>
+                {loaderForUpdateDesign
+                  ? getLoader()
+                  : convertNumber(
+                      parseFloat(
+                        formState?.designData?.material_price +
+                          formState?.designData?.add_price +
+                          colorPrice?.color_price
+                      ).toFixed(2),
+                      true
+                    )}
+              </GridItem>
+            </>
+          ) : null}
+        </>
+      );
+    } else {
+      return (
+        <GridItem xs={12}>
+          <b>Total Price : </b>
+          {loaderForUpdateDesign
+            ? getLoader()
+            : convertNumber(
+                parseFloat(
+                  formState?.designData?.material_price +
+                    formState?.designData?.add_price
+                ).toFixed(2),
+                true
+              )}
+        </GridItem>
+      );
+    }
+  };
+
   if (auth.getToken() !== null) {
     return (
       <>
@@ -235,48 +341,54 @@ const RouteWithTabLayout = ({
                 ) : (
                   <Box sx={{ width: "100%" }}>
                     <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem>
+                      <GridItem xs={12}>
                         <b>Design No : </b> {formState?.designData?.material_no}
                       </GridItem>
-                      <GridItem
-                        style={{
-                          display: "flex",
-                        }}
-                      >
-                        <b>Material Price : </b>{" "}
-                        {loaderForUpdateDesign
-                          ? getLoader()
-                          : convertNumber(
-                              formState?.designData?.material_price,
-                              true
-                            )}
-                      </GridItem>
-                      <GridItem
-                        style={{
-                          display: "flex",
-                        }}
-                      >
+                      {selectedColor.isColorSelected ? (
+                        <>
+                          <GridItem xs={12}>
+                            <b>Selected Color : </b>{" "}
+                            {selectedColor.selectedColor?.name}
+                          </GridItem>{" "}
+                          <GridItem xs={12}>{`< ----------------- >`}</GridItem>
+                        </>
+                      ) : null}
+                      <GridItem xs={12}>
                         <b>Add. Price : </b>{" "}
                         {loaderForUpdateDesign
                           ? getLoader()
                           : convertNumber(
-                              formState?.designData?.add_price,
+                              parseFloat(
+                                formState?.designData?.add_price
+                              ).toFixed(2),
                               true
                             )}
                       </GridItem>
-                      <GridItem
-                        style={{
-                          display: "flex",
-                        }}
-                      >
-                        <b>Total Price : </b>{" "}
+                      <GridItem xs={12}>
+                        {formState?.designData?.colors?.length ? (
+                          <>
+                            {" "}
+                            <b>Price of all the common raw materials </b> ( i.e
+                            price of all the common materials present across all
+                            the colors excluding add. price ):{" "}
+                          </>
+                        ) : (
+                          <>
+                            {" "}
+                            <b>Price of raw materials</b> ( i.e price of all the
+                            materials present excluding add. price ):{" "}
+                          </>
+                        )}
                         {loaderForUpdateDesign
                           ? getLoader()
                           : convertNumber(
-                              formState?.designData?.total_price,
+                              parseFloat(
+                                formState?.designData?.material_price
+                              ).toFixed(2),
                               true
                             )}
                       </GridItem>
+                      {calculateTotalPrice()}
                     </GridContainer>
                     <br />
                     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -298,6 +410,7 @@ const RouteWithTabLayout = ({
                     <Box>
                       <Component
                         {...props}
+                        setColor={setColor}
                         urlParams={ComputedMatch}
                         id={formState.designId}
                         designData={formState.designData}

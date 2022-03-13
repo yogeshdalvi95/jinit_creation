@@ -72,7 +72,6 @@ export default function Sidebar(props) {
           const isExpandable = prop.children && prop.children.length > 0;
           var activePro = " ";
           var listItemClasses;
-          console.log("prop.pathList ", prop.pathList);
           listItemClasses = classNames({
             [" " + classes[color]]: activeRoute(prop.pathList),
           });

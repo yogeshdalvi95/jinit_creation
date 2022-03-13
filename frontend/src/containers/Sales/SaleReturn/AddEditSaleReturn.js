@@ -5,7 +5,7 @@ import {
   CircularProgress,
   FormHelperText,
   makeStyles,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -25,7 +25,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import {
@@ -33,7 +33,7 @@ import {
   convertNumber,
   hasError,
   isEmptyString,
-  setErrors
+  setErrors,
 } from "../../../Utils";
 import moment from "moment";
 import { apiUrl } from "../../../constants";
@@ -48,7 +48,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from "@mui/material";
 import validationForm from "../form/SaleReturnFormValidation.json";
 import SweetAlert from "react-bootstrap-sweetalert";
@@ -67,13 +67,11 @@ export default function AddEditSaleReturn(props) {
   const [alert, setAlert] = useState(null);
   const [
     openDialogForSelectingReadyMaterial,
-    setOpenDialogForSelectingReadyMaterial
+    setOpenDialogForSelectingReadyMaterial,
   ] = useState(false);
 
-  const [
-    openDialogForSelectingParties,
-    setOpenDialogForSelectingParties
-  ] = useState(false);
+  const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
+    useState(false);
 
   const [error, setError] = React.useState({});
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
@@ -86,7 +84,7 @@ export default function AddEditSaleReturn(props) {
     total_price_of_ready_material: 0,
     add_cost: 0,
     total_price: 0,
-    notes: ""
+    notes: "",
   });
 
   const [readyMaterialError, setReadyMaterialError] = useState({});
@@ -95,7 +93,7 @@ export default function AddEditSaleReturn(props) {
     id: null,
     party_name: "",
     gst_no: "",
-    address: ""
+    address: "",
   });
 
   const [readyMaterialArray, setReadyMaterialArray] = useState([]);
@@ -103,7 +101,7 @@ export default function AddEditSaleReturn(props) {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   useEffect(() => {
@@ -112,11 +110,11 @@ export default function AddEditSaleReturn(props) {
     }
   }, []);
 
-  const getEditViewData = async id => {
+  const getEditViewData = async (id) => {
     setBackDrop(true);
     let isError = false;
     await providerForGet(backend_sale_return + "/" + id, {}, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         console.log(res, res.status);
         if (res.status === 200) {
           convertData(res.data);
@@ -124,18 +122,17 @@ export default function AddEditSaleReturn(props) {
           isError = true;
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
         isError = true;
       });
-    console.log(isError);
     if (isError) {
       history.push(NOTFOUNDPAGE);
     }
   };
 
-  const convertData = data => {
-    setFormState(formState => ({
+  const convertData = (data) => {
+    setFormState((formState) => ({
       ...formState,
       date: new Date(data.date),
       total_price_of_ready_material: parseFloat(
@@ -144,14 +141,14 @@ export default function AddEditSaleReturn(props) {
       add_cost: parseFloat(data.add_cost),
       total_price: parseFloat(data.total_price),
       party: data.party.id,
-      notes: data.notes
+      notes: data.notes,
     }));
-    setParty(party => ({
+    setParty((party) => ({
       ...party,
       gst_no: data.party.gst_no,
       id: data.party.id,
       party_name: data.party.party_name,
-      address: data.party.party_address
+      address: data.party.party_address,
     }));
     let readyMaterialTempArr = [];
     for (let rm of data.sale_return_component) {
@@ -165,7 +162,7 @@ export default function AddEditSaleReturn(props) {
         availableQuantity: rm.ready_material.total_quantity,
         isDeleted: false,
         isCannotDelete: true,
-        message: ""
+        message: "",
       });
     }
     setReadyMaterialArray(readyMaterialTempArr);
@@ -177,11 +174,11 @@ export default function AddEditSaleReturn(props) {
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -189,7 +186,7 @@ export default function AddEditSaleReturn(props) {
     setOpenDialogForSelectingReadyMaterial(false);
   };
 
-  const handleAddReadyMaterial = data => {
+  const handleAddReadyMaterial = (data) => {
     setBackDrop(true);
     setReadyMaterialArray([
       ...readyMaterialArray,
@@ -202,25 +199,25 @@ export default function AddEditSaleReturn(props) {
         total_price: data.final_cost,
         availableQuantity: data.total_quantity,
         isCannotDelete: false,
-        message: "No of ready materials to add back to stock :- 1"
-      }
+        message: "No of ready materials to add back to stock :- 1",
+      },
     ]);
     let total_price_of_ready_material =
       formState.total_price_of_ready_material + parseFloat(data.final_cost);
 
     const { total_price } = calculateAddCost(total_price_of_ready_material);
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_price: total_price,
-      total_price_of_ready_material: total_price_of_ready_material
+      total_price_of_ready_material: total_price_of_ready_material,
     }));
 
     setBackDrop(false);
     setOpenDialogForSelectingReadyMaterial(false);
   };
 
-  const removeReadyMaterial = key => {
+  const removeReadyMaterial = (key) => {
     let obj = readyMaterialArray[key];
     setBackDrop(true);
     let total_price_of_ready_material =
@@ -228,13 +225,13 @@ export default function AddEditSaleReturn(props) {
     const { total_price } = calculateAddCost(total_price_of_ready_material);
     delete readyMaterialError["quantity" + key];
     delete readyMaterialError["price_per_unit" + key];
-    setReadyMaterialError(readyMaterialError => ({
-      ...readyMaterialError
+    setReadyMaterialError((readyMaterialError) => ({
+      ...readyMaterialError,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_price: total_price,
-      total_price_of_ready_material: total_price_of_ready_material
+      total_price_of_ready_material: total_price_of_ready_material,
     }));
     if (obj["isCannotDelete"]) {
       obj = {
@@ -242,12 +239,12 @@ export default function AddEditSaleReturn(props) {
         quantity_to_add_deduct: -obj.previousQuantity,
         isDeleted: true,
         message:
-          "No of ready material added back to stock : " + obj.previousQuantity
+          "No of ready material added back to stock : " + obj.previousQuantity,
       };
       setReadyMaterialArray([
         ...readyMaterialArray.slice(0, key),
         obj,
-        ...readyMaterialArray.slice(key + 1)
+        ...readyMaterialArray.slice(key + 1),
       ]);
     } else {
       readyMaterialArray.splice(key, 1);
@@ -268,14 +265,14 @@ export default function AddEditSaleReturn(props) {
       total_price = total_price_of_ready_material - parseFloat(add_cost);
     }
     return {
-      total_price: total_price
+      total_price: total_price,
     };
   };
 
-  const handleChangeAddCost = event => {
+  const handleChangeAddCost = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     let value = isEmptyString(event.target.value)
       ? 0
@@ -285,10 +282,10 @@ export default function AddEditSaleReturn(props) {
       true,
       value
     );
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       [event.target.name]: event.target.value,
-      total_price: total_price
+      total_price: total_price,
     }));
   };
 
@@ -296,33 +293,33 @@ export default function AddEditSaleReturn(props) {
     setOpenDialogForSelectingParties(false);
   };
 
-  const handleAddParties = data => {
-    setParty(party => ({
+  const handleAddParties = (data) => {
+    setParty((party) => ({
       ...party,
       gst_no: data.gst_no,
       id: data.id,
       party_name: data.party_name,
-      address: data.party_address
+      address: data.party_address,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      party: data.id
+      party: data.id,
     }));
     delete error["party"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     handleCloseDialogForParties();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -333,7 +330,6 @@ export default function AddEditSaleReturn(props) {
     let error = "";
     let keyName = name + "" + key;
     let quantity = 0;
-    console.log("-------------------------------------");
     if (name === "quantity") {
       quantity = 0;
       if (event.target.value && !isNaN(event.target.value)) {
@@ -348,7 +344,7 @@ export default function AddEditSaleReturn(props) {
 
       obj = {
         ...obj,
-        quantity: quantity
+        quantity: quantity,
       };
     } else {
       let finalPriceOfAllReadyMaterial = 0;
@@ -376,34 +372,34 @@ export default function AddEditSaleReturn(props) {
       const { total_price } = calculateAddCost(finalPriceOfAllReadyMaterial);
       obj = {
         ...obj,
-        total_price: total_price_of_added_raw_material
+        total_price: total_price_of_added_raw_material,
       };
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         total_price: total_price,
-        total_price_of_ready_material: finalPriceOfAllReadyMaterial
+        total_price_of_ready_material: finalPriceOfAllReadyMaterial,
       }));
     }
     if (isValid) {
       delete readyMaterialError[keyName];
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError
+      setReadyMaterialError((readyMaterialError) => ({
+        ...readyMaterialError,
       }));
     } else {
-      setReadyMaterialError(readyMaterialError => ({
+      setReadyMaterialError((readyMaterialError) => ({
         ...readyMaterialError,
-        [keyName]: [error]
+        [keyName]: [error],
       }));
     }
 
     setReadyMaterialArray([
       ...readyMaterialArray.slice(0, key),
       obj,
-      ...readyMaterialArray.slice(key + 1)
+      ...readyMaterialArray.slice(key + 1),
     ]);
   };
 
-  const handleOrderDate = event => {
+  const handleOrderDate = (event) => {
     let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (date === "Invalid date") {
       date = null;
@@ -411,9 +407,9 @@ export default function AddEditSaleReturn(props) {
       date = new Date(date).toISOString();
     }
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      date: date
+      date: date,
     }));
   };
 
@@ -421,7 +417,7 @@ export default function AddEditSaleReturn(props) {
     setOpenDialogForSelectingReadyMaterial(true);
   };
 
-  const handleCheckValidation = event => {
+  const handleCheckValidation = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -457,12 +453,12 @@ export default function AddEditSaleReturn(props) {
     } else {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true
+        [buttonClasses["success"]]: true,
       });
 
       const cancelBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true
+        [buttonClasses["danger"]]: true,
       });
 
       setAlert(
@@ -492,21 +488,21 @@ export default function AddEditSaleReturn(props) {
       id: id,
       state: formState,
       readyMaterials: readyMaterialArray,
-      party: party.id
+      party: party.id,
     };
     setBackDrop(true);
     await providerForPost(backend_sale_return, obj, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         history.push(SALERETURN);
         setBackDrop(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error Adding/Editing Sale Return Data"
+          message: "Error Adding/Editing Sale Return Data",
         }));
       });
   };
@@ -551,14 +547,14 @@ export default function AddEditSaleReturn(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={4}>
                   <DatePicker
-                    onChange={event => handleOrderDate(event)}
+                    onChange={(event) => handleOrderDate(event)}
                     label="Return Date"
                     name="return_date"
                     disabled={isView || formState.cancelled}
                     value={formState.date || new Date()}
                     id="return_date"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     minDate={
                       isView
@@ -580,13 +576,13 @@ export default function AddEditSaleReturn(props) {
                     }
                     style={{
                       width: "100%",
-                      marginTop: "1.5rem"
+                      marginTop: "1.5rem",
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChangeAddCost(event)}
+                    onChange={(event) => handleChangeAddCost(event)}
                     labelText="Add. Price to return"
                     name="add_cost"
                     type="number"
@@ -595,14 +591,14 @@ export default function AddEditSaleReturn(props) {
                     value={formState.add_cost}
                     id="add_cost"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_add_cost"}
                     isHelperText={hasError("add_cost", error)}
                     helperText={
                       hasError("add_cost", error)
-                        ? error["add_cost"].map(error => {
+                        ? error["add_cost"].map((error) => {
                             return error + " ";
                           })
                         : null
@@ -612,21 +608,21 @@ export default function AddEditSaleReturn(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Total Return Price"
                     name="total_price"
                     disabled={true}
                     value={parseFloat(formState.total_price).toFixed(2)}
                     id="total_price"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_total_price"}
                     isHelperText={hasError("total_price", error)}
                     helperText={
                       hasError("total_price", error)
-                        ? error["total_price"].map(error => {
+                        ? error["total_price"].map((error) => {
                             return error + " ";
                           })
                         : null
@@ -646,14 +642,14 @@ export default function AddEditSaleReturn(props) {
                         value={party.party_name}
                         id="party_name"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_name"}
                         isHelperText={hasError("party_name", error)}
                         helperText={
                           hasError("party_name", error)
-                            ? error["party_name"].map(error => {
+                            ? error["party_name"].map((error) => {
                                 return error + " ";
                               })
                             : null
@@ -669,14 +665,14 @@ export default function AddEditSaleReturn(props) {
                         value={party.gst_no}
                         id="party_gst_no"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_gst_no"}
                         isHelperText={hasError("party_gst_no", error)}
                         helperText={
                           hasError("party_gst_no", error)
-                            ? error["party_gst_no"].map(error => {
+                            ? error["party_gst_no"].map((error) => {
                                 return error + " ";
                               })
                             : null
@@ -694,14 +690,14 @@ export default function AddEditSaleReturn(props) {
                         value={party.address}
                         id="party_address"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_address"}
                         isHelperText={hasError("party_address", error)}
                         helperText={
                           hasError("party_address", error)
-                            ? error["party_address"].map(error => {
+                            ? error["party_address"].map((error) => {
                                 return error + " ";
                               })
                             : null
@@ -721,7 +717,7 @@ export default function AddEditSaleReturn(props) {
                         sm={12}
                         md={12}
                         style={{
-                          margin: "27px 0px 0px"
+                          margin: "27px 0px 0px",
                         }}
                       >
                         <GridContainer style={{ dispay: "flex" }}>
@@ -730,7 +726,7 @@ export default function AddEditSaleReturn(props) {
                             sm={12}
                             md={8}
                             style={{
-                              color: "#C8C8C8"
+                              color: "#C8C8C8",
                             }}
                           >
                             <b>Party</b>
@@ -762,7 +758,7 @@ export default function AddEditSaleReturn(props) {
                             sm={12}
                             md={12}
                             style={{
-                              margin: "27px 0px 0px"
+                              margin: "27px 0px 0px",
                             }}
                           >
                             <Button
@@ -781,7 +777,7 @@ export default function AddEditSaleReturn(props) {
                                 error={hasError("party", error)}
                               >
                                 {hasError("party", error)
-                                  ? error["party"].map(error => {
+                                  ? error["party"].map((error) => {
                                       return error + " ";
                                     })
                                   : null}
@@ -839,7 +835,7 @@ export default function AddEditSaleReturn(props) {
                                 : "transparent",
                               textDecoration: Ip.isDeleted
                                 ? "line-through"
-                                : "none"
+                                : "none",
                             }}
                           >
                             <TableCell align="left" rowSpan={2}>
@@ -866,7 +862,7 @@ export default function AddEditSaleReturn(props) {
                                           loader={<CircularProgress />}
                                           style={{
                                             height: "5rem",
-                                            width: "10rem"
+                                            width: "10rem",
                                           }}
                                           className={classes.UploadImage}
                                         />
@@ -876,7 +872,7 @@ export default function AddEditSaleReturn(props) {
                                           alt="ready_material_photo"
                                           style={{
                                             height: "5rem",
-                                            width: "10rem"
+                                            width: "10rem",
                                           }}
                                           loader={<CircularProgress />}
                                           className={classes.DefaultNoImage}
@@ -908,7 +904,7 @@ export default function AddEditSaleReturn(props) {
                             ) : null}
                             <TableCell align="left">
                               <CustomInput
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleChangeForRepetableComponent(event, key)
                                 }
                                 type="number"
@@ -917,7 +913,7 @@ export default function AddEditSaleReturn(props) {
                                 value={Ip.quantity}
                                 id="quantity"
                                 formControlProps={{
-                                  fullWidth: false
+                                  fullWidth: false,
                                 }}
                                 /** For setting errors */
                                 helperTextId={"quantity" + key}
@@ -928,7 +924,7 @@ export default function AddEditSaleReturn(props) {
                                 helperText={
                                   hasError("quantity" + key, readyMaterialError)
                                     ? readyMaterialError["quantity" + key].map(
-                                        error => {
+                                        (error) => {
                                           return error + " ";
                                         }
                                       )
@@ -942,7 +938,7 @@ export default function AddEditSaleReturn(props) {
                             </TableCell>
                             <TableCell align="left">
                               <CustomInput
-                                onChange={event =>
+                                onChange={(event) =>
                                   handleChangeForRepetableComponent(event, key)
                                 }
                                 type="number"
@@ -951,7 +947,7 @@ export default function AddEditSaleReturn(props) {
                                 value={Ip.total_price}
                                 id="total_price"
                                 formControlProps={{
-                                  fullWidth: false
+                                  fullWidth: false,
                                 }}
                                 /** For setting errors */
                                 helperTextId={"total_price" + key}
@@ -966,7 +962,7 @@ export default function AddEditSaleReturn(props) {
                                   )
                                     ? readyMaterialError[
                                         "total_price" + key
-                                      ].map(error => {
+                                      ].map((error) => {
                                         return error + " ";
                                       })
                                     : null
@@ -1010,14 +1006,14 @@ export default function AddEditSaleReturn(props) {
                               backgroundColor: Ip.isDeleted
                                 ? "#e7e7e7"
                                 : "transparent",
-                              color: "green"
+                              color: "green",
                             }}
                           >
                             <TableCell
                               align="left"
                               colSpan={5}
                               sx={{
-                                color: "green"
+                                color: "green",
                               }}
                             >
                               {Ip.message}
@@ -1051,7 +1047,7 @@ export default function AddEditSaleReturn(props) {
               <CardFooter>
                 <Button
                   color="primary"
-                  onClick={e => handleCheckValidation(e)}
+                  onClick={(e) => handleCheckValidation(e)}
                   disabled={
                     !readyMaterialArray.length ||
                     Object.keys(readyMaterialError).length
