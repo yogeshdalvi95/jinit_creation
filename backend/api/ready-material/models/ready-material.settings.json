@@ -16,18 +16,6 @@
       "type": "string",
       "unique": true
     },
-    "images": {
-      "collection": "file",
-      "via": "related",
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos"
-      ],
-      "plugin": "upload",
-      "required": false,
-      "pluginOptions": {}
-    },
     "design": {
       "model": "designs"
     },

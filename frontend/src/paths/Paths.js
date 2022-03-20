@@ -54,10 +54,12 @@ export const VIEWORDER = "/view-order";
 
 export const DEPARTMENTSHEET = "/department-sheet";
 
-export const VIEWSALES = "/view-sales";
-export const ADDSALES = "/add-sales";
-export const EDITSALES = "/edit-sales";
 export const SALES = "/sales";
+export const ADDSALES = "/add-sales";
+export const VIEWSALES = "/view-sales";
+export const EDITSALES = "/edit-sales";
+export const VIEWSALESID = `${VIEWSALES}/:id`;
+export const EDITSALESID = `${EDITSALES}/:id`;
 
 export const VIEWSALERETURN = "/view-sale-return";
 export const ADDSALERETURN = "/add-sale-return";

@@ -5,6 +5,7 @@ import {
   CircularProgress,
   FormControlLabel,
   FormHelperText,
+  Grid,
   IconButton,
   makeStyles,
   Switch,
@@ -30,6 +31,7 @@ import {
   CardHeader,
   CustomInput,
   DatePicker,
+  DialogBoxForSelectingDesign,
   DialogBoxForSelectingReadyMaterial,
   DialogForCheckingStockAvailibility,
   DialogForSelectingColor,
@@ -40,7 +42,13 @@ import {
   SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import { DEPARTMENTSHEET, EDITORDER, ORDERS, VIEWORDER } from "../../paths";
+import {
+  DEPARTMENTSHEET,
+  EDITORDER,
+  NOTFOUNDPAGE,
+  ORDERS,
+  VIEWORDER,
+} from "../../paths";
 import validationForm from "./form/ValidationForm.json";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -89,29 +97,22 @@ export default function AddOrder(props) {
 
   const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
     useState(false);
+
   const [formState, setFormState] = useState({
     id: null,
     order_id: uuidv4(),
-    total_price: 0,
-    total_price_formatted: "0",
-    processing: true,
-    partial_completed: false,
+    inProgress: true,
     cancelled: false,
-    fully_completed: false,
-    is_ratio_present: false,
+    completed: false,
     notes: "",
     quantity: 0,
-    buffer_quantity: 0,
-    price_per_piece: 0,
-    price_per_piece_formatted: "0",
-    add_cost: 0,
-    add_cost_formatted: "0",
-    completed_quantity: 0,
-    previous_completed: 0,
-    total_used_quantity_in_ratio: 0,
-    nl_no: "",
+    bufferQuantity: 0,
+    completedQuantity: 0,
+    previousCompleted: 0,
+    remainingQuantity: 0,
     party_no: "",
     date: new Date(),
+    total_price: 0,
   });
 
   const [party, setParty] = useState({
@@ -120,13 +121,15 @@ export default function AddOrder(props) {
     gst_no: "",
   });
 
-  const [readyMaterial, setReadyMaterial] = useState({
+  const [design, setDesign] = useState({
     id: null,
     material_no: "",
-    total_cost: 0,
-    images: null,
-    availableQuantity: 0,
-    isColorVariationAvailable: false,
+    images: [],
+    material_price: 0,
+    add_price: 0,
+    color_price: [],
+    colors: 0,
+    designPrice: 0,
   });
   const urlParams = new URLSearchParams(window.location.search);
   const [ratio, setRatio] = useState([]);
@@ -161,6 +164,82 @@ export default function AddOrder(props) {
       //history.push(ORDERS);
     }
   }, []);
+
+  useEffect(() => {
+    let parsedCompletedValue = isNaN(parseFloat(formState.completedQuantity))
+      ? 0
+      : parseFloat(formState.completedQuantity);
+    let parsedTotalQuantity = isNaN(parseFloat(formState.quantity))
+      ? 0
+      : parseFloat(formState.quantity);
+    if (
+      parsedCompletedValue &&
+      parsedTotalQuantity &&
+      parsedCompletedValue <= parsedTotalQuantity
+    ) {
+      if (parsedCompletedValue === parsedTotalQuantity) {
+        setFormState((formState) => ({
+          ...formState,
+          inProgress: false,
+          completed: true,
+        }));
+      } else {
+        setFormState((formState) => ({
+          ...formState,
+          inProgress: true,
+          completed: false,
+        }));
+      }
+    } else {
+      setFormState((formState) => ({
+        ...formState,
+        inProgress: true,
+        completed: false,
+      }));
+    }
+  }, [formState.completedQuantity, formState.quantity]);
+
+  const snackBarHandleClose = () => {
+    setSnackBar((snackBar) => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: "",
+    }));
+  };
+
+  const openDesignDialogFunction = (status) => {
+    setOpenDialogForSelectingDesign(status);
+  };
+
+  const openDialogForSelectingParty = () => {
+    setOpenDialogForSelectingParties(true);
+  };
+
+  const handleCloseDialogForParties = () => {
+    setOpenDialogForSelectingParties(false);
+  };
+
+  const handleCloseDialog = () => {
+    setAlert(null);
+  };
+
+  const handleAcceptDialog = () => {
+    setAlert(null);
+    addButton();
+  };
+
+  const onBackClick = () => {
+    history.push(ORDERS);
+  };
+
+  const handleCloseDialogForDesign = () => {
+    setOpenDialogForSelectingDesign(false);
+  };
+
+  const handleCloseDialogForStockAvailibility = () => {
+    setOpenDialogForStockAvailibility(false);
+  };
 
   const getData = async (order_id) => {
     setBackDrop(true);
@@ -204,7 +283,7 @@ export default function AddOrder(props) {
     }));
     if (data.ready_material) {
       let ready_material = data.ready_material;
-      setReadyMaterial({
+      setDesign({
         id: ready_material.id,
         material_no: ready_material.material_no,
         total_cost: ready_material.final_cost,
@@ -242,90 +321,92 @@ export default function AddOrder(props) {
     }
   };
 
-  const onBackClick = () => {
-    history.push(ORDERS);
-  };
-
-  const handleCloseDialogForDesign = () => {
-    setOpenDialogForSelectingDesign(false);
-  };
-
+  /** Add design  */
   const handleAddDesign = (data) => {
-    setReadyMaterial((readyMaterial) => ({
-      ...readyMaterial,
-      id: data.id,
-      material_no: data.material_no,
-      availableQuantity: data.total_quantity,
-      images: data.images,
-      total_cost: data.final_cost,
-      isColorVariationAvailable: data.isColorVariationAvailable,
-    }));
+    /** Color Price */
+    delete error["design"];
+    ratio.forEach((r, k) => {
+      delete error["quantity" + k];
+      delete error["quantityCompleted" + k];
+    });
 
-    delete error["ready_material"];
     setError((error) => ({
       ...error,
     }));
-    /** Price Calculation */
-    let quantity = isNaN(parseFloat(formState.quantity))
+
+    let colorPriceArray = data.color_price;
+    let colorRatios = [];
+    let materialPrice = isNaN(parseFloat(data.material_price))
       ? 0
-      : parseFloat(formState.quantity);
-    let ppp = isNaN(parseFloat(data.final_cost))
+      : parseFloat(data.material_price);
+    let addPrice = isNaN(parseFloat(data.add_price))
       ? 0
-      : parseFloat(data.final_cost);
-    let add_cost = isNaN(parseFloat(formState.add_cost))
-      ? 0
-      : parseFloat(formState.add_cost);
-    let total_price = quantity * ppp + add_cost;
-    setFormState((formState) => ({
-      ...formState,
-      price_per_piece: ppp,
-      total_price: total_price,
+      : parseFloat(data.add_price);
+    let totalPrice = 0;
+
+    if (data.colors && data.colors.length) {
+      if (data.color_price?.length) {
+        colorPriceArray.forEach((d) => {
+          let colorPrice = isNaN(parseFloat(d.color_price))
+            ? 0
+            : parseFloat(d.color_price);
+          let designPrice = materialPrice + addPrice + colorPrice;
+
+          colorRatios.push({
+            design: d.design,
+            color: d.color?.id,
+            colorName: d.color?.name,
+            quantity: 0,
+            quantityCompleted: 0,
+            quantityPending: 0,
+            order: null,
+            designPrice: designPrice.toFixed(2),
+          });
+        });
+        setRatio(colorRatios);
+      } else {
+        history.push(NOTFOUNDPAGE);
+      }
+    } else {
+      setRatio([]);
+      totalPrice = materialPrice + addPrice;
+    }
+    setDesign((design) => ({
+      ...design,
+      id: data.id,
+      material_no: data.material_no,
+      images: data.images,
+      material_price: data.material_price,
+      add_price: data.add_price,
+      color_price: data.color_price,
+      colors: data.colors,
+      designPrice: totalPrice.toFixed(2),
     }));
+
     handleCloseDialogForDesign();
   };
 
-  const snackBarHandleClose = () => {
-    setSnackBar((snackBar) => ({
-      ...snackBar,
-      show: false,
-      severity: "",
-      message: "",
-    }));
-  };
-
-  const handleChange = (event) => {
-    let isValid = true;
-    if (isValid) {
-      delete error[event.target.name];
-      setError((error) => ({
-        ...error,
-      }));
-      setFormState((formState) => ({
-        ...formState,
-        [event.target.name]: event.target.value,
-      }));
-    }
-  };
+  console.log(error);
 
   const submit = (event) => {
     event.preventDefault();
-    setBackDrop(true);
-    let isValid = false;
+    //setBackDrop(true);
+    let isValid = true;
     let error = {};
     /** This will set errors as per validations defined in form */
-    error = setErrors(formState, validationForm);
+    // error = setErrors(formState, validationForm);
 
-    if (checkEmpty(error)) {
-      setBackDrop(false);
-      setError({});
-      isValid = true;
-    } else {
-      setBackDrop(false);
-      setError(error);
-    }
+    // if (checkEmpty(error)) {
+    //   setBackDrop(false);
+    //   setError({});
+    //   isValid = true;
+    // } else {
+    //   setBackDrop(false);
+    //   setError(error);
+    // }
 
-    if (!readyMaterial.id || !party.id) {
-      if (!readyMaterial.id) {
+    if (!design.id || !party.id) {
+      if (!design.id) {
         setError((error) => ({
           ...error,
           ready_material: ["Ready Material is required"],
@@ -340,6 +421,8 @@ export default function AddOrder(props) {
       }
       isValid = false;
     }
+
+    console.log(isValid);
 
     if (isValid) {
       const confirmBtnClasses = classNames({
@@ -404,22 +487,12 @@ export default function AddOrder(props) {
             cancelBtnCssClass={cancelBtnClasses}
             focusCancelBtn
           >
-            Please check the quantity and added details properly Note :- If you
-            have added completed quantity then that much quantity will be added
-            to stock for the selected ready material!
+            Note :- If you have added completed quantity then that much quantity
+            will be added to stock for the selected design!
           </SweetAlert>
         );
       }
     }
-  };
-
-  const handleCloseDialog = () => {
-    setAlert(null);
-  };
-
-  const handleAcceptDialog = () => {
-    setAlert(null);
-    addButton();
   };
 
   const getRatio = () => {
@@ -465,7 +538,7 @@ export default function AddOrder(props) {
           cancelled: formState.cancelled,
           fully_completed: formState.fully_completed,
           notes: formState.notes,
-          ready_material: readyMaterial.id,
+          ready_material: design.id,
           quantity: formState.quantity,
           buffer_quantity: formState.buffer_quantity,
           price_per_piece: formState.price_per_piece,
@@ -499,26 +572,21 @@ export default function AddOrder(props) {
       await providerForPost(
         backend_order,
         {
-          order_id: formState.order_id,
-          total_price: formState.total_price,
-          processing: formState.processing,
-          partial_completed: formState.partial_completed,
-          category: formState.category,
-          is_ratio_present: formState.is_ratio_present,
-          cancelled: formState.cancelled,
-          fully_completed: formState.fully_completed,
-          notes: formState.notes,
-          ready_material: readyMaterial.id,
+          order_id: formState.order_id?.trim(),
+          design: design.id,
           quantity: formState.quantity,
-          buffer_quantity: formState.buffer_quantity,
-          price_per_piece: formState.price_per_piece,
-          add_cost: formState.add_cost,
-          completed_quantity: formState.completed_quantity,
+          buffer_quantity: formState.bufferQuantity,
+          completed_quantity: formState.completedQuantity,
+          remaining_quantity: formState.remainingQuantity,
           party: party.id,
-          ratio: arr,
           party_no: formState.party_no,
-          nl_no: formState.nl_no,
           date: formState.date,
+          in_progress: formState.inProgress,
+          completed: formState.completed,
+          cancelled: formState.cancelled,
+          notes: formState.notes,
+          total_price: formState.total_price,
+          ratio: ratio,
         },
         Auth.getToken()
       )
@@ -540,18 +608,6 @@ export default function AddOrder(props) {
     }
   };
 
-  const openDesignDialogFunction = (status) => {
-    setOpenDialogForSelectingDesign(status);
-  };
-
-  const openDialogForSelectingParty = () => {
-    setOpenDialogForSelectingParties(true);
-  };
-
-  const handleCloseDialogForParties = () => {
-    setOpenDialogForSelectingParties(false);
-  };
-
   const handleAddParties = (data) => {
     setParty((party) => ({
       ...party,
@@ -566,159 +622,97 @@ export default function AddOrder(props) {
     handleCloseDialogForParties();
   };
 
-  const handleChangePricePerPiece = (event) => {
-    let value = event.target.value;
-    if (value == "" || value >= 0) {
-      delete error["price_per_piece"];
-      setError((error) => ({
-        ...error,
-      }));
+  // const handleChangeTotalQuantity = (event) => {
+  //   let value = event.target.value;
+  //   if (value == "" || value >= 0) {
+  //     delete error["quantity"];
+  //     setError((error) => ({
+  //       ...error,
+  //     }));
+  //     if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
+  //       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+  //       let completed_quantity = isNaN(formState.completed_quantity)
+  //         ? 0
+  //         : parseFloat(formState.completed_quantity);
 
-      let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-      let quantity = isNaN(formState.quantity)
-        ? 0
-        : parseFloat(formState.quantity);
-      let add_cost = isNaN(parseFloat(formState.add_cost))
-        ? 0
-        : parseFloat(formState.add_cost);
-      let final_value = quantity * new_value + add_cost;
-      setFormState((formState) => ({
-        ...formState,
-        price_per_piece: value,
-        total_price: final_value,
-      }));
-    } else {
-      setError((error) => ({
-        ...error,
-        price_per_piece: ["Price Per Piece cannot be negative"],
-      }));
-    }
-  };
+  //       let buffer_quantity = new_value - completed_quantity;
+  //       setFormState((formState) => ({
+  //         ...formState,
+  //         quantity: value,
+  //         buffer_quantity: buffer_quantity,
+  //       }));
+  //     }
+  //   } else {
+  //     setError((error) => ({
+  //       ...error,
+  //       quantity: ["Quantity cannot be negative"],
+  //     }));
+  //   }
+  // };
 
-  const handleChangeAddCost = (event) => {
-    let value = event.target.value;
-    if (value == "" || value >= 0) {
-      delete error["add_cost"];
-      setError((error) => ({
-        ...error,
-      }));
+  // const handleChangeQuantity = (event) => {
+  //   let value = event.target.value;
+  //   if (value === "" || value >= 0) {
+  //     delete error["quantity"];
+  //     setError((error) => ({
+  //       ...error,
+  //     }));
 
-      let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-      let total_price = isNaN(formState.total_price)
-        ? 0
-        : parseFloat(formState.total_price);
-      let old_add_cost = isNaN(parseFloat(formState.add_cost))
-        ? 0
-        : parseFloat(formState.add_cost);
-      total_price = total_price - old_add_cost;
-      let final_value = total_price + new_value;
-      setFormState((formState) => ({
-        ...formState,
-        add_cost: value,
-        total_price: final_value,
-      }));
-    } else {
-      setError((error) => ({
-        ...error,
-        quantity: ["Add. Cost cannot be negative"],
-      }));
-    }
-  };
+  //     let quantity = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+  //     let completedQuantity = isNaN(parseFloat(formState.completed_quantity))
+  //       ? 0
+  //       : parseFloat(formState.completed_quantity);
+  //     let remainingQuantity = quantity - completedQuantity;
 
-  const handleChangeTotalQuantity = (event) => {
-    let value = event.target.value;
-    if (value == "" || value >= 0) {
-      delete error["quantity"];
-      setError((error) => ({
-        ...error,
-      }));
-      if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
-        let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-        let completed_quantity = isNaN(formState.completed_quantity)
-          ? 0
-          : parseFloat(formState.completed_quantity);
+  //     setFormState((formState) => ({
+  //       ...formState,
+  //       quantity: value,
+  //       remainingQuantity: remainingQuantity,
+  //     }));
+  //   } else {
+  //     setError((error) => ({
+  //       ...error,
+  //       quantity: ["Quantity cannot be negative"],
+  //     }));
+  //   }
+  // };
 
-        let buffer_quantity = new_value - completed_quantity;
-        setFormState((formState) => ({
-          ...formState,
-          quantity: value,
-          buffer_quantity: buffer_quantity,
-        }));
-      }
-    } else {
-      setError((error) => ({
-        ...error,
-        quantity: ["Quantity cannot be negative"],
-      }));
-    }
-  };
+  // const handleChangeCompletedQuantity = (event) => {
+  //   let value = event.target.value;
+  //   if (value == "" || value >= 0) {
+  //     delete error["completed_quantity"];
+  //     setError((error) => ({
+  //       ...error,
+  //     }));
+  //     if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
+  //       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+  //       let quantity = isNaN(formState.quantity)
+  //         ? 0
+  //         : parseFloat(formState.quantity);
+  //       let old_completed_quantity = isNaN(
+  //         parseFloat(formState.completed_quantity)
+  //       )
+  //         ? 0
+  //         : parseFloat(formState.completed_quantity);
+  //       let buffer_quantity = quantity + old_completed_quantity;
+  //       buffer_quantity = quantity - new_value;
+  //       setFormState((formState) => ({
+  //         ...formState,
+  //         completed_quantity: value,
+  //         buffer_quantity: buffer_quantity,
+  //       }));
+  //     }
+  //   } else {
+  //     setError((error) => ({
+  //       ...error,
+  //       completed_quantity: ["Completed Quantity cannot be negative"],
+  //     }));
+  //   }
+  // };
 
-  const handleChangeQuantity = (event) => {
-    let value = event.target.value;
-    if (value == "" || value >= 0) {
-      delete error["quantity"];
-      setError((error) => ({
-        ...error,
-      }));
-
-      let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-      let price_per_piece = isNaN(formState.price_per_piece)
-        ? 0
-        : parseFloat(formState.price_per_piece);
-      let add_cost = isNaN(parseFloat(formState.add_cost))
-        ? 0
-        : parseFloat(formState.add_cost);
-      let final_value = price_per_piece * new_value + add_cost;
-
-      setFormState((formState) => ({
-        ...formState,
-        quantity: value,
-        total_price: final_value,
-      }));
-    } else {
-      setError((error) => ({
-        ...error,
-        quantity: ["Quantity cannot be negative"],
-      }));
-    }
-  };
-
-  const handleChangeCompletedQuantity = (event) => {
-    let value = event.target.value;
-    if (value == "" || value >= 0) {
-      delete error["completed_quantity"];
-      setError((error) => ({
-        ...error,
-      }));
-      if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
-        let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-        let quantity = isNaN(formState.quantity)
-          ? 0
-          : parseFloat(formState.quantity);
-        let old_completed_quantity = isNaN(
-          parseFloat(formState.completed_quantity)
-        )
-          ? 0
-          : parseFloat(formState.completed_quantity);
-        let buffer_quantity = quantity + old_completed_quantity;
-        buffer_quantity = quantity - new_value;
-        setFormState((formState) => ({
-          ...formState,
-          completed_quantity: value,
-          buffer_quantity: buffer_quantity,
-        }));
-      }
-    } else {
-      setError((error) => ({
-        ...error,
-        completed_quantity: ["Completed Quantity cannot be negative"],
-      }));
-    }
-  };
-
-  const addRatio = () => {
-    setOpenDialogForSelectingColor(true);
-  };
+  // const addRatio = () => {
+  //   setOpenDialogForSelectingColor(true);
+  // };
 
   const handleCloseDialogForColor = () => {
     setOpenDialogForSelectingColor(false);
@@ -756,57 +750,6 @@ export default function AddOrder(props) {
     setOpenDialogForSelectingColor(false);
   };
 
-  const handleChangeRepeatableComponent = (e, k) => {
-    let name = e.target.name;
-    let value = e.target.value;
-    let obj = ratio[k];
-    obj = {
-      ...obj,
-      [name]: parseFloat(value),
-    };
-    setRatio([...ratio.slice(0, k), obj, ...ratio.slice(k + 1)]);
-  };
-
-  const checkAvailibility = async () => {
-    setBackDrop(true);
-    await providerForPost(
-      backend_order_check_raw_material_availibility,
-      {
-        ready_material: readyMaterial.id,
-        ratio: ratio && ratio.length ? ratio : [],
-        remaining_quantity:
-          parseFloat(formState.quantity) -
-          parseFloat(formState.completed_quantity),
-      },
-      Auth.getToken()
-    )
-      .then((res) => {
-        setOpenDialogForStockAvailibility(true);
-        setAvailibleStocks(res.data);
-        setBackDrop(false);
-      })
-      .catch((err) => {
-        setBackDrop(false);
-        setSnackBar((snackBar) => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error",
-        }));
-      });
-  };
-
-  const handleCloseDialogForStockAvailibility = () => {
-    setOpenDialogForStockAvailibility(false);
-  };
-
-  useEffect(() => {
-    setFormState((formState) => ({
-      ...formState,
-      is_ratio_present: ratio && ratio.length ? true : false,
-    }));
-  }, [ratio]);
-
   const handleOrderDate = (event) => {
     let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (date === "Invalid date") {
@@ -819,6 +762,127 @@ export default function AddOrder(props) {
       ...formState,
       date: date,
     }));
+  };
+
+  const cancelDesign = () => {
+    delete error["design"];
+    setDesign((design) => ({
+      id: null,
+      material_no: "",
+      images: [],
+      material_price: 0,
+      add_price: 0,
+      color_price: [],
+      colors: 0,
+      designPrice: 0,
+    }));
+    ratio.forEach((r, k) => {
+      delete error["quantity" + k];
+      delete error["quantityCompleted" + k];
+    });
+    setError((error) => ({
+      ...error,
+    }));
+    setRatio([]);
+  };
+
+  const handleChangeRepeatableComponent = (
+    event,
+    key,
+    isNumber = false,
+    name = null,
+    errorKey
+  ) => {
+    let isValid = true;
+    let value = event.target.value;
+    let errorValue = [];
+
+    if (isNumber) {
+      value = isNaN(parseFloat(value)) ? value : parseFloat(value);
+      if (typeof value === "string") {
+        errorValue = [`${name} should be a valid positive number`];
+      } else if (value < 0) {
+        errorValue = [`${name} cannot be negative`];
+        isValid = false;
+      }
+    }
+    if (isValid) {
+      delete error[errorKey];
+      setError((error) => ({
+        ...error,
+      }));
+    } else {
+      setError((error) => ({
+        ...error,
+        [errorKey]: errorValue,
+      }));
+    }
+    let obj = ratio[key];
+    obj = {
+      ...obj,
+      [event.target.name]: parseFloat(value),
+    };
+    setRatio([...ratio.slice(0, key), obj, ...ratio.slice(key + 1)]);
+  };
+
+  const handleChange = (event, isNumber = false, name = null) => {
+    let isValid = true;
+    let value = event.target.value;
+    let errorValue = [];
+    if (isNumber) {
+      value = isNaN(parseFloat(value)) ? value : parseFloat(value);
+      if (typeof value === "string") {
+        errorValue = [`${name} should be a valid positive number`];
+      } else if (value < 0) {
+        errorValue = [`${name} cannot be negative`];
+        isValid = false;
+      }
+    }
+    if (isValid) {
+      delete error[event.target.name];
+      setError((error) => ({
+        ...error,
+      }));
+    } else {
+      setError((error) => ({
+        ...error,
+        [event.target.name]: errorValue,
+      }));
+    }
+    setFormState((formState) => ({
+      ...formState,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const checkAvailibility = async () => {
+    setBackDrop(true);
+    await providerForPost(
+      backend_order_check_raw_material_availibility,
+      {
+        design: design.id,
+        ratio: ratio && ratio.length ? ratio : [],
+        remaining_quantity: parseFloat(formState.remainingQuantity),
+        buffer_quantity: parseFloat(formState.bufferQuantity),
+        total_quantity: parseFloat(formState.quantity),
+        completed_quantity: parseFloat(formState.completedQuantity),
+      },
+      Auth.getToken()
+    )
+      .then((res) => {
+        setAvailibleStocks(res.data);
+        setOpenDialogForStockAvailibility(true);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error",
+        }));
+      });
   };
 
   return (
@@ -835,12 +899,13 @@ export default function AddOrder(props) {
         handleClose={snackBarHandleClose}
       />
       {alert}
-      <DialogBoxForSelectingReadyMaterial
+      <DialogBoxForSelectingDesign
         handleCancel={handleCloseDialogForDesign}
         handleClose={handleCloseDialogForDesign}
         handleAddDesign={handleAddDesign}
         isHandleKey={false}
         open={openDialogForSelectingDesign}
+        selectMultiColors={false}
       />
       <DialogForSelectingParties
         handleCancel={handleCloseDialogForParties}
@@ -873,7 +938,7 @@ export default function AddOrder(props) {
                   onChange={(event) => handleChange(event)}
                   labelText="Order ID"
                   name="order_id"
-                  disabled={isView || isEdit || formState.cancelled}
+                  disabled={isView}
                   value={formState.order_id}
                   id="order_id"
                   formControlProps={{
@@ -892,27 +957,12 @@ export default function AddOrder(props) {
                   error={hasError("order_id", error)}
                 />
               </GridItem>
-              {/* 
-              <GridItem xs={12} sm={12} md={4}>
-                <CustomInput
-                  onChange={event => handleChange(event)}
-                  labelText="NL No"
-                  name="nl_no"
-                  disabled={isView || formState.cancelled}
-                  value={formState.nl_no}
-                  id="nl_no"
-                  formControlProps={{
-                    fullWidth: true
-                  }}
-                />
-              </GridItem> */}
-
               <GridItem xs={12} sm={12} md={4}>
                 <DatePicker
                   onChange={(event) => handleOrderDate(event)}
                   label="Order Date"
                   name="order_date"
-                  disabled={isView || formState.cancelled}
+                  disabled={isView}
                   value={formState.date || new Date()}
                   id="order_date"
                   formControlProps={{
@@ -931,7 +981,8 @@ export default function AddOrder(props) {
                 sm={12}
                 md={12}
                 style={{
-                  margin: "20px 10px 20px 13px",
+                  margin: "20px 10px 0px 13px",
+                  overflowX: "auto",
                 }}
               >
                 <GridContainer>
@@ -941,6 +992,7 @@ export default function AddOrder(props) {
                     md={12}
                     style={{
                       margin: "0px 0px 10px 0px",
+                      overflowX: "auto",
                     }}
                   >
                     <b>Design : </b>
@@ -952,6 +1004,7 @@ export default function AddOrder(props) {
                     margin: "2px 2px 2px 2px",
                     border: "1px solid #C0C0C0",
                     borderRadius: "10px",
+                    overflowX: "auto",
                   }}
                 >
                   <GridItem
@@ -960,23 +1013,29 @@ export default function AddOrder(props) {
                     md={10}
                     style={{
                       margin: "15px 0px 10px 0px",
+                      overflowX: "auto",
                     }}
                   >
-                    {readyMaterial.id ? (
+                    {design.id ? (
                       <div
                         style={{
                           textAlign: "center",
                         }}
                       >
                         <GridContainer>
-                          <GridItem xs={12} sm={12} md={12}>
+                          <GridItem
+                            xs={12}
+                            md={12}
+                            lg={12}
+                            style={{ overflowX: "auto" }}
+                          >
                             <div className={classes.imageDivInTable}>
-                              {readyMaterial.images &&
-                              readyMaterial.images.length &&
-                              readyMaterial.images[0].url ? (
+                              {design.images &&
+                              design.images.length &&
+                              design.images[0].url ? (
                                 <img
                                   alt="ready_material_photo"
-                                  src={apiUrl + readyMaterial.images[0].url}
+                                  src={apiUrl + design.images[0].url}
                                   loader={<CircularProgress />}
                                   style={{
                                     height: "10rem",
@@ -1001,21 +1060,17 @@ export default function AddOrder(props) {
                         </GridContainer>
                         <GridContainer>
                           <GridItem xs={12} sm={12} md={12}>
-                            <b>Material No : </b> {readyMaterial.material_no}
+                            <b>Material No : </b> {design.material_no}
                           </GridItem>
                         </GridContainer>
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={12}>
-                            <b>Total Available Quantity : </b>{" "}
-                            {readyMaterial.availableQuantity}
-                          </GridItem>
-                        </GridContainer>
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={12}>
-                            <b>Price Per Piece : </b>{" "}
-                            {convertNumber(readyMaterial.total_cost, true)}
-                          </GridItem>
-                        </GridContainer>
+                        {design.color_price.length ? null : (
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={12}>
+                              <b>Design Price : </b>{" "}
+                              {convertNumber(design.designPrice, true)}
+                            </GridItem>
+                          </GridContainer>
+                        )}
                       </div>
                     ) : (
                       <GridContainer style={{ dispay: "flex" }}>
@@ -1027,12 +1082,15 @@ export default function AddOrder(props) {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={1}>
                     <Tooltip
-                      title={
-                        readyMaterial.id ? "Change Design " : "Select Design"
-                      }
+                      title={design.id ? "Change Design " : "Select Design"}
                     >
                       <IconButton
-                        disabled={isView || isEdit || formState.cancelled}
+                        disabled={
+                          isView ||
+                          isEdit ||
+                          formState.cancelled ||
+                          formState.completed
+                        }
                         onClick={() => {
                           openDesignDialogFunction(true);
                         }}
@@ -1043,21 +1101,13 @@ export default function AddOrder(props) {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={1}>
                     <IconButton
-                      disabled={isView || isEdit || formState.cancelled}
-                      onClick={() => {
-                        delete error["ready_material"];
-                        setError((error) => ({
-                          ...error,
-                        }));
-                        setReadyMaterial((readyMaterial) => ({
-                          ...readyMaterial,
-                          id: null,
-                          availableQuantity: 0,
-                          images: null,
-                          total_cost: 0,
-                          isColorVariationAvailable: false,
-                        }));
-                      }}
+                      disabled={
+                        isView ||
+                        isEdit ||
+                        formState.cancelled ||
+                        formState.completed
+                      }
+                      onClick={() => cancelDesign()}
                     >
                       <ClearIcon />
                     </IconButton>
@@ -1154,7 +1204,12 @@ export default function AddOrder(props) {
                       title={party.id ? "Change Party " : "Select Party"}
                     >
                       <IconButton
-                        disabled={isView || isEdit || formState.cancelled}
+                        disabled={
+                          isView ||
+                          isEdit ||
+                          formState.cancelled ||
+                          formState.completed
+                        }
                         onClick={() => {
                           openDialogForSelectingParty(true);
                         }}
@@ -1165,7 +1220,12 @@ export default function AddOrder(props) {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={1}>
                     <IconButton
-                      disabled={isView || isEdit || formState.cancelled}
+                      disabled={
+                        isView ||
+                        isEdit ||
+                        formState.cancelled ||
+                        formState.completed
+                      }
                       onClick={() => {
                         delete error["party"];
                         setError((error) => ({
@@ -1203,105 +1263,6 @@ export default function AddOrder(props) {
                 </GridContainer>
               </GridItem>
             </GridContainer>
-            {readyMaterial.id ? (
-              <>
-                {/* <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{
-                      margin: "20px 0 0 0"
-                    }}
-                  >
-                    <Typography variant="caption" display="block" gutterBottom>
-                      Note :- Please add <b>New Price Per Piece</b> only if you
-                      want to change the actual original price per piece of
-                      ready material, else leave it blank
-                    </Typography>
-                  </GridItem>
-                </GridContainer> */}
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      onChange={(event) => handleChangePricePerPiece(event)}
-                      labelText="Price Per Piece"
-                      disabled={isView || isEdit || formState.cancelled}
-                      value={formState.price_per_piece}
-                      id="price_per_piece"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      type="number"
-                      /** For setting errors */
-                      helperTextId={"helperText_price_per_piece"}
-                      isHelperText={hasError("price_per_piece", error)}
-                      helperText={
-                        hasError("price_per_piece", error)
-                          ? error["price_per_piece"].map((error) => {
-                              return error + " ";
-                            })
-                          : null
-                      }
-                      error={hasError("price_per_piece", error)}
-                    />
-                  </GridItem>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={3}
-                    style={{
-                      margin: "45px 0 0 0",
-                    }}
-                  >
-                    {convertNumber(
-                      isNaN(formState.price_per_piece)
-                        ? 0
-                        : formState.price_per_piece,
-                      true
-                    )}
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      onChange={(event) => handleChangeAddCost(event)}
-                      labelText="Additional Cost"
-                      disabled={isView || formState.cancelled}
-                      value={formState.add_cost}
-                      id="add_cost"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      type="number"
-                      /** For setting errors */
-                      helperTextId={"helperText_add_cost"}
-                      isHelperText={hasError("add_cost", error)}
-                      helperText={
-                        hasError("add_cost", error)
-                          ? error["add_cost"].map((error) => {
-                              return error + " ";
-                            })
-                          : null
-                      }
-                      error={hasError("add_cost", error)}
-                    />
-                  </GridItem>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={3}
-                    style={{
-                      margin: "45px 0 0 0",
-                    }}
-                  >
-                    {convertNumber(
-                      isNaN(formState.add_cost) ? 0 : formState.add_cost,
-                      true
-                    )}
-                  </GridItem>
-                </GridContainer>
-              </>
-            ) : null}
-
             <GridContainer>
               <GridItem xs={12} sm={12} md={4}>
                 <CustomInput
@@ -1318,16 +1279,16 @@ export default function AddOrder(props) {
               </GridItem>
             </GridContainer>
 
+            {/** Quantity */}
             <GridContainer>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={(event) => handleChangeQuantity(event)}
+                  // onChange={(event) => handleChangeQuantity(event)}
+                  onChange={(event) => handleChange(event, true, "Quantity")}
                   labelText="Total Quantity"
                   name="quantity"
                   disabled={
-                    isView ||
-                    (isEdit && formState.completed_quantity !== 0) ||
-                    formState.cancelled
+                    isView || formState.completed || formState.cancelled
                   }
                   value={formState.quantity}
                   id="quantity"
@@ -1351,120 +1312,89 @@ export default function AddOrder(props) {
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={(event) => {
-                    let parsedValue = parseFloat(event.target.value);
-                    let parsedTotalQuantity = parseFloat(formState.quantity);
-                    if (
-                      isNaN(parsedValue) ||
-                      parsedValue <= parsedTotalQuantity
-                    ) {
-                      handleChange(event);
-                      if (parsedValue === parsedTotalQuantity) {
-                        setFormState((formState) => ({
-                          ...formState,
-                          partial_completed: false,
-                          fully_completed: true,
-                        }));
-                      } else {
-                        let partial_completed = false;
-                        if (parsedValue === 0) {
-                          partial_completed = false;
-                        } else {
-                          partial_completed = true;
-                        }
-                        setFormState((formState) => ({
-                          ...formState,
-                          partial_completed: partial_completed,
-                          fully_completed: false,
-                        }));
-                      }
-                    }
-                  }}
+                  onChange={(event) =>
+                    handleChange(event, true, "Completed Quantity")
+                  }
                   labelText="Completed Quantity"
                   disabled={
-                    isView || !formState.quantity || formState.cancelled
+                    isView || formState.cancelled || formState.completed
                   }
-                  value={formState.completed_quantity}
-                  id="completed_quantity"
+                  value={formState.completedQuantity}
+                  id="completedQuantity"
                   formControlProps={{
                     fullWidth: true,
                   }}
-                  name="completed_quantity"
+                  name="completedQuantity"
                   type="number"
                   /** For setting errors */
-                  helperTextId={"helperText_completed_quantity"}
-                  isHelperText={hasError("completed_quantity", error)}
+                  helperTextId={"helperText_completedQuantity"}
+                  isHelperText={hasError("completedQuantity", error)}
                   helperText={
-                    hasError("completed_quantity", error)
-                      ? error["completed_quantity"].map((error) => {
+                    hasError("completedQuantity", error)
+                      ? error["completedQuantity"].map((error) => {
                           return error + " ";
                         })
                       : null
                   }
-                  error={hasError("completed_quantity", error)}
+                  error={hasError("completedQuantity", error)}
                 />
               </GridItem>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={(event) => handleChange(event)}
-                  labelText="Remaining Quantity"
-                  disabled={true}
-                  value={
-                    isNaN(
-                      parseFloat(formState.quantity) -
-                        parseFloat(formState.completed_quantity)
-                    )
-                      ? parseFloat(formState.quantity)
-                      : parseFloat(formState.quantity) -
-                        parseFloat(formState.completed_quantity)
+                  onChange={(event) =>
+                    handleChange(event, true, "Remaining Quantity")
                   }
-                  id="remaining_quantity"
+                  labelText="Remaining Quantity"
+                  disabled={
+                    isView || formState.cancelled || formState.completed
+                  }
+                  value={formState.remainingQuantity}
+                  id="remainingQuantity"
                   formControlProps={{
                     fullWidth: true,
                   }}
-                  name="remaining_quantity"
-                />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  onChange={(event) => {
-                    let parsedValue = parseFloat(event.target.value);
-                    let parsedCompleted = parseFloat(
-                      formState.completed_quantity
-                    );
-                    let parsedTotal = parseFloat(formState.quantity);
-                    parsedCompleted = isNaN(parsedCompleted)
-                      ? 0
-                      : parsedCompleted;
-                    parsedTotal = isNaN(parsedTotal) ? 0 : parsedTotal;
-                    if (
-                      isNaN(parsedValue) ||
-                      parsedValue <= parsedTotal - parsedCompleted
-                    ) {
-                      handleChange(event);
-                    }
-                  }}
-                  labelText="Quantity saved for later"
-                  disabled={isView || formState.cancelled}
-                  value={formState.buffer_quantity}
-                  id="buffer_quantity"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  name="buffer_quantity"
                   type="number"
-                  /** For setting errors */
-                  helperTextId={"helperText_buffer_quantity"}
-                  isHelperText={hasError("buffer_quantity", error)}
+                  name="remainingQuantity"
+                  helperTextId={"helperText_remainingQuantity"}
+                  isHelperText={hasError("remainingQuantity", error)}
                   helperText={
-                    hasError("buffer_quantity", error)
-                      ? error["buffer_quantity"].map((error) => {
+                    hasError("remainingQuantity", error)
+                      ? error["remainingQuantity"].map((error) => {
                           return error + " ";
                         })
                       : null
                   }
-                  error={hasError("buffer_quantity", error)}
+                  error={hasError("remainingQuantity", error)}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={(event) =>
+                    handleChange(event, true, "Quantity saved for later")
+                  }
+                  labelText="Quantity saved for later"
+                  disabled={
+                    isView || formState.cancelled || formState.completed
+                  }
+                  value={formState.bufferQuantity}
+                  id="bufferQuantity"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  name="bufferQuantity"
+                  type="number"
+                  /** For setting errors */
+                  helperTextId={"helperText_bufferQuantity"}
+                  isHelperText={hasError("bufferQuantity", error)}
+                  helperText={
+                    hasError("bufferQuantity", error)
+                      ? error["bufferQuantity"].map((error) => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("bufferQuantity", error)}
                 />
               </GridItem>
             </GridContainer>
@@ -1479,11 +1409,14 @@ export default function AddOrder(props) {
                           setFormState((formState) => ({
                             ...formState,
                             cancelled: event.target.checked,
+                            completed: false,
+                            inProgress: event.target.checked ? false : true,
                           }));
                         }}
                         disabled={
                           isView ||
-                          formState.quantity === formState.completed_quantity
+                          formState.quantity === formState.completed_quantity ||
+                          formState.completed
                         }
                         classes={{
                           switchBase: classes.switchBase,
@@ -1505,14 +1438,15 @@ export default function AddOrder(props) {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={formState.fully_completed ? true : false}
-                        // onChange={event => {
-                        //   setFormState(formState => ({
-                        //     ...formState,
-                        //     fully_completed: event.target.checked
-                        //   }));
-                        // }}
-                        disabled={isView}
+                        checked={formState.completed ? true : false}
+                        disabled={isView || formState.cancelled}
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            completed: event.target.checked,
+                            inProgress: event.target.checked ? false : true,
+                          }));
+                        }}
                         classes={{
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
@@ -1524,7 +1458,7 @@ export default function AddOrder(props) {
                     classes={{
                       label: classes.label,
                     }}
-                    label="Fully Completed"
+                    label="Completed"
                   />
                 </div>
               </GridItem>
@@ -1533,8 +1467,10 @@ export default function AddOrder(props) {
                   <FormControlLabel
                     control={
                       <Switch
-                        disabled={isView}
-                        checked={formState.partial_completed ? true : false}
+                        disabled={
+                          isView || formState.cancelled || formState.completed
+                        }
+                        checked={formState.inProgress ? true : false}
                         classes={{
                           switchBase: classes.switchBase,
                           checked: classes.switchChecked,
@@ -1546,14 +1482,13 @@ export default function AddOrder(props) {
                     classes={{
                       label: classes.label,
                     }}
-                    label="Partial Completed"
+                    label="In Progress"
                   />
                 </div>
               </GridItem>
             </GridContainer>
-            {readyMaterial.id && readyMaterial.isColorVariationAvailable ? (
-              <>
-                {isView ? null : (
+
+            {/* {isView ? null : (
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={12}>
                       <FAB
@@ -1568,164 +1503,162 @@ export default function AddOrder(props) {
                       </FAB>
                     </GridItem>
                   </GridContainer>
-                )}
-                {ratio && ratio.length ? (
-                  <GridContainer>
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={12}
-                      style={{
-                        margin: "20px 10px 20px 13px",
-                      }}
-                    >
-                      <GridContainer
-                        style={{
-                          margin: "1px 1px 1px 1px",
-                          border: "1px solid #C0C0C0",
-                          borderRadius: "10px",
-                        }}
-                      >
-                        <GridItem xs={12} sm={12} md={12}>
-                          <>
-                            {ratio.map((r, key) => (
-                              <GridContainer>
-                                <GridItem xs={12} sm={12} md={3}>
-                                  <CustomInput
-                                    labelText="Color"
-                                    id="color"
-                                    name="color"
-                                    disabled={true}
-                                    value={r.name}
-                                    formControlProps={{
-                                      fullWidth: true,
-                                    }}
-                                  />
-                                </GridItem>
-                                <GridItem xs={12} sm={12} md={3}>
-                                  <CustomInput
-                                    onChange={(event) =>
-                                      handleChangeRepeatableComponent(
-                                        event,
-                                        key
-                                      )
-                                    }
-                                    labelText="Quantity"
-                                    disabled={
-                                      isEdit || isView || formState.cancelled
-                                    }
-                                    value={r.quantity}
-                                    id="quantity"
-                                    formControlProps={{
-                                      fullWidth: true,
-                                    }}
-                                    type="number"
-                                    name="quantity"
-                                    /** For setting errors */
-                                    helperTextId={"helperText_quantity"}
-                                    isHelperText={hasError("quantity_error", r)}
-                                    helperText={
-                                      hasError("quantity_error", error)
-                                        ? error["quantity_error"].map(
-                                            (error) => {
-                                              return error + " ";
-                                            }
-                                          )
-                                        : null
-                                    }
-                                    error={hasError("quantity_error", error)}
-                                  />
-                                </GridItem>
-                                <GridItem xs={12} sm={12} md={3}>
-                                  <CustomInput
-                                    onChange={(event) => {
-                                      let parsedValue = parseFloat(
-                                        event.target.value
-                                      );
-                                      let obj = ratio[key];
-                                      let parsedTotalQuantity = parseFloat(
-                                        obj["quantity"]
-                                      );
-                                      if (
-                                        isNaN(parsedValue) ||
-                                        parsedValue <= parsedTotalQuantity
-                                      ) {
-                                        handleChangeRepeatableComponent(
-                                          event,
-                                          key
-                                        );
-                                      }
-                                    }}
-                                    labelText="Quantity Completed"
-                                    disabled={isView || formState.cancelled}
-                                    value={r.quantity_completed}
-                                    id="quantity_completed"
-                                    formControlProps={{
-                                      fullWidth: true,
-                                    }}
-                                    name="quantity_completed"
-                                    type="number"
-                                    /** For setting errors */
-                                    helperTextId={
-                                      "helperText_quantity_completed"
-                                    }
-                                    isHelperText={hasError(
-                                      "quantity_completed",
-                                      r
-                                    )}
-                                    helperText={
-                                      hasError("quantity_completed", error)
-                                        ? error["quantity_completed"].map(
-                                            (error) => {
-                                              return error + " ";
-                                            }
-                                          )
-                                        : null
-                                    }
-                                    error={hasError(
-                                      "quantity_completed",
-                                      error
-                                    )}
-                                  />
-                                </GridItem>
-                                {isView ? null : (
-                                  <GridItem
-                                    xs={6}
-                                    sm={6}
-                                    md={1}
-                                    className={classes.addDeleteFabButon}
-                                  >
-                                    <FAB
-                                      color="primary"
-                                      align={"end"}
-                                      size={"small"}
-                                      disabled={
-                                        isView ||
-                                        formState.cancelled ||
-                                        parseFloat(
-                                          ratio[key]["quantity_completed"]
-                                        ) > 0
-                                      }
-                                      onClick={() => {
-                                        setRatio([
-                                          ...ratio.slice(0, key),
-                                          ...ratio.slice(key + 1),
-                                        ]);
-                                      }}
-                                    >
-                                      <DeleteIcon />
-                                    </FAB>
-                                  </GridItem>
+                )} */}
+            {ratio && ratio.length ? (
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  style={{
+                    margin: "20px 10px 20px 13px",
+                  }}
+                >
+                  <GridContainer
+                    style={{
+                      margin: "1px 1px 1px 1px",
+                      border: "1px solid #C0C0C0",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <GridItem xs={12} sm={12} md={12}>
+                      <>
+                        {ratio.map((r, key) => (
+                          <GridContainer>
+                            <GridItem xs={12} sm={12} md={2}>
+                              <CustomInput
+                                labelText="Color"
+                                disabled={true}
+                                value={r.colorName}
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                              />
+                            </GridItem>
+                            <GridItem xs={12} sm={12} md={3}>
+                              <CustomInput
+                                labelText="Price"
+                                disabled={true}
+                                value={convertNumber(r.designPrice, true)}
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                              />
+                            </GridItem>
+                            <GridItem xs={12} sm={12} md={2}>
+                              <CustomInput
+                                onChange={(event) =>
+                                  handleChangeRepeatableComponent(
+                                    event,
+                                    key,
+                                    true,
+                                    "Quantity",
+                                    "quantity" + key
+                                  )
+                                }
+                                labelText="Quantity"
+                                disabled={
+                                  isEdit || isView || formState.cancelled
+                                }
+                                value={r.quantity}
+                                id="quantity"
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                type="number"
+                                name={"quantity"}
+                                /** For setting errors */
+                                helperTextId={"helperText_quantity" + key}
+                                isHelperText={hasError("quantity" + key, error)}
+                                helperText={
+                                  hasError("quantity" + key, error)
+                                    ? error["quantity" + key].map((error) => {
+                                        return error + " ";
+                                      })
+                                    : null
+                                }
+                                error={hasError("quantity" + key, error)}
+                              />
+                            </GridItem>
+                            <GridItem xs={12} sm={12} md={2}>
+                              <CustomInput
+                                onChange={(event) =>
+                                  handleChangeRepeatableComponent(
+                                    event,
+                                    key,
+                                    true,
+                                    "Quantity Completed",
+                                    "quantityCompleted" + key
+                                  )
+                                }
+                                labelText="Quantity Completed"
+                                disabled={isView || formState.cancelled}
+                                value={r.quantityCompleted}
+                                id="quantityCompleted"
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                name="quantityCompleted"
+                                type="number"
+                                /** For setting errors */
+                                helperTextId={
+                                  "helperText_quantityCompleted" + key
+                                }
+                                isHelperText={hasError(
+                                  "quantityCompleted" + key,
+                                  error
                                 )}
-                              </GridContainer>
-                            ))}
-                          </>
-                        </GridItem>
-                      </GridContainer>
+                                helperText={
+                                  hasError("quantityCompleted" + key, error)
+                                    ? error["quantityCompleted" + key].map(
+                                        (error) => {
+                                          return error + " ";
+                                        }
+                                      )
+                                    : null
+                                }
+                                error={hasError(
+                                  "quantityCompleted" + key,
+                                  error
+                                )}
+                              />
+                            </GridItem>
+                            {isView ? null : (
+                              <GridItem
+                                xs={6}
+                                sm={6}
+                                md={1}
+                                className={classes.addDeleteFabButon}
+                              >
+                                <FAB
+                                  color="primary"
+                                  align={"end"}
+                                  size={"small"}
+                                  disabled={
+                                    isView ||
+                                    formState.cancelled ||
+                                    parseFloat(
+                                      ratio[key]["quantity_completed"]
+                                    ) > 0
+                                  }
+                                  onClick={() => {
+                                    setRatio([
+                                      ...ratio.slice(0, key),
+                                      ...ratio.slice(key + 1),
+                                    ]);
+                                  }}
+                                >
+                                  <DeleteIcon />
+                                </FAB>
+                              </GridItem>
+                            )}
+                          </GridContainer>
+                        ))}
+                      </>
                     </GridItem>
                   </GridContainer>
-                ) : null}
-              </>
+                </GridItem>
+              </GridContainer>
             ) : null}
             <GridContainer>
               <GridItem xs={12} sm={12} md={12}>
@@ -1746,32 +1679,8 @@ export default function AddOrder(props) {
                 />
               </GridItem>
             </GridContainer>
-            {readyMaterial.id ? (
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={4}>
-                  <Button color="primary" onClick={() => checkAvailibility()}>
-                    Check Stock Availability
-                  </Button>
-                </GridItem>
-                {urlParams.get("oid") ? (
-                  <GridItem xs={12} sm={12} md={4}>
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        history.push({
-                          pathname: DEPARTMENTSHEET,
-                          search: `?oid=${urlParams.get("oid")}`,
-                        });
-                      }}
-                    >
-                      Check Department Sheet
-                    </Button>
-                  </GridItem>
-                ) : null}
-              </GridContainer>
-            ) : null}
 
-            <GridContainer>
+            {/* <GridContainer>
               <GridItem
                 xs={12}
                 sm={12}
@@ -1795,31 +1704,68 @@ export default function AddOrder(props) {
                   true
                 )}
               </GridItem>
-            </GridContainer>
+            </GridContainer> */}
           </CardBody>
-          {isView ? (
-            <CardFooter>
-              <Button
-                color="primary"
-                onClick={(e) => {
-                  history.push({
-                    pathname: EDITORDER,
-                    search: `?oid=${urlParams.get("oid")}`,
-                    state: { edit: true },
-                  });
-                  window.location.reload();
-                }}
-              >
-                Edit
-              </Button>
-            </CardFooter>
-          ) : (
-            <CardFooter>
-              <Button color="primary" onClick={(e) => submit(e)}>
-                Save
-              </Button>
-            </CardFooter>
-          )}
+          <CardFooter>
+            <GridContainer>
+              {isView ? (
+                <GridItem>
+                  <Button
+                    color="primary"
+                    onClick={(e) => {
+                      history.push({
+                        pathname: EDITORDER,
+                        search: `?oid=${urlParams.get("oid")}`,
+                        state: { edit: true },
+                      });
+                      window.location.reload();
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </GridItem>
+              ) : (
+                <GridItem>
+                  <Button
+                    color="primary"
+                    onClick={(e) => submit(e)}
+                    disabled={
+                      !design.id ||
+                      !party.id ||
+                      !formState.quantity ||
+                      !formState.order_id
+                    }
+                  >
+                    Save
+                  </Button>
+                </GridItem>
+              )}
+              {design.id ? (
+                <>
+                  <GridItem>
+                    <Button color="primary" onClick={() => checkAvailibility()}>
+                      Check Stock Availability
+                    </Button>
+                  </GridItem>
+                  {urlParams.get("oid") ? (
+                    <GridItem>
+                      <Button
+                        color="primary"
+                        onClick={() => {
+                          history.push({
+                            pathname: DEPARTMENTSHEET,
+                            search: `?oid=${urlParams.get("oid")}`,
+                          });
+                        }}
+                      >
+                        Check Department Sheet
+                      </Button>
+                    </GridItem>
+                  ) : null}
+                </>
+              ) : null}
+            </GridContainer>
+          </CardFooter>
         </Card>
         <Backdrop className={classes.backdrop} open={openBackDrop}>
           <CircularProgress color="inherit" />

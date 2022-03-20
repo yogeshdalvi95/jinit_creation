@@ -12,7 +12,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../../components";
 // core components
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
@@ -22,11 +22,16 @@ import { PARTIES } from "../../../paths";
 import { useState } from "react";
 import form from "../form/PartyForm.json";
 import { checkEmpty, hasError, setErrors } from "../../../Utils";
-import { Backdrop, CircularProgress } from "@material-ui/core";
+import {
+  Backdrop,
+  CircularProgress,
+  FormControlLabel,
+  Switch,
+} from "@material-ui/core";
 import { providerForGet, providerForPost, providerForPut } from "../../../api";
 import {
   backend_check_party_duplicate,
-  backend_parties
+  backend_parties,
 } from "../../../constants";
 import { useEffect } from "react";
 
@@ -47,7 +52,7 @@ export default function AddParties(props) {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const [formState, setFormState] = useState({
@@ -57,7 +62,9 @@ export default function AddParties(props) {
     phone: "",
     party_address: "",
     gst_no: "",
-    extra_details: ""
+    extra_details: "",
+    is_whole_seller: false,
+    is_retailer: false,
   });
 
   useEffect(() => {
@@ -71,8 +78,8 @@ export default function AddParties(props) {
   }, []);
 
   /** Function that sets data during editing  */
-  const setData = data => {
-    setFormState(formState => ({
+  const setData = (data) => {
+    setFormState((formState) => ({
       ...formState,
       id: data.id,
       party_name: data.party_name,
@@ -80,7 +87,9 @@ export default function AddParties(props) {
       phone: data.phone,
       party_address: data.party_address,
       gst_no: data.gst_no,
-      extra_details: data.extra_details
+      extra_details: data.extra_details,
+      is_retailer: data.is_retailer,
+      is_whole_seller: data.is_whole_seller,
     }));
   };
 
@@ -88,20 +97,20 @@ export default function AddParties(props) {
     history.push(PARTIES);
   };
 
-  const handleChange = event => {
-    setFormState(formState => ({
+  const handleChange = (event) => {
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
     if (error.hasOwnProperty(event.target.name)) {
       delete error[event.target.name];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
     }
   };
 
-  const addButton = async event => {
+  const addButton = async (event) => {
     event.preventDefault();
     setLoading(true);
     let isValid = false;
@@ -139,19 +148,19 @@ export default function AddParties(props) {
         isEdit: isEdit,
         editId: formState.id,
         party_name: formState.party_name,
-        gst_no: formState.gst_no
+        gst_no: formState.gst_no,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         result = res.data;
       })
-      .catch(err => {
-        setSnackBar(snackBar => ({
+      .catch((err) => {
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error adding data"
+          message: "Error adding data",
         }));
         setLoading(false);
         result = null;
@@ -167,35 +176,37 @@ export default function AddParties(props) {
       phone: formState.phone,
       party_address: formState.party_address,
       gst_no: formState.gst_no,
-      extra_details: formState.extra_details
+      extra_details: formState.extra_details,
+      is_whole_seller: formState.is_whole_seller,
+      is_retailer: formState.is_retailer,
     };
     if (isEdit) {
       await providerForPut(backend_parties, formState.id, data, Auth.getToken())
-        .then(res => {
+        .then((res) => {
           history.push(PARTIES);
           setLoading(false);
         })
-        .catch(error => {
-          setSnackBar(snackBar => ({
+        .catch((error) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error saving data"
+            message: "Error saving data",
           }));
           setLoading(false);
         });
     } else {
       await providerForPost(backend_parties, data, Auth.getToken())
-        .then(res => {
+        .then((res) => {
           history.push(PARTIES);
           setLoading(false);
         })
-        .catch(error => {
-          setSnackBar(snackBar => ({
+        .catch((error) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error saving data"
+            message: "Error saving data",
           }));
           setLoading(false);
         });
@@ -204,11 +215,11 @@ export default function AddParties(props) {
 
   /** Close function called when we click on cancel button of snackbar */
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -244,16 +255,16 @@ export default function AddParties(props) {
                   id="party_name"
                   name="party_name"
                   value={formState.party_name}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   /** For setting errors */
                   helperTextId={"helperText_party_name"}
                   isHelperText={hasError("party_name", error)}
                   helperText={
                     hasError("party_name", error)
-                      ? error["party_name"].map(error => {
+                      ? error["party_name"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -267,16 +278,16 @@ export default function AddParties(props) {
                   id="gst_no"
                   name="gst_no"
                   value={formState.gst_no}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   /** For setting errors */
                   helperTextId={"helperText_gst_no"}
                   isHelperText={hasError("gst_no", error)}
                   helperText={
                     hasError("gst_no", error)
-                      ? error["gst_no"].map(error => {
+                      ? error["gst_no"].map((error) => {
                           return error + " ";
                         })
                       : null
@@ -292,9 +303,9 @@ export default function AddParties(props) {
                   id="party_email"
                   name="party_email"
                   value={formState.party_email}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                 />
               </GridItem>
@@ -304,9 +315,9 @@ export default function AddParties(props) {
                   id="phone"
                   name="phone"
                   value={formState.phone}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                 />
               </GridItem>
@@ -318,15 +329,77 @@ export default function AddParties(props) {
                   id="party_address"
                   name="party_address"
                   value={formState.party_address}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   inputProps={{
                     multiline: true,
-                    rows: 5
+                    rows: 5,
                   }}
                 />
+              </GridItem>
+            </GridContainer>
+            <GridContainer>
+              <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formState.is_whole_seller ? true : false}
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            is_whole_seller: event.target.checked
+                              ? true
+                              : false,
+                            is_retailer: event.target.checked ? false : true,
+                          }));
+                        }}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar,
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label,
+                    }}
+                    label="Whole Seller"
+                  />
+                </div>
+              </GridItem>
+              <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formState.is_retailer ? true : false}
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            is_retailer: event.target.checked ? true : false,
+                            is_whole_seller: event.target.checked
+                              ? false
+                              : true,
+                          }));
+                        }}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar,
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label,
+                    }}
+                    label="Retailer"
+                  />
+                </div>
               </GridItem>
             </GridContainer>
             <GridContainer>
@@ -336,20 +409,20 @@ export default function AddParties(props) {
                   id="extra_details"
                   name="extra_details"
                   value={formState.extra_details}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   inputProps={{
                     multiline: true,
-                    rows: 5
+                    rows: 5,
                   }}
                 />
               </GridItem>
             </GridContainer>
           </CardBody>
           <CardFooter>
-            <Button color="primary" onClick={e => addButton(e)}>
+            <Button color="primary" onClick={(e) => addButton(e)}>
               Save
             </Button>
           </CardFooter>

@@ -64,6 +64,7 @@ const useStyles = makeStyles((theme) => ({
       lineHeight: "1.5rem !important",
       letterSpacing: "0.15px !important",
       border: "0.6px solid #e0e0e0 !important",
+      borderBottom: "1px solid #e0e0e0 !important",
       "& .MuiIconButton-label": {
         color: "#1C4979 !important",
       },
@@ -71,9 +72,9 @@ const useStyles = makeStyles((theme) => ({
         color: "#00000042 !important",
       },
     },
-    "& tbody tr:last-child td": {
-      borderBottom: "0px !important",
-    },
+    // "& tbody tr:last-child td": {
+    //   borderBottom: "0px !important",
+    // },
   },
 }));
 

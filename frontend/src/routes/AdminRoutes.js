@@ -60,6 +60,8 @@ import {
   SELECTRAWMATERIALS,
   SELECTRAWMATERIALSID,
   SELECTREADYMATERIALSID,
+  VIEWSALESID,
+  EDITSALESID,
 } from "../paths";
 
 /** Raw material and units */
@@ -135,7 +137,14 @@ const departmentSheetList = [DEPARTMENTSHEET];
 const orderPaths = [...orderPathsList, ...departmentSheetList];
 
 const partiesPathList = [PARTIES, ADDPARTIES, EDITPARTIES];
-const salesPathList = [SALES, VIEWSALES, ADDSALES, EDITSALES];
+const salesPathList = [
+  SALES,
+  VIEWSALES,
+  ADDSALES,
+  EDITSALES,
+  EDITSALESID,
+  VIEWSALESID,
+];
 
 const salesReturnPathList = [
   SALERETURN,

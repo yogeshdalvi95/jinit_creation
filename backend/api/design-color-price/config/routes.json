@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/design-color-prices",
+      "handler": "design-color-price.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/design-color-prices/count",
+      "handler": "design-color-price.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/design-color-prices/:id",
+      "handler": "design-color-price.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/design-color-prices",
+      "handler": "design-color-price.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/design-color-prices/:id",
+      "handler": "design-color-price.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/design-color-prices/:id",
+      "handler": "design-color-price.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

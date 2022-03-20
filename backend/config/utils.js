@@ -165,6 +165,31 @@ function roundNumberTo2digit(num) {
   }
 }
 
+function validateNumber(num) {
+  if (isNaN(parseFloat(num))) {
+    return 0;
+  } else {
+    return parseFloat(num);
+  }
+}
+
+function checkIfDateFallsInCurrentMonth(date) {
+  let dateToCheck = new Date(date);
+  if (dateToCheck == "Invalid Date") {
+    return false;
+  } else {
+    let monthToCheck = dateToCheck.getMonth() + 1;
+    let yearToCheck = dateToCheck.getFullYear();
+    let currentMonth = new Date().getMonth() + 1;
+    let currentYear = new Date().getFullYear();
+    if (monthToCheck == currentMonth && yearToCheck == currentYear) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
 module.exports = {
   roundNumberTo2digit,
   getRequestParams,
@@ -188,4 +213,6 @@ module.exports = {
   isEmptyString,
   utilityFunctionForGettingBytesExcelData,
   getDateInMMDDYYYY,
+  validateNumber,
+  checkIfDateFallsInCurrentMonth,
 };

@@ -23,7 +23,7 @@ export {
   Ledger,
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
-export { Designs, AddEditDesign, DesignMaterials } from "./Designs";
+export { Designs, AddEditDesign, DesignMaterials, ViewDesign } from "./Designs";
 
 export {
   AddParties,

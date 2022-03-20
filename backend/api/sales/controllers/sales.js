@@ -38,11 +38,22 @@ module.exports = {
       .query("sales")
       .findOne({ id: id }, ["party", "sale_ready_material.ready_material"]);
 
+    let sale_ready_material = [];
+    await utils.asyncForEach(sale_data.sale_ready_material, async (el) => {
+      let designColorPrice = await strapi
+        .query("design-color-price")
+        .findOne({ design: el.design.id, color: el.color.id });
+      el.color_price = designColorPrice;
+      sale_ready_material.push(el);
+    });
+
+    sale_data.sale_ready_material = sale_ready_material;
+
     ctx.send(sale_data);
   },
 
   async create(ctx) {
-    const { id, state, readyMaterials, party } = ctx.request.body;
+    const { id, state, designAndColor, party } = ctx.request.body;
     const {
       date,
       bill_no,
@@ -50,64 +61,165 @@ module.exports = {
       cgst,
       sgst,
       add_cost,
-      total_price_of_ready_material,
+      total_price_of_design,
       total_price_without_gst,
       total_price,
     } = state;
 
-    let saleData = {
+    let transaction_amount = utils.validateNumber(total_price);
+
+    /** Create sale data */
+    let data = {
       bill_no: bill_no,
       date: utils.getDateInYYYYMMDD(new Date(date)),
       is_gst_bill: is_gst_bill,
-      total_price_of_ready_material: total_price_of_ready_material,
+      total_price_of_design: total_price_of_design,
       total_price_with_add_cost: total_price_without_gst,
       add_cost: add_cost,
-      total_price: total_price,
+      total_price: transaction_amount,
       sgst: sgst,
       cgst: cgst,
       party: party,
-      sale_ready_material: getReadyMaterialForSale(readyMaterials),
+      // sale_ready_material: getReadyMaterialForSale(designAndColor),
     };
 
-    await bookshelf.transaction(async (t) => {
-      if (id) {
-        await strapi
-          .query("sales")
-          .update({ id: id }, saleData, { patch: true, transacting: t });
-      } else {
-        await strapi
-          .query("sales")
-          .create(saleData, { transacting: t })
-          .then((model) => model)
-          .catch((err) => {
-            console.log(err);
-            throw 500;
-          });
-      }
-      await utils.asyncForEach(readyMaterials, async (rm) => {
-        let { ready_material, quantity, quantity_to_add_deduct } = rm;
-        let ready_material_data = await strapi
-          .query("ready-material")
-          .findOne({ id: ready_material.id });
-        let ready_material_quantity = ready_material_data.total_quantity;
-        let quantityToDeduct = 0;
+    await bookshelf
+      .transaction(async (t) => {
+        let saleData = null;
+        let saleId = null;
+
         if (id) {
-          quantityToDeduct = parseFloat(quantity_to_add_deduct);
+          saleData = await strapi
+            .query("sales")
+            .update({ id: id }, data, { patch: true, transacting: t });
+
+          saleId = id;
+          let saleTxnData = await strapi
+            .query("sale-payment-transaction")
+            .findOne({
+              sale: saleId,
+              is_sale: true,
+            });
+
+          if (saleTxnData) {
+          }
         } else {
-          quantityToDeduct = parseFloat(quantity);
+          /** While creating a sale */
+
+          /** Check if date for creating sale falls within the current month */
+          let isDateValid = false;
+          isDateValid = utils.checkIfDateFallsInCurrentMonth(date);
+          if (!isDateValid) {
+            throw 500;
+          }
+
+          /** Create sale date */
+          let data = {
+            bill_no: bill_no,
+            date: utils.getDateInYYYYMMDD(new Date(date)),
+            is_gst_bill: is_gst_bill,
+            total_price_of_design: total_price_of_design,
+            total_price_with_add_cost: total_price_without_gst,
+            add_cost: add_cost,
+            total_price: transaction_amount,
+            sgst: sgst,
+            cgst: cgst,
+            party: party,
+            // sale_ready_material: getReadyMaterialForSale(designAndColor),
+          };
+
+          /** Create sale */
+          saleData = await strapi
+            .query("sales")
+            .create(data, { transacting: t })
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
+
+          saleId = saleData.id;
+
+          /** Fill transaction details */
+          let saleTxnData = {
+            sale: saleId,
+            sale_payment: null,
+            sale_return: null,
+            party: party,
+            transaction_date: data.date,
+            comment: "",
+            transaction_amount: transaction_amount,
+            is_sale: true,
+            is_payment: false,
+            is_sale_return: false,
+          };
+
+          /** Create a sale txn */
+          await strapi
+            .query("sale-payment-transaction")
+            .create(saleTxnData, { transacting: t })
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
+
+          /** Check Sale Monthly Balance */
+          let saleDate = new Date();
+          let saleMonth = saleDate.getMonth() + 1;
+          let saleYear = saleDate.getFullYear();
+
+          let getSaleMonthlyBalance = await strapi
+            .query("monthly-sale-balance")
+            .findOne({
+              month: saleMonth,
+              year: saleYear,
+            });
+          let opening_balance = 0;
+          let closing_balance = 0;
+          // if (getSaleMonthlyBalance) {
+          //   /** If current moonth data is present */
+          //   opening_balance = utils.validateNumber(
+          //     getSaleMonthlyBalance.opening_balance
+          //   );
+          //   closing_balance = closing_balance;
+          // }else {
+          //   /** If current month balance is not present check previous month balanc */
+          //   let previousMonthBalance = await strapi
+
+          //   let monthlySaleBalanceData = await strapi
+          //   .query("monthly-sale-balance")
+          //   .create(saleTxnData, { transacting: t })
+          //   .then((model) => model)
+          //   .catch((err) => {
+          //     console.log(err);
+          //     throw 500;
+          //   });
+          // }
         }
-        let final_quantity =
-          parseFloat(ready_material_quantity) - quantityToDeduct;
-        await strapi.query("ready-material").update(
-          { id: ready_material.id },
+
+        /** Done adding entries in the sale payment transaction */
+        let designAndColorData = await getReadyMaterialForSale(
+          designAndColor,
+          saleId,
+          t
+        );
+
+        saleData = await strapi.query("sales").update(
+          { id: saleId },
           {
-            total_quantity: final_quantity,
+            sale_ready_material: designAndColorData,
           },
           { patch: true, transacting: t }
         );
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log("err ", err);
+        return ctx.badRequest(null, "Error");
       });
-      ctx.send(200);
-    });
   },
 
   async getExcelSheetForExport(ctx) {
@@ -125,9 +237,8 @@ module.exports = {
         "Is Gst Bill": d.is_gst_bill,
         CGST: d.cgst,
         SGST: d.sgst,
-        "Total Price of ready material without add. cost": utils.roundNumberTo2digit(
-          d.total_price_of_ready_material
-        ),
+        "Total Price of ready material without add. cost":
+          utils.roundNumberTo2digit(d.total_price_of_design),
         "Add. Cost": utils.roundNumberTo2digit(d.add_cost),
         "Total Price": utils.roundNumberTo2digit(d.total_price),
       });
@@ -141,34 +252,61 @@ module.exports = {
   },
 };
 
-const getReadyMaterialForSale = (arr) => {
-  let finalArr = [];
-  for (var s of arr) {
-    let {
-      ready_material,
-      quantity,
-      price_per_unit,
-      total_price,
-      isDeleted,
-      isCannotDelete,
-    } = s;
-    if (isCannotDelete) {
-      if (!isDeleted) {
-        finalArr.push({
-          ready_material: ready_material.id,
-          quantity: quantity,
-          total_price: total_price,
-          price_per_unit: price_per_unit,
+const getReadyMaterialForSale = async (object, saleId, t) => {
+  let dataToSend = [];
+  let designColorArray = Object.keys(object);
+  if (
+    Object.prototype.toString.call(designColorArray) === "[object Array]" &&
+    designColorArray.length
+  ) {
+    await utils.asyncForEach(designColorArray, async (el) => {
+      let colorArray = object[el].allColors;
+      if (
+        Object.prototype.toString.call(colorArray) === "[object Array]" &&
+        colorArray.length
+      ) {
+        await utils.asyncForEach(colorArray, async (el1) => {
+          /** Get Data from each color */
+          let { design, color, quantity, quantity_to_add_deduct } = el1;
+          /** get design color data */
+          let designColorData = await strapi
+            .query("design-color-price")
+            .findOne({ design: design, color: color });
+
+          /** get color stock */
+          let designColorQuantity = utils.validateNumber(designColorData.stock);
+          let quantityToDeduct = 0;
+
+          if (saleId) {
+            quantityToDeduct = utils.validateNumber(quantity_to_add_deduct);
+          } else {
+            quantityToDeduct = utils.validateNumber(quantity);
+          }
+          /** Final quantity */
+          let final_quantity = designColorQuantity - quantityToDeduct;
+          /** Update quantity */
+          await strapi.query("design-color-price").update(
+            { id: designColorData.id },
+            {
+              stock: final_quantity,
+            },
+            { patch: true, transacting: t }
+          );
+
+          /** final data */
+          dataToSend.push({
+            design: el1.design,
+            sale: saleId,
+            color: el1.color,
+            quantity: utils.validateNumber(el1.quantity),
+            total_price: utils.validateNumber(el1.total_price),
+            price_per_unit: utils.validateNumber(el1.price_per_unit),
+          });
         });
       }
-    } else {
-      finalArr.push({
-        ready_material: ready_material.id,
-        quantity: quantity,
-        total_price: total_price,
-        price_per_unit: price_per_unit,
-      });
-    }
+    });
+    return dataToSend;
+  } else {
+    return [];
   }
-  return finalArr;
 };

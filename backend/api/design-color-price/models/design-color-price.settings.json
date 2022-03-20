@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "design_color_prices",
+  "info": {
+    "name": "Design Color Price",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "design": {
+      "model": "designs"
+    },
+    "color": {
+      "model": "color"
+    },
+    "color_price": {
+      "type": "float"
+    },
+    "stock": {
+      "type": "float"
+    }
+  }
+}

@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "parties",
   "info": {
-    "name": "Party"
+    "name": "Party",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -30,6 +31,14 @@
     },
     "extra_details": {
       "type": "text"
+    },
+    "is_whole_seller": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_retailer": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

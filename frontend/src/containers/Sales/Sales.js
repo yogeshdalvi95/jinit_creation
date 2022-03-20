@@ -558,15 +558,16 @@ export default function Sales() {
                   (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
+                    disabled: true,
                     onClick: (event, rowData) => {
-                      history.push(`${EDITSALES}?id=${rowData.id}`);
+                      history.push(`${EDITSALES}/${rowData.id}`);
                     },
                   }),
                   (rowData) => ({
                     icon: () => <VisibilityIcon fontSize="small" />,
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      history.push(`${VIEWSALES}?id=${rowData.id}`);
+                      history.push(`${VIEWSALES}/${rowData.id}`);
                     },
                   }),
                 ]}

@@ -1,4 +1,7 @@
-import React from "react";
+import * as React from "react";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
 // @material-ui/core components
 import { GridContainer, GridItem, CollapsableTable } from "../../components";
 // core components
@@ -6,7 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from "@material-ui/core";
 import { isEmptyString } from "../../Utils";
 import { CustomTabs } from "../CustomTabs";
@@ -14,26 +17,18 @@ import { CustomTabs } from "../CustomTabs";
 export default function DialogForCheckingStockAvailibility(props) {
   let columns = [
     { title: "Name", field: "name" },
-    { title: "Current Balance", field: "raw_material_balance" },
+    { title: "Current Balance", field: "currentBalance" },
     {
-      title: "Pending ready material for order completion",
-      field: "total_remaining_ready_material"
+      title: "Quantity required per piece of design",
+      field: "quantityRequiredPerPieceOfDesign",
     },
     {
-      title: "Quantity required for 1 ready material",
-      field: "quantity_per_ready_material"
+      title: "Total Raw Material required for order completion",
+      field: "totalMaterialsRequiredForRemainingQuantity",
     },
-    {
-      title: "Total Quantity required for order",
-      field: "total_required_quantity_for_order"
-    },
-    {
-      title: "Total raw material required / will remain after order completion",
-      field: "total_remaining_raw_material"
-    }
   ];
 
-  const StockTable = props => {
+  const StockTable = (props) => {
     return (
       <CollapsableTable
         title={props.title}
@@ -41,6 +36,48 @@ export default function DialogForCheckingStockAvailibility(props) {
         data={props.data}
       />
     );
+  };
+
+  const generateTabs = () => {
+    let stock = props?.availibleStocks;
+    let output = [];
+    if (stock) {
+      output.push({
+        tabName: stock.isColorPresent
+          ? "Common Raw Materials required in all the colors"
+          : "All Raw Materials",
+        tabContent: (
+          <StockTable
+            title={
+              stock.isColorPresent
+                ? "Common Raw Materials required in all the colors"
+                : "All Raw Materials"
+            }
+            columns={columns}
+            data={stock.rawMaterials}
+          />
+        ),
+      });
+      if (stock.isColorPresent && Object.keys(stock.orderRatios).length) {
+        let orderRatio = stock.orderRatios;
+        Object.keys(orderRatio).forEach((oR) => {
+          output.push({
+            tabName: orderRatio[oR].name,
+            tabContent: (
+              <StockTable
+                title={orderRatio[oR].name}
+                columns={columns}
+                data={orderRatio[oR].rawMaterials}
+              />
+            ),
+          });
+        });
+      }
+    } else {
+      return output;
+    }
+    console.log("output ", output);
+    return output;
   };
 
   return (
@@ -58,45 +95,49 @@ export default function DialogForCheckingStockAvailibility(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={12}>
                 <CustomTabs
-                  title="Available Stocks :-"
+                  title="Available Stocks :"
                   headerColor="primary"
-                  tabs={
-                    Object.keys(props.availibleStocks).length
-                      ? Object.keys(props.availibleStocks).map(r => {
-                          if (r === "raw_material_without_color") {
-                            return {
-                              tabName: "Color Independent Stocks",
-                              tabContent: (
-                                <StockTable
-                                  title="Color Independent Stocks"
-                                  columns={columns}
-                                  data={
-                                    props.availibleStocks &&
-                                    props.availibleStocks
-                                      .raw_material_without_color
-                                      ? props.availibleStocks
-                                          .raw_material_without_color
-                                      : []
+                  tabs={generateTabs()}
+                />
+                {/* <Box sx={{ width: "100%" }}>
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    textColor="secondary"
+                    indicatorColor="secondary"
+                    aria-label="secondary tabs example"
+                  >
+                    {props.availibleStocks?.isColorPresent ? (
+                      <>
+                        <Tab
+                          value="one"
+                          label="Common raw materials required in all the colors"
+                        />
+                        {Object.keys(props.availibleStocks.orderRatios).map(
+                          (k, i) => {
+                            console.log(
+                              "Herere ",
+                              props.availibleStocks.orderRatios[k].name,
+                              k
+                            );
+                            return (
+                              <>
+                                <Tab
+                                  value={k}
+                                  label={
+                                    props.availibleStocks.orderRatios[k]?.name
                                   }
                                 />
-                              )
-                            };
-                          } else {
-                            return {
-                              tabName: r,
-                              tabContent: (
-                                <StockTable
-                                  title={r}
-                                  columns={columns}
-                                  data={props.availibleStocks[r]}
-                                />
-                              )
-                            };
+                              </>
+                            );
                           }
-                        })
-                      : []
-                  }
-                />
+                        )}
+                      </>
+                    ) : (
+                      <Tab value="one" label="All Raw Materials" />
+                    )}
+                  </Tabs>
+                </Box> */}
               </GridItem>
             </GridContainer>
           </DialogContentText>

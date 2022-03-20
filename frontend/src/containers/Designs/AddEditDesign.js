@@ -27,9 +27,7 @@ import {
   DESIGNS,
   EDITDESIGN,
   NOTFOUNDPAGE,
-  SELECTMATERIALS,
   SELECTRAWMATERIALS,
-  SELECTREADYMATERIALS,
 } from "../../paths";
 import { providerForGet, providerForPost, providerForPut } from "../../api";
 import { apiUrl, backend_color, backend_designs } from "../../constants";
@@ -46,7 +44,7 @@ export default function AddEditDesign(props) {
   const history = useHistory();
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
-  const [id] = useState(props.id ? props.id : null);
+  const [id, setId] = useState(props.id ? props.id : null);
   const [color, setColor] = useState([]);
 
   const [snackBar, setSnackBar] = React.useState({
@@ -57,9 +55,7 @@ export default function AddEditDesign(props) {
 
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
-    id: null,
     material_no: "",
-    total_price: 0,
     add_price: 0,
     notes: "",
     material_price: 0,
@@ -120,7 +116,6 @@ export default function AddEditDesign(props) {
       ...formState,
       material_no: data.material_no,
       add_price: data.add_price,
-      total_price: data.total_price,
       id: data.id,
       notes: data.notes,
       material_price: data.material_price,
@@ -135,9 +130,7 @@ export default function AddEditDesign(props) {
 
   const handleChange = (event) => {
     let isValid = true;
-    let totalPrice = parseFloat(formState.total_price);
     if (event.target.name === "add_price") {
-      let newPrice = 0;
       if (
         isNaN(parseFloat(event.target.value)) ||
         (!isNaN(parseFloat(event.target.value)) &&
@@ -150,19 +143,7 @@ export default function AddEditDesign(props) {
             "Additional price should be a number and cannot be negative",
           ],
         }));
-        newPrice = 0;
-      } else {
-        newPrice = parseFloat(event.target.value);
       }
-      let oldAddPrice = isNaN(parseFloat(formState.add_price))
-        ? 0
-        : parseFloat(formState.add_price);
-      totalPrice = totalPrice - oldAddPrice;
-      totalPrice = totalPrice + newPrice;
-      setFormState((formState) => ({
-        ...formState,
-        total_price: totalPrice,
-      }));
     }
 
     setFormState((formState) => ({
@@ -218,26 +199,25 @@ export default function AddEditDesign(props) {
         : formState.material_price,
       notes: formState.notes,
       colors: formState.colors,
-      color_price: formState.color_price,
     };
 
-    let colors = [...obj.colors];
-    let colorPrice = [...obj.color_price];
+    // let colors = [...obj.colors];
+    // let colorPrice = [...obj.color_price];
 
-    let colorArray = colors.map((element) => element.id);
-    let colorPriceArray = colorPrice.map((element) => element.color.id);
-    let noOfColorsNewlyAdded = colorArray.filter(
-      (x) => !colorPriceArray.includes(x)
-    );
-    let noOfColorsRemoved = colorPriceArray.filter(
-      (x) => !colorArray.includes(x)
-    );
+    // let colorArray = colors.map((element) => element.id);
+    // let colorPriceArray = colorPrice.map((element) => element.color.id);
+    // let noOfColorsNewlyAdded = colorArray.filter(
+    //   (x) => !colorPriceArray.includes(x)
+    // );
+    // let noOfColorsRemoved = colorPriceArray.filter(
+    //   (x) => !colorArray.includes(x)
+    // );
 
-    obj = {
-      ...obj,
-      noOfColorsNewlyAdded: noOfColorsNewlyAdded,
-      noOfColorsRemoved: noOfColorsRemoved,
-    };
+    // obj = {
+    //   ...obj,
+    //   noOfColorsNewlyAdded: noOfColorsNewlyAdded,
+    //   noOfColorsRemoved: noOfColorsRemoved,
+    // };
 
     if (
       formState.showAddPreviewImage &&
@@ -256,13 +236,12 @@ export default function AddEditDesign(props) {
             severity: "success",
             message: "Design Edited Successfully",
           }));
-          setFormState((formState) => ({
-            ...formState,
-            id: res.data.id,
-          }));
-          getEditViewData(res.data.id);
+          setId(id);
+          getEditViewData(id);
+          setBackDrop(false);
         })
         .catch((err) => {
+          setBackDrop(false);
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
@@ -279,10 +258,7 @@ export default function AddEditDesign(props) {
     } else {
       await providerForPost(backend_designs, obj, Auth.getToken())
         .then((res) => {
-          setFormState((formState) => ({
-            ...formState,
-            id: res.data.id,
-          }));
+          setId(res.data.id);
           getEditViewData(res.data.id);
           setSnackBar((snackBar) => ({
             ...snackBar,
@@ -290,8 +266,10 @@ export default function AddEditDesign(props) {
             severity: "success",
             message: "Design Added Successfully",
           }));
+          setBackDrop(false);
         })
         .catch((err) => {
+          setBackDrop(false);
           let error = "";
           if (err.response.data.hasOwnProperty("message")) {
             error = err.response.data.message;
@@ -453,80 +431,6 @@ export default function AddEditDesign(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  onChange={(event) => handleChange(event)}
-                  labelText="Material / Design Number"
-                  name="material_no"
-                  disabled={isView}
-                  value={formState.material_no}
-                  id="material_no"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  /** For setting errors */
-                  helperTextId={"helperText_material_no"}
-                  isHelperText={hasError("material_no", error)}
-                  helperText={
-                    hasError("material_no", error)
-                      ? error["material_no"].map((error) => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("material_no", error)}
-                />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  onChange={(event) => handleChange(event)}
-                  type="number"
-                  labelText="Additional Price"
-                  name="add_price"
-                  disabled={isView}
-                  value={formState.add_price}
-                  id="add_price"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  helperTextId={"helperText_add_price"}
-                  isHelperText={hasError("add_price", error)}
-                  helperText={
-                    hasError("add_price", error)
-                      ? error["add_price"].map((error) => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("add_price", error)}
-                />
-              </GridItem>
-              {/* <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  labelText="Common Material Price"
-                  name="material_price"
-                  disabled
-                  value={formState.material_price}
-                  id="material_price"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                />
-              </GridItem> */}
-              {/* <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  labelText="Total Price"
-                  name="total_price"
-                  disabled
-                  value={parseFloat(formState.material_price) + parseFloat()}
-                  id="total_price"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                />
-              </GridItem> */}
-            </GridContainer>
-            <GridContainer>
               <GridItem xs={12} md={12} lg={12} style={{ overflowX: "auto" }}>
                 <Input
                   fullWidth
@@ -616,6 +520,80 @@ export default function AddEditDesign(props) {
               {isView ? null : <GridItem xs={12} md={12} lg={12}></GridItem>}
             </GridContainer>
             <GridContainer>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={(event) => handleChange(event)}
+                  labelText="Material / Design Number"
+                  name="material_no"
+                  disabled={isView}
+                  value={formState.material_no}
+                  id="material_no"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  /** For setting errors */
+                  helperTextId={"helperText_material_no"}
+                  isHelperText={hasError("material_no", error)}
+                  helperText={
+                    hasError("material_no", error)
+                      ? error["material_no"].map((error) => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("material_no", error)}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={(event) => handleChange(event)}
+                  type="number"
+                  labelText="Additional Price"
+                  name="add_price"
+                  disabled={isView}
+                  value={formState.add_price}
+                  id="add_price"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  helperTextId={"helperText_add_price"}
+                  isHelperText={hasError("add_price", error)}
+                  helperText={
+                    hasError("add_price", error)
+                      ? error["add_price"].map((error) => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("add_price", error)}
+                />
+              </GridItem>
+              {/* <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  labelText="Common Material Price"
+                  name="material_price"
+                  disabled
+                  value={formState.material_price}
+                  id="material_price"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                />
+              </GridItem> */}
+              {/* <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  labelText="Total Price"
+                  name="total_price"
+                  disabled
+                  value={parseFloat(formState.material_price) + parseFloat()}
+                  id="total_price"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                />
+              </GridItem> */}
+            </GridContainer>
+            <GridContainer>
               <GridItem xs={12} sm={6} md={6}>
                 <MultiSelect
                   disabled={isView}
@@ -671,7 +649,7 @@ export default function AddEditDesign(props) {
                         Select Raw Material
                       </Button>
                     </Grid>
-                    <Grid item>
+                    {/* <Grid item>
                       <Button
                         color="primary"
                         onClick={(e) => {
@@ -682,7 +660,7 @@ export default function AddEditDesign(props) {
                       >
                         Select Ready Material
                       </Button>
-                    </Grid>
+                    </Grid> */}
                   </>
                 )}
               </GridContainer>

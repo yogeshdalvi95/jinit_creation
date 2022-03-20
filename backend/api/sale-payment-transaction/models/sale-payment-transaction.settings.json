@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sale_payment_transactions",
+  "info": {
+    "name": "Sale Payment Transaction",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sale": {
+      "model": "sales"
+    },
+    "sale_payment": {
+      "model": "sale-payment"
+    },
+    "sale_return": {
+      "model": "sale-return"
+    },
+    "party": {
+      "model": "party"
+    },
+    "transaction_date": {
+      "type": "date"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "transaction_amount": {
+      "type": "float"
+    },
+    "is_sale": {
+      "type": "boolean"
+    },
+    "is_payment": {
+      "type": "boolean"
+    },
+    "is_sale_return": {
+      "type": "boolean"
+    }
+  }
+}

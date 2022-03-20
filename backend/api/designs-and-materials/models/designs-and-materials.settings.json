@@ -3,7 +3,7 @@
   "collectionName": "designs_and_materials",
   "info": {
     "name": "Designs and Materials",
-    "description": ""
+    "description": "This table is used to store which all raw materials and how much of their quantity is required for a design depending on color of a design."
   },
   "options": {
     "increments": true,

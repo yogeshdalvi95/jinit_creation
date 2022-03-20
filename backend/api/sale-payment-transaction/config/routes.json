@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/sale-payment-transactions",
+      "handler": "sale-payment-transaction.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-payment-transactions/count",
+      "handler": "sale-payment-transaction.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-payment-transactions/:id",
+      "handler": "sale-payment-transaction.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/sale-payment-transactions",
+      "handler": "sale-payment-transaction.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sale-payment-transactions/:id",
+      "handler": "sale-payment-transaction.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/sale-payment-transactions/:id",
+      "handler": "sale-payment-transaction.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

@@ -42,17 +42,11 @@ module.exports = {
 
   async create(ctx) {
     const { id, state, readyMaterials, party } = ctx.request.body;
-    const {
-      date,
-      add_cost,
-      total_price_of_ready_material,
-      total_price,
-      notes,
-    } = state;
+    const { date, add_cost, total_price_of_design, total_price, notes } = state;
 
     let saleData = {
       date: utils.getDateInYYYYMMDD(new Date(date)),
-      total_price_of_ready_material: total_price_of_ready_material,
+      total_price_of_design: total_price_of_design,
       add_cost: add_cost,
       total_price: total_price,
       party: party,
@@ -105,13 +99,8 @@ module.exports = {
 const getReadyMaterialForSale = (arr) => {
   let finalArr = [];
   for (var s of arr) {
-    let {
-      ready_material,
-      quantity,
-      total_price,
-      isDeleted,
-      isCannotDelete,
-    } = s;
+    let { ready_material, quantity, total_price, isDeleted, isCannotDelete } =
+      s;
     if (isCannotDelete) {
       if (!isDeleted) {
         finalArr.push({
