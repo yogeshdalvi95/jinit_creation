@@ -32,7 +32,7 @@ module.exports = {
         "ready_material",
         "design",
       ]);
-    console.log("data ", data);
+
     return {
       data: data, // your data array
       page: page, // current page number
@@ -57,28 +57,26 @@ module.exports = {
         id: design,
       });
 
+      let designColorData = await strapi.query("design-color-price").findOne(
+        {
+          design: design,
+          color: color,
+        },
+        []
+      );
+
       /** Check if color available and update price for color */
       if (color) {
-        let colors = designData.colors;
-        colors = colors.map((element) => {
-          if (element.id === color) {
-            let colorPrice = isNaN(parseFloat(element.color_price))
-              ? 0
-              : parseFloat(element.color_price);
-            colorPrice = colorPrice + parseFloat(total_price);
-            element = {
-              ...element,
-              color_price: colorPrice,
-            };
-            return element;
-          } else {
-            return element;
-          }
-        });
-        await strapi.query("designs").update(
-          { id: design },
+        let newColorPrice = 0;
+        newColorPrice = isNaN(parseFloat(designColorData.color_price))
+          ? 0
+          : parseFloat(designColorData.color_price);
+        newColorPrice = newColorPrice + parseFloat(total_price);
+
+        await strapi.query("design-color-price").update(
+          { design: design, color: color },
           {
-            colors: [...colors],
+            color_price: newColorPrice,
           },
           { patch: true, transacting: t }
         );
@@ -92,7 +90,6 @@ module.exports = {
           { id: design },
           {
             material_price: designMaterialPrice,
-            colors: [...colors],
           },
           { patch: true, transacting: t }
         );
@@ -104,41 +101,94 @@ module.exports = {
   async update(ctx) {
     const { total_price } = ctx.request.body;
     const { id } = ctx.params;
-    await bookshelf.transaction(async (t) => {
-      let designMaterialData = await strapi
-        .query("designs-and-materials")
-        .findOne({
-          id: id,
+    await bookshelf
+      .transaction(async (t) => {
+        let designMaterialData = await strapi
+          .query("designs-and-materials")
+          .findOne({
+            id: id,
+          });
+
+        let designId = designMaterialData?.design?.id;
+
+        let designData = await strapi.query("designs").findOne({
+          id: designId,
         });
 
-      let oldTotalPrice = isNaN(parseFloat(designMaterialData?.total_price))
-        ? 0
-        : parseFloat(designMaterialData.total_price);
+        let oldPriceOfDesignMaterial = isNaN(
+          parseFloat(designMaterialData?.total_price)
+        )
+          ? 0
+          : parseFloat(designMaterialData.total_price);
 
-      let designId = designMaterialData?.design?.id;
-      let designData = await strapi.query("designs").findOne({
-        id: designId,
+        if (designMaterialData.isColor) {
+          if (designMaterialData.color) {
+            let colorObject = designMaterialData.color;
+            let colorId =
+              typeof colorObject === "object" ? colorObject.id : colorObject;
+
+            let designColorPrice = await strapi
+              .query("design-color-price")
+              .findOne(
+                {
+                  design: designId,
+                  color: colorId,
+                },
+                []
+              );
+
+            if (designColorPrice) {
+              let oldTotalPrice = isNaN(
+                parseFloat(designColorPrice?.color_price)
+              )
+                ? 0
+                : parseFloat(designColorPrice.color_price);
+
+              let tempTotalPrice = oldTotalPrice - oldPriceOfDesignMaterial;
+              let newTotalPrice = tempTotalPrice + parseFloat(total_price);
+              await strapi.query("design-color-price").update(
+                { design: designId, color: colorId },
+                {
+                  color_price: newTotalPrice,
+                },
+                { patch: true, transacting: t }
+              );
+            }
+          }
+        } else {
+          let designMaterialPrice = isNaN(
+            parseFloat(designData?.material_price)
+          )
+            ? 0
+            : parseFloat(designData.material_price);
+
+          let tempDesignMaterialPrice =
+            designMaterialPrice - oldPriceOfDesignMaterial;
+          let newDesignMaterialPrice =
+            tempDesignMaterialPrice + parseFloat(total_price);
+          await strapi.query("designs").update(
+            { id: designId },
+            {
+              material_price: newDesignMaterialPrice,
+            },
+            { patch: true, transacting: t }
+          );
+        }
+
+        await strapi
+          .query("designs-and-materials")
+          .update({ id: id }, ctx.request.body, {
+            patch: true,
+            transacting: t,
+          });
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log("err ", err);
+        return ctx.badRequest(null, "Error");
       });
-
-      let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
-        ? 0
-        : parseFloat(designData.material_price);
-
-      let tempDesignMaterialPrice = designMaterialPrice - oldTotalPrice;
-      let newDesignMaterialPrice =
-        tempDesignMaterialPrice + parseFloat(total_price);
-      await strapi.query("designs").update(
-        { id: designId },
-        {
-          material_price: newDesignMaterialPrice,
-        },
-        { patch: true, transacting: t }
-      );
-      await strapi
-        .query("designs-and-materials")
-        .update({ id: id }, ctx.request.body, { patch: true, transacting: t });
-    });
-    ctx.send(200);
   },
 
   async delete(ctx) {
@@ -150,7 +200,9 @@ module.exports = {
           id: id,
         });
 
-      let oldTotalPrice = isNaN(parseFloat(designMaterialData?.total_price))
+      let oldPriceOfDesignMaterial = isNaN(
+        parseFloat(designMaterialData?.total_price)
+      )
         ? 0
         : parseFloat(designMaterialData.total_price);
 
@@ -159,21 +211,53 @@ module.exports = {
         id: designId,
       });
 
-      let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
-        ? 0
-        : parseFloat(designData.material_price);
+      if (designMaterialData.isColor) {
+        if (designMaterialData.color) {
+          let colorObject = designMaterialData.color;
+          let colorId =
+            typeof colorObject === "object" ? colorObject.id : colorObject;
 
-      let newDesignMaterialPrice = designMaterialPrice - oldTotalPrice;
-      let totalDesignPrice =
-        newDesignMaterialPrice + parseFloat(designData?.add_price);
-      await strapi.query("designs").update(
-        { id: designId },
-        {
-          material_price: newDesignMaterialPrice,
-          total_price: totalDesignPrice,
-        },
-        { patch: true, transacting: t }
-      );
+          let designColorPrice = await strapi
+            .query("design-color-price")
+            .findOne(
+              {
+                design: designId,
+                color: colorId,
+              },
+              []
+            );
+
+          if (designColorPrice) {
+            let oldTotalPrice = isNaN(parseFloat(designColorPrice?.color_price))
+              ? 0
+              : parseFloat(designColorPrice.color_price);
+
+            let newTotalPrice = oldTotalPrice - oldPriceOfDesignMaterial;
+
+            await strapi.query("design-color-price").update(
+              { design: designId, color: colorId },
+              {
+                color_price: newTotalPrice,
+              },
+              { patch: true, transacting: t }
+            );
+          }
+        }
+      } else {
+        let designMaterialPrice = isNaN(parseFloat(designData?.material_price))
+          ? 0
+          : parseFloat(designData.material_price);
+        let newDesignMaterialPrice =
+          designMaterialPrice - oldPriceOfDesignMaterial;
+        await strapi.query("designs").update(
+          { id: designId },
+          {
+            material_price: newDesignMaterialPrice,
+          },
+          { patch: true, transacting: t }
+        );
+      }
+
       await strapi
         .query("designs-and-materials")
         .delete({ id: id }, { patch: true, transacting: t });

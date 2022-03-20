@@ -101,13 +101,23 @@ export const convertNumberToAmount = (num) => {
   return res;
 };
 
-export const convertNumber = (val, isAmount) => {
+export const convertNumber = (
+  val,
+  isAmount,
+  addCustomPrefix = false,
+  prefix
+) => {
   let num = 0;
   if (isAmount) {
     num = new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(val);
+    if (addCustomPrefix) {
+      num = num + prefix;
+    } else {
+      num = num + " /-";
+    }
   } else {
     num = new Intl.NumberFormat("en-IN", {}).format(val);
   }
@@ -132,4 +142,12 @@ export function getRoutesOnLogin(auth) {
     routes = DashboardStaffRoutes;
   }
   return routes;
+}
+
+export function validateNumber(num) {
+  if (isNaN(parseFloat(num))) {
+    return 0;
+  } else {
+    return parseFloat(num);
+  }
 }

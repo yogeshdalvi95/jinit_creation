@@ -39,4 +39,6 @@ export {
   backend_sales_export_data,
   backend_designs_and_materials_get_material_count,
   backend_duplicate_designs,
+  backend_designs_for_parties,
+  backend_view_designs,
 } from "./UrlConstants";

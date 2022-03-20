@@ -33,21 +33,21 @@ export default function CustomInput(props) {
   const labelClasses = classNames({
     [" " + classes.labelRootError]: error,
     [" " + classes.labelRootSuccess]: success && !error,
-    [" " + classes.labelRTL]: rtlActive
+    [" " + classes.labelRTL]: rtlActive,
   });
   const underlineClasses = classNames({
     [classes.underlineError]: error,
     [classes.underlineSuccess]: success && !error,
-    [classes.underline]: true
+    [classes.underline]: true,
   });
   const marginTop = classNames({
-    [classes.marginTop]: labelText === undefined
+    [classes.marginTop]: labelText === undefined,
   });
 
   const formControlClasses = classNames({
     [formControlProps.className]: true,
     [classes.formControl]: noMargin ? false : true,
-    [classes.noMarginFormControl]: noMargin ? true : false
+    [classes.noMarginFormControl]: noMargin ? true : false,
   });
 
   let newInputProps = {
@@ -55,15 +55,32 @@ export default function CustomInput(props) {
       inputProps && inputProps.maxLength ? inputProps.maxLength : undefined,
     minLength:
       inputProps && inputProps.minLength ? inputProps.minLength : undefined,
-    step: inputProps && inputProps.step ? inputProps.step : undefined
+    step: inputProps && inputProps.step ? inputProps.step : undefined,
   };
 
   return (
-    <FormControl {...formControlProps} className={formControlClasses}>
+    <FormControl
+      {...formControlProps}
+      className={formControlClasses}
+      styles={
+        props.noTopMargin
+          ? {
+              marginTop: "0px",
+            }
+          : null
+      }
+    >
       {labelText !== undefined ? (
         <InputLabel
           className={classes.labelRoot + labelClasses}
           htmlFor={id}
+          styles={
+            props.noTopMargin
+              ? {
+                  marginTop: "0px",
+                }
+              : null
+          }
           {...labelProps}
         >
           {labelText}
@@ -74,7 +91,7 @@ export default function CustomInput(props) {
           root: marginTop,
           disabled: classes.disabled,
           underline: underlineClasses,
-          input: classes.input
+          input: classes.input,
         }}
         {...rest}
         id={id}
@@ -98,5 +115,5 @@ CustomInput.propTypes = {
   formControlProps: PropTypes.object,
   error: PropTypes.bool,
   success: PropTypes.bool,
-  rtlActive: PropTypes.bool
+  rtlActive: PropTypes.bool,
 };

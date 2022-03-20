@@ -74,7 +74,7 @@ const RouteWithTabLayout = ({
     selectedColorPrice: null,
   });
 
-  const tabs = ["Raw Materials", "Ready Materials"];
+  const tabs = ["Select Raw Materials"];
 
   useEffect(() => {
     if (auth?.getToken() !== null) {
@@ -108,15 +108,19 @@ const RouteWithTabLayout = ({
     }
   });
 
-  const setColor = (isColorSelected, colorSelected) => {
-    let color_price = formState.designData.color_price
-      ? formState.designData.color_price
-      : [];
+  const setColor = (
+    isColorSelected,
+    colorSelected,
+    colorPrice = formState.designData?.color_price
+  ) => {
+    let color_price = colorPrice ? colorPrice : [];
     let selectedColorPrice = null;
-    for (let i = 0; i < color_price.length; i++) {
-      if (color_price[i].color === colorSelected.id) {
-        selectedColorPrice = color_price[i];
-        break;
+    if (colorSelected) {
+      for (let i = 0; i < color_price.length; i++) {
+        if (color_price[i].color === colorSelected.id) {
+          selectedColorPrice = color_price[i];
+          break;
+        }
       }
     }
     setSelectedColor((selectedColor) => ({
@@ -214,10 +218,19 @@ const RouteWithTabLayout = ({
     )
       .then((res) => {
         setLoaderForUpdateDesign(false);
-        setFormState((formState) => ({
-          ...formState,
-          designData: res.data,
-        }));
+        if (res.data) {
+          setColor(
+            selectedColor.isColorSelected,
+            selectedColor.selectedColor,
+            res.data?.color_price
+          );
+          setFormState((formState) => ({
+            ...formState,
+            designData: res.data,
+          }));
+        } else {
+          throw new Error("");
+        }
       })
       .catch((err) => {
         setLoaderForUpdateDesign(false);
@@ -271,7 +284,7 @@ const RouteWithTabLayout = ({
                     Price of all the raw materials required for color '
                     {color?.name}'
                   </b>{" "}
-                  ( i.e price excludes add. price ):{" "}
+                  ( this price excludes add. price ):{" "}
                   {loaderForUpdateDesign
                     ? getLoader()
                     : convertNumber(
@@ -284,8 +297,27 @@ const RouteWithTabLayout = ({
                 <>
                   {" "}
                   <b>Total Price for color '{color?.name}': </b> ( i.e price of
-                  all the common raw materials + price of raw materials required
-                  for color '{color?.name}' + add. price ):{" "}
+                  all the common raw materials i.e (
+                  {convertNumber(
+                    [
+                      parseFloat(formState?.designData?.material_price).toFixed(
+                        2
+                      ),
+                    ],
+                    true
+                  )}
+                  ) + price of raw materials required for color '{color?.name}'
+                  i.e (
+                  {convertNumber(
+                    parseFloat(colorPrice?.color_price).toFixed(2),
+                    true
+                  )}
+                  ) + add. price i.e (
+                  {convertNumber(
+                    parseFloat(formState?.designData?.add_price).toFixed(2),
+                    true
+                  )}
+                  ) ):{" "}
                 </>
                 <b></b>
                 {loaderForUpdateDesign
@@ -306,7 +338,18 @@ const RouteWithTabLayout = ({
     } else {
       return (
         <GridItem xs={12}>
-          <b>Total Price : </b>
+          <b>Total Price </b>( price of all the materials required for this
+          order i.e (
+          {convertNumber(
+            parseFloat(formState?.designData?.material_price).toFixed(2),
+            true
+          )}
+          ) + add. price i.e (
+          {convertNumber(
+            parseFloat(formState?.designData?.add_price).toFixed(2),
+            true
+          )}
+          )) :{" "}
           {loaderForUpdateDesign
             ? getLoader()
             : convertNumber(

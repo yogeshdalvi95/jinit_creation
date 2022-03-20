@@ -13,7 +13,7 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
 import EditIcon from "@material-ui/icons/Edit";
@@ -27,9 +27,9 @@ import {
   ADDRAWMATERIALS,
   DAILYUSAGERAWMATERIALS,
   EDITRAWMATERIALS,
-  VIEWRAWMATERIALS
+  VIEWRAWMATERIALS,
 } from "../../paths";
-import { isEmptyString } from "../../Utils";
+import { convertNumber, isEmptyString } from "../../Utils";
 import { useEffect } from "react";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
@@ -43,53 +43,70 @@ export default function RawMaterials() {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "id:asc"
+    _sort: "id:asc",
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [
     {
       title: "Id",
       field: "id",
-      render: rowData => "#" + rowData.id
+      render: (rowData) => "#" + rowData.id,
     },
     {
       title: "Name",
       field: "name",
-      render: rowData => (isEmptyString(rowData.name) ? "---" : rowData.name)
+      render: (rowData) => (isEmptyString(rowData.name) ? "---" : rowData.name),
     },
     {
       title: "Category",
       field: "category",
       sorting: false,
-      render: rowData =>
-        isEmptyString(rowData.category) ? "---" : rowData.category
+      render: (rowData) =>
+        isEmptyString(rowData.category) ? "---" : rowData.category,
     },
     {
       title: "Color",
       field: "color",
       sorting: false,
-      render: rowData => (isEmptyString(rowData.color) ? "---" : rowData.color)
+      render: (rowData) =>
+        isEmptyString(rowData.color) ? "---" : rowData.color,
     },
     {
       title: "Size",
       field: "size",
-      render: rowData => (isEmptyString(rowData.size) ? "---" : rowData.size)
+      render: (rowData) => (isEmptyString(rowData.size) ? "---" : rowData.size),
     },
     {
       title: "Department",
       field: "department",
       sorting: false,
-      render: rowData =>
-        isEmptyString(rowData.department) ? "---" : rowData.department
+      render: (rowData) =>
+        isEmptyString(rowData.department) ? "---" : rowData.department,
     },
-    { title: "Costing", field: "costing" },
-    { title: "Balance", field: "balance" }
+    {
+      title: "Costing",
+      field: "costing",
+      render: (rowData) => {
+        console.log(rowData);
+        let unit = rowData?.unit;
+        let value = convertNumber(rowData?.costing, true, true, " /" + unit);
+        return value;
+      },
+    },
+    {
+      title: "Balance",
+      field: "balance",
+      render: (rowData) => {
+        let unit = rowData?.unit;
+        return rowData.balance + " (" + unit + ")";
+      },
+    },
   ];
 
   useEffect(() => {
@@ -101,24 +118,24 @@ export default function RawMaterials() {
     await providerForGet(
       backend_departments,
       {
-        pageSize: -1
+        pageSize: -1,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setDepartments(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => {});
+      .catch((err) => {});
   };
 
   const getRawMaterialsData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -129,26 +146,26 @@ export default function RawMaterials() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           let data = convertData(result.data);
           resolve({
             data: data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         });
     });
   };
 
-  const convertData = data => {
+  const convertData = (data) => {
     let arr = [];
-    data.map(d => {
+    data.map((d) => {
+      let unit = d.unit ? d.unit.name : "";
       let department = d.department.name;
-      let costing = d.costing ? d.costing + "/" + d.unit_name : 0;
       let color = d.color ? d.color.name : "";
       let category = d.category ? d.category.name : "";
       arr.push({
@@ -158,9 +175,10 @@ export default function RawMaterials() {
         color: color,
         size: d.size,
         department: department,
-        costing: costing,
+        costing: d.costing,
         balance: d.balance ? d.balance : "0",
-        is_die: d.is_die
+        is_die: d.is_die,
+        unit: unit,
       });
     });
     return arr;
@@ -173,9 +191,9 @@ export default function RawMaterials() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
@@ -187,7 +205,7 @@ export default function RawMaterials() {
       {},
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setBackDrop(false);
         if (isView) {
           history.push(VIEWRAWMATERIALS, { data: res.data, view: true });
@@ -195,36 +213,36 @@ export default function RawMaterials() {
           history.push(EDITRAWMATERIALS, { data: res.data, edit: true });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing raw material"
+          message: "Error viewing raw material",
         }));
       });
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -232,7 +250,7 @@ export default function RawMaterials() {
     history.push(ADDRAWMATERIALS);
   };
 
-  const handleAddDailyCount = rowData => {
+  const handleAddDailyCount = (rowData) => {
     let bal = "0";
     if (!rowData.balance) {
       bal = "0";
@@ -246,11 +264,11 @@ export default function RawMaterials() {
       category: isEmptyString(rowData.category) ? "---" : rowData.category,
       color: isEmptyString(rowData.color) ? "---" : rowData.color,
       size: isEmptyString(rowData.size) ? "---" : rowData.size,
-      bal: bal
+      bal: bal,
     };
     history.push(DAILYUSAGERAWMATERIALS, {
       obj: data,
-      id: rowData.id
+      id: rowData.id,
     });
   };
 
@@ -285,49 +303,49 @@ export default function RawMaterials() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Name"
                     value={filter.name_contains || ""}
                     name="name_contains"
                     id="name"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Category"
                     value={filter["category.name_contains"] || ""}
                     name="category.name_contains"
                     id="category"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Color"
                     value={filter["color.name_contains"] || ""}
                     name="color.name_contains"
                     id="color"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Size"
                     value={filter.size_contains || ""}
                     name="size_contains"
                     id="size"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -339,18 +357,18 @@ export default function RawMaterials() {
                     optionKey={"name"}
                     options={departments}
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     onChange={(event, value) => {
                       if (value !== null) {
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          department: value.id
+                          department: value.id,
                         }));
                       } else {
                         delete filter.department;
-                        setFilter(filter => ({
-                          ...filter
+                        setFilter((filter) => ({
+                          ...filter,
                         }));
                       }
                     }}
@@ -367,55 +385,55 @@ export default function RawMaterials() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Costing"
                     value={filter.costing_contains || ""}
                     name="costing_contains"
                     type="number"
                     id="costing"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Balance From"
                     value={filter.balance_gte || ""}
                     name="balance_gte"
                     type="number"
                     id="balance"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Balance To"
                     value={filter.balance_lte || ""}
                     name="balance_lte"
                     type="number"
                     id="balance"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomCheckBox
-                    onChange={event => {
+                    onChange={(event) => {
                       if (event.target.checked) {
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          is_die: true
+                          is_die: true,
                         }));
                       } else {
                         delete filter.is_die;
-                        setFilter(filter => ({
-                          ...filter
+                        setFilter((filter) => ({
+                          ...filter,
                         }));
                       }
                     }}
@@ -430,7 +448,7 @@ export default function RawMaterials() {
                   sm={12}
                   md={4}
                   style={{
-                    marginTop: "27px"
+                    marginTop: "27px",
                   }}
                 >
                   <Button
@@ -453,9 +471,9 @@ export default function RawMaterials() {
                       delete filter["balance_lte"];
                       delete filter["is_die"];
                       delete filter["category.name_contains"];
-                      setFilter(filter => ({
+                      setFilter((filter) => ({
                         ...filter,
-                        _sort: "id:asc"
+                        _sort: "id:asc",
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -469,28 +487,28 @@ export default function RawMaterials() {
                 tableRef={tableRef}
                 title="Raw Materials"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getRawMaterialsData(
                     query.page + 1,
                     query.pageSize
                   );
                 }}
                 actions={[
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
                       handleTableAction(rowData, false);
-                    }
+                    },
                   }),
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <VisibilityIcon fontSize="small" />,
                     tooltip: "View",
                     onClick: (event, rowData) => {
                       handleTableAction(rowData, true);
-                    }
+                    },
                   }),
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <DateRangeIcon fontSize="small" />,
                     tooltip:
                       rowData.balance === "0"
@@ -499,52 +517,52 @@ export default function RawMaterials() {
                     disabled: rowData.balance === "0" ? true : false,
                     onClick: (event, rowData) => {
                       handleAddDailyCount(rowData);
-                    }
-                  })
+                    },
+                  }),
                 ]}
                 localization={{
                   body: {
                     editRow: {
                       deleteText: `Are you sure you want to delete this Raw Material?`,
-                      saveTooltip: "Delete"
-                    }
-                  }
+                      saveTooltip: "Delete",
+                    },
+                  },
                 }}
                 editable={{
-                  onRowDelete: oldData =>
-                    new Promise(resolve => {
+                  onRowDelete: (oldData) =>
+                    new Promise((resolve) => {
                       setTimeout(async () => {
                         await providerForDelete(
                           backend_raw_materials,
                           oldData.id,
                           Auth.getToken()
                         )
-                          .then(async res => {
-                            setSnackBar(snackBar => ({
+                          .then(async (res) => {
+                            setSnackBar((snackBar) => ({
                               ...snackBar,
                               show: true,
                               severity: "success",
-                              message: "Successfully deleted " + oldData.name
+                              message: "Successfully deleted " + oldData.name,
                             }));
                           })
-                          .catch(err => {
-                            setSnackBar(snackBar => ({
+                          .catch((err) => {
+                            setSnackBar((snackBar) => ({
                               ...snackBar,
                               show: true,
                               severity: "error",
-                              message: "Error deleting " + oldData.name
+                              message: "Error deleting " + oldData.name,
                             }));
                           });
                         resolve();
                       }, 1000);
-                    })
+                    }),
                 }}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,
                   search: false,
                   sorting: true,
-                  thirdSortClick: false
+                  thirdSortClick: false,
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);

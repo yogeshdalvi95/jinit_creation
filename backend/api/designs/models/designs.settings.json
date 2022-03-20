@@ -39,10 +39,8 @@
     "colors": {
       "collection": "color"
     },
-    "color_price": {
-      "type": "component",
-      "repeatable": true,
-      "component": "color-price.color-price"
+    "stock": {
+      "type": "float"
     }
   }
 }

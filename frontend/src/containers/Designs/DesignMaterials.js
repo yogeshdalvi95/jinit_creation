@@ -4,6 +4,7 @@ import {
   CircularProgress,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   makeStyles,
   Switch,
   Tooltip,
@@ -35,7 +36,7 @@ import {
   backend_designs_and_materials,
 } from "../../constants";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { convertNumber, isEmptyString } from "../../Utils";
+import { convertNumber, isEmptyString, validateNumber } from "../../Utils";
 import {
   providerForDelete,
   providerForGet,
@@ -55,8 +56,6 @@ export default function DesignMaterials(props) {
   const [openBackDrop, setOpenBackDrop] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [colors] = useState(props?.designData?.colors);
-  const [colorPrice] = useState(props?.designData?.color_price);
-  const [selectedColor, setSelectedColor] = useState({});
   const isSmallerScreen = useMediaQuery(theme.breakpoints.down("md"));
   const [filter, setFilter] = useState({
     _sort: "updated_at:desc",
@@ -130,6 +129,7 @@ export default function DesignMaterials(props) {
         textAlign: "right",
       },
       render: (rowData) => {
+        let unit = rowData?.raw_material?.unit?.name;
         let value = "";
         if (rowData?.totalRow) {
           value = "";
@@ -138,7 +138,12 @@ export default function DesignMaterials(props) {
             !rowData?.price_per_piece ||
             isEmptyString(rowData?.price_per_piece)
           ) {
-            value = rowData?.raw_material?.costing;
+            value = convertNumber(
+              rowData?.raw_material?.costing,
+              true,
+              true,
+              " /" + unit
+            );
           } else {
             value = rowData?.price_per_piece;
           }
@@ -156,21 +161,34 @@ export default function DesignMaterials(props) {
         textAlign: "right",
       },
       sorting: false,
-      render: (rowData) => (rowData?.totalRow ? "" : rowData.quantity),
-      editComponent: (props) => (
-        <CustomInput
-          onChange={(e) => props.onChange(e.target.value)}
-          type="number"
-          labelText="Quantity"
-          name="quantity"
-          value={props.value}
-          id="quantity"
-          noMargin
-          formControlProps={{
-            fullWidth: true,
-          }}
-        />
-      ),
+      render: (rowData) => {
+        let unit = rowData?.raw_material?.unit?.name;
+        return rowData?.totalRow ? "" : rowData.quantity + " (" + unit + ")";
+      },
+      editComponent: (props) => {
+        let unit = props.rowData?.raw_material?.unit?.name;
+        return (
+          <CustomInput
+            onChange={(e) => props.onChange(e.target.value)}
+            type="number"
+            labelText="Quantity"
+            name="quantity"
+            value={props.value}
+            id="quantity"
+            noMargin
+            formControlProps={{
+              fullWidth: true,
+            }}
+            inputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  {!isEmptyString(unit) ? unit : ""}
+                </InputAdornment>
+              ),
+            }}
+          />
+        );
+      },
     },
     {
       title: "Total Cost",
@@ -280,7 +298,8 @@ export default function DesignMaterials(props) {
   };
 
   const updateQuantity = async (newData, oldData) => {
-    let num = parseFloat(newData.quantity);
+    let setRef = tableRef.current;
+    let num = validateNumber(newData.quantity);
     let isError = false;
     if (!isNaN(num)) {
       if (num <= 0) {
@@ -297,8 +316,9 @@ export default function DesignMaterials(props) {
         message: "Quantity should be a positive number",
       }));
     } else {
+      console.log("newData.raw_material?.costing ", newData);
       let obj = {
-        total_price: num * parseFloat(newData.price_per_piece),
+        total_price: num * validateNumber(newData?.raw_material?.costing),
         quantity: num,
       };
       await providerForPut(
@@ -308,8 +328,16 @@ export default function DesignMaterials(props) {
         Auth.getToken()
       )
         .then((res) => {
-          tableRef.current.onQueryChange();
+          if (setRef) {
+            setRef.onQueryChange();
+          }
           props.updateDesign();
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "success",
+            message: "Successfully updated " + oldData?.raw_material?.name,
+          }));
         })
         .catch((err) => {
           setSnackBar((snackBar) => ({
@@ -324,20 +352,23 @@ export default function DesignMaterials(props) {
   };
 
   const onRowDelete = async (oldData) => {
+    let setRef = tableRef.current;
     await providerForDelete(
       backend_designs_and_materials,
       oldData.id,
       Auth.getToken()
     )
       .then(async (res) => {
+        if (setRef) {
+          setRef.onQueryChange();
+        }
+        props.updateDesign();
         setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "success",
           message: "Successfully deleted " + oldData?.raw_material?.name,
         }));
-        tableRef.current.onQueryChange();
-        props.updateDesign();
       })
       .catch((err) => {
         setSnackBar((snackBar) => ({
@@ -412,6 +443,10 @@ export default function DesignMaterials(props) {
       )
         .then((res) => {
           setOpenBackDrop(false);
+          if (setRef) {
+            setRef.onQueryChange();
+          }
+          props.updateDesign();
           setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
@@ -420,7 +455,6 @@ export default function DesignMaterials(props) {
               filter.isRawMaterial ? "Raw" : "Ready"
             } Material added successfully`,
           }));
-          props.updateDesign();
         })
         .catch((err) => {
           let error = "";
@@ -439,7 +473,6 @@ export default function DesignMaterials(props) {
           }));
           setOpenBackDrop(false);
         });
-      setRef.onQueryChange();
     } else {
       setOpenBackDrop(false);
       setSnackBar((snackBar) => ({
@@ -557,7 +590,6 @@ export default function DesignMaterials(props) {
                       isColor: true,
                       color: value.id,
                     }));
-                    setSelectedColor(value);
                     props.setColor(true, value);
                   } else {
                     delete filter.color;
@@ -565,7 +597,6 @@ export default function DesignMaterials(props) {
                       ...filter,
                       isColor: false,
                     }));
-                    setSelectedColor({});
                     props.setColor(false, null);
                   }
                   tableRef.current.onQueryChange();

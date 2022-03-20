@@ -35,6 +35,8 @@ const ROLES = {
           "update",
           "delete",
           "duplicatedesign",
+          "designforparties",
+          "viewdesign",
         ],
       },
       {
@@ -161,6 +163,8 @@ const ROLES = {
           "update",
           "delete",
           "duplicatedesign",
+          "designforparties",
+          "viewdesign",
         ],
       },
       {
@@ -339,6 +343,8 @@ const ROLES = {
           "update",
           "delete",
           "duplicatedesign",
+          "designforparties",
+          "viewdesign",
         ],
       },
       {

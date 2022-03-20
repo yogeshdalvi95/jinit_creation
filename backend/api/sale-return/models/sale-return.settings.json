@@ -29,7 +29,7 @@
     "total_price": {
       "type": "float"
     },
-    "total_price_of_ready_material": {
+    "total_price_of_design": {
       "type": "float"
     },
     "add_cost": {

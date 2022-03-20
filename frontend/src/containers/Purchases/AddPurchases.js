@@ -1246,6 +1246,15 @@ export default function AddPurchases(props) {
                           formControlProps={{
                             fullWidth: true,
                           }}
+                          inputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                {!isEmptyString(Ip.purchase_unit)
+                                  ? "/" + Ip.purchase_unit
+                                  : ""}
+                              </InputAdornment>
+                            ),
+                          }}
                         />
                       </GridItem>
                     </GridContainer>

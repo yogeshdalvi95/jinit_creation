@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sale_payments",
+  "info": {
+    "name": "Sale Payment"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "party": {
+      "model": "party"
+    },
+    "amount": {
+      "type": "float"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "payment_date": {
+      "type": "date"
+    }
+  }
+}

@@ -7,7 +7,7 @@ import {
   FormHelperText,
   makeStyles,
   Switch,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -22,12 +22,13 @@ import {
   CardHeader,
   CustomInput,
   DatePicker,
+  DialogBoxForSelectingDesign,
   DialogBoxForSelectingReadyMaterial,
   DialogForSelectingParties,
   FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import {
@@ -35,7 +36,8 @@ import {
   convertNumber,
   hasError,
   isEmptyString,
-  setErrors
+  setErrors,
+  validateNumber,
 } from "../../Utils";
 import addEditSaleForm from "./form/AddEditSale.json";
 import moment from "moment";
@@ -51,7 +53,9 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  TextField,
+  Typography,
 } from "@mui/material";
 import validationForm from "./form/AddEditSale.json";
 import SweetAlert from "react-bootstrap-sweetalert";
@@ -69,20 +73,19 @@ export default function AddEditSales(props) {
   let saleForm = addEditSaleForm;
   const [openBackDrop, setBackDrop] = useState(false);
   const [alert, setAlert] = useState(null);
-  const [
-    openDialogForSelectingReadyMaterial,
-    setOpenDialogForSelectingReadyMaterial
-  ] = useState(false);
+  const [openDialogForSelectingDesign, setOpenDialogForSelectingDesign] =
+    useState(false);
 
-  const [
-    openDialogForSelectingParties,
-    setOpenDialogForSelectingParties
-  ] = useState(false);
+  const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
+    useState(false);
 
+  const [selectedDesign, setSelectedDesign] = React.useState({});
   const [error, setError] = React.useState({});
+
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
-  const [id] = useState(props.id ? props.id : null);
+  const [id, setId] = useState(props.id ? props.id : null);
+
   const [formState, setFormState] = useState({
     id: null,
     bill_no: "",
@@ -90,30 +93,32 @@ export default function AddEditSales(props) {
     gst_no: "",
     date: new Date(),
     is_gst_bill: false,
-    total_price_of_ready_material: 0,
+    total_price_of_all_design: 0,
     total_price_without_gst: 0,
     add_cost: 0,
     total_price: 0,
     sgst: 0,
     cgst: 0,
-    party: null
+    party: null,
   });
 
-  const [readyMaterialError, setReadyMaterialError] = useState({});
+  const [designError, setDesignError] = useState({});
 
   const [party, setParty] = useState({
     id: null,
     party_name: "",
     gst_no: "",
-    address: ""
+    address: "",
+    is_whole_seller: false,
+    is_retailer: false,
   });
 
-  const [readyMaterialArray, setReadyMaterialArray] = useState([]);
+  const [design, setDesign] = useState([]);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   useEffect(() => {
@@ -122,18 +127,18 @@ export default function AddEditSales(props) {
     }
   }, []);
 
-  const getEditViewData = async id => {
+  const getEditViewData = async (id) => {
     setBackDrop(true);
     let isError = false;
     await providerForGet(backend_sales + "/" + id, {}, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         if (res.status === 200) {
           convertData(res.data);
         } else {
           isError = true;
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
         isError = true;
       });
@@ -142,45 +147,86 @@ export default function AddEditSales(props) {
     }
   };
 
-  const convertData = data => {
-    setFormState(formState => ({
+  const convertData = (data) => {
+    setBackDrop(true);
+    setFormState((formState) => ({
       ...formState,
       bill_no: data.bill_no,
       date: new Date(data.date),
       is_gst_bill: data.is_gst_bill,
-      total_price_of_ready_material: parseFloat(
-        data.total_price_of_ready_material
-      ),
-      total_price_without_gst: parseFloat(data.total_price_with_add_cost),
-      add_cost: parseFloat(data.add_cost),
-      total_price: parseFloat(data.total_price),
-      sgst: parseFloat(data.sgst),
-      cgst: parseFloat(data.cgst),
-      party: data.party.id
+      total_price_of_all_design: validateNumber(data.total_price_of_all_design),
+      total_price_without_gst: validateNumber(data.total_price_with_add_cost),
+      add_cost: validateNumber(data.add_cost),
+      total_price: validateNumber(data.total_price),
+      sgst: validateNumber(data.sgst),
+      cgst: validateNumber(data.cgst),
+      party: data.party.id,
     }));
-    setParty(party => ({
+
+    setParty((party) => ({
       ...party,
       gst_no: data.party.gst_no,
       id: data.party.id,
       party_name: data.party.party_name,
-      address: data.party.party_address
+      address: data.party.party_address,
+      is_retailer: data.party.party_address,
+      is_whole_seller: data.party.is_whole_seller,
     }));
-    let readyMaterialTempArr = [];
-    for (let rm of data.sale_ready_material) {
-      readyMaterialTempArr.push({
-        ready_material: rm.ready_material,
-        quantity: rm.quantity,
-        previousQuantity: rm.quantity,
+
+    let saleReadyMaterial = {};
+    data.sale_ready_material.forEach((el) => {
+      let designId = el.design?.id;
+      let colorId = el.color?.id;
+      let design = el.color;
+      /** ----------------------------------------- */
+      let colorData = {
+        design: designId,
+        colorData: el.color,
+        color: colorId,
+        quantity: el.quantity,
+        previousQuantity: el.quantity,
         quantity_to_add_deduct: 0,
-        price_per_unit: rm.price_per_unit,
-        total_price: rm.total_price,
-        availableQuantity: rm.ready_material.total_quantity,
+        price_per_unit: validateNumber(el.price_per_unit),
+        total_price: validateNumber(el.total_price),
+        availableQuantity: el.color_price?.stock ? el.color_price?.stock : 0,
         isDeleted: false,
         isCannotDelete: true,
-        message: ""
-      });
-    }
-    setReadyMaterialArray(readyMaterialTempArr);
+        message: "",
+      };
+
+      if (designId) {
+        if (saleReadyMaterial[designId]) {
+          let colorsPresent = saleReadyMaterial[designId].colorsPresent;
+          let allColors = saleReadyMaterial[designId].allColors;
+          colorsPresent.push(colorId);
+          allColors.push(colorData);
+          saleReadyMaterial = {
+            ...saleReadyMaterial,
+            [designId]: {
+              ...saleReadyMaterial[designId],
+              colorsPresent: colorsPresent,
+              allColors: allColors,
+            },
+          };
+        } else {
+          saleReadyMaterial = {
+            ...saleReadyMaterial,
+            [designId]: {
+              material_no: design.material_no,
+              material_price: design.material_price,
+              add_price: validateNumber(design.add_price),
+              designId: design.id,
+              images: design.images,
+              stock: design.stock,
+              colorsPresent: [colorId],
+              allColors: [colorData],
+            },
+          };
+        }
+      }
+    });
+
+    setSelectedDesign(saleReadyMaterial);
     setBackDrop(false);
   };
 
@@ -189,65 +235,31 @@ export default function AddEditSales(props) {
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
-  const handleCloseDialogForReadyMaterial = () => {
-    setOpenDialogForSelectingReadyMaterial(false);
+  const handleCloseDialogForDesign = () => {
+    setOpenDialogForSelectingDesign(false);
   };
 
-  const handleAddReadyMaterial = data => {
+  const restoreReadyMaterial = (key) => {
+    let obj = design[key];
     setBackDrop(true);
-    setReadyMaterialArray([
-      ...readyMaterialArray,
-      {
-        ready_material: data,
-        quantity: 1,
-        previousQuantity: 0,
-        quantity_to_add_deduct: 1,
-        price_per_unit: data.final_cost,
-        total_price: data.final_cost,
-        availableQuantity: data.total_quantity,
-        isCannotDelete: false,
-        message: "No of ready material to be deducted from stocks :- 1"
-      }
-    ]);
-    let total_price_of_ready_material =
-      formState.total_price_of_ready_material + parseFloat(data.final_cost);
-
+    let total_price_of_all_design =
+      formState.total_price_of_all_design + parseFloat(obj.total_price);
     const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
-      total_price_of_ready_material
+      total_price_of_all_design
     );
-
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_price: total_price,
-      total_price_of_ready_material: total_price_of_ready_material,
-      total_price_without_gst: total_price_with_add_cost
-    }));
-
-    setBackDrop(false);
-    setOpenDialogForSelectingReadyMaterial(false);
-  };
-
-  const restoreReadyMaterial = key => {
-    let obj = readyMaterialArray[key];
-    setBackDrop(true);
-    let total_price_of_ready_material =
-      formState.total_price_of_ready_material + parseFloat(obj.total_price);
-    const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
-      total_price_of_ready_material
-    );
-    setFormState(formState => ({
-      ...formState,
-      total_price: total_price,
-      total_price_of_ready_material: total_price_of_ready_material,
-      total_price_without_gst: total_price_with_add_cost
+      total_price_of_all_design: total_price_of_all_design,
+      total_price_without_gst: total_price_with_add_cost,
     }));
     /** -------------- */
     let price_per_piece = parseFloat(obj.price_per_unit);
@@ -283,26 +295,26 @@ export default function AddEditSales(props) {
     }
 
     if (isQuantityValid) {
-      delete readyMaterialError[quantityKey];
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError
+      delete designError[quantityKey];
+      setDesignError((designError) => ({
+        ...designError,
       }));
     } else {
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError,
-        [quantityKey]: [quantityError]
+      setDesignError((designError) => ({
+        ...designError,
+        [quantityKey]: [quantityError],
       }));
     }
 
     if (isPPPValid) {
-      delete readyMaterialError[pppKey];
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError
+      delete designError[pppKey];
+      setDesignError((designError) => ({
+        ...designError,
       }));
     } else {
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError,
-        [pppKey]: [pppError]
+      setDesignError((designError) => ({
+        ...designError,
+        [pppKey]: [pppError],
       }));
     }
 
@@ -315,62 +327,83 @@ export default function AddEditSales(props) {
       message:
         isQuantityValid && isPPPValid
           ? quantity_to_add_deduct
-            ? `No of ready material ${quantity_to_add_deduct < 0
-              ? "to be added back to stock"
-              : "to be deducted from stock"
-            }: ${Math.abs(quantity_to_add_deduct)}`
+            ? `No of ready material ${
+                quantity_to_add_deduct < 0
+                  ? "to be added back to stock"
+                  : "to be deducted from stock"
+              }: ${Math.abs(quantity_to_add_deduct)}`
             : ""
-          : ""
+          : "",
     };
-    setReadyMaterialArray([
-      ...readyMaterialArray.slice(0, key),
-      obj,
-      ...readyMaterialArray.slice(key + 1)
-    ]);
+    setDesign([...design.slice(0, key), obj, ...design.slice(key + 1)]);
     setBackDrop(false);
   };
 
-  const removeReadyMaterial = key => {
-    let obj = readyMaterialArray[key];
-    setBackDrop(true);
-    let total_price_of_ready_material =
-      formState.total_price_of_ready_material - parseFloat(obj.total_price);
-    const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
-      total_price_of_ready_material
-    );
-    delete readyMaterialError["quantity" + key];
-    delete readyMaterialError["price_per_unit" + key];
-    setReadyMaterialError(readyMaterialError => ({
-      ...readyMaterialError
-    }));
-    setFormState(formState => ({
-      ...formState,
-      total_price: total_price,
-      total_price_of_ready_material: total_price_of_ready_material,
-      total_price_without_gst: total_price_with_add_cost
-    }));
-    if (obj["isCannotDelete"]) {
-      obj = {
-        ...obj,
-        quantity_to_add_deduct: -obj.previousQuantity,
-        isDeleted: true,
-        message:
-          "No of ready material added back to stock : " + obj.previousQuantity
-      };
-      setReadyMaterialArray([
-        ...readyMaterialArray.slice(0, key),
-        obj,
-        ...readyMaterialArray.slice(key + 1)
-      ]);
-    } else {
-      readyMaterialArray.splice(key, 1);
-      setReadyMaterialArray(readyMaterialArray);
+  const removeReadyMaterial = (colorKey, designKey) => {
+    let colorArray = selectedDesign[designKey]?.allColors;
+    if (Object.prototype.toString.call(colorArray) === "[object Array]") {
+      let colorObj = colorArray[colorKey];
+      setBackDrop(true);
+
+      let total_price_of_all_design =
+        formState.total_price_of_all_design -
+        validateNumber(colorObj.total_price);
+      const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
+        total_price_of_all_design
+      );
+      delete designError[
+        "quantity" + "color" + colorKey + "design" + designKey
+      ];
+      delete designError[
+        "price_per_unit" + "color" + colorKey + "design" + designKey
+      ];
+      setDesignError((designError) => ({
+        ...designError,
+      }));
+      setFormState((formState) => ({
+        ...formState,
+        total_price: total_price,
+        total_price_of_all_design: total_price_of_all_design,
+        total_price_without_gst: total_price_with_add_cost,
+      }));
+      if (colorObj["isCannotDelete"]) {
+        colorObj = {
+          ...colorObj,
+          quantity_to_add_deduct: -colorObj.previousQuantity,
+          isDeleted: true,
+          message:
+            "No of ready material added back to stock : " +
+            colorObj.previousQuantity,
+        };
+      } else {
+        if (colorArray.length === 1) {
+          delete selectedDesign[designKey];
+          setSelectedDesign((selectDesign) => ({
+            ...selectedDesign,
+          }));
+        } else {
+          let indexOfColor = selectedDesign[designKey].colorsPresent.indexOf(
+            colorObj.color
+          );
+          selectedDesign[designKey].allColors.splice(colorKey, 1);
+          selectedDesign[designKey].colorsPresent.splice(indexOfColor, 1);
+
+          setSelectedDesign((selectedDesign) => ({
+            ...selectedDesign,
+            [designKey]: {
+              ...selectedDesign[designKey],
+              allColors: [...selectedDesign[designKey].allColors],
+              colorsPresent: [...selectedDesign[designKey].colorsPresent],
+            },
+          }));
+        }
+      }
+      setBackDrop(false);
     }
-    setBackDrop(false);
   };
 
   const calculateAddCostAndGst = (
-    total_price_of_ready_material = formState.total_price_of_ready_material,
+    total_price_of_all_design = formState.total_price_of_all_design,
     is_add_additional_cost = true,
     add_cost = formState.add_cost,
     cgst_percent = formState.cgst,
@@ -379,10 +412,10 @@ export default function AddEditSales(props) {
     let total_price_with_add_cost = 0;
     if (is_add_additional_cost) {
       total_price_with_add_cost =
-        total_price_of_ready_material + parseFloat(add_cost);
+        total_price_of_all_design + parseFloat(add_cost);
     } else {
       total_price_with_add_cost =
-        total_price_of_ready_material - parseFloat(add_cost);
+        total_price_of_all_design - parseFloat(add_cost);
     }
 
     let total_price = 0;
@@ -400,11 +433,11 @@ export default function AddEditSales(props) {
     total_price = total_price_with_add_cost + cgst_value + sgst_value;
     return {
       total_price: total_price,
-      total_price_with_add_cost: total_price_with_add_cost
+      total_price_with_add_cost: total_price_with_add_cost,
     };
   };
 
-  const cgstSgstValueChange = event => {
+  const cgstSgstValueChange = (event) => {
     let name = event.target.name;
     let value = 0;
     let percentValue = 0;
@@ -424,10 +457,10 @@ export default function AddEditSales(props) {
       percentValue = calculateSgstPercent(value);
     }
     total_price = total_price + percentValue;
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_price: total_price,
-      [name]: event.target.value
+      [name]: event.target.value,
     }));
   };
 
@@ -457,24 +490,24 @@ export default function AddEditSales(props) {
     return sgst_value;
   };
 
-  const handleChangeAddCost = event => {
+  const handleChangeAddCost = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     let value = isEmptyString(event.target.value)
       ? 0
       : parseFloat(event.target.value);
     const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
-      formState.total_price_of_ready_material,
+      formState.total_price_of_all_design,
       true,
       value
     );
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       [event.target.name]: event.target.value,
       total_price: total_price,
-      total_price_without_gst: total_price_with_add_cost
+      total_price_without_gst: total_price_with_add_cost,
     }));
   };
 
@@ -482,55 +515,65 @@ export default function AddEditSales(props) {
     setOpenDialogForSelectingParties(false);
   };
 
-  const handleAddParties = data => {
-    setParty(party => ({
+  const handleAddParties = (data) => {
+    setParty((party) => ({
       ...party,
       gst_no: data.gst_no,
       id: data.id,
       party_name: data.party_name,
-      address: data.party_address
+      address: data.party_address,
+      is_retailer: data.is_retailer,
+      is_whole_seller: data.is_whole_seller,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      party: data.id
+      party: data.id,
     }));
     delete error["party"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     handleCloseDialogForParties();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
   };
 
-  const handleChangeForRepetableComponent = (event, key) => {
-    let obj = readyMaterialArray[key];
+  const handleChangeForRepetableComponent = (event, colorKey, designKey) => {
+    let designObj = selectedDesign[designKey];
+    let colorObj = designObj.allColors[colorKey];
     let name = event.target.name;
     let total_price_per_piece = 0;
     let isValid = false;
     let error = "";
-    let keyName = name + "" + key;
+
+    let keyName = name + "color" + colorKey + "design" + designKey;
+
     let quantity_to_add_deduct = 0;
+    let availableQuantity = validateNumber(colorObj.availableQuantity);
+    let previousQuantity = validateNumber(colorObj.previousQuantity);
+
+    /** Calculations */
     if (name === "quantity") {
       let quantity = 0;
-      let price_per_piece = obj.price_per_unit;
+      let price_per_piece = validateNumber(colorObj.price_per_unit);
       if (event.target.value && !isNaN(event.target.value)) {
-        quantity = parseFloat(event.target.value);
+        quantity = validateNumber(event.target.value);
       }
       total_price_per_piece = quantity * price_per_piece;
+
       /** Set Error */
       if (
-        quantity > obj.previousQuantity &&
-        quantity - obj.previousQuantity > parseFloat(obj.availableQuantity)
+        quantity > previousQuantity &&
+        quantity - previousQuantity > availableQuantity
       ) {
         isValid = false;
         error =
@@ -540,14 +583,13 @@ export default function AddEditSales(props) {
         error = "Quantity cannot be zero or negative";
       } else {
         isValid = true;
-        quantity_to_add_deduct =
-          parseFloat(quantity) - parseFloat(obj.previousQuantity);
+        quantity_to_add_deduct = quantity - previousQuantity;
       }
     } else {
-      let quantity = obj.quantity;
+      let quantity = validateNumber(colorObj.quantity);
       let price_per_piece = 0;
       if (event.target.value && !isNaN(event.target.value)) {
-        price_per_piece = parseFloat(event.target.value);
+        price_per_piece = validateNumber(event.target.value);
       }
       total_price_per_piece = quantity * price_per_piece;
       if (!price_per_piece || price_per_piece < 0) {
@@ -555,24 +597,25 @@ export default function AddEditSales(props) {
         error = "Price per piece cannot be zero or negative";
       } else {
         isValid = true;
-        quantity_to_add_deduct =
-          parseFloat(quantity) - parseFloat(obj.previousQuantity);
+        quantity_to_add_deduct = quantity - previousQuantity;
       }
     }
     if (isValid) {
-      delete readyMaterialError[keyName];
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError
+      delete designError[keyName];
+      setDesignError((designError) => ({
+        ...designError,
       }));
     } else {
-      setReadyMaterialError(readyMaterialError => ({
-        ...readyMaterialError,
-        [keyName]: [error]
+      setDesignError((designError) => ({
+        ...designError,
+        [keyName]: [error],
       }));
     }
 
+    /** New Price */
     let total_price_after_deducted_old_value =
-      formState.total_price_of_ready_material - parseFloat(obj.total_price);
+      validateNumber(formState.total_price_of_all_design) -
+      validateNumber(colorObj.total_price);
     let total_price_after_adding_new_value =
       total_price_after_deducted_old_value + total_price_per_piece;
 
@@ -580,40 +623,47 @@ export default function AddEditSales(props) {
       total_price_after_adding_new_value
     );
 
-    obj = {
-      ...obj,
+    colorObj = {
+      ...colorObj,
       quantity_to_add_deduct: quantity_to_add_deduct,
       message: isValid
         ? quantity_to_add_deduct
-          ? `No of ready material ${quantity_to_add_deduct < 0
-            ? "to be added back to stock"
-            : "to be deducted from stock"
-          }: ${Math.abs(quantity_to_add_deduct)}`
+          ? `No of ready material ${
+              quantity_to_add_deduct < 0
+                ? "to be added back to stock"
+                : "to be deducted from stock"
+            }: ${Math.abs(quantity_to_add_deduct)}`
           : ""
-        : ""
+        : "",
     };
 
-    obj = {
-      ...obj,
+    colorObj = {
+      ...colorObj,
       [name]: event.target.value,
-      total_price: total_price_per_piece
+      total_price: total_price_per_piece,
     };
 
-    setReadyMaterialArray([
-      ...readyMaterialArray.slice(0, key),
-      obj,
-      ...readyMaterialArray.slice(key + 1)
-    ]);
+    setSelectedDesign((selectedDesign) => ({
+      ...selectedDesign,
+      [designKey]: {
+        ...selectedDesign[designKey],
+        allColors: [
+          ...selectedDesign[designKey].allColors.slice(0, colorKey),
+          colorObj,
+          ...selectedDesign[designKey].allColors.slice(colorKey + 1),
+        ],
+      },
+    }));
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       total_price: total_price,
       total_price_without_gst: total_price_with_add_cost,
-      total_price_of_ready_material: total_price_after_adding_new_value
+      total_price_of_all_design: total_price_after_adding_new_value,
     }));
   };
 
-  const toggleSwitch = event => {
+  const toggleSwitch = (event) => {
     if (event.target.checked) {
       saleForm = {
         ...saleForm,
@@ -622,41 +672,41 @@ export default function AddEditSales(props) {
           validations: {
             required: {
               value: "true",
-              message: "CGST is required"
-            }
-          }
+              message: "CGST is required",
+            },
+          },
         },
         sgst: {
           required: true,
           validations: {
             required: {
               value: "true",
-              message: "SGST is required"
-            }
-          }
-        }
+              message: "SGST is required",
+            },
+          },
+        },
       };
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
-        is_gst_bill: true
+        is_gst_bill: true,
       }));
     } else {
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         total_price: formState.total_price_without_gst,
         cgst: 0,
-        sgst: 0
+        sgst: 0,
       }));
       delete saleForm["cgst"];
       delete saleForm["sgst"];
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
-        is_gst_bill: false
+        is_gst_bill: false,
       }));
     }
   };
 
-  const handleOrderDate = event => {
+  const handleOrderDate = (event) => {
     let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (date === "Invalid date") {
       date = null;
@@ -664,24 +714,24 @@ export default function AddEditSales(props) {
       date = new Date(date).toISOString();
     }
 
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      date: date
+      date: date,
     }));
   };
 
   const addReadyMaterial = () => {
-    setOpenDialogForSelectingReadyMaterial(true);
+    setOpenDialogForSelectingDesign(true);
   };
 
-  const handleCheckValidation = event => {
+  const handleCheckValidation = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
     let error = {};
     error = setErrors(formState, saleForm);
     /** If no errors then isValid is set true */
-    if (checkEmpty(error) && checkEmpty(readyMaterialError)) {
+    if (checkEmpty(error) && checkEmpty(designError)) {
       setBackDrop(false);
       setError({});
       isValid = true;
@@ -710,12 +760,12 @@ export default function AddEditSales(props) {
     } else {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true
+        [buttonClasses["success"]]: true,
       });
 
       const cancelBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true
+        [buttonClasses["danger"]]: true,
       });
 
       setAlert(
@@ -744,27 +794,93 @@ export default function AddEditSales(props) {
     obj = {
       id: id,
       state: formState,
-      readyMaterials: readyMaterialArray,
-      party: party.id
+      designAndColor: selectedDesign,
+      party: party.id,
     };
     setBackDrop(true);
     await providerForPost(backend_sales, obj, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         history.push(SALES);
         setBackDrop(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error Adding/Editing Sale Data"
+          message: "Error Adding/Editing Sale Data",
         }));
       });
   };
 
-  const checkRepeatableComponent = () => { };
+  const selectDesign = (row, mainDesignData) => {
+    let design = row.design;
+    let singlePiecePrice =
+      validateNumber(row.color_price) +
+      validateNumber(mainDesignData.material_price) +
+      validateNumber(mainDesignData.add_price);
+    let colorData = {
+      design: row.design,
+      colorData: row.color,
+      color: row.color.id,
+      quantity: 1,
+      previousQuantity: 0,
+      quantity_to_add_deduct: 1,
+      price_per_unit: singlePiecePrice.toFixed(2),
+      total_price: singlePiecePrice.toFixed(2),
+      availableQuantity: row.stock,
+      isCannotDelete: false,
+      message: "No of ready material to be deducted from stocks :- 1",
+    };
+    setBackDrop(true);
+    if (selectedDesign.hasOwnProperty(design)) {
+      let colorsPresent = selectedDesign[design].colorsPresent;
+      let allColors = selectedDesign[design].allColors;
+      colorsPresent.push(row.color.id);
+      allColors.push(colorData);
+
+      setSelectedDesign((selectedDesign) => ({
+        ...selectedDesign,
+        [design]: {
+          ...selectedDesign[design],
+          colorsPresent: colorsPresent,
+          allColors: allColors,
+        },
+      }));
+    } else {
+      setSelectedDesign((selectedDesign) => ({
+        ...selectedDesign,
+        [design]: {
+          material_no: mainDesignData.material_no,
+          material_price: mainDesignData.material_price,
+          add_price: mainDesignData.add_price,
+          designId: mainDesignData.id,
+          images: mainDesignData.images,
+          stock: mainDesignData.stock,
+          colorsPresent: [row.color.id],
+          allColors: [colorData],
+        },
+      }));
+    }
+
+    let total_price_of_all_design =
+      formState.total_price_of_all_design + singlePiecePrice;
+
+    const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
+      total_price_of_all_design
+    );
+
+    setFormState((formState) => ({
+      ...formState,
+      total_price: total_price,
+      total_price_of_all_design: total_price_of_all_design,
+      total_price_without_gst: total_price_with_add_cost,
+    }));
+    setBackDrop(false);
+  };
+
+  console.log("selectedDesign ", selectedDesign);
 
   return (
     <React.Fragment>
@@ -781,14 +897,26 @@ export default function AddEditSales(props) {
           message={snackBar.message}
           handleClose={snackBarHandleClose}
         />
-        <DialogBoxForSelectingReadyMaterial
-          handleCancel={handleCloseDialogForReadyMaterial}
-          handleClose={handleCloseDialogForReadyMaterial}
-          handleAddReadyMaterial={handleAddReadyMaterial}
+        {/* <DialogBoxForSelectingReadyMaterial
+          handleCancel={handleCloseDialogForDesign}
+          handleClose={handleCloseDialogForDesign}
+          handleAddDesign={handleAddDesign}
           isHandleKey={false}
           noAddAvailableQuantites={true}
-          selectedReadyMaterial={readyMaterialArray}
-          open={openDialogForSelectingReadyMaterial}
+          selectedReadyMaterial={design}
+          open={openDialogForSelectingDesign}
+        /> */}
+        <DialogBoxForSelectingDesign
+          handleCancel={handleCloseDialogForDesign}
+          handleClose={handleCloseDialogForDesign}
+          isHandleKey={false}
+          open={openDialogForSelectingDesign}
+          noAddAvailableQuantites={true}
+          title={"Select Ready Material For Sale"}
+          partyId={party.id}
+          selectMultiColors={true}
+          selectedDesign={selectedDesign}
+          selectDesign={selectDesign}
         />
         <DialogForSelectingParties
           handleCancel={handleCloseDialogForParties}
@@ -806,23 +934,23 @@ export default function AddEditSales(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={5}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Bill Number"
                     name="bill_no"
                     disabled={isView || isEdit}
                     value={formState.bill_no}
                     id="bill_no"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_bill_no"}
                     isHelperText={hasError("bill_no", error)}
                     helperText={
                       hasError("bill_no", error)
-                        ? error["bill_no"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["bill_no"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("bill_no", error)}
@@ -830,18 +958,18 @@ export default function AddEditSales(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={4}>
                   <DatePicker
-                    onChange={event => handleOrderDate(event)}
+                    onChange={(event) => handleOrderDate(event)}
                     label="Bill Date"
                     name="bill_date"
                     disabled={isView || formState.cancelled}
                     value={formState.date || new Date()}
                     id="bill_date"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       width: "100%",
-                      marginTop: "1.5rem"
+                      marginTop: "1.5rem",
                     }}
                   />
                 </GridItem>
@@ -857,19 +985,19 @@ export default function AddEditSales(props) {
                         <Switch
                           checked={formState.is_gst_bill ? true : false}
                           disabled={isView}
-                          onChange={event => {
+                          onChange={(event) => {
                             toggleSwitch(event);
                           }}
                           classes={{
                             switchBase: classes.switchBase,
                             checked: classes.switchChecked,
                             thumb: classes.switchIcon,
-                            track: classes.switchBar
+                            track: classes.switchBar,
                           }}
                         />
                       }
                       classes={{
-                        label: classes.label
+                        label: classes.label,
                       }}
                       label="Is Gst Bill ?"
                     />
@@ -887,16 +1015,16 @@ export default function AddEditSales(props) {
                         value={party.party_name}
                         id="party_name"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_name"}
                         isHelperText={hasError("party_name", error)}
                         helperText={
                           hasError("party_name", error)
-                            ? error["party_name"].map(error => {
-                              return error + " ";
-                            })
+                            ? error["party_name"].map((error) => {
+                                return error + " ";
+                              })
                             : null
                         }
                         error={hasError("party_name", error)}
@@ -910,16 +1038,16 @@ export default function AddEditSales(props) {
                         value={party.gst_no}
                         id="party_gst_no"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_gst_no"}
                         isHelperText={hasError("party_gst_no", error)}
                         helperText={
                           hasError("party_gst_no", error)
-                            ? error["party_gst_no"].map(error => {
-                              return error + " ";
-                            })
+                            ? error["party_gst_no"].map((error) => {
+                                return error + " ";
+                              })
                             : null
                         }
                         error={hasError("party_gst_no", error)}
@@ -935,16 +1063,16 @@ export default function AddEditSales(props) {
                         value={party.address}
                         id="party_address"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_party_address"}
                         isHelperText={hasError("party_address", error)}
                         helperText={
                           hasError("party_address", error)
-                            ? error["party_address"].map(error => {
-                              return error + " ";
-                            })
+                            ? error["party_address"].map((error) => {
+                                return error + " ";
+                              })
                             : null
                         }
                         error={hasError("party_address", error)}
@@ -962,7 +1090,7 @@ export default function AddEditSales(props) {
                         sm={12}
                         md={12}
                         style={{
-                          margin: "27px 0px 0px"
+                          margin: "27px 0px 0px",
                         }}
                       >
                         <GridContainer style={{ dispay: "flex" }}>
@@ -971,7 +1099,7 @@ export default function AddEditSales(props) {
                             sm={12}
                             md={8}
                             style={{
-                              color: "#C8C8C8"
+                              color: "#C8C8C8",
                             }}
                           >
                             <b>Party</b>
@@ -995,17 +1123,26 @@ export default function AddEditSales(props) {
                             {party.address}
                           </GridItem>
                         </GridContainer>
+                        <br />
+                        <GridContainer>
+                          <GridItem xs={12} sm={12} md={8}>
+                            <Typography
+                              variant="caption"
+                              display="block"
+                              gutterBottom
+                            >
+                              {party.is_retailer
+                                ? "Retailer party"
+                                : party.is_whole_seller
+                                ? "Whole seller party"
+                                : ""}
+                            </Typography>
+                          </GridItem>
+                        </GridContainer>
                       </GridItem>
                       {isView ? null : (
                         <>
-                          <GridItem
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            style={{
-                              margin: "27px 0px 0px"
-                            }}
-                          >
+                          <GridItem xs={12} sm={12} md={12}>
                             <Button
                               color="primary"
                               onClick={() => {
@@ -1022,9 +1159,9 @@ export default function AddEditSales(props) {
                                 error={hasError("party", error)}
                               >
                                 {hasError("party", error)
-                                  ? error["party"].map(error => {
-                                    return error + " ";
-                                  })
+                                  ? error["party"].map((error) => {
+                                      return error + " ";
+                                    })
                                   : null}
                               </FormHelperText>
                             </GridItem>
@@ -1038,23 +1175,23 @@ export default function AddEditSales(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => cgstSgstValueChange(event)}
+                    onChange={(event) => cgstSgstValueChange(event)}
                     labelText="CGST(%)"
                     name="cgst"
                     disabled={isView || !formState.is_gst_bill}
                     value={formState.cgst}
                     id="cgst"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_cgst"}
                     isHelperText={hasError("cgst", error)}
                     helperText={
                       hasError("cgst", error)
-                        ? error["cgst"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["cgst"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("cgst", error)}
@@ -1062,23 +1199,23 @@ export default function AddEditSales(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => cgstSgstValueChange(event)}
+                    onChange={(event) => cgstSgstValueChange(event)}
                     labelText="SGST(%)"
                     name="sgst"
                     disabled={isView || !formState.is_gst_bill}
                     value={formState.sgst}
                     id="sgst"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_sgst"}
                     isHelperText={hasError("sgst", error)}
                     helperText={
                       hasError("sgst", error)
-                        ? error["sgst"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["sgst"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("sgst", error)}
@@ -1086,7 +1223,7 @@ export default function AddEditSales(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChangeAddCost(event)}
+                    onChange={(event) => handleChangeAddCost(event)}
                     labelText="Add. Cost"
                     name="add_cost"
                     type="number"
@@ -1094,16 +1231,16 @@ export default function AddEditSales(props) {
                     value={formState.add_cost}
                     id="add_cost"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_add_cost"}
                     isHelperText={hasError("add_cost", error)}
                     helperText={
                       hasError("add_cost", error)
-                        ? error["add_cost"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["add_cost"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("add_cost", error)}
@@ -1111,23 +1248,23 @@ export default function AddEditSales(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Total Price"
                     name="total_price"
                     disabled={true}
                     value={parseFloat(formState.total_price).toFixed(2)}
                     id="total_price"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_total_price"}
                     isHelperText={hasError("total_price", error)}
                     helperText={
                       hasError("total_price", error)
-                        ? error["total_price"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["total_price"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("total_price", error)}
@@ -1142,25 +1279,60 @@ export default function AddEditSales(props) {
                       size={"medium"}
                       variant="extended"
                       onClick={() => addReadyMaterial()}
+                      disabled={!party.id}
+                      toolTip={
+                        party.id
+                          ? "Select raw materials for sale"
+                          : "Select party first"
+                      }
                     >
                       <AddIcon className={classes.extendedIcon} />
                       <h5>Add Ready Material</h5>
                     </FAB>
                   </GridItem>
+                  {!party.id ? (
+                    <>
+                      <GridItem xs={12} sm={12} md={12}>
+                        <Typography
+                          variant="caption"
+                          display="block"
+                          gutterBottom
+                        >
+                          Please select party first
+                        </Typography>
+                      </GridItem>
+                      <GridItem xs={12} sm={12} md={12}>
+                        <Typography
+                          variant="caption"
+                          display="block"
+                          gutterBottom
+                        >
+                          Note:- For wholeslellers, only the designs ordered by
+                          them would list down
+                        </Typography>
+                      </GridItem>
+                    </>
+                  ) : null}
                 </GridContainer>
               )}
 
               <GridContainer>
                 <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 650 }} aria-label="sale-table">
+                  <Table
+                    sx={{ minWidth: 650 }}
+                    aria-label="sale-table"
+                    style={{
+                      marginTop: 30,
+                    }}
+                  >
                     <TableHead>
                       <TableRow>
-                        <TableCell>Sr No: </TableCell>
-                        <TableCell align="left">Ready Material</TableCell>
+                        <TableCell align="left">Name</TableCell>
                         {isEdit ? (
                           <TableCell align="left">Previous Quantity</TableCell>
                         ) : null}
-                        <TableCell align="left">Quantity</TableCell>
+                        <TableCell align="left">Available Stock</TableCell>
+                        <TableCell align="left">Pcs</TableCell>
                         <TableCell align="left">Price per piece</TableCell>
                         <TableCell align="left">Total Price</TableCell>
                         {isView ? null : (
@@ -1168,209 +1340,360 @@ export default function AddEditSales(props) {
                         )}
                       </TableRow>
                     </TableHead>
-                    <TableBody>
-                      {readyMaterialArray.map((Ip, key) => (
-                        <>
-                          <TableRow
-                            key={Ip.ready_material.id}
-                            sx={{
-                              "&:last-child td, &:last-child th": { border: 0 },
-                              backgroundColor: Ip.isDeleted
-                                ? "#e7e7e7"
-                                : "transparent",
-                              textDecoration: Ip.isDeleted
-                                ? "line-through"
-                                : "none"
-                            }}
-                          >
-                            <TableCell align="left" rowSpan={2}>
-                              {key + 1}
-                            </TableCell>
-                            <TableCell
-                              align="left"
-                              rowSpan={2}
-                              sx={{ width: 1 / 2.8 }}
-                            >
-                              <GridItem xs={12} sm={12} md={12}>
-                                <GridContainer style={{ dispay: "flex" }}>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <div className={classes.imageDivInTable}>
-                                      {Ip.ready_material.images &&
-                                        Ip.ready_material.images.length &&
-                                        Ip.ready_material.images[0].url ? (
-                                        <img
-                                          alt="ready_material_photo"
-                                          src={
-                                            apiUrl +
-                                            Ip.ready_material.images[0].url
-                                          }
-                                          loader={<CircularProgress />}
-                                          style={{
-                                            height: "5rem",
-                                            width: "10rem"
-                                          }}
-                                          className={classes.UploadImage}
-                                        />
-                                      ) : (
-                                        <img
-                                          src={no_image_icon}
-                                          alt="ready_material_photo"
-                                          style={{
-                                            height: "5rem",
-                                            width: "10rem"
-                                          }}
-                                          loader={<CircularProgress />}
-                                          className={classes.DefaultNoImage}
-                                        />
-                                      )}
-                                    </div>
-                                  </GridItem>
-                                </GridContainer>
-                                <GridContainer>
-                                  <GridItem xs={12} sm={12} md={8}>
-                                    <b>Material No : </b>
-                                    {Ip.ready_material.material_no}
-                                  </GridItem>
-                                </GridContainer>
-                                <GridContainer>
-                                  <GridItem xs={12} sm={12} md={8}>
-                                    <b>Total Available Quantity : </b>
-                                    {Ip.availableQuantity}
-                                  </GridItem>
-                                </GridContainer>
-                              </GridItem>
-                            </TableCell>
-                            {isEdit ? (
-                              <TableCell align="left">
-                                {Ip.previousQuantity
-                                  ? Ip.previousQuantity
-                                  : null}
-                              </TableCell>
-                            ) : null}
-                            <TableCell align="left">
-                              <CustomInput
-                                onChange={event =>
-                                  handleChangeForRepetableComponent(event, key)
-                                }
-                                type="number"
-                                disabled={isView}
-                                name="quantity"
-                                value={Ip.quantity}
-                                id="quantity"
-                                formControlProps={{
-                                  fullWidth: false
-                                }}
-                                /** For setting errors */
-                                helperTextId={"quantity" + key}
-                                isHelperText={hasError(
-                                  "quantity" + key,
-                                  readyMaterialError
-                                )}
-                                helperText={
-                                  hasError("quantity" + key, readyMaterialError)
-                                    ? readyMaterialError["quantity" + key].map(
-                                      error => {
-                                        return error + " ";
-                                      }
-                                    )
-                                    : null
-                                }
-                                error={hasError(
-                                  "quantity" + key,
-                                  readyMaterialError
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell align="left">
-                              <CustomInput
-                                onChange={event =>
-                                  handleChangeForRepetableComponent(event, key)
-                                }
-                                type="number"
-                                disabled={isView}
-                                name="price_per_unit"
-                                value={Ip.price_per_unit}
-                                id="price_per_unit"
-                                formControlProps={{
-                                  fullWidth: true
-                                }}
-                                /** For setting errors */
-                                helperTextId={"price_per_unit" + key}
-                                isHelperText={hasError(
-                                  "price_per_unit" + key,
-                                  readyMaterialError
-                                )}
-                                helperText={
-                                  hasError(
-                                    "price_per_unit" + key,
-                                    readyMaterialError
-                                  )
-                                    ? readyMaterialError[
-                                      "price_per_unit" + key
-                                    ].map(error => {
-                                      return error + " ";
-                                    })
-                                    : null
-                                }
-                                error={hasError(
-                                  "price_per_unit" + key,
-                                  readyMaterialError
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell align="left">
-                              {convertNumber(Ip.total_price, true)}
-                            </TableCell>
-                            {isView ? null : (
-                              <TableCell align="left">
-                                <GridItem xs={12} sm={12} md={2}>
-                                  <Tooltip
-                                    title={
-                                      Ip.isDeleted ? "Restore Back" : "Delete"
-                                    }
-                                  >
-                                    <FAB
-                                      color="primary"
-                                      align={"left"}
-                                      size={"small"}
-                                      onClick={() => {
-                                        Ip.isDeleted
-                                          ? restoreReadyMaterial(key)
-                                          : removeReadyMaterial(key);
-                                      }}
-                                    >
-                                      {Ip.isDeleted ? (
-                                        <SettingsBackupRestoreIcon />
-                                      ) : (
-                                        <DeleteIcon />
-                                      )}
-                                    </FAB>
-                                  </Tooltip>
+                    <TableBody sx={{ borderTop: 1, borderColor: "gray" }}>
+                      {selectedDesign &&
+                        Object.keys(selectedDesign).map((Ip, designKey) => (
+                          <>
+                            <TableRow key={Ip} height={20}>
+                              <TableCell align="center" colSpan={5}>
+                                <GridItem xs={12} sm={12} md={12}>
+                                  <GridContainer style={{ dispay: "flex" }}>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <div className={classes.imageDivInTable}>
+                                        {selectedDesign[Ip].images &&
+                                        selectedDesign[Ip].images.length &&
+                                        selectedDesign[Ip].images[0].url ? (
+                                          <img
+                                            alt="ready_material_photo"
+                                            src={
+                                              apiUrl +
+                                              selectedDesign[Ip].images[0].url
+                                            }
+                                            loader={<CircularProgress />}
+                                            style={{
+                                              height: "5rem",
+                                              width: "10rem",
+                                            }}
+                                            className={classes.UploadImage}
+                                          />
+                                        ) : (
+                                          <img
+                                            src={no_image_icon}
+                                            alt="ready_material_photo"
+                                            style={{
+                                              height: "5rem",
+                                              width: "10rem",
+                                            }}
+                                            loader={<CircularProgress />}
+                                            className={classes.DefaultNoImage}
+                                          />
+                                        )}
+                                      </div>
+                                    </GridItem>
+                                  </GridContainer>
+                                  <GridContainer>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Material No : </b>
+                                      {selectedDesign[Ip].material_no}
+                                    </GridItem>
+                                  </GridContainer>
                                 </GridItem>
                               </TableCell>
-                            )}
-                          </TableRow>
-                          <TableRow
-                            sx={{
-                              "&:last-child td, &:last-child th": { border: 0 },
-                              backgroundColor: Ip.isDeleted
-                                ? "#e7e7e7"
-                                : "transparent",
-                              color: "green"
-                            }}
-                          >
-                            <TableCell
-                              align="left"
-                              colSpan={5}
-                              sx={{
-                                color: "green"
-                              }}
-                            >
-                              {Ip.message}
-                            </TableCell>
-                          </TableRow>
-                        </>
-                      ))}
+                            </TableRow>
+                            {selectedDesign[Ip].allColors.map((c, colorKey) => (
+                              <>
+                                <TableRow
+                                  key={Ip + "-" + c.color}
+                                  sx={{
+                                    "&:last-child td, &:last-child th": {
+                                      border: 0,
+                                    },
+                                    backgroundColor: c.isDeleted
+                                      ? "#e7e7e7"
+                                      : "transparent",
+                                    textDecoration: c.isDeleted
+                                      ? "line-through"
+                                      : "none",
+                                  }}
+                                >
+                                  <TableCell
+                                    align="left"
+                                    sx={{
+                                      pt: 0,
+                                      pb: 0,
+                                    }}
+                                  >
+                                    <Typography variant="body1" gutterBottom>
+                                      <b>Color</b>: {c.colorData.name}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell
+                                    align="left"
+                                    sx={{
+                                      pt: 0,
+                                      pb: 0,
+                                    }}
+                                  >
+                                    <Typography variant="body1" gutterBottom>
+                                      {c.availableQuantity}
+                                    </Typography>
+                                  </TableCell>
+                                  {isEdit ? (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        pt: 0,
+                                        pb: 0,
+                                      }}
+                                    >
+                                      {c.previousQuantity
+                                        ? c.previousQuantity
+                                        : null}
+                                    </TableCell>
+                                  ) : null}
+                                  {/** Input for quantity */}
+                                  {isView ? (
+                                    <TableCell align="left">
+                                      {c.quantity}
+                                    </TableCell>
+                                  ) : (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        pt: 0,
+                                        pb: 0,
+                                      }}
+                                    >
+                                      <TextField
+                                        defaultValue="Small"
+                                        size="large"
+                                        variant="standard"
+                                        color="secondary"
+                                        onChange={(event) =>
+                                          handleChangeForRepetableComponent(
+                                            event,
+                                            colorKey,
+                                            Ip
+                                          )
+                                        }
+                                        type="number"
+                                        disabled={isView}
+                                        name="quantity"
+                                        value={c.quantity}
+                                        id={
+                                          "quantity" +
+                                          "color" +
+                                          colorKey +
+                                          "design" +
+                                          Ip
+                                        }
+                                        formControlProps={{
+                                          fullWidth: false,
+                                        }}
+                                        /** For setting errors */
+                                        helperTextId={
+                                          "quantity" +
+                                          "color" +
+                                          colorKey +
+                                          "design" +
+                                          Ip
+                                        }
+                                        isHelperText={hasError(
+                                          "quantity" +
+                                            "color" +
+                                            colorKey +
+                                            "design" +
+                                            Ip,
+                                          designError
+                                        )}
+                                        helperText={
+                                          hasError(
+                                            "quantity" +
+                                              "color" +
+                                              colorKey +
+                                              "design" +
+                                              Ip,
+                                            designError
+                                          )
+                                            ? designError[
+                                                "quantity" +
+                                                  "color" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip
+                                              ].map((error) => {
+                                                return error + " ";
+                                              })
+                                            : null
+                                        }
+                                        error={hasError(
+                                          "quantity" +
+                                            "color" +
+                                            colorKey +
+                                            "design" +
+                                            Ip,
+                                          designError
+                                        )}
+                                      />
+                                    </TableCell>
+                                  )}
+
+                                  {isView ? (
+                                    <TableCell align="ri">
+                                      {c.price_per_unit}
+                                    </TableCell>
+                                  ) : (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        pt: 0,
+                                        pb: 0,
+                                      }}
+                                    >
+                                      <TextField
+                                        defaultValue="Small"
+                                        size="small"
+                                        variant="standard"
+                                        color="secondary"
+                                        onChange={(event) =>
+                                          handleChangeForRepetableComponent(
+                                            event,
+                                            colorKey,
+                                            Ip
+                                          )
+                                        }
+                                        type="number"
+                                        disabled={isView}
+                                        name="price_per_unit"
+                                        value={c.price_per_unit}
+                                        id={
+                                          "price_per_unit" +
+                                          "color" +
+                                          colorKey +
+                                          "design" +
+                                          Ip
+                                        }
+                                        formControlProps={{
+                                          fullWidth: true,
+                                        }}
+                                        /** For setting errors */
+                                        helperTextId={
+                                          "price_per_unit" +
+                                          "color" +
+                                          colorKey +
+                                          "design" +
+                                          Ip
+                                        }
+                                        isHelperText={hasError(
+                                          "price_per_unit" +
+                                            "color" +
+                                            colorKey +
+                                            "design" +
+                                            Ip,
+                                          designError
+                                        )}
+                                        helperText={
+                                          hasError(
+                                            "price_per_unit" +
+                                              "color" +
+                                              colorKey +
+                                              "design" +
+                                              Ip,
+                                            designError
+                                          )
+                                            ? designError[
+                                                "price_per_unit" +
+                                                  "color" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip
+                                              ].map((error) => {
+                                                return error + " ";
+                                              })
+                                            : null
+                                        }
+                                        error={hasError(
+                                          "price_per_unit" +
+                                            "color" +
+                                            colorKey +
+                                            "design" +
+                                            Ip,
+                                          designError
+                                        )}
+                                      />
+                                    </TableCell>
+                                  )}
+                                  {/* Price per unit */}
+
+                                  <TableCell
+                                    align="left"
+                                    sx={{
+                                      pt: 0,
+                                      pb: 0,
+                                    }}
+                                  >
+                                    {convertNumber(c.total_price, true)}
+                                  </TableCell>
+                                  {isView ? null : (
+                                    <TableCell
+                                      align="left"
+                                      sx={{
+                                        pt: 0,
+                                        pb: 0,
+                                      }}
+                                    >
+                                      <GridItem xs={12} sm={12} md={2}>
+                                        <Tooltip
+                                          title={
+                                            c.isDeleted
+                                              ? "Restore Back"
+                                              : "Delete"
+                                          }
+                                        >
+                                          <FAB
+                                            color="primary"
+                                            align={"left"}
+                                            size={"small"}
+                                            onClick={() => {
+                                              c.isDeleted
+                                                ? restoreReadyMaterial(
+                                                    colorKey,
+                                                    Ip
+                                                  )
+                                                : removeReadyMaterial(
+                                                    colorKey,
+                                                    Ip
+                                                  );
+                                            }}
+                                          >
+                                            {c.isDeleted ? (
+                                              <SettingsBackupRestoreIcon />
+                                            ) : (
+                                              <DeleteIcon />
+                                            )}
+                                          </FAB>
+                                        </Tooltip>
+                                      </GridItem>
+                                    </TableCell>
+                                  )}
+                                </TableRow>
+                                {/* <TableRow
+                                  sx={{
+                                    "&:last-child td, &:last-child th": {
+                                      border: 0,
+                                    },
+                                    backgroundColor: c.isDeleted
+                                      ? "#e7e7e7"
+                                      : "transparent",
+                                    color: "green",
+                                  }}
+                                >
+                                  <TableCell
+                                    align="left"
+                                    colSpan={5}
+                                    sx={{
+                                      color: "green",
+                                    }}
+                                  >
+                                    {c.message}
+                                  </TableCell>
+                                </TableRow> */}
+                              </>
+                            ))}
+
+                            {/* {-------------------} */}
+                          </>
+                        ))}
                     </TableBody>
                     <TableBody sx={{ borderTop: 1, borderColor: "gray" }}>
                       <TableRow>
@@ -1381,7 +1704,7 @@ export default function AddEditSales(props) {
                         <TableCell>
                           {convertNumber(
                             parseFloat(
-                              formState.total_price_of_ready_material
+                              formState.total_price_of_all_design
                             ).toFixed(2),
                             true
                           )}
@@ -1397,10 +1720,10 @@ export default function AddEditSales(props) {
               <CardFooter>
                 <Button
                   color="primary"
-                  onClick={e => handleCheckValidation(e)}
+                  onClick={(e) => handleCheckValidation(e)}
                   disabled={
-                    !readyMaterialArray.length ||
-                    Object.keys(readyMaterialError).length
+                    !Object.keys(selectedDesign).length ||
+                    Object.keys(designError).length
                   }
                 >
                   Save

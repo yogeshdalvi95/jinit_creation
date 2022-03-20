@@ -12,10 +12,10 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
+  StockData,
   Table,
 } from "../../components";
 // core components
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
@@ -29,6 +29,7 @@ import AddIcon from "@material-ui/icons/Add";
 import { convertNumber, isEmptyString } from "../../Utils";
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import { providerForDelete } from "../../api";
+import { Grid, Typography } from "@mui/material";
 
 const useStyles = makeStyles(styles);
 export default function Designs() {
@@ -89,11 +90,21 @@ export default function Designs() {
       ),
     },
     {
-      title: "Price",
-      field: "total_price",
-      align: "center",
-      sorting: false,
-      render: (rowData) => convertNumber(rowData.total_price, true),
+      title: "Available Stock",
+      cellStyle: {
+        width: 300,
+        minWidth: 300,
+      },
+      render: (rowData) => {
+        let output = "";
+        if (rowData.color_price && rowData.color_price.length) {
+          let array = rowData.color_price;
+          output = <StockData data={array} />;
+        } else {
+          output = rowData.stock;
+        }
+        return output;
+      },
     },
   ];
 
@@ -159,13 +170,15 @@ export default function Designs() {
     let setRef = tableRef.current;
     await providerForDelete(backend_designs, data.id, Auth.getToken())
       .then((res) => {
+        if (setRef) {
+          setRef.onQueryChange();
+        }
         setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "success",
           message: "Successfully deleted design " + data?.material_no,
         }));
-        setRef.onQueryChange();
       })
       .catch((err) => {
         console.log("err ", err);

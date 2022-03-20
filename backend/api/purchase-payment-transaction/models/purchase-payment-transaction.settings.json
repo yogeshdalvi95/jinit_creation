@@ -30,7 +30,7 @@
     "comment": {
       "type": "string"
     },
-    "transactrion_amount": {
+    "transaction_amount": {
       "type": "float"
     },
     "is_purchase": {

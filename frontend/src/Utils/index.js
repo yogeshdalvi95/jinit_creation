@@ -11,6 +11,7 @@ export {
   dateToDDMMYYYY,
   getInitials,
   getRoutesOnLogin,
+  validateNumber,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

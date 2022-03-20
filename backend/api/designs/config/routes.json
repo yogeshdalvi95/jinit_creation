@@ -18,6 +18,14 @@
     },
     {
       "method": "GET",
+      "path": "/view-design/:id",
+      "handler": "designs.viewDesign",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/designs/:id",
       "handler": "designs.findOne",
       "config": {
@@ -53,6 +61,14 @@
       "method": "DELETE",
       "path": "/designs/:id",
       "handler": "designs.delete",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/designs-for-parties",
+      "handler": "designs.designForParties",
       "config": {
         "policies": []
       }

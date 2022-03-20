@@ -15,25 +15,6 @@
     "order_id": {
       "type": "string"
     },
-    "processing": {
-      "type": "boolean",
-      "default": true
-    },
-    "partial_completed": {
-      "type": "boolean",
-      "default": false
-    },
-    "cancelled": {
-      "type": "boolean",
-      "default": false
-    },
-    "fully_completed": {
-      "type": "boolean",
-      "default": false
-    },
-    "notes": {
-      "type": "text"
-    },
     "design": {
       "model": "designs"
     },
@@ -49,11 +30,32 @@
     "party": {
       "model": "party"
     },
+    "party_no": {
+      "type": "string"
+    },
     "date": {
       "type": "date"
     },
-    "party_no": {
-      "type": "string"
+    "in_progress": {
+      "type": "boolean",
+      "default": true
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "cancelled": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "text"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "remaining_quantity": {
+      "type": "float"
     }
   }
 }

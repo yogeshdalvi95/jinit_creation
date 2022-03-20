@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import { convertNumber, isEmptyString, dateToDDMMYYYY } from "../../Utils";
 import {
   backend_order,
-  backend_order_to_get_department_sheet
+  backend_order_to_get_department_sheet,
 } from "../../constants";
 import {
   Auth,
@@ -22,7 +22,7 @@ import {
   GridItem,
   RatioTable,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
@@ -42,83 +42,100 @@ export default function ViewOrders(props) {
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "date:desc"
+    _sort: "date:desc",
+    in_progress: true,
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [
     {
       title: "Order Date",
       field: "date",
-      render: rowData => dateToDDMMYYYY(new Date(rowData.date))
+      render: (rowData) => dateToDDMMYYYY(new Date(rowData.date)),
     },
     {
       title: "Order Number",
       field: "order_id",
-      render: rowData => "#" + rowData.order_id
+      render: (rowData) => "#" + rowData.order_id,
     },
     {
-      title: "Product",
+      title: "Design",
       sorting: false,
-      field: "ready_material",
-      render: rowData =>
-        rowData.ready_material ? rowData.ready_material.material_no : "----"
+      field: "design",
+      render: (rowData) =>
+        rowData.design?.material_no ? rowData.design?.material_no : "----",
     },
     {
       title: "Party",
       field: "party",
       sorting: false,
-      render: rowData => (rowData.party ? rowData.party.party_name : "----")
+      render: (rowData) => (rowData.party ? rowData.party.party_name : "----"),
     },
+    // {
+    //   title: "Party Number",
+    //   field: "party_no",
+    // },
     {
-      title: "Party Number",
-      field: "party_no"
+      title: "Ratio",
+      render: (rowData) => {
+        let output = "";
+        if (rowData.orderRatio && rowData.orderRatio.length) {
+          let array = rowData.orderRatio;
+          array.forEach((el, index) => {
+            const temp =
+              el.color?.name + ": " + el.quantity + "/" + el.quantity_completed;
+            if (index === 0) {
+              output = output + temp;
+            } else {
+              output = output + ", " + temp;
+            }
+            output = output + "\n\n";
+          });
+        } else {
+          output = rowData.quantity + "/" + rowData.completed_quantity;
+        }
+        return output;
+      },
     },
-    {
-      title: "Quantity",
-      field: "quantity"
-    },
-    {
-      title: "Quantity saved for later",
-      field: "buffer_quantity"
-    },
-    { title: "Completed Quantity", field: "completed_quantity" },
+    // {
+    //   title: "Quantity saved for later",
+    //   field: "buffer_quantity",
+    // },
+    // { title: "Completed Quantity", field: "completed_quantity" },
 
-    {
-      title: "Total Price",
-      field: "total_price",
-      render: rowData => convertNumber(rowData.total_price, true)
-    },
+    // {
+    //   title: "Total Price",
+    //   field: "total_price",
+    //   render: (rowData) => convertNumber(rowData.total_price, true),
+    // },
     {
       title: "Status",
-      render: rowData => {
-        if (rowData.processing) {
-          if (rowData.partial_completed) {
-            return "Partial Completed";
-          } else {
-            return "Processing";
-          }
-        } else if (rowData.fully_completed) {
-          return "Fully Completed";
-        } else {
+      render: (rowData) => {
+        if (rowData.in_progress) {
+          return "In Progress";
+        }
+        if (rowData.completed) {
+          return "Completed";
+        }
+        if (rowData.cancelled) {
           return "Cancelled";
         }
-      }
-    }
+      },
+    },
   ];
 
   const getOrderData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -129,23 +146,23 @@ export default function ViewOrders(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => response.json())
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         })
-        .catch(err => {
-          setSnackBar(snackBar => ({
+        .catch((err) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error"
+            message: "Error",
           }));
         });
     });
@@ -158,19 +175,19 @@ export default function ViewOrders(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -183,70 +200,70 @@ export default function ViewOrders(props) {
       history.push({
         pathname: VIEWORDER,
         search: `?oid=${row.id}`,
-        state: { view: true }
+        state: { view: true },
       });
     } else {
       history.push({
         pathname: EDITORDER,
         search: `?oid=${row.id}`,
-        state: { edit: true }
+        state: { edit: true },
       });
     }
   };
 
-  const handleDepartmentSheet = async row => {
+  const handleDepartmentSheet = async (row) => {
     history.push({
       pathname: DEPARTMENTSHEET,
-      search: `?oid=${row.id}`
+      search: `?oid=${row.id}`,
     });
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
 
   /** Handle End Date filter change */
-  const handleEndDateChange = event => {
+  const handleEndDateChange = (event) => {
     let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
     if (endDate === "Invalid date") {
       endDate = null;
       delete filter["date_lte"];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
       endDate = new Date(endDate).toISOString();
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        date_lte: endDate
+        date_lte: endDate,
       }));
     }
   };
 
   /** Handle Start Date filter change */
-  const handleStartDateChange = event => {
+  const handleStartDateChange = (event) => {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
       delete filter["date_gte"];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
       startDate = new Date(startDate).toISOString();
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        date_gte: startDate
+        date_gte: startDate,
       }));
     }
   };
@@ -282,81 +299,81 @@ export default function ViewOrders(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Order Number"
                     value={filter.order_id_contains || ""}
                     name="order_id_contains"
                     id="order_id_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleStartDateChange(event)}
+                    onChange={(event) => handleStartDateChange(event)}
                     label="Order Date From"
                     name="date_gte"
                     value={filter.date_gte || null}
                     id="date_gte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
-                    onChange={event => handleEndDateChange(event)}
+                    onChange={(event) => handleEndDateChange(event)}
                     label="Order Date To"
                     name="date_lte"
                     value={filter.date_lte || null}
                     id="date_lte"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     style={{
                       marginTop: "1.5rem",
-                      width: "100%"
+                      width: "100%",
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Material Number"
                     value={filter["ready_material.material_no_contains"] || ""}
                     name="ready_material.material_no_contains"
                     id="ready_material.material_no_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Party Name"
                     value={filter["party.party_name_contains"] || ""}
                     name="party.party_name_contains"
                     id="party.party_name_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Party Number"
                     value={filter["party_no_contains"] || ""}
                     name="party_no_contains"
                     id="party_no_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -364,49 +381,49 @@ export default function ViewOrders(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Quantity"
                     value={filter["quantity_contains"] || ""}
                     name="quantity_contains"
                     id="quantity_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Quantity saved for later"
                     value={filter["buffer_quantity_contains"] || ""}
                     name="buffer_quantity_contains"
                     id="buffer_quantity_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Completed Quantity"
                     value={filter["completed_quantity_contains"] || ""}
                     name="completed_quantity_contains"
                     id="completed_quantity_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Total Price"
                     value={filter["total_price_contains"] || ""}
                     name="total_price_contains"
                     id="total_price_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -421,16 +438,16 @@ export default function ViewOrders(props) {
                       control={
                         <Switch
                           checked={filter["fully_completed"] ? true : false}
-                          onChange={event => {
+                          onChange={(event) => {
                             if (event.target.checked) {
-                              setFilter(filter => ({
+                              setFilter((filter) => ({
                                 ...filter,
-                                fully_completed: event.target.checked
+                                fully_completed: event.target.checked,
                               }));
                             } else {
                               delete filter["fully_completed"];
-                              setFilter(filter => ({
-                                ...filter
+                              setFilter((filter) => ({
+                                ...filter,
                               }));
                             }
                           }}
@@ -438,12 +455,12 @@ export default function ViewOrders(props) {
                             switchBase: classes.switchBase,
                             checked: classes.switchChecked,
                             thumb: classes.switchIcon,
-                            track: classes.switchBar
+                            track: classes.switchBar,
                           }}
                         />
                       }
                       classes={{
-                        label: classes.label
+                        label: classes.label,
                       }}
                       label="Completed orders"
                     />
@@ -462,16 +479,16 @@ export default function ViewOrders(props) {
                       control={
                         <Switch
                           checked={filter["partial_completed"] ? true : false}
-                          onChange={event => {
+                          onChange={(event) => {
                             if (event.target.checked) {
-                              setFilter(filter => ({
+                              setFilter((filter) => ({
                                 ...filter,
-                                partial_completed: event.target.checked
+                                partial_completed: event.target.checked,
                               }));
                             } else {
                               delete filter["partial_completed"];
-                              setFilter(filter => ({
-                                ...filter
+                              setFilter((filter) => ({
+                                ...filter,
                               }));
                             }
                           }}
@@ -479,12 +496,12 @@ export default function ViewOrders(props) {
                             switchBase: classes.switchBase,
                             checked: classes.switchChecked,
                             thumb: classes.switchIcon,
-                            track: classes.switchBar
+                            track: classes.switchBar,
                           }}
                         />
                       }
                       classes={{
-                        label: classes.label
+                        label: classes.label,
                       }}
                       label="Partial completed orders"
                     />
@@ -501,16 +518,16 @@ export default function ViewOrders(props) {
                       control={
                         <Switch
                           checked={filter["cancelled"] ? true : false}
-                          onChange={event => {
+                          onChange={(event) => {
                             if (event.target.checked) {
-                              setFilter(filter => ({
+                              setFilter((filter) => ({
                                 ...filter,
-                                cancelled: event.target.checked
+                                cancelled: event.target.checked,
                               }));
                             } else {
                               delete filter["cancelled"];
-                              setFilter(filter => ({
-                                ...filter
+                              setFilter((filter) => ({
+                                ...filter,
                               }));
                             }
                           }}
@@ -518,12 +535,12 @@ export default function ViewOrders(props) {
                             switchBase: classes.switchBase,
                             checked: classes.switchChecked,
                             thumb: classes.switchIcon,
-                            track: classes.switchBar
+                            track: classes.switchBar,
                           }}
                         />
                       }
                       classes={{
-                        label: classes.label
+                        label: classes.label,
                       }}
                       label="Cancelled orders"
                     />
@@ -536,7 +553,7 @@ export default function ViewOrders(props) {
                   sm={12}
                   md={4}
                   style={{
-                    marginTop: "27px"
+                    marginTop: "27px",
                   }}
                 >
                   <Button
@@ -551,7 +568,7 @@ export default function ViewOrders(props) {
                     color="primary"
                     onClick={() => {
                       setFilter({
-                        _sort: "date:desc"
+                        _sort: "date:desc",
                       });
                       tableRef.current.onQueryChange();
                     }}
@@ -566,41 +583,41 @@ export default function ViewOrders(props) {
                     tableRef={tableRef}
                     title="Departments"
                     columns={columns}
-                    data={async query => {
+                    data={async (query) => {
                       return await getOrderData(query.page + 1, query.pageSize);
                     }}
                     localization={{
                       body: {
                         editRow: {
                           deleteText: `Are you sure you want to delete this Admin User?`,
-                          saveTooltip: "Delete"
-                        }
-                      }
+                          saveTooltip: "Delete",
+                        },
+                      },
                     }}
                     actions={[
-                      rowData => ({
+                      (rowData) => ({
                         icon: () => <EditIcon fontSize="small" />,
                         tooltip: "Edit",
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, false);
-                        }
+                        },
                       }),
-                      rowData => ({
+                      (rowData) => ({
                         icon: () => <VisibilityIcon fontSize="small" />,
                         tooltip: "View",
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, true);
-                        }
+                        },
                       }),
-                      rowData => ({
+                      (rowData) => ({
                         icon: () => <Icon fontSize="small">edit_note</Icon>,
                         tooltip: "Department Sheet",
                         onClick: (event, rowData) => {
                           handleDepartmentSheet(rowData);
-                        }
-                      })
+                        },
+                      }),
                     ]}
-                    detailPanel={rowData => {
+                    detailPanel={(rowData) => {
                       if (rowData.ratio.length) {
                         return (
                           <GridContainer className={classes.detailPanelGrid}>
@@ -627,7 +644,7 @@ export default function ViewOrders(props) {
                       actionsColumnIndex: -1,
                       search: false,
                       sorting: true,
-                      thirdSortClick: false
+                      thirdSortClick: false,
                     }}
                     onOrderChange={(orderedColumnId, orderDirection) => {
                       orderFunc(orderedColumnId, orderDirection);

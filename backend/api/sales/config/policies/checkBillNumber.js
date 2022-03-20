@@ -8,8 +8,6 @@ module.exports = async (ctx, next) => {
     bill_no: bill_no,
   });
 
-  console.log(bill_data, id);
-
   if (bill_data) {
     if (id) {
       if (id == bill_data.id) {

@@ -61,6 +61,8 @@ import {
   EDITDESIGNID,
   SELECTRAWMATERIALSID,
   SELECTREADYMATERIALSID,
+  VIEWSALESID,
+  EDITSALESID,
 } from "../paths";
 import {
   Login,
@@ -97,6 +99,7 @@ import {
   Designs,
   AddEditDesign,
   DesignMaterials,
+  ViewDesign,
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -353,7 +356,7 @@ const Routes = () => {
           openSubMenu={true}
           path={VIEWDESIGNID}
           exact
-          component={AddEditDesign}
+          component={ViewDesign}
           header={"View Design"}
           isDependent={true}
           isView={true}
@@ -520,20 +523,24 @@ const Routes = () => {
 
         <EditRoute
           openSubMenu={true}
-          path={EDITSALES}
+          path={EDITSALESID}
           exact
           component={AddEditSales}
           header={"Edit Sale"}
           defaultPathToPush={SALES}
+          isDependent={true}
+          isEdit={true}
         />
 
-        <ViewRoute
+        <PrivateRoute
           openSubMenu={true}
-          path={VIEWSALES}
+          path={VIEWSALESID}
           exact
           component={AddEditSales}
           header={"View Sale"}
           defaultPathToPush={SALES}
+          isDependent={true}
+          isView={true}
         />
 
         {/** Sale return  */}

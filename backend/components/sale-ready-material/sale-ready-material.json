@@ -7,20 +7,26 @@
   },
   "options": {},
   "attributes": {
-    "ready_material": {
-      "model": "ready-material"
+    "sr_no": {
+      "type": "string"
+    },
+    "design": {
+      "model": "designs"
+    },
+    "sale": {
+      "model": "sales"
+    },
+    "color": {
+      "model": "color"
+    },
+    "name": {
+      "type": "string"
     },
     "quantity": {
       "type": "float"
     },
     "total_price": {
       "type": "float"
-    },
-    "order": {
-      "model": "orders"
-    },
-    "sr_no": {
-      "type": "string"
     },
     "price_per_unit": {
       "type": "float"
