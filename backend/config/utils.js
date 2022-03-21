@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const XLSX = require("XLSX");
+const XLSX = require("xlsx");
 const excel = require("exceljs");
 
 function getRequestParams(params) {
