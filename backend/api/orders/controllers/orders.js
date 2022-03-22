@@ -44,6 +44,45 @@ module.exports = {
     };
   },
 
+  async findOne(ctx) {
+    const { id } = ctx.params;
+
+    let orderData = await strapi.query("orders").findOne({
+      id: id,
+    });
+
+    let designId = orderData.design.id;
+    let designData = await strapi.query("designs").findOne({
+      id: designId,
+    });
+
+    let orderRatio = await strapi.query("order-ratios").find(
+      {
+        order: id,
+      },
+      ["color"]
+    );
+
+    orderRatio = orderRatio.map((el) => {
+      return {
+        ...el,
+        color: el.color.id,
+        design: el.design,
+        colorName: el.color.name,
+        quantity: el.quantity,
+        quantityCompleted: el.quantity_completed,
+        order: el.order,
+      };
+    });
+
+    orderData = {
+      ...orderData,
+      design: designData,
+      ratio: orderRatio,
+    };
+    ctx.send(orderData);
+  },
+
   async create(ctx) {
     const { ratio, design, completed_quantity, order_id } = ctx.request.body;
     let body = ctx.request.body;
@@ -61,10 +100,12 @@ module.exports = {
       id: design,
     });
 
+    let newOrder = {};
+
     await bookshelf
       .transaction(async (t) => {
         if (designData) {
-          const newOrder = await strapi
+          newOrder = await strapi
             .query("orders")
             .create(body, { transacting: t })
             .then((model) => model)
@@ -93,7 +134,6 @@ module.exports = {
               });
 
               await utils.asyncForEach(ratio, async (el) => {
-                console.log(el);
                 let newQuantity = utils.validateNumber(el.quantityCompleted);
                 let oldQuantity = colorData[el.color].oldStock;
                 newQuantity = newQuantity + oldQuantity;
@@ -155,7 +195,7 @@ module.exports = {
         }
       })
       .then((res) => {
-        ctx.send(200);
+        ctx.send(newOrder);
       })
       .catch((err) => {
         console.log("err ", err);

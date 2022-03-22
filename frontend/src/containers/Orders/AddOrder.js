@@ -14,14 +14,7 @@ import {
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import {
-  checkEmpty,
-  convertNumber,
-  hasError,
-  isEmptyString,
-  setErrors,
-  uuidv4,
-} from "../../Utils";
+import { hasError, isEmptyString, uuidv4 } from "../../Utils";
 import {
   Auth,
   Button,
@@ -32,7 +25,6 @@ import {
   CustomInput,
   DatePicker,
   DialogBoxForSelectingDesign,
-  DialogBoxForSelectingReadyMaterial,
   DialogForCheckingStockAvailibility,
   DialogForSelectingColor,
   DialogForSelectingParties,
@@ -42,14 +34,7 @@ import {
   SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import {
-  DEPARTMENTSHEET,
-  EDITORDER,
-  NOTFOUNDPAGE,
-  ORDERS,
-  VIEWORDER,
-} from "../../paths";
-import validationForm from "./form/ValidationForm.json";
+import { DEPARTMENTSHEET, EDITORDER, NOTFOUNDPAGE, ORDERS } from "../../paths";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
@@ -64,6 +49,7 @@ import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { providerForGet, providerForPost, providerForPut } from "../../api";
 import moment from "moment";
+import { validateNumber } from "../../Utils";
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -85,13 +71,9 @@ export default function AddOrder(props) {
 
   const [error, setError] = React.useState({});
 
-  const [isView] = useState(
-    props.location.state ? props.location.state.view : false
-  );
-
-  const [isEdit] = useState(
-    props.location.state ? props.location.state.edit : false
-  );
+  const [isEdit] = useState(props.isEdit ? props.isEdit : null);
+  const [isView] = useState(props.isView ? props.isView : null);
+  const [id] = useState(props.id ? props.id : null);
 
   const buttonClasses = buttonUseStyles();
 
@@ -99,7 +81,6 @@ export default function AddOrder(props) {
     useState(false);
 
   const [formState, setFormState] = useState({
-    id: null,
     order_id: uuidv4(),
     inProgress: true,
     cancelled: false,
@@ -129,7 +110,6 @@ export default function AddOrder(props) {
     add_price: 0,
     color_price: [],
     colors: 0,
-    designPrice: 0,
   });
   const urlParams = new URLSearchParams(window.location.search);
   const [ratio, setRatio] = useState([]);
@@ -141,37 +121,14 @@ export default function AddOrder(props) {
   });
 
   useEffect(() => {
-    //window.location.reload();
-
-    let order_id = urlParams.get("oid");
-    if (order_id) {
-      if (
-        props.location.state &&
-        (props.location.state.view || props.location.state.edit)
-      ) {
-        getData(order_id);
-      } else {
-        //window.location.reload();
-        history.push({
-          pathname: VIEWORDER,
-          search: `?oid=${order_id}`,
-          state: { view: true },
-        });
-        window.location.reload();
-        //history.push(`${VIEWORDER}?oid=${order_id}`, { view: true });
-      }
-    } else {
-      //history.push(ORDERS);
+    if ((isEdit || isView) && id) {
+      getData(id);
     }
   }, []);
 
   useEffect(() => {
-    let parsedCompletedValue = isNaN(parseFloat(formState.completedQuantity))
-      ? 0
-      : parseFloat(formState.completedQuantity);
-    let parsedTotalQuantity = isNaN(parseFloat(formState.quantity))
-      ? 0
-      : parseFloat(formState.quantity);
+    let parsedCompletedValue = validateNumber(formState.completedQuantity);
+    let parsedTotalQuantity = validateNumber(formState.quantity);
     if (
       parsedCompletedValue &&
       parsedTotalQuantity &&
@@ -262,34 +219,30 @@ export default function AddOrder(props) {
   const setData = (data) => {
     setFormState((formState) => ({
       ...formState,
-      id: data.id,
       order_id: data.order_id,
-      total_price: data.total_price,
-      processing: data.processing,
-      partial_completed: data.partial_completed,
+      inProgress: data.in_progress,
       cancelled: data.cancelled,
-      fully_completed: data.fully_completed,
-      is_ratio_present: data.is_ratio_present,
+      completed: data.completed,
+      bufferQuantity: data.buffer_quantity,
+      completedQuantity: data.completed_quantity,
+      previousCompleted: data.completed_quantity,
+      remainingQuantity: data.remaining_quantity,
       notes: data.notes,
       quantity: data.quantity,
-      buffer_quantity: data.buffer_quantity,
-      price_per_piece: data.price_per_piece,
-      add_cost: data.add_cost,
-      completed_quantity: data.completed_quantity,
-      previous_completed: data.completed_quantity,
       date: new Date(data.date),
-      nl_no: data.nl_no,
       party_no: data.party_no,
     }));
-    if (data.ready_material) {
-      let ready_material = data.ready_material;
+
+    if (data.design) {
+      let design = data.design;
       setDesign({
-        id: ready_material.id,
-        material_no: ready_material.material_no,
-        total_cost: ready_material.final_cost,
-        images: ready_material.images,
-        availableQuantity: ready_material.total_quantity,
-        isColorVariationAvailable: ready_material.isColorVariationAvailable,
+        id: design.id,
+        material_no: design.material_no,
+        images: design.images,
+        material_price: design.material_price,
+        add_price: design.add_price,
+        color_price: [],
+        colors: design.colors,
       });
     }
     if (data.party) {
@@ -301,24 +254,7 @@ export default function AddOrder(props) {
       });
     }
 
-    if (data.ratio && data.ratio.length) {
-      let arr = data.ratio;
-      let new_arr = [];
-      new_arr = arr.map((r) => {
-        return {
-          id: r.id,
-          color: r.color ? r.color.id : null,
-          name: r.color ? r.color.name : null,
-          quantity: r.quantity,
-          quantity_completed: r.quantity_completed,
-        };
-      });
-      setFormState((formState) => ({
-        ...formState,
-        is_ratio_present: new_arr.length ? true : false,
-      }));
-      setRatio(new_arr);
-    }
+    setRatio(data.ratio);
   };
 
   /** Add design  */
@@ -336,31 +272,17 @@ export default function AddOrder(props) {
 
     let colorPriceArray = data.color_price;
     let colorRatios = [];
-    let materialPrice = isNaN(parseFloat(data.material_price))
-      ? 0
-      : parseFloat(data.material_price);
-    let addPrice = isNaN(parseFloat(data.add_price))
-      ? 0
-      : parseFloat(data.add_price);
-    let totalPrice = 0;
 
     if (data.colors && data.colors.length) {
       if (data.color_price?.length) {
         colorPriceArray.forEach((d) => {
-          let colorPrice = isNaN(parseFloat(d.color_price))
-            ? 0
-            : parseFloat(d.color_price);
-          let designPrice = materialPrice + addPrice + colorPrice;
-
           colorRatios.push({
             design: d.design,
             color: d.color?.id,
             colorName: d.color?.name,
             quantity: 0,
             quantityCompleted: 0,
-            quantityPending: 0,
             order: null,
-            designPrice: designPrice.toFixed(2),
           });
         });
         setRatio(colorRatios);
@@ -369,7 +291,6 @@ export default function AddOrder(props) {
       }
     } else {
       setRatio([]);
-      totalPrice = materialPrice + addPrice;
     }
     setDesign((design) => ({
       ...design,
@@ -380,13 +301,10 @@ export default function AddOrder(props) {
       add_price: data.add_price,
       color_price: data.color_price,
       colors: data.colors,
-      designPrice: totalPrice.toFixed(2),
     }));
 
     handleCloseDialogForDesign();
   };
-
-  console.log(error);
 
   const submit = (event) => {
     event.preventDefault();
@@ -422,8 +340,6 @@ export default function AddOrder(props) {
       isValid = false;
     }
 
-    console.log(isValid);
-
     if (isValid) {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
@@ -437,16 +353,14 @@ export default function AddOrder(props) {
 
       if (isEdit) {
         let text = "";
-        let parseCompletedValue = parseFloat(formState.completed_quantity);
-        let parsePreviousCompletedValue = parseFloat(
-          formState.previous_completed
+        let parseCompletedValue = validateNumber(formState.completed_quantity);
+        let parsePreviousCompletedValue = validateNumber(
+          formState.previousCompleted
         );
-        parseCompletedValue = isNaN(parseCompletedValue)
-          ? 0
-          : parseCompletedValue;
-        parsePreviousCompletedValue = isNaN(parsePreviousCompletedValue)
-          ? 0
-          : parsePreviousCompletedValue;
+        parseCompletedValue = validateNumber(parseCompletedValue);
+        parsePreviousCompletedValue = validateNumber(
+          parsePreviousCompletedValue
+        );
         let diff = parseCompletedValue - parsePreviousCompletedValue;
         if (diff > 0) {
           text = `Previous completed value was '${parsePreviousCompletedValue}' and new completed value is '${parseCompletedValue}'. 
@@ -527,7 +441,7 @@ export default function AddOrder(props) {
     if (isEdit) {
       await providerForPut(
         backend_order,
-        formState.id,
+        id,
         {
           order_id: formState.order_id,
           total_price: formState.total_price,
@@ -544,7 +458,7 @@ export default function AddOrder(props) {
           price_per_piece: formState.price_per_piece,
           add_cost: formState.add_cost,
           completed_quantity: formState.completed_quantity,
-          previous_completed: formState.previous_completed,
+          previousCompleted: formState.previousCompleted,
           party: party.id,
           ratio: arr,
           party_no: formState.party_no,
@@ -569,29 +483,27 @@ export default function AddOrder(props) {
           }));
         });
     } else {
-      await providerForPost(
-        backend_order,
-        {
-          order_id: formState.order_id?.trim(),
-          design: design.id,
-          quantity: formState.quantity,
-          buffer_quantity: formState.bufferQuantity,
-          completed_quantity: formState.completedQuantity,
-          remaining_quantity: formState.remainingQuantity,
-          party: party.id,
-          party_no: formState.party_no,
-          date: formState.date,
-          in_progress: formState.inProgress,
-          completed: formState.completed,
-          cancelled: formState.cancelled,
-          notes: formState.notes,
-          total_price: formState.total_price,
-          ratio: ratio,
-        },
-        Auth.getToken()
-      )
+      let data = {
+        order_id: formState.order_id?.trim(),
+        design: design.id,
+        quantity: formState.quantity,
+        buffer_quantity: formState.bufferQuantity,
+        completed_quantity: formState.completedQuantity,
+        remaining_quantity: formState.remainingQuantity,
+        party: party.id,
+        party_no: formState.party_no,
+        date: formState.date,
+        in_progress: formState.inProgress,
+        completed: formState.completed,
+        cancelled: formState.cancelled,
+        notes: formState.notes,
+        total_price: formState.total_price,
+        ratio: ratio,
+      };
+      await providerForPost(backend_order, data, Auth.getToken())
         .then((res) => {
-          history.push(ORDERS);
+          history.push(`${EDITORDER}/${res.data.id}`);
+          window.location.reload();
           setBackDrop(false);
         })
         .catch((err) => {
@@ -774,7 +686,6 @@ export default function AddOrder(props) {
       add_price: 0,
       color_price: [],
       colors: 0,
-      designPrice: 0,
     }));
     ratio.forEach((r, k) => {
       delete error["quantity" + k];
@@ -796,6 +707,7 @@ export default function AddOrder(props) {
     let isValid = true;
     let value = event.target.value;
     let errorValue = [];
+    let obj = ratio[key];
 
     if (isNumber) {
       value = isNaN(parseFloat(value)) ? value : parseFloat(value);
@@ -805,7 +717,17 @@ export default function AddOrder(props) {
         errorValue = [`${name} cannot be negative`];
         isValid = false;
       }
+      if (name === "Quantity Completed") {
+        if (validateNumber(value) > obj.quantity) {
+          errorValue = [`${name} should be smaller then quantity placed`];
+          isValid = false;
+        }
+      }
+      if (name === "Quantity") {
+        delete error["quantityCompleted" + key];
+      }
     }
+
     if (isValid) {
       delete error[errorKey];
       setError((error) => ({
@@ -817,10 +739,10 @@ export default function AddOrder(props) {
         [errorKey]: errorValue,
       }));
     }
-    let obj = ratio[key];
+
     obj = {
       ...obj,
-      [event.target.name]: parseFloat(value),
+      [event.target.name]: value,
     };
     setRatio([...ratio.slice(0, key), obj, ...ratio.slice(key + 1)]);
   };
@@ -851,7 +773,7 @@ export default function AddOrder(props) {
     }
     setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value,
+      [event.target.name]: value,
     }));
   };
 
@@ -862,10 +784,10 @@ export default function AddOrder(props) {
       {
         design: design.id,
         ratio: ratio && ratio.length ? ratio : [],
-        remaining_quantity: parseFloat(formState.remainingQuantity),
-        buffer_quantity: parseFloat(formState.bufferQuantity),
-        total_quantity: parseFloat(formState.quantity),
-        completed_quantity: parseFloat(formState.completedQuantity),
+        remaining_quantity: validateNumber(formState.remainingQuantity),
+        buffer_quantity: validateNumber(formState.bufferQuantity),
+        total_quantity: validateNumber(formState.quantity),
+        completed_quantity: validateNumber(formState.completedQuantity),
       },
       Auth.getToken()
     )
@@ -883,6 +805,29 @@ export default function AddOrder(props) {
           message: "Error",
         }));
       });
+  };
+
+  const totalQuantity = (num) => {
+    let output = 0;
+    if (num === 0) {
+      output = ratio.reduce((acc, currObj) => {
+        return acc + validateNumber(currObj.quantity);
+      }, output);
+    } else if (num === 1) {
+      output = ratio.reduce((acc, currObj) => {
+        return acc + validateNumber(currObj.quantityCompleted);
+      }, output);
+    } else if (num === 2) {
+      output = ratio.reduce((acc, currObj) => {
+        return (
+          acc +
+          (validateNumber(currObj.quantity) -
+            validateNumber(currObj.quantityCompleted))
+        );
+      }, output);
+    }
+    console.log("output 1234", output);
+    return output.toFixed(2);
   };
 
   return (
@@ -1063,14 +1008,6 @@ export default function AddOrder(props) {
                             <b>Material No : </b> {design.material_no}
                           </GridItem>
                         </GridContainer>
-                        {design.color_price.length ? null : (
-                          <GridContainer>
-                            <GridItem xs={12} sm={12} md={12}>
-                              <b>Design Price : </b>{" "}
-                              {convertNumber(design.designPrice, true)}
-                            </GridItem>
-                          </GridContainer>
-                        )}
                       </div>
                     ) : (
                       <GridContainer style={{ dispay: "flex" }}>
@@ -1281,11 +1218,13 @@ export default function AddOrder(props) {
 
             {/** Quantity */}
             <GridContainer>
-              <GridItem xs={12} sm={12} md={3}>
+              <GridItem xs={12} sm={12} md={6}>
                 <CustomInput
                   // onChange={(event) => handleChangeQuantity(event)}
-                  onChange={(event) => handleChange(event, true, "Quantity")}
-                  labelText="Total Quantity"
+                  onChange={(event) =>
+                    handleChange(event, true, "Total Order Quantity")
+                  }
+                  labelText="Total Order Quantity"
                   name="quantity"
                   disabled={
                     isView || formState.completed || formState.cancelled
@@ -1309,7 +1248,7 @@ export default function AddOrder(props) {
                   error={hasError("quantity", error)}
                 />
               </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
+              {/* <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
                   onChange={(event) =>
@@ -1326,7 +1265,6 @@ export default function AddOrder(props) {
                   }}
                   name="completedQuantity"
                   type="number"
-                  /** For setting errors */
                   helperTextId={"helperText_completedQuantity"}
                   isHelperText={hasError("completedQuantity", error)}
                   helperText={
@@ -1338,8 +1276,8 @@ export default function AddOrder(props) {
                   }
                   error={hasError("completedQuantity", error)}
                 />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
+              </GridItem> */}
+              {/* <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
                   //onChange={event => handleChangeCompletedQuantity(event)}
                   onChange={(event) =>
@@ -1367,13 +1305,17 @@ export default function AddOrder(props) {
                   }
                   error={hasError("remainingQuantity", error)}
                 />
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
+              </GridItem> */}
+              <GridItem xs={12} sm={12} md={6}>
                 <CustomInput
                   onChange={(event) =>
-                    handleChange(event, true, "Quantity saved for later")
+                    handleChange(
+                      event,
+                      true,
+                      "Buffer Quantity / Quantity for which ratio not present"
+                    )
                   }
-                  labelText="Quantity saved for later"
+                  labelText="Buffer Quantity / Quantity for which ratio not present"
                   disabled={
                     isView || formState.cancelled || formState.completed
                   }
@@ -1535,16 +1477,6 @@ export default function AddOrder(props) {
                                 }}
                               />
                             </GridItem>
-                            <GridItem xs={12} sm={12} md={3}>
-                              <CustomInput
-                                labelText="Price"
-                                disabled={true}
-                                value={convertNumber(r.designPrice, true)}
-                                formControlProps={{
-                                  fullWidth: true,
-                                }}
-                              />
-                            </GridItem>
                             <GridItem xs={12} sm={12} md={2}>
                               <CustomInput
                                 onChange={(event) =>
@@ -1592,7 +1524,9 @@ export default function AddOrder(props) {
                                   )
                                 }
                                 labelText="Quantity Completed"
-                                disabled={isView || formState.cancelled}
+                                disabled={
+                                  isView || formState.cancelled || !r.quantity
+                                }
                                 value={r.quantityCompleted}
                                 id="quantityCompleted"
                                 formControlProps={{
@@ -1623,6 +1557,18 @@ export default function AddOrder(props) {
                                 )}
                               />
                             </GridItem>
+                            <GridItem xs={12} sm={12} md={2}>
+                              <CustomInput
+                                labelText="Remaining Quantity"
+                                disabled={true}
+                                value={r.quantity - r.quantityCompleted}
+                                id="quantityRemaining"
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                name="quantityRemaining"
+                              />
+                            </GridItem>
                             {isView ? null : (
                               <GridItem
                                 xs={6}
@@ -1634,13 +1580,14 @@ export default function AddOrder(props) {
                                   color="primary"
                                   align={"end"}
                                   size={"small"}
-                                  disabled={
-                                    isView ||
-                                    formState.cancelled ||
-                                    parseFloat(
-                                      ratio[key]["quantity_completed"]
-                                    ) > 0
-                                  }
+                                  // disabled={
+                                  //   isView ||
+                                  //   formState.cancelled ||
+                                  //   validateNumber(
+                                  //     ratio[key]["quantity_completed"]
+                                  //   ) > 0
+                                  // }
+                                  disabled
                                   onClick={() => {
                                     setRatio([
                                       ...ratio.slice(0, key),
@@ -1655,6 +1602,65 @@ export default function AddOrder(props) {
                           </GridContainer>
                         ))}
                       </>
+                    </GridItem>
+                  </GridContainer>
+                </GridItem>
+              </GridContainer>
+            ) : null}
+            {ratio && ratio.length ? (
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  style={{
+                    margin: "-10px 10px 20px 13px",
+                  }}
+                >
+                  <GridContainer
+                    style={{
+                      margin: "1px 1px 1px 1px",
+                      border: "1px solid #C0C0C0",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <GridItem xs={12} sm={12} md={12}>
+                      <GridContainer>
+                        <GridItem xs={12} sm={12} md={2}></GridItem>
+                        <GridItem xs={12} sm={12} md={2}>
+                          <CustomInput
+                            labelText="Total Quantity"
+                            disabled={true}
+                            value={totalQuantity(0)}
+                            formControlProps={{
+                              fullWidth: true,
+                            }}
+                            name="quantityRemaining"
+                          />
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={2}>
+                          <CustomInput
+                            labelText="Total Completed"
+                            disabled={true}
+                            value={totalQuantity(1)}
+                            formControlProps={{
+                              fullWidth: true,
+                            }}
+                            name="quantityRemaining"
+                          />
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={2}>
+                          <CustomInput
+                            labelText="Total Remaining"
+                            disabled={true}
+                            value={totalQuantity(2)}
+                            formControlProps={{
+                              fullWidth: true,
+                            }}
+                            name="quantityRemaining"
+                          />
+                        </GridItem>
+                      </GridContainer>
                     </GridItem>
                   </GridContainer>
                 </GridItem>
@@ -1712,12 +1718,15 @@ export default function AddOrder(props) {
                 <GridItem>
                   <Button
                     color="primary"
+                    disabled={
+                      !design.id ||
+                      !party.id ||
+                      !formState.quantity ||
+                      !formState.order_id ||
+                      Object.keys(error).length
+                    }
                     onClick={(e) => {
-                      history.push({
-                        pathname: EDITORDER,
-                        search: `?oid=${urlParams.get("oid")}`,
-                        state: { edit: true },
-                      });
+                      history.push(`${EDITORDER}/${id}`);
                       window.location.reload();
                     }}
                   >
@@ -1733,7 +1742,8 @@ export default function AddOrder(props) {
                       !design.id ||
                       !party.id ||
                       !formState.quantity ||
-                      !formState.order_id
+                      !formState.order_id ||
+                      Object.keys(error).length
                     }
                   >
                     Save

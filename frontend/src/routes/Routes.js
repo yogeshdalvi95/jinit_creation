@@ -63,6 +63,8 @@ import {
   SELECTREADYMATERIALSID,
   VIEWSALESID,
   EDITSALESID,
+  EDITORDERID,
+  VIEWORDERID,
 } from "../paths";
 import {
   Login,
@@ -424,18 +426,22 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={EDITORDER}
+          path={EDITORDERID}
           exact
           component={AddOrder}
           header={"Edit Order"}
+          isDependent={true}
+          isEdit={true}
         />
 
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWORDER}
+          path={VIEWORDERID}
           exact
           component={AddOrder}
           header={"View Order"}
+          isDependent={true}
+          isView={true}
         />
 
         <PrivateRoute

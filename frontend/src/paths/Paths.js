@@ -51,6 +51,8 @@ export const ORDERS = "/orders";
 export const ADDORDER = "/add-order";
 export const EDITORDER = "/edit-order";
 export const VIEWORDER = "/view-order";
+export const VIEWORDERID = `${VIEWORDER}/:id`;
+export const EDITORDERID = `${EDITORDER}/:id`;
 
 export const DEPARTMENTSHEET = "/department-sheet";
 

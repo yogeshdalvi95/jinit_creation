@@ -23,5 +23,14 @@
         "message": "Quantity should be a valid positive number"
       }
     }
+  },
+  "colors": {
+    "required": true,
+    "validations": {
+      "required": {
+        "value": "true",
+        "message": "Please specify ratios/colors, for plain design add white color"
+      }
+    }
   }
 }
