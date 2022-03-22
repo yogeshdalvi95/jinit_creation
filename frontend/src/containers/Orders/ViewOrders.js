@@ -33,6 +33,7 @@ import { providerForGet } from "../../api";
 import { useEffect } from "react";
 import moment from "moment";
 import { Typography } from "@mui/material";
+import { validateNumber } from "../../Utils";
 
 const useStyles = makeStyles(styles);
 
@@ -88,7 +89,11 @@ export default function ViewOrders(props) {
           let array = rowData.orderRatio;
           array.forEach((el, index) => {
             const temp =
-              el.color?.name + ": " + el.quantity + "/" + el.quantity_completed;
+              el.color?.name +
+              ": " +
+              validateNumber(el.quantity) +
+              "/" +
+              validateNumber(el.quantity_completed);
             if (index === 0) {
               output = output + temp;
             } else {
@@ -197,17 +202,9 @@ export default function ViewOrders(props) {
 
   const handleTableAction = async (row, isView) => {
     if (isView) {
-      history.push({
-        pathname: VIEWORDER,
-        search: `?oid=${row.id}`,
-        state: { view: true },
-      });
+      history.push(`${VIEWORDER}/${row.id}`);
     } else {
-      history.push({
-        pathname: EDITORDER,
-        search: `?oid=${row.id}`,
-        state: { edit: true },
-      });
+      history.push(`${EDITORDER}/${row.id}`);
     }
   };
 

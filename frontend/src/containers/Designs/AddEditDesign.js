@@ -602,6 +602,17 @@ export default function AddEditDesign(props) {
                   handleChange={handleChangeColor}
                   name="Select Color"
                   optionKey="name"
+                  /** For setting errors */
+                  helperTextId={"helperText_colors"}
+                  isHelperText={hasError("colors", error)}
+                  helperText={
+                    hasError("colors", error)
+                      ? error["colors"].map((error) => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("colors", error)}
                 />
               </GridItem>
             </GridContainer>

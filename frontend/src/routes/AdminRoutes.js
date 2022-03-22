@@ -62,6 +62,8 @@ import {
   SELECTREADYMATERIALSID,
   VIEWSALESID,
   EDITSALESID,
+  EDITORDERID,
+  VIEWORDERID,
 } from "../paths";
 
 /** Raw material and units */
@@ -132,7 +134,14 @@ const staffPath = [STAFF, ADDSTAFF];
 const adminPath = [ADMIN, ADDADMIN];
 
 /**-----order------- */
-const orderPathsList = [ADDORDER, VIEWORDER, ORDERS, EDITORDER];
+const orderPathsList = [
+  ADDORDER,
+  VIEWORDER,
+  ORDERS,
+  EDITORDER,
+  EDITORDERID,
+  VIEWORDERID,
+];
 const departmentSheetList = [DEPARTMENTSHEET];
 const orderPaths = [...orderPathsList, ...departmentSheetList];
 
