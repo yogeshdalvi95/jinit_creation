@@ -5,7 +5,6 @@ import {
   CircularProgress,
   FormControlLabel,
   FormHelperText,
-  Grid,
   IconButton,
   makeStyles,
   Switch,
@@ -22,6 +21,7 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
+  CustomAutoComplete,
   CustomInput,
   DatePicker,
   DialogBoxForSelectingDesign,
@@ -31,6 +31,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RatioData,
   SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
@@ -42,6 +43,7 @@ import ClearIcon from "@material-ui/icons/Clear";
 import EditIcon from "@material-ui/icons/Edit";
 import {
   apiUrl,
+  backend_color,
   backend_order,
   backend_order_check_raw_material_availibility,
 } from "../../constants";
@@ -50,12 +52,26 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { providerForGet, providerForPost, providerForPut } from "../../api";
 import moment from "moment";
 import { validateNumber } from "../../Utils";
+import { Chip, Typography } from "@mui/material";
+import DoneIcon from "@mui/icons-material/Done";
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
 
 export default function AddOrder(props) {
   const classes = useStyles();
+  const buttonClasses = buttonUseStyles();
+
+  const confirmBtnClasses = classNames({
+    [buttonClasses.button]: true,
+    [buttonClasses["success"]]: true,
+  });
+
+  const cancelBtnClasses = classNames({
+    [buttonClasses.button]: true,
+    [buttonClasses["danger"]]: true,
+  });
+
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -70,12 +86,13 @@ export default function AddOrder(props) {
     useState(false);
 
   const [error, setError] = React.useState({});
+  const [info, setInfo] = React.useState({});
+
+  const [whiteColorError, setWhiteColorError] = React.useState(null);
 
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
   const [id] = useState(props.id ? props.id : null);
-
-  const buttonClasses = buttonUseStyles();
 
   const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
     useState(false);
@@ -87,13 +104,9 @@ export default function AddOrder(props) {
     completed: false,
     notes: "",
     quantity: 0,
-    bufferQuantity: 0,
-    completedQuantity: 0,
-    previousCompleted: 0,
-    remainingQuantity: 0,
     party_no: "",
     date: new Date(),
-    total_price: 0,
+    bufferQuantity: 0,
   });
 
   const [party, setParty] = useState({
@@ -112,7 +125,17 @@ export default function AddOrder(props) {
     colors: 0,
   });
   const urlParams = new URLSearchParams(window.location.search);
+
   const [ratio, setRatio] = useState([]);
+  const [color, setColor] = useState([]);
+  const [colorPresent, setColorPresent] = useState([]);
+  const [duplicateColorAlert, setDuplicateColorAlert] = useState(null);
+
+  const [ratioQuantityStatus, setRatioQuantityStatus] = useState({
+    totalRatioQuantityPlaced: 0,
+    totalRatioQuantityCompleted: 0,
+    totalRatioQuantityRemaining: 0,
+  });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -124,6 +147,7 @@ export default function AddOrder(props) {
     if ((isEdit || isView) && id) {
       getData(id);
     }
+    getColorData();
   }, []);
 
   useEffect(() => {
@@ -154,7 +178,7 @@ export default function AddOrder(props) {
         completed: false,
       }));
     }
-  }, [formState.completedQuantity, formState.quantity]);
+  }, [formState.quantity]);
 
   const snackBarHandleClose = () => {
     setSnackBar((snackBar) => ({
@@ -216,6 +240,24 @@ export default function AddOrder(props) {
       });
   };
 
+  const getColorData = async () => {
+    setBackDrop(true);
+    await providerForGet(backend_color, { pageSize: -1 }, Auth.getToken())
+      .then((res) => {
+        setBackDrop(false);
+        setColor(res.data.data);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error getting color data",
+        }));
+      });
+  };
+
   const setData = (data) => {
     setFormState((formState) => ({
       ...formState,
@@ -270,28 +312,35 @@ export default function AddOrder(props) {
       ...error,
     }));
 
-    let colorPriceArray = data.color_price;
-    let colorRatios = [];
+    setRatio([
+      {
+        color: null,
+        colorData: null,
+        quantity: 0,
+        quantityCompleted: 0,
+        order: null,
+      },
+    ]);
 
-    if (data.colors && data.colors.length) {
-      if (data.color_price?.length) {
-        colorPriceArray.forEach((d) => {
-          colorRatios.push({
-            design: d.design,
-            color: d.color?.id,
-            colorName: d.color?.name,
-            quantity: 0,
-            quantityCompleted: 0,
-            order: null,
-          });
-        });
-        setRatio(colorRatios);
-      } else {
-        history.push(NOTFOUNDPAGE);
-      }
-    } else {
-      setRatio([]);
+    let whiteColorId = null;
+    setColorPresent(
+      data.colors.map((c) => {
+        if (c.name.toLowerCase() === "white") {
+          whiteColorId = c.id;
+        }
+        return c.id;
+      })
+    );
+
+    if (!whiteColorId) {
+      setWhiteColorError(
+        "Note:- No white/plain color ratio found in design, please add white/plain colors detail in design to add its ratio below"
+      );
     }
+
+    setColor(color.filter((c) => c.name.toLowerCase() !== "white"));
+    //    setColor([...data.colors]);
+
     setDesign((design) => ({
       ...design,
       id: data.id,
@@ -310,18 +359,34 @@ export default function AddOrder(props) {
     event.preventDefault();
     //setBackDrop(true);
     let isValid = true;
-    let error = {};
-    /** This will set errors as per validations defined in form */
-    // error = setErrors(formState, validationForm);
 
-    // if (checkEmpty(error)) {
-    //   setBackDrop(false);
-    //   setError({});
-    //   isValid = true;
-    // } else {
-    //   setBackDrop(false);
-    //   setError(error);
-    // }
+    let output = 0;
+    output = ratio.reduce((acc, currObj) => {
+      return acc + validateNumber(currObj.quantity);
+    }, output);
+
+    if (output > formState.quantity) {
+      isValid = false;
+      setDuplicateColorAlert(
+        <SweetAlert
+          danger
+          confirmBtnText="Cancel"
+          confirmBtnCssClass={cancelBtnClasses}
+          title="Heads up?"
+          onConfirm={() => setDuplicateColorAlert(null)}
+        >
+          Quantity added for ratios execeds the total order quantity
+        </SweetAlert>
+      );
+    } else if (output === formState.quantity) {
+      isValid = true;
+      setFormState((formState) => ({
+        ...formState,
+        completed: true,
+        inProgress: false,
+        cancelled: false,
+      }));
+    }
 
     if (!design.id || !party.id) {
       if (!design.id) {
@@ -341,129 +406,45 @@ export default function AddOrder(props) {
     }
 
     if (isValid) {
-      const confirmBtnClasses = classNames({
-        [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true,
-      });
-
-      const cancelBtnClasses = classNames({
-        [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true,
-      });
-
-      if (isEdit) {
-        let text = "";
-        let parseCompletedValue = validateNumber(formState.completed_quantity);
-        let parsePreviousCompletedValue = validateNumber(
-          formState.previousCompleted
-        );
-        parseCompletedValue = validateNumber(parseCompletedValue);
-        parsePreviousCompletedValue = validateNumber(
-          parsePreviousCompletedValue
-        );
-        let diff = parseCompletedValue - parsePreviousCompletedValue;
-        if (diff > 0) {
-          text = `Previous completed value was '${parsePreviousCompletedValue}' and new completed value is '${parseCompletedValue}'. 
-          This will add ${diff} stocks to the selected ready material, Arey you sure?`;
-        } else if (diff < 0) {
-          text = `Previous completed value was '${parsePreviousCompletedValue}' and new completed value is '${parseCompletedValue}'. 
-          This will remove ${diff} stocks from the selected ready material, Arey you sure?`;
-        } else {
-          text = `Arey you sure you want to save the changes?`;
-        }
-        setAlert(
-          <SweetAlert
-            warning
-            showCancel
-            confirmBtnText="Yes"
-            confirmBtnCssClass={confirmBtnClasses}
-            confirmBtnBsStyle="outline-{variant}"
-            title="Heads up?"
-            onConfirm={handleAcceptDialog}
-            onCancel={handleCloseDialog}
-            cancelBtnCssClass={cancelBtnClasses}
-            focusCancelBtn
-          >
-            {text}
-          </SweetAlert>
-        );
-      } else {
-        setAlert(
-          <SweetAlert
-            warning
-            showCancel
-            confirmBtnText="Yes"
-            confirmBtnCssClass={confirmBtnClasses}
-            confirmBtnBsStyle="outline-{variant}"
-            title="Heads up?"
-            onConfirm={handleAcceptDialog}
-            onCancel={handleCloseDialog}
-            cancelBtnCssClass={cancelBtnClasses}
-            focusCancelBtn
-          >
-            Note :- If you have added completed quantity then that much quantity
-            will be added to stock for the selected design!
-          </SweetAlert>
-        );
-      }
+      setAlert(
+        <SweetAlert
+          warning
+          showCancel
+          confirmBtnText="Yes"
+          confirmBtnCssClass={confirmBtnClasses}
+          confirmBtnBsStyle="outline-{variant}"
+          title="Heads up?"
+          onConfirm={handleAcceptDialog}
+          onCancel={handleCloseDialog}
+          cancelBtnCssClass={cancelBtnClasses}
+          focusCancelBtn
+        >
+          {"Arey you sure you want to save the changes?"}
+        </SweetAlert>
+      );
     }
   };
 
-  const getRatio = () => {
-    let arr = ratio;
-    let newArr = [];
-    arr.map((nv) => {
-      if (nv.color && nv.name && !isEmptyString(nv.name)) {
-        if (nv.id) {
-          newArr.push({
-            id: nv.id,
-            color: nv.color,
-            name: nv.name,
-            quantity: nv.quantity,
-            quantity_completed: nv.quantity_completed,
-          });
-        } else {
-          newArr.push({
-            color: nv.color,
-            name: nv.name,
-            quantity: nv.quantity,
-            quantity_completed: nv.quantity_completed,
-          });
-        }
-      }
-    });
-    return newArr;
-  };
+  console.log("formState ", formState);
 
   const addButton = async () => {
-    let arr = getRatio();
     setBackDrop(true);
     if (isEdit) {
       await providerForPut(
         backend_order,
         id,
         {
-          order_id: formState.order_id,
-          total_price: formState.total_price,
-          processing: formState.processing,
-          partial_completed: formState.partial_completed,
-          category: formState.category,
-          is_ratio_present: formState.is_ratio_present,
-          cancelled: formState.cancelled,
-          fully_completed: formState.fully_completed,
-          notes: formState.notes,
-          ready_material: design.id,
+          order_id: formState.order_id?.trim(),
+          // design: design.id,
           quantity: formState.quantity,
-          buffer_quantity: formState.buffer_quantity,
-          price_per_piece: formState.price_per_piece,
-          add_cost: formState.add_cost,
-          completed_quantity: formState.completed_quantity,
-          previousCompleted: formState.previousCompleted,
-          party: party.id,
-          ratio: arr,
-          party_no: formState.party_no,
-          nl_no: formState.nl_no,
+          // party: party.id,
+          // party_no: formState.party_no,
           date: formState.date,
+          in_progress: formState.inProgress,
+          completed: formState.completed,
+          cancelled: formState.cancelled,
+          notes: formState.notes,
+          ratio: ratio,
         },
         Auth.getToken()
       )
@@ -487,9 +468,6 @@ export default function AddOrder(props) {
         order_id: formState.order_id?.trim(),
         design: design.id,
         quantity: formState.quantity,
-        buffer_quantity: formState.bufferQuantity,
-        completed_quantity: formState.completedQuantity,
-        remaining_quantity: formState.remainingQuantity,
         party: party.id,
         party_no: formState.party_no,
         date: formState.date,
@@ -497,7 +475,6 @@ export default function AddOrder(props) {
         completed: formState.completed,
         cancelled: formState.cancelled,
         notes: formState.notes,
-        total_price: formState.total_price,
         ratio: ratio,
       };
       await providerForPost(backend_order, data, Auth.getToken())
@@ -534,131 +511,7 @@ export default function AddOrder(props) {
     handleCloseDialogForParties();
   };
 
-  // const handleChangeTotalQuantity = (event) => {
-  //   let value = event.target.value;
-  //   if (value == "" || value >= 0) {
-  //     delete error["quantity"];
-  //     setError((error) => ({
-  //       ...error,
-  //     }));
-  //     if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
-  //       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-  //       let completed_quantity = isNaN(formState.completed_quantity)
-  //         ? 0
-  //         : parseFloat(formState.completed_quantity);
-
-  //       let buffer_quantity = new_value - completed_quantity;
-  //       setFormState((formState) => ({
-  //         ...formState,
-  //         quantity: value,
-  //         buffer_quantity: buffer_quantity,
-  //       }));
-  //     }
-  //   } else {
-  //     setError((error) => ({
-  //       ...error,
-  //       quantity: ["Quantity cannot be negative"],
-  //     }));
-  //   }
-  // };
-
-  // const handleChangeQuantity = (event) => {
-  //   let value = event.target.value;
-  //   if (value === "" || value >= 0) {
-  //     delete error["quantity"];
-  //     setError((error) => ({
-  //       ...error,
-  //     }));
-
-  //     let quantity = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-  //     let completedQuantity = isNaN(parseFloat(formState.completed_quantity))
-  //       ? 0
-  //       : parseFloat(formState.completed_quantity);
-  //     let remainingQuantity = quantity - completedQuantity;
-
-  //     setFormState((formState) => ({
-  //       ...formState,
-  //       quantity: value,
-  //       remainingQuantity: remainingQuantity,
-  //     }));
-  //   } else {
-  //     setError((error) => ({
-  //       ...error,
-  //       quantity: ["Quantity cannot be negative"],
-  //     }));
-  //   }
-  // };
-
-  // const handleChangeCompletedQuantity = (event) => {
-  //   let value = event.target.value;
-  //   if (value == "" || value >= 0) {
-  //     delete error["completed_quantity"];
-  //     setError((error) => ({
-  //       ...error,
-  //     }));
-  //     if (value == "" || parseFloat(value) <= parseFloat(formState.quantity)) {
-  //       let new_value = isNaN(parseFloat(value)) ? 0 : parseFloat(value);
-  //       let quantity = isNaN(formState.quantity)
-  //         ? 0
-  //         : parseFloat(formState.quantity);
-  //       let old_completed_quantity = isNaN(
-  //         parseFloat(formState.completed_quantity)
-  //       )
-  //         ? 0
-  //         : parseFloat(formState.completed_quantity);
-  //       let buffer_quantity = quantity + old_completed_quantity;
-  //       buffer_quantity = quantity - new_value;
-  //       setFormState((formState) => ({
-  //         ...formState,
-  //         completed_quantity: value,
-  //         buffer_quantity: buffer_quantity,
-  //       }));
-  //     }
-  //   } else {
-  //     setError((error) => ({
-  //       ...error,
-  //       completed_quantity: ["Completed Quantity cannot be negative"],
-  //     }));
-  //   }
-  // };
-
-  // const addRatio = () => {
-  //   setOpenDialogForSelectingColor(true);
-  // };
-
   const handleCloseDialogForColor = () => {
-    setOpenDialogForSelectingColor(false);
-  };
-
-  const handleSelectColor = (data) => {
-    let i = 0;
-    let isPresent = false;
-    while (i < ratio.length) {
-      if (ratio[i].color === data.id) {
-        isPresent = true;
-        break;
-      }
-      i = i + 1;
-    }
-    if (!isPresent) {
-      setRatio([
-        {
-          id: null,
-          color: data.id,
-          name: data.name,
-          quantity: 0,
-          quantity_completed: 0,
-        },
-        ...ratio,
-      ]);
-    } else {
-      setSnackBar((snackBar) => ({
-        ...snackBar,
-        show: true,
-        severity: "error",
-        message: "Color already present",
-      }));
-    }
     setOpenDialogForSelectingColor(false);
   };
 
@@ -702,12 +555,14 @@ export default function AddOrder(props) {
     key,
     isNumber = false,
     name = null,
-    errorKey
+    errorKey,
+    targetName = null
   ) => {
     let isValid = true;
-    let value = event.target.value;
+    let value = isNumber ? event.target.value : event ? event.id : null;
     let errorValue = [];
     let obj = ratio[key];
+    let isSetData = true;
 
     if (isNumber) {
       value = isNaN(parseFloat(value)) ? value : parseFloat(value);
@@ -719,12 +574,79 @@ export default function AddOrder(props) {
       }
       if (name === "Quantity Completed") {
         if (validateNumber(value) > obj.quantity) {
-          errorValue = [`${name} should be smaller then quantity placed`];
+          errorValue = [
+            `${name} should be smaller then quantity which is placed on the left`,
+          ];
           isValid = false;
         }
       }
       if (name === "Quantity") {
         delete error["quantityCompleted" + key];
+        if (!formState.quantity || isEmptyString(formState.quantity)) {
+          setError((error) => ({
+            ...error,
+            quantity: ["Total Order Quantity cannot be 0"],
+          }));
+          isSetData = false;
+        } else {
+          if (validateNumber(value) < obj.quantityCompleted) {
+            errorValue = [
+              `${name} should be greater then quantity completed which is on the right`,
+            ];
+            isValid = false;
+          }
+          //calculateBufferQuantity()
+        }
+      }
+    } else {
+      obj = {
+        ...obj,
+        colorData: event,
+      };
+      if (!event) {
+        // let colorData = ratio[key].colorData;
+        // color.push(colorData);
+        // setColor(color);
+        delete info[errorKey];
+        setInfo((info) => ({
+          ...info,
+        }));
+      } else {
+        // setColor(color.filter((c) => c.id !== value));
+        if (ratio.findIndex((r) => r.color === value) !== -1) {
+          isSetData = false;
+          setDuplicateColorAlert(
+            <SweetAlert
+              danger
+              confirmBtnText="Cancel"
+              confirmBtnCssClass={cancelBtnClasses}
+              title="Heads up?"
+              onConfirm={() => setDuplicateColorAlert(null)}
+            >
+              {`Ratio ${event.name} is already added!`}
+            </SweetAlert>
+          );
+        }
+
+        if (isSetData) {
+          if (colorPresent.includes(value)) {
+            setInfo((info) => ({
+              ...info,
+              [errorKey]: {
+                msg: "Color already present",
+                isError: false,
+              },
+            }));
+          } else {
+            setInfo((info) => ({
+              ...info,
+              [errorKey]: {
+                msg: "Color not present",
+                isError: true,
+              },
+            }));
+          }
+        }
       }
     }
 
@@ -740,11 +662,13 @@ export default function AddOrder(props) {
       }));
     }
 
-    obj = {
-      ...obj,
-      [event.target.name]: value,
-    };
-    setRatio([...ratio.slice(0, key), obj, ...ratio.slice(key + 1)]);
+    if (isSetData) {
+      obj = {
+        ...obj,
+        [targetName ? targetName : event.target.name]: value,
+      };
+      setRatio([...ratio.slice(0, key), obj, ...ratio.slice(key + 1)]);
+    }
   };
 
   const handleChange = (event, isNumber = false, name = null) => {
@@ -826,8 +750,21 @@ export default function AddOrder(props) {
         );
       }, output);
     }
-    console.log("output 1234", output);
     return output.toFixed(2);
+  };
+
+  const calculateBufferQuantity = () => {
+    let output = 0;
+    output = ratio.reduce((acc, currObj) => {
+      return acc + validateNumber(currObj.quantity);
+    }, output);
+
+    console.log(
+      "validateNumber(formState.quantity) - output ",
+      validateNumber(formState.quantity) - output,
+      output
+    );
+    return validateNumber(formState.quantity) - output;
   };
 
   return (
@@ -843,6 +780,7 @@ export default function AddOrder(props) {
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
+      {duplicateColorAlert}
       {alert}
       <DialogBoxForSelectingDesign
         handleCancel={handleCloseDialogForDesign}
@@ -858,12 +796,12 @@ export default function AddOrder(props) {
         handleAddParties={handleAddParties}
         open={openDialogForSelectingParties}
       />
-      <DialogForSelectingColor
+      {/* <DialogForSelectingColor
         handleCancel={handleCloseDialogForColor}
         handleClose={handleCloseDialogForColor}
         handleAddColor={handleSelectColor}
         open={openDialogForSelectingColor}
-      />
+      /> */}
       <DialogForCheckingStockAvailibility
         handleCancel={handleCloseDialogForStockAvailibility}
         handleClose={handleCloseDialogForStockAvailibility}
@@ -1007,6 +945,7 @@ export default function AddOrder(props) {
                           <GridItem xs={12} sm={12} md={12}>
                             <b>Material No : </b> {design.material_no}
                           </GridItem>
+                          <RatioData data={design.colors} />
                         </GridContainer>
                       </div>
                     ) : (
@@ -1206,7 +1145,7 @@ export default function AddOrder(props) {
                   onChange={(event) => handleChange(event)}
                   labelText="Party Number"
                   name="party_no"
-                  disabled={isView || formState.cancelled}
+                  disabled={isView || formState.cancelled || isEdit}
                   value={formState.party_no}
                   id="party_no"
                   formControlProps={{
@@ -1308,102 +1247,19 @@ export default function AddOrder(props) {
               </GridItem> */}
               <GridItem xs={12} sm={12} md={6}>
                 <CustomInput
-                  onChange={(event) =>
-                    handleChange(
-                      event,
-                      true,
-                      "Buffer Quantity / Quantity for which ratio not present"
-                    )
-                  }
                   labelText="Buffer Quantity / Quantity for which ratio not present"
-                  disabled={
-                    isView || formState.cancelled || formState.completed
-                  }
-                  value={formState.bufferQuantity}
+                  disabled={true}
+                  value={calculateBufferQuantity()}
                   id="bufferQuantity"
                   formControlProps={{
                     fullWidth: true,
                   }}
                   name="bufferQuantity"
                   type="number"
-                  /** For setting errors */
-                  helperTextId={"helperText_bufferQuantity"}
-                  isHelperText={hasError("bufferQuantity", error)}
-                  helperText={
-                    hasError("bufferQuantity", error)
-                      ? error["bufferQuantity"].map((error) => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("bufferQuantity", error)}
                 />
               </GridItem>
             </GridContainer>
             <GridContainer>
-              <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
-                <div className={classes.block}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formState.cancelled ? true : false}
-                        onChange={(event) => {
-                          setFormState((formState) => ({
-                            ...formState,
-                            cancelled: event.target.checked,
-                            completed: false,
-                            inProgress: event.target.checked ? false : true,
-                          }));
-                        }}
-                        disabled={
-                          isView ||
-                          formState.quantity === formState.completed_quantity ||
-                          formState.completed
-                        }
-                        classes={{
-                          switchBase: classes.switchBase,
-                          checked: classes.switchChecked,
-                          thumb: classes.switchIcon,
-                          track: classes.switchBar,
-                        }}
-                      />
-                    }
-                    classes={{
-                      label: classes.label,
-                    }}
-                    label="Cancelled"
-                  />
-                </div>
-              </GridItem>
-              <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
-                <div className={classes.block}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formState.completed ? true : false}
-                        disabled={isView || formState.cancelled}
-                        onChange={(event) => {
-                          setFormState((formState) => ({
-                            ...formState,
-                            completed: event.target.checked,
-                            inProgress: event.target.checked ? false : true,
-                          }));
-                        }}
-                        classes={{
-                          switchBase: classes.switchBase,
-                          checked: classes.switchChecked,
-                          thumb: classes.switchIcon,
-                          track: classes.switchBar,
-                        }}
-                      />
-                    }
-                    classes={{
-                      label: classes.label,
-                    }}
-                    label="Completed"
-                  />
-                </div>
-              </GridItem>
               <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
                 <div className={classes.block}>
                   <FormControlLabel
@@ -1428,6 +1284,74 @@ export default function AddOrder(props) {
                   />
                 </div>
               </GridItem>
+              <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formState.completed ? true : false}
+                        disabled={
+                          isView || formState.cancelled || !formState.quantity
+                        }
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            completed: event.target.checked,
+                            inProgress: event.target.checked ? false : true,
+                          }));
+                        }}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar,
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label,
+                    }}
+                    label="Completed"
+                  />
+                </div>
+              </GridItem>
+              {isEdit ? (
+                <GridItem xs={12} sm={4} md={4} className={classes.switchBox}>
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formState.cancelled ? true : false}
+                          onChange={(event) => {
+                            setFormState((formState) => ({
+                              ...formState,
+                              cancelled: event.target.checked,
+                              completed: false,
+                              inProgress: event.target.checked ? false : true,
+                            }));
+                          }}
+                          disabled={
+                            isView ||
+                            formState.quantity ===
+                              formState.completed_quantity ||
+                            formState.completed
+                          }
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar,
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label,
+                      }}
+                      label="Cancelled"
+                    />
+                  </div>
+                </GridItem>
+              ) : null}
             </GridContainer>
 
             {/* {isView ? null : (
@@ -1446,6 +1370,26 @@ export default function AddOrder(props) {
                     </GridItem>
                   </GridContainer>
                 )} */}
+            {whiteColorError ? (
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  style={{
+                    marginTop: "20px",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    gutterBottom
+                    sx={{ color: "red" }}
+                  >
+                    {whiteColorError}
+                  </Typography>
+                </GridItem>
+              </GridContainer>
+            ) : null}
             {ratio && ratio.length ? (
               <GridContainer>
                 <GridItem
@@ -1467,15 +1411,77 @@ export default function AddOrder(props) {
                       <>
                         {ratio.map((r, key) => (
                           <GridContainer>
-                            <GridItem xs={12} sm={12} md={2}>
-                              <CustomInput
+                            <GridItem xs={12} sm={12} md={3}>
+                              <CustomAutoComplete
+                                id={"color" + key}
                                 labelText="Color"
-                                disabled={true}
-                                value={r.colorName}
+                                autocompleteId={"color" + key}
+                                optionKey={"name"}
+                                disabled={
+                                  isEdit ||
+                                  isView ||
+                                  formState.cancelled ||
+                                  formState.completed
+                                }
+                                renderOption={(option, state) => {
+                                  if (colorPresent.includes(option.id)) {
+                                    return (
+                                      <Chip
+                                        label={option.name}
+                                        color="success"
+                                        variant="outlined"
+                                      />
+                                    );
+                                  } else {
+                                    return (
+                                      <Chip
+                                        label={option.name}
+                                        variant="outlined"
+                                      />
+                                    );
+                                  }
+                                }}
+                                options={color}
+                                onChange={(event, value) => {
+                                  handleChangeRepeatableComponent(
+                                    value,
+                                    key,
+                                    false,
+                                    "Color",
+                                    "color" + key,
+                                    "color"
+                                  );
+                                }}
+                                value={
+                                  color[
+                                    color.findIndex(function (item, i) {
+                                      return item.id === r.color;
+                                    })
+                                  ] || null
+                                }
                                 formControlProps={{
                                   fullWidth: true,
                                 }}
+                                /** For setting errors */
+                                helperTextId={"helperText_color" + key}
+                                isHelperText={true}
+                                helperText={
+                                  info["color" + key]
+                                    ? info["color" + key].msg
+                                    : ""
+                                }
+                                error={
+                                  info["color" + key]?.isError ? true : false
+                                }
                               />
+                              {/**
+                               * design: d.design,
+                               * color: d.color?.id,
+                               * colorName: d.color?.name,
+                               * quantity: 0,
+                               * quantityCompleted: 0,
+                               * order: null,
+                               */}
                             </GridItem>
                             <GridItem xs={12} sm={12} md={2}>
                               <CustomInput
@@ -1488,9 +1494,13 @@ export default function AddOrder(props) {
                                     "quantity" + key
                                   )
                                 }
-                                labelText="Quantity"
+                                labelText={"Quantity"}
                                 disabled={
-                                  isEdit || isView || formState.cancelled
+                                  isEdit ||
+                                  isView ||
+                                  formState.cancelled ||
+                                  !r.color ||
+                                  formState.completed
                                 }
                                 value={r.quantity}
                                 id="quantity"
@@ -1525,7 +1535,11 @@ export default function AddOrder(props) {
                                 }
                                 labelText="Quantity Completed"
                                 disabled={
-                                  isView || formState.cancelled || !r.quantity
+                                  isView ||
+                                  formState.cancelled ||
+                                  !r.quantity ||
+                                  !r.color ||
+                                  formState.completed
                                 }
                                 value={r.quantityCompleted}
                                 id="quantityCompleted"
@@ -1569,35 +1583,120 @@ export default function AddOrder(props) {
                                 name="quantityRemaining"
                               />
                             </GridItem>
-                            {isView ? null : (
-                              <GridItem
-                                xs={6}
-                                sm={6}
-                                md={1}
-                                className={classes.addDeleteFabButon}
+                            {/* <GridItem xs={12} sm={12} md={1}>
+                              <Tooltip
+                                title={
+                                  design.id ? "Change Design " : "Select Design"
+                                }
                               >
-                                <FAB
-                                  color="primary"
-                                  align={"end"}
-                                  size={"small"}
-                                  // disabled={
-                                  //   isView ||
-                                  //   formState.cancelled ||
-                                  //   validateNumber(
-                                  //     ratio[key]["quantity_completed"]
-                                  //   ) > 0
-                                  // }
-                                  disabled
-                                  onClick={() => {
-                                    setRatio([
-                                      ...ratio.slice(0, key),
-                                      ...ratio.slice(key + 1),
-                                    ]);
-                                  }}
+                                {colorPresent.includes(r.color) ? (
+                                  <DoneIcon color="success" />
+                                ) : (
+                                  <DoneIcon color="damger" />
+                                )}
+                              </Tooltip>
+                            </GridItem> */}
+
+                            {isView ||
+                            isEdit ||
+                            formState.cancelled ||
+                            formState.completed ? null : (
+                              <>
+                                <GridItem
+                                  xs={6}
+                                  sm={6}
+                                  md={1}
+                                  className={classes.addDeleteFabButon}
                                 >
-                                  <DeleteIcon />
-                                </FAB>
-                              </GridItem>
+                                  <FAB
+                                    color="danger"
+                                    align={"end"}
+                                    size={"small"}
+                                    disabled={!r.color}
+                                    onClick={() => {
+                                      // let colorData = ratio[key].colorData;
+                                      // color.push(colorData);
+                                      // setColor(color);
+                                      // delete info["color" + key];
+                                      // setInfo((info) => ({
+                                      //   ...info,
+                                      // }));
+
+                                      if (ratio.length === 1) {
+                                        setRatio([
+                                          {
+                                            color: null,
+                                            colorData: null,
+                                            quantity: 0,
+                                            quantityCompleted: 0,
+                                            order: null,
+                                          },
+                                        ]);
+                                      } else {
+                                        setRatio([
+                                          ...ratio.slice(0, key),
+                                          ...ratio.slice(key + 1),
+                                        ]);
+                                      }
+                                      delete info["color" + key];
+                                      setInfo((info) => ({
+                                        ...info,
+                                      }));
+                                    }}
+                                  >
+                                    <DeleteIcon />
+                                  </FAB>
+                                </GridItem>
+                                {ratio.length - 1 === key ? (
+                                  <GridItem
+                                    xs={6}
+                                    sm={6}
+                                    md={1}
+                                    className={classes.addDeleteFabButon}
+                                  >
+                                    <FAB
+                                      color="success"
+                                      align={"end"}
+                                      size={"small"}
+                                      disabled={
+                                        !r.color ||
+                                        calculateBufferQuantity() === 0
+                                      }
+                                      onClick={() => {
+                                        setRatio([
+                                          ...ratio,
+                                          {
+                                            color: null,
+                                            colorData: null,
+                                            quantity: 0,
+                                            quantityCompleted: 0,
+                                            order: null,
+                                          },
+                                        ]);
+                                      }}
+                                    >
+                                      <AddIcon />
+                                    </FAB>
+                                  </GridItem>
+                                ) : null}
+                              </>
+                              //   <GridItem xs={12} sm={12} md={12}>
+                              //   <FAB
+                              //     color="primary"
+                              //     size={"medium"}
+                              //     variant="extended"
+                              //     onClick={() => addReadyMaterial()}
+                              //     disabled={!party.id}
+                              //     toolTip={
+                              //       party.id
+                              //         ? "Select raw materials for sale"
+                              //         : "Select party first"
+                              //     }
+                              //   >
+                              //     <AddIcon className={classes.extendedIcon} />
+                              //     <h5>Add Ready Material</h5>
+                              //   </FAB>
+                              // </GridItem>
                             )}
                           </GridContainer>
                         ))}
@@ -1626,7 +1725,7 @@ export default function AddOrder(props) {
                   >
                     <GridItem xs={12} sm={12} md={12}>
                       <GridContainer>
-                        <GridItem xs={12} sm={12} md={2}></GridItem>
+                        <GridItem xs={12} sm={12} md={3}></GridItem>
                         <GridItem xs={12} sm={12} md={2}>
                           <CustomInput
                             labelText="Total Quantity"

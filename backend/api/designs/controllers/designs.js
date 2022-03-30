@@ -97,6 +97,9 @@ module.exports = {
   async findOne(ctx) {
     const { query } = utils.getRequestParams(ctx.request.query);
     const { id } = ctx.params;
+
+    await strapi.services["designs"].calculateDesignsLatestMaterialPrice(id);
+
     let designData = await strapi.query("designs").findOne({ id: id });
     const designColorPrice = await strapi.query("design-color-price").find(
       {
@@ -135,12 +138,12 @@ module.exports = {
     );
 
     let commonMaterialsWithoutDie = [];
-    let commoonMaterialsWithDie = [];
+    let commonMaterialsWithDie = [];
     let commonMotiBandhaiMaterial = [];
 
     commonRawMaterials.forEach((el) => {
       if (el?.raw_material?.is_die) {
-        commoonMaterialsWithDie.push(el);
+        commonMaterialsWithDie.push(el);
       } else if (el.raw_material?.department?.name === "MOTI BANDHAI") {
         commonMotiBandhaiMaterial.push(el);
       } else {
@@ -153,7 +156,7 @@ module.exports = {
       designData: designData,
       commonRawMaterials: {
         commonMaterialsWithoutDie: commonMaterialsWithoutDie,
-        commoonMaterialsWithDie: commoonMaterialsWithDie,
+        commonMaterialsWithDie: commonMaterialsWithDie,
         commonMotiBandhaiMaterial: commonMotiBandhaiMaterial,
       },
     };
@@ -198,10 +201,95 @@ module.exports = {
         };
       });
     }
-
-    console.log(dataToSend);
-
     ctx.send(dataToSend);
+  },
+
+  async generatePdf(ctx) {
+    const { id } = ctx.params;
+    let designData = await strapi.query("designs").findOne({ id: id });
+    const designColorPrice = await strapi.query("design-color-price").find(
+      {
+        design: id,
+      },
+      ["color"]
+    );
+    designData = {
+      ...designData,
+      color_price: designColorPrice,
+    };
+    let dataToSend = {};
+
+    const commonRawMaterials = await strapi.query("designs-and-materials").find(
+      {
+        design: id,
+        isColor: false,
+      },
+      ["raw_material", "raw_material.department", "raw_material.unit"]
+    );
+
+    let commonMaterialsWithoutDie = [];
+    let commonMaterialsWithDie = [];
+    let commonMotiBandhaiMaterial = [];
+
+    commonRawMaterials.forEach((el) => {
+      if (el?.raw_material?.is_die) {
+        commonMaterialsWithDie.push(el);
+      } else if (el.raw_material?.department?.name === "MOTI BANDHAI") {
+        commonMotiBandhaiMaterial.push(el);
+      } else {
+        commonMaterialsWithoutDie.push(el);
+      }
+    });
+
+    dataToSend = {
+      ...dataToSend,
+      designData: designData,
+    };
+
+    const designColors = designData?.colors;
+    if (
+      Object.prototype.toString.call(designColors) === "[object Array]" &&
+      designColors.length
+    ) {
+      await utils.asyncForEach(designColors, async (c) => {
+        let materialsWithDie = [...commonMaterialsWithDie];
+        let materialsWithoutDie = [...commonMaterialsWithoutDie];
+        let bandhaiMaterials = [...commonMotiBandhaiMaterial];
+
+        let colorId = c.id;
+        let colorName = c.name;
+        const colorRawMaterials = await strapi
+          .query("designs-and-materials")
+          .find(
+            {
+              design: id,
+              isColor: true,
+              color: colorId,
+            },
+            ["raw_material", "raw_material.department", "raw_material.unit"]
+          );
+
+        colorRawMaterials.forEach((el) => {
+          if (el?.raw_material?.is_die) {
+            materialsWithDie.push(el);
+          } else if (el.raw_material?.department?.name === "MOTI BANDHAI") {
+            bandhaiMaterials.push(el);
+          } else {
+            materialsWithoutDie.push(el);
+          }
+        });
+
+        dataToSend = {
+          ...dataToSend,
+          [colorId]: {
+            colorName: colorName,
+            materialsWithDie: materialsWithDie,
+            materialsWithoutDie: materialsWithoutDie,
+            bandhaiMaterials: bandhaiMaterials,
+          },
+        };
+      });
+    }
   },
 
   async create(ctx) {

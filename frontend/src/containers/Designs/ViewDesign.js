@@ -179,11 +179,11 @@ const ViewDesign = (props) => {
             )}
           </GridItem>
           <GridItem xs={12} sm={12} md={4}>
-            {commonRawMaterialsData?.commoonMaterialsWithDie && (
+            {commonRawMaterialsData?.commonMaterialsWithDie && (
               <>
                 <Table
                   columns={dieColumns}
-                  data={commonRawMaterialsData.commoonMaterialsWithDie}
+                  data={commonRawMaterialsData.commonMaterialsWithDie}
                   options={{
                     paging: false,
                   }}

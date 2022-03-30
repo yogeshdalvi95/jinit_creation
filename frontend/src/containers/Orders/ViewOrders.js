@@ -376,54 +376,6 @@ export default function ViewOrders(props) {
                 </GridItem>
               </GridContainer>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Quantity"
-                    value={filter["quantity_contains"] || ""}
-                    name="quantity_contains"
-                    id="quantity_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Quantity saved for later"
-                    value={filter["buffer_quantity_contains"] || ""}
-                    name="buffer_quantity_contains"
-                    id="buffer_quantity_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Completed Quantity"
-                    value={filter["completed_quantity_contains"] || ""}
-                    name="completed_quantity_contains"
-                    id="completed_quantity_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Total Price"
-                    value={filter["total_price_contains"] || ""}
-                    name="total_price_contains"
-                    id="total_price_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
                 <GridItem
                   xs={12}
                   sm={12}
@@ -463,8 +415,6 @@ export default function ViewOrders(props) {
                     />
                   </div>
                 </GridItem>
-              </GridContainer>
-              <GridContainer>
                 <GridItem
                   xs={12}
                   sm={12}

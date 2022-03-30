@@ -21,6 +21,11 @@ import {
   CardFooter,
   CardHeader,
   CustomInput,
+  CustomMaterialUITable,
+  CustomTableBody,
+  CustomTableCell,
+  CustomTableHead,
+  CustomTableRow,
   DatePicker,
   DialogBoxForSelectingDesign,
   DialogBoxForSelectingReadyMaterial,
@@ -46,18 +51,7 @@ import no_image_icon from "../../assets/img/no_image_icon.png";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
-import validationForm from "./form/AddEditSale.json";
+import { Paper, TableContainer, TextField, Typography } from "@mui/material";
 import SweetAlert from "react-bootstrap-sweetalert";
 import { providerForGet, providerForPost } from "../../api";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -177,7 +171,7 @@ export default function AddEditSales(props) {
     data.sale_ready_material.forEach((el) => {
       let designId = el.design?.id;
       let colorId = el.color?.id;
-      let design = el.color;
+      let design = el.design;
       /** ----------------------------------------- */
       let colorData = {
         design: designId,
@@ -880,8 +874,6 @@ export default function AddEditSales(props) {
     setBackDrop(false);
   };
 
-  console.log("selectedDesign ", selectedDesign);
-
   return (
     <React.Fragment>
       <GridContainer>
@@ -1318,34 +1310,53 @@ export default function AddEditSales(props) {
 
               <GridContainer>
                 <TableContainer component={Paper}>
-                  <Table
-                    sx={{ minWidth: 650 }}
+                  <CustomMaterialUITable
+                    sx={{ textAlignLast: "center", ml: "15px" }}
                     aria-label="sale-table"
                     style={{
                       marginTop: 30,
                     }}
                   >
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="left">Name</TableCell>
+                    <CustomTableHead>
+                      <CustomTableRow>
+                        <CustomTableCell align="left">
+                          Ratio Name
+                        </CustomTableCell>
                         {isEdit ? (
-                          <TableCell align="left">Previous Quantity</TableCell>
+                          <CustomTableCell align="left">
+                            Previous Quantity
+                          </CustomTableCell>
                         ) : null}
-                        <TableCell align="left">Available Stock</TableCell>
-                        <TableCell align="left">Pcs</TableCell>
-                        <TableCell align="left">Price per piece</TableCell>
-                        <TableCell align="left">Total Price</TableCell>
+                        <CustomTableCell align="left">
+                          Available Stock
+                        </CustomTableCell>
+                        <CustomTableCell align="left">Pcs</CustomTableCell>
+                        <CustomTableCell align="left">
+                          Price per piece
+                        </CustomTableCell>
+                        <CustomTableCell align="left">
+                          Total Price
+                        </CustomTableCell>
                         {isView ? null : (
-                          <TableCell align="center">Action</TableCell>
+                          <CustomTableCell align="center">
+                            Action
+                          </CustomTableCell>
                         )}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody sx={{ borderTop: 1, borderColor: "gray" }}>
+                      </CustomTableRow>
+                    </CustomTableHead>
+                    <CustomTableBody>
                       {selectedDesign &&
                         Object.keys(selectedDesign).map((Ip, designKey) => (
                           <>
-                            <TableRow key={Ip} height={20}>
-                              <TableCell align="center" colSpan={5}>
+                            <CustomTableRow key={Ip} height={20}>
+                              <CustomTableCell
+                                align="center"
+                                colSpan={5}
+                                sx={{
+                                  width: "100%",
+                                  borderTop: "1px solid black !important",
+                                }}
+                              >
                                 <GridItem xs={12} sm={12} md={12}>
                                   <GridContainer style={{ dispay: "flex" }}>
                                     <GridItem xs={12} sm={12} md={12}>
@@ -1388,11 +1399,11 @@ export default function AddEditSales(props) {
                                     </GridItem>
                                   </GridContainer>
                                 </GridItem>
-                              </TableCell>
-                            </TableRow>
+                              </CustomTableCell>
+                            </CustomTableRow>
                             {selectedDesign[Ip].allColors.map((c, colorKey) => (
                               <>
-                                <TableRow
+                                <CustomTableRow
                                   key={Ip + "-" + c.color}
                                   sx={{
                                     "&:last-child td, &:last-child th": {
@@ -1406,30 +1417,23 @@ export default function AddEditSales(props) {
                                       : "none",
                                   }}
                                 >
-                                  <TableCell
+                                  <CustomTableCell
                                     align="left"
                                     sx={{
                                       pt: 0,
                                       pb: 0,
+                                      color: "#3b3b42 !important;",
+                                      fontSize: "0.9375rem !important",
+                                      fontWeight: "400 !Important",
                                     }}
                                   >
-                                    <Typography variant="body1" gutterBottom>
-                                      <b>Color</b>: {c.colorData.name}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell
-                                    align="left"
-                                    sx={{
-                                      pt: 0,
-                                      pb: 0,
-                                    }}
-                                  >
-                                    <Typography variant="body1" gutterBottom>
-                                      {c.availableQuantity}
-                                    </Typography>
-                                  </TableCell>
+                                    {c.colorData.name}
+                                  </CustomTableCell>
+                                  <CustomTableCell align="left">
+                                    {c.availableQuantity}
+                                  </CustomTableCell>
                                   {isEdit ? (
-                                    <TableCell
+                                    <CustomTableCell
                                       align="left"
                                       sx={{
                                         pt: 0,
@@ -1439,15 +1443,15 @@ export default function AddEditSales(props) {
                                       {c.previousQuantity
                                         ? c.previousQuantity
                                         : null}
-                                    </TableCell>
+                                    </CustomTableCell>
                                   ) : null}
                                   {/** Input for quantity */}
                                   {isView ? (
-                                    <TableCell align="left">
+                                    <CustomTableCell align="left">
                                       {c.quantity}
-                                    </TableCell>
+                                    </CustomTableCell>
                                   ) : (
-                                    <TableCell
+                                    <CustomTableCell
                                       align="left"
                                       sx={{
                                         pt: 0,
@@ -1525,15 +1529,15 @@ export default function AddEditSales(props) {
                                           designError
                                         )}
                                       />
-                                    </TableCell>
+                                    </CustomTableCell>
                                   )}
 
                                   {isView ? (
-                                    <TableCell align="ri">
+                                    <CustomTableCell align="ri">
                                       {c.price_per_unit}
-                                    </TableCell>
+                                    </CustomTableCell>
                                   ) : (
-                                    <TableCell
+                                    <CustomTableCell
                                       align="left"
                                       sx={{
                                         pt: 0,
@@ -1611,11 +1615,11 @@ export default function AddEditSales(props) {
                                           designError
                                         )}
                                       />
-                                    </TableCell>
+                                    </CustomTableCell>
                                   )}
                                   {/* Price per unit */}
 
-                                  <TableCell
+                                  <CustomTableCell
                                     align="left"
                                     sx={{
                                       pt: 0,
@@ -1623,9 +1627,9 @@ export default function AddEditSales(props) {
                                     }}
                                   >
                                     {convertNumber(c.total_price, true)}
-                                  </TableCell>
+                                  </CustomTableCell>
                                   {isView ? null : (
-                                    <TableCell
+                                    <CustomTableCell
                                       align="left"
                                       sx={{
                                         pt: 0,
@@ -1664,10 +1668,10 @@ export default function AddEditSales(props) {
                                           </FAB>
                                         </Tooltip>
                                       </GridItem>
-                                    </TableCell>
+                                    </CustomTableCell>
                                   )}
-                                </TableRow>
-                                {/* <TableRow
+                                </CustomTableRow>
+                                {/* <CustomTableRow
                                   sx={{
                                     "&:last-child td, &:last-child th": {
                                       border: 0,
@@ -1678,7 +1682,7 @@ export default function AddEditSales(props) {
                                     color: "green",
                                   }}
                                 >
-                                  <TableCell
+                                  <CustomTableCell
                                     align="left"
                                     colSpan={5}
                                     sx={{
@@ -1686,33 +1690,33 @@ export default function AddEditSales(props) {
                                     }}
                                   >
                                     {c.message}
-                                  </TableCell>
-                                </TableRow> */}
+                                  </CustomTableCell>
+                                </CustomTableRow> */}
                               </>
                             ))}
 
                             {/* {-------------------} */}
                           </>
                         ))}
-                    </TableBody>
-                    <TableBody sx={{ borderTop: 1, borderColor: "gray" }}>
-                      <TableRow>
-                        <TableCell colSpan={isEdit ? 5 : 4} align="right">
+                    </CustomTableBody>
+                    <CustomTableBody>
+                      <CustomTableRow>
+                        <CustomTableCell colSpan={isEdit ? 5 : 4} align="right">
                           Total added ready material price
-                        </TableCell>
+                        </CustomTableCell>
 
-                        <TableCell>
+                        <CustomTableCell>
                           {convertNumber(
                             parseFloat(
                               formState.total_price_of_all_design
                             ).toFixed(2),
                             true
                           )}
-                        </TableCell>
-                        <TableCell></TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                        </CustomTableCell>
+                        <CustomTableCell></CustomTableCell>
+                      </CustomTableRow>
+                    </CustomTableBody>
+                  </CustomMaterialUITable>
                 </TableContainer>
               </GridContainer>
             </CardBody>
