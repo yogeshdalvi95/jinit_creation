@@ -93,6 +93,7 @@ export default function AddEditSales(props) {
     total_price: 0,
     sgst: 0,
     cgst: 0,
+    igst: 0,
     party: null,
   });
 
@@ -154,6 +155,7 @@ export default function AddEditSales(props) {
       total_price: validateNumber(data.total_price),
       sgst: validateNumber(data.sgst),
       cgst: validateNumber(data.cgst),
+      igst: validateNumber(data.igst),
       party: data.party.id,
     }));
 
@@ -401,7 +403,8 @@ export default function AddEditSales(props) {
     is_add_additional_cost = true,
     add_cost = formState.add_cost,
     cgst_percent = formState.cgst,
-    sgst_percent = formState.sgst
+    sgst_percent = formState.sgst,
+    igst_percent = formState.igst
   ) => {
     let total_price_with_add_cost = 0;
     if (is_add_additional_cost) {
@@ -424,7 +427,13 @@ export default function AddEditSales(props) {
       total_price_with_add_cost
     );
 
-    total_price = total_price_with_add_cost + cgst_value + sgst_value;
+    const igst_value = calculateIgstPercent(
+      igst_percent,
+      total_price_with_add_cost
+    );
+
+    total_price =
+      total_price_with_add_cost + cgst_value + sgst_value + igst_value;
     return {
       total_price: total_price,
       total_price_with_add_cost: total_price_with_add_cost,
@@ -444,11 +453,15 @@ export default function AddEditSales(props) {
       let oldPercentValue = calculateCgstPercent();
       total_price = total_price - oldPercentValue;
       percentValue = calculateCgstPercent(value);
-    } else {
+    } else if (name === "sgst") {
       /** Remove old value */
       let oldPercentValue = calculateSgstPercent();
       total_price = total_price - oldPercentValue;
       percentValue = calculateSgstPercent(value);
+    } else {
+      let oldPercentValue = calculateIgstPercent();
+      total_price = total_price - oldPercentValue;
+      percentValue = calculateIgstPercent(value);
     }
     total_price = total_price + percentValue;
     setFormState((formState) => ({
@@ -456,6 +469,18 @@ export default function AddEditSales(props) {
       total_price: total_price,
       [name]: event.target.value,
     }));
+  };
+
+  const calculateIgstPercent = (
+    igst = formState.igst,
+    total_price_with_add_cost = formState.total_price_without_gst
+  ) => {
+    let igst_percent = 0;
+    if (!isNaN(parseFloat(igst))) {
+      igst_percent = parseFloat(igst);
+    }
+    let igst_value = (igst_percent / 100) * total_price_with_add_cost;
+    return igst_value;
   };
 
   /** Calculate cgst */
@@ -659,27 +684,6 @@ export default function AddEditSales(props) {
 
   const toggleSwitch = (event) => {
     if (event.target.checked) {
-      saleForm = {
-        ...saleForm,
-        cgst: {
-          required: true,
-          validations: {
-            required: {
-              value: "true",
-              message: "CGST is required",
-            },
-          },
-        },
-        sgst: {
-          required: true,
-          validations: {
-            required: {
-              value: "true",
-              message: "SGST is required",
-            },
-          },
-        },
-      };
       setFormState((formState) => ({
         ...formState,
         is_gst_bill: true,
@@ -690,9 +694,8 @@ export default function AddEditSales(props) {
         total_price: formState.total_price_without_gst,
         cgst: 0,
         sgst: 0,
+        igst: 0,
       }));
-      delete saleForm["cgst"];
-      delete saleForm["sgst"];
       setFormState((formState) => ({
         ...formState,
         is_gst_bill: false,
@@ -1165,12 +1168,16 @@ export default function AddEditSales(props) {
                 </GridContainer>
               )}
               <GridContainer>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => cgstSgstValueChange(event)}
                     labelText="CGST(%)"
                     name="cgst"
-                    disabled={isView || !formState.is_gst_bill}
+                    disabled={
+                      isView ||
+                      !formState.is_gst_bill ||
+                      validateNumber(formState.igst)
+                    }
                     value={formState.cgst}
                     id="cgst"
                     formControlProps={{
@@ -1189,12 +1196,16 @@ export default function AddEditSales(props) {
                     error={hasError("cgst", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => cgstSgstValueChange(event)}
                     labelText="SGST(%)"
                     name="sgst"
-                    disabled={isView || !formState.is_gst_bill}
+                    disabled={
+                      isView ||
+                      !formState.is_gst_bill ||
+                      validateNumber(formState.igst)
+                    }
                     value={formState.sgst}
                     id="sgst"
                     formControlProps={{
@@ -1211,6 +1222,35 @@ export default function AddEditSales(props) {
                         : null
                     }
                     error={hasError("sgst", error)}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomInput
+                    onChange={(event) => cgstSgstValueChange(event)}
+                    labelText="IGST(%)"
+                    name="igst"
+                    disabled={
+                      isView ||
+                      !formState.is_gst_bill ||
+                      validateNumber(formState.sgst) ||
+                      validateNumber(formState.cgst)
+                    }
+                    value={formState.igst}
+                    id="igst"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    /** For setting errors */
+                    helperTextId={"helperText_igst"}
+                    isHelperText={hasError("igst", error)}
+                    helperText={
+                      hasError("igst", error)
+                        ? error["igst"].map((error) => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("igst", error)}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
@@ -1327,10 +1367,7 @@ export default function AddEditSales(props) {
                             Previous Quantity
                           </CustomTableCell>
                         ) : null}
-                        <CustomTableCell align="left">
-                          Available Stock
-                        </CustomTableCell>
-                        <CustomTableCell align="left">Pcs</CustomTableCell>
+                        <CustomTableCell align="left">Pcs sold</CustomTableCell>
                         <CustomTableCell align="left">
                           Price per piece
                         </CustomTableCell>
@@ -1351,7 +1388,7 @@ export default function AddEditSales(props) {
                             <CustomTableRow key={Ip} height={20}>
                               <CustomTableCell
                                 align="center"
-                                colSpan={5}
+                                colSpan={4}
                                 sx={{
                                   width: "100%",
                                   borderTop: "1px solid black !important",
@@ -1428,9 +1465,6 @@ export default function AddEditSales(props) {
                                     }}
                                   >
                                     {c.colorData.name}
-                                  </CustomTableCell>
-                                  <CustomTableCell align="left">
-                                    {c.availableQuantity}
                                   </CustomTableCell>
                                   {isEdit ? (
                                     <CustomTableCell
@@ -1701,8 +1735,8 @@ export default function AddEditSales(props) {
                     </CustomTableBody>
                     <CustomTableBody>
                       <CustomTableRow>
-                        <CustomTableCell colSpan={isEdit ? 5 : 4} align="right">
-                          Total added ready material price
+                        <CustomTableCell colSpan={isEdit ? 4 : 3} align="right">
+                          Total
                         </CustomTableCell>
 
                         <CustomTableCell>

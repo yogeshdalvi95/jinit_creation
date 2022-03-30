@@ -51,6 +51,9 @@
     },
     "bill_no": {
       "type": "text"
+    },
+    "igst_percent": {
+      "type": "float"
     }
   }
 }

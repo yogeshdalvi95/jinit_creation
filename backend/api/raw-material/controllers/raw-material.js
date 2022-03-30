@@ -10,7 +10,8 @@ const { sanitizeEntity } = require("strapi-utils");
 
 module.exports = {
   async find(ctx) {
-    const { filterId, filterBy, ...otherParams } = ctx.request.query;
+    const { filterId, filterBy, getOnlyName, ...otherParams } =
+      ctx.request.query;
     const { page, query, pageSize } = utils.getRequestParams(otherParams);
     let _limit = 10;
     let _start = 0;
@@ -44,6 +45,13 @@ module.exports = {
           })
           .catch((err) => {});
       }
+    }
+
+    if (getOnlyName) {
+      let dataToSend = data.map((d) => d.name);
+      return {
+        data: dataToSend,
+      };
     }
 
     return {
