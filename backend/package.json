@@ -11,10 +11,13 @@
   },
   "devDependencies": {},
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "dotenv": "^10.0.0",
     "exceljs": "^4.3.0",
     "knex": "0.21.18",
     "pg": "8.5.1",
+    "puppeteer": "^13.5.1",
+    "puppeteer-report": "^3.0.1",
     "strapi": "3.6.3",
     "strapi-admin": "3.6.3",
     "strapi-connector-bookshelf": "3.6.3",
@@ -26,6 +29,7 @@
     "strapi-plugin-users-permissions": "3.6.3",
     "strapi-provider-email-sendgrid": "^3.6.3",
     "strapi-utils": "3.6.3",
+    "string-pixel-width": "^1.10.0",
     "xlsx": "^0.17.4"
   },
   "author": {

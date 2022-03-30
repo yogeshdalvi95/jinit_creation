@@ -27,7 +27,6 @@ module.exports = {
     const data = await strapi.query("raw-material").find(query);
 
     let rawMaterialIdsToFilter = [];
-    console.log(ctx.request.query, filterBy, filterId);
     if (filterId && filterBy) {
       if (filterBy == "design") {
         rawMaterialIdsToFilter = await strapi
@@ -46,8 +45,6 @@ module.exports = {
           .catch((err) => {});
       }
     }
-
-    console.log(rawMaterialIdsToFilter);
 
     return {
       data: data, // your data array
@@ -84,7 +81,7 @@ module.exports = {
       .findOne({ raw_material: id });
 
     const checkIfPresentInReadyMaterial = await strapi
-      .query("raw-material-and-quantity-for-ready-material")
+      .query("designs-and-materials")
       .findOne({ raw_material: id });
 
     const checkIfPresentInMonthlySheet = await strapi

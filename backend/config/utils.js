@@ -1,6 +1,16 @@
 const _ = require("lodash");
 const XLSX = require("xlsx");
 const excel = require("exceljs");
+const {
+  PDFDocument,
+  StandardFonts,
+  rgb,
+  degrees,
+  grayscale,
+} = require("pdf-lib");
+const fontkit = require("@pdf-lib/fontkit");
+var pixelWidth = require("string-pixel-width");
+const fs = require("fs");
 
 function getRequestParams(params) {
   const page = params.page ? parseInt(params.page) : 1;

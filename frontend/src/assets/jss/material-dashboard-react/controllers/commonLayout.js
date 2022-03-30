@@ -143,6 +143,7 @@ const styles = {
   addDeleteFabButon: {
     marginTop: "auto",
     display: "flex",
+    justifyContent: "center",
   },
   typo: {
     paddingLeft: "25%",

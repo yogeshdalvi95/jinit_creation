@@ -1,8 +1,20 @@
 import React from "react";
-import MaterialTable, { MTableToolbar, MTableHeader } from "material-table";
+import MaterialTable from "material-table";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import styles from "./Table.module.css";
-import { Box, makeStyles, TablePagination, Paper } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
+import {
+  Box,
+  TablePagination,
+  Paper,
+  Table as MaterialUiTable,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 import { defaultFont } from "../../assets/jss/material-dashboard-react.js";
 
@@ -78,9 +90,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const useNewStyles = makeStyles(styles);
-
-const Table = (props) => {
+export const Table = (props) => {
   const {
     rows,
     columns,
@@ -129,8 +139,52 @@ const Table = (props) => {
   );
 };
 
-Table.propTypes = {};
+export const CustomTable = (props) => {
+  const classes = useStyles();
+  const { children, ...restProps } = props;
+  return (
+    <MaterialUiTable {...restProps} className={classes.table}>
+      {children}
+    </MaterialUiTable>
+  );
+};
 
-Table.defaultProps = {};
+export const CustomTableHead = (props) => {
+  const classes = useStyles();
+  const { children, ...restProps } = props;
+  return (
+    <TableHead {...restProps} className={classes.table}>
+      {children}
+    </TableHead>
+  );
+};
 
-export default Table;
+export const CustomTableRow = (props) => {
+  const classes = useStyles();
+  const { children, ...restProps } = props;
+  return (
+    <TableRow {...restProps} className={classes.table}>
+      {children}
+    </TableRow>
+  );
+};
+
+export const CustomTableCell = (props) => {
+  const classes = useStyles();
+  const { children, ...restProps } = props;
+  return (
+    <TableCell {...restProps} className={classes.table}>
+      {children}
+    </TableCell>
+  );
+};
+
+export const CustomTableBody = (props) => {
+  const classes = useStyles();
+  const { children, ...restProps } = props;
+  return (
+    <TableBody {...restProps} className={classes.table}>
+      {children}
+    </TableBody>
+  );
+};

@@ -17,19 +17,6 @@
       }
     }
   },
-  "costing": {
-    "required": true,
-    "validations": {
-      "required": {
-        "value": "true",
-        "message": "Costing is required"
-      },
-      "validPositiveInteger": {
-        "value": "true",
-        "message": "Costing cannot be zero"
-      }
-    }
-  },
   "balance": {
     "required": true,
     "validations": {

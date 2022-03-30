@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "colors",
   "info": {
-    "name": "Color"
+    "name": "Color",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -15,6 +16,11 @@
       "type": "string",
       "required": true,
       "unique": true
+    },
+    "multi_color": {
+      "type": "component",
+      "repeatable": true,
+      "component": "multi-color.multi-color"
     }
   }
 }

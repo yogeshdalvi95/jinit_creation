@@ -26,10 +26,6 @@
     },
     "order": {
       "model": "orders"
-    },
-    "total_price": {
-      "type": "float",
-      "default": 0
     }
   }
 }

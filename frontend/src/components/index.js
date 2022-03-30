@@ -12,7 +12,17 @@ export {
   Success,
   Warning,
 } from "./Typography";
-export { Table, CustomTable, CollapsableTable, RatioTable } from "./Table";
+export {
+  Table,
+  CustomMaterialUITable,
+  CustomTable,
+  CollapsableTable,
+  RatioTable,
+  CustomTableBody,
+  CustomTableCell,
+  CustomTableHead,
+  CustomTableRow,
+} from "./Table";
 export { Footer } from "./Footer";
 export { CustomInput } from "./CustomInput";
 export { CustomAutoComplete } from "./CustomAutoComplete";
@@ -48,6 +58,6 @@ export {
   DialogBoxForSelectingDesign,
 } from "./DialogBox";
 export { RawMaterialDetail } from "./RawMaterialDetail";
-export { DesignData, StockData } from "./DesignData";
+export { DesignData, StockData, RatioData } from "./DesignData";
 export { SellerDetails } from "./SellerDetails";
 export { MultiSelect } from "./MultiSelect";

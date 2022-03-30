@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_multi_color_multi_colors",
+  "info": {
+    "name": "multi-color",
+    "icon": "align-right"
+  },
+  "options": {},
+  "attributes": {
+    "combination_of": {
+      "model": "color"
+    }
+  }
+}

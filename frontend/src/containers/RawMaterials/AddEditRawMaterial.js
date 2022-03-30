@@ -16,7 +16,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../components";
 // core components
 import ClearIcon from "@material-ui/icons/Clear";
@@ -32,7 +32,7 @@ import { providerForGet, providerForPost, providerForPut } from "../../api";
 import {
   backend_departments,
   backend_raw_materials,
-  backend_units
+  backend_units,
 } from "../../constants";
 import { useState } from "react";
 import {
@@ -41,13 +41,17 @@ import {
   FormHelperText,
   IconButton,
   InputAdornment,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import { checkEmpty, hasError, isEmptyString, setErrors } from "../../Utils";
 import SweetAlert from "react-bootstrap-sweetalert";
 import classNames from "classnames";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import validationForm from "./form/RawMaterialvalidation.json";
+import SearchBar from "material-ui-search-bar";
+// import { SearchService } from "../../Utils/SearchService";
+
+// const searchService = new SearchService();
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -57,6 +61,30 @@ export default function AddEditRawMaterial(props) {
   const [alert, setAlert] = useState(null);
   const history = useHistory();
   const [departments, setDepartments] = useState([]);
+  /** Raw material data */
+  const topFilms = [
+    { name: "The Shawshank Redemption", year: 1994 },
+    { name: "The Godfather", year: 1972 },
+    { name: "The Godfather: Part II", year: 1974 },
+    { name: "The Dark Knight", year: 2008 },
+    { name: "12 Angry Men", year: 1957 },
+    { name: "Schindler's List", year: 1993 },
+    { name: "Pulp Fiction", year: 1994 },
+    {
+      name: "The Lord of the Rings: The Return of the King",
+      year: 2003,
+    },
+    { name: "The Good, the Bad and the Ugly", year: 1966 },
+    { name: "Fight Club", year: 1999 },
+    {
+      name: "The Lord of the Rings: The Fellowship of the Ring",
+      year: 2001,
+    },
+  ];
+  const [rawMaterialSearchDataSource, setRawMaterialSearchDataSource] =
+    useState([...topFilms]);
+  const [loading, setLoading] = useState(false);
+
   const [units, setUnits] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
@@ -73,25 +101,21 @@ export default function AddEditRawMaterial(props) {
     unit: null,
     unit_name: "",
     is_die: false,
-    name_value: []
+    name_value: [],
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const buttonClasses = buttonUseStyles();
   const [error, setError] = React.useState({});
-  const [
-    openDialogForSelectingCategory,
-    setOpenDialogForSelectingCategory
-  ] = useState(false);
-  const [
-    openDialogForSelectingColor,
-    setOpenDialogForSelectingColor
-  ] = useState(false);
+  const [openDialogForSelectingCategory, setOpenDialogForSelectingCategory] =
+    useState(false);
+  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
+    useState(false);
 
   /** VIMP to check if the data is used for viewing */
   const [isView] = useState(
@@ -115,8 +139,8 @@ export default function AddEditRawMaterial(props) {
     getUnits();
   }, []);
 
-  const setData = data => {
-    setFormState(formState => ({
+  const setData = (data) => {
+    setFormState((formState) => ({
       ...formState,
       id: data.id,
       name: data.name,
@@ -131,7 +155,7 @@ export default function AddEditRawMaterial(props) {
       unit: data.unit ? data.unit.id : null,
       unit_name: data.unit ? data.unit.name : "",
       is_die: data.is_die,
-      name_value: data.name_value
+      name_value: data.name_value,
     }));
   };
 
@@ -140,15 +164,15 @@ export default function AddEditRawMaterial(props) {
     await providerForGet(
       backend_units,
       {
-        pageSize: -1
+        pageSize: -1,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setUnits(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => { });
+      .catch((err) => {});
   };
 
   const getDepartmentData = async () => {
@@ -156,59 +180,59 @@ export default function AddEditRawMaterial(props) {
     await providerForGet(
       backend_departments,
       {
-        pageSize: -1
+        pageSize: -1,
       },
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setDepartments(res.data.data);
         setBackDrop(false);
       })
-      .catch(err => { });
+      .catch((err) => {});
   };
 
   const handleChangeAutoComplete = async (name, event, value) => {
     if (value === null) {
       if (name === "unit") {
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
           [name]: null,
-          unit_name: ""
+          unit_name: "",
         }));
       } else {
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
-          [name]: null
+          [name]: null,
         }));
       }
     } else {
       if (name === "unit") {
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
           [name]: value.id,
-          unit_name: value.name
+          unit_name: value.name,
         }));
       } else {
-        setFormState(formState => ({
+        setFormState((formState) => ({
           ...formState,
-          [name]: value.id
+          [name]: value.id,
         }));
       }
     }
     delete error[name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -219,7 +243,7 @@ export default function AddEditRawMaterial(props) {
   const filterOutWrongValuesInNameValue = () => {
     let arr = formState.name_value;
     let newArr = [];
-    arr.map(nv => {
+    arr.map((nv) => {
       if (
         nv.name &&
         nv.value &&
@@ -230,19 +254,19 @@ export default function AddEditRawMaterial(props) {
           newArr.push({
             id: nv.id,
             name: nv.name,
-            value: nv.value
+            value: nv.value,
           });
         } else {
           newArr.push({
             name: nv.name,
-            value: nv.value
+            value: nv.value,
           });
         }
       }
     });
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      name_value: newArr
+      name_value: newArr,
     }));
     return newArr;
   };
@@ -265,23 +289,23 @@ export default function AddEditRawMaterial(props) {
           balance: formState.balance,
           unit_name: formState.unit_name,
           is_die: formState.is_die,
-          name_value: arr
+          name_value: arr,
         },
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           history.push(RAWMATERIALSVIEW);
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
             message: err.response.data.message
               ? err.response.data.message
-              : "Error updating values"
+              : "Error updating values",
           }));
         });
     } else {
@@ -298,39 +322,39 @@ export default function AddEditRawMaterial(props) {
           balance: formState.balance,
           unit_name: formState.unit_name,
           is_die: formState.is_die,
-          name_value: arr
+          name_value: arr,
         },
         Auth.getToken()
       )
-        .then(res => {
+        .then((res) => {
           history.push(RAWMATERIALSVIEW);
           setBackDrop(false);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
             message: err.response.message
               ? err.response.message
-              : "Error updating values"
+              : "Error updating values",
           }));
         });
     }
   };
 
   const addNewValue = () => {
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       name_value: [
         {
           id: null,
           name: "",
-          value: ""
+          value: "",
         },
-        ...formState.name_value
-      ]
+        ...formState.name_value,
+      ],
     }));
   };
 
@@ -338,15 +362,15 @@ export default function AddEditRawMaterial(props) {
     let obj = formState.name_value[k];
     obj = {
       ...obj,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     };
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       name_value: [
         ...formState.name_value.slice(0, k),
         obj,
-        ...formState.name_value.slice(k + 1)
-      ]
+        ...formState.name_value.slice(k + 1),
+      ],
     }));
   };
 
@@ -359,7 +383,7 @@ export default function AddEditRawMaterial(props) {
     addButton();
   };
 
-  const submit = event => {
+  const submit = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -382,12 +406,12 @@ export default function AddEditRawMaterial(props) {
       } else {
         const confirmBtnClasses = classNames({
           [buttonClasses.button]: true,
-          [buttonClasses["success"]]: true
+          [buttonClasses["success"]]: true,
         });
 
         const cancelBtnClasses = classNames({
           [buttonClasses.button]: true,
-          [buttonClasses["danger"]]: true
+          [buttonClasses["danger"]]: true,
         });
 
         setAlert(
@@ -403,9 +427,10 @@ export default function AddEditRawMaterial(props) {
             cancelBtnCssClass={cancelBtnClasses}
             focusCancelBtn
           >
-            Please make sure you have added the right Initial balance.
-            Balance once added can be edited only if you haven't added any entry in the monthly sheet or in the purchases table for this particular raw material.
-            Do you want to proceed?
+            Please make sure you have added the right Initial balance. Balance
+            once added can be edited only if you haven't added any entry in the
+            monthly sheet or in the purchases table for this particular raw
+            material. Do you want to proceed?
           </SweetAlert>
         );
       }
@@ -420,35 +445,57 @@ export default function AddEditRawMaterial(props) {
     setOpenDialogForSelectingColor(false);
   };
 
-  const handleAddColor = row => {
+  const handleAddColor = (row) => {
     handleCloseDialogForColor();
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       color: row.id,
-      colorName: row.name
+      colorName: row.name,
     }));
   };
 
-  const handleAddCategory = row => {
+  const handleAddCategory = (row) => {
     delete error["category"];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
     handleCloseDialogForCategory();
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
       category: row.id,
-      categoryName: row.name
+      categoryName: row.name,
     }));
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
+  };
+
+  // console.log("rawMaterialSearchDataSource ", rawMaterialSearchDataSource);
+
+  function sleep() {
+    return new Promise((resolve) => {
+      setTimeout(resolve, 1e3);
+    });
+  }
+
+  const fireOnChangeRawMaterialInput = (value) => {
+    if (value) {
+      console.log("value ", value);
+      setLoading(true);
+      (async () => {
+        await sleep(); // For demo purposes.
+        setRawMaterialSearchDataSource([...topFilms]);
+        setLoading(false);
+      })();
+    } else {
+      setRawMaterialSearchDataSource([]);
+    }
   };
 
   return (
@@ -485,26 +532,87 @@ export default function AddEditRawMaterial(props) {
               <p className={classes.cardCategoryWhite}></p>
             </CardHeader>
             <CardBody>
+              {/* <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  {/* <SearchBar
+                    dataSource={rawMaterialSearchDataSource}
+                    onChange={(value) =>
+                      setRawMaterialSearchDataSource([
+                        value,
+                        value + value,
+                        value + value + value,
+                      ])
+                    }
+                    onRequestSearch={() => console.log("onRequestSearch")}
+                    style={{
+                      margin: "0 auto",
+                      maxWidth: 800,
+                    }}
+                  /> 
+                  <CustomAutoComplete
+                    freeSolo
+                    id="raw=material-name"
+                    labelText="Name"
+                    disabled={isView}
+                    autocompleteId={"name"}
+                    optionKey={"name"}
+                    options={rawMaterialSearchDataSource}
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    onInputChange={(event, value) => {
+                      console.log("value 123", value);
+                      /searchService({ value: value.trim() });
+                      // fireOnChangeRawMaterialInput(value);
+                    }}
+                    loading={loading}
+                    isOptionEqualToValue={(option, value) =>
+                      option.title === value.title
+                    }
+                    isInputPropsPresent={true}
+                    InputProps={{
+                      endAdornment: (
+                        <React.Fragment>
+                          {loading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                        </React.Fragment>
+                      ),
+                    }}
+                    helperTextId={"helperText_name"}
+                    isHelperText={hasError("name", error)}
+                    helperText={
+                      hasError("name", error)
+                        ? error["name"].map((error) => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("name", error)}
+                  />
+                </GridItem>
+              </GridContainer> 
+              */}
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Name"
                     disabled={isView}
                     name="name"
                     value={formState.name}
                     id="name"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_name"}
                     isHelperText={hasError("name", error)}
                     helperText={
                       hasError("name", error)
-                        ? error["name"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["name"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("name", error)}
@@ -517,13 +625,13 @@ export default function AddEditRawMaterial(props) {
                   sm={12}
                   md={5}
                   style={{
-                    margin: "27px 10px 0px 13px"
+                    margin: "27px 10px 0px 13px",
                   }}
                 >
                   <GridContainer
                     style={{
                       border: "1px solid #C0C0C0",
-                      borderRadius: "10px"
+                      borderRadius: "10px",
                     }}
                   >
                     <GridItem
@@ -531,7 +639,7 @@ export default function AddEditRawMaterial(props) {
                       sm={12}
                       md={8}
                       style={{
-                        margin: "15px 0px 0px"
+                        margin: "15px 0px 0px",
                       }}
                     >
                       <GridContainer style={{ dispay: "flex" }}>
@@ -561,13 +669,13 @@ export default function AddEditRawMaterial(props) {
                       <IconButton
                         onClick={() => {
                           delete error["category"];
-                          setError(error => ({
-                            ...error
+                          setError((error) => ({
+                            ...error,
                           }));
-                          setFormState(formState => ({
+                          setFormState((formState) => ({
                             ...formState,
                             category: null,
-                            categoryName: ""
+                            categoryName: "",
                           }));
                         }}
                       >
@@ -584,9 +692,9 @@ export default function AddEditRawMaterial(props) {
                             error={hasError("category", error)}
                           >
                             {hasError("category", error)
-                              ? error["category"].map(error => {
-                                return error + " ";
-                              })
+                              ? error["category"].map((error) => {
+                                  return error + " ";
+                                })
                               : null}
                           </FormHelperText>
                         </GridItem>
@@ -600,13 +708,13 @@ export default function AddEditRawMaterial(props) {
                   sm={12}
                   md={5}
                   style={{
-                    margin: "27px 0px 0px"
+                    margin: "27px 0px 0px",
                   }}
                 >
                   <GridContainer
                     style={{
                       border: "1px solid #C0C0C0",
-                      borderRadius: "10px"
+                      borderRadius: "10px",
                     }}
                   >
                     <GridItem
@@ -614,7 +722,7 @@ export default function AddEditRawMaterial(props) {
                       sm={12}
                       md={8}
                       style={{
-                        margin: "15px 0px 0px"
+                        margin: "15px 0px 0px",
                       }}
                     >
                       <GridContainer style={{ dispay: "flex" }}>
@@ -641,10 +749,10 @@ export default function AddEditRawMaterial(props) {
                     <GridItem xs={12} sm={12} md={1}>
                       <IconButton
                         onClick={() => {
-                          setFormState(formState => ({
+                          setFormState((formState) => ({
                             ...formState,
                             color: null,
-                            colorName: ""
+                            colorName: "",
                           }));
                         }}
                       >
@@ -661,9 +769,9 @@ export default function AddEditRawMaterial(props) {
                             error={hasError("color", error)}
                           >
                             {hasError("color", error)
-                              ? error["color"].map(error => {
-                                return error + " ";
-                              })
+                              ? error["color"].map((error) => {
+                                  return error + " ";
+                                })
                               : null}
                           </FormHelperText>
                         </GridItem>
@@ -682,16 +790,16 @@ export default function AddEditRawMaterial(props) {
                     optionKey={"name"}
                     options={departments}
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     onChange={(event, value) => {
                       handleChangeAutoComplete("department", event, value);
                     }}
                     value={
                       departments[
-                      departments.findIndex(function (item, i) {
-                        return item.id === formState.department;
-                      })
+                        departments.findIndex(function (item, i) {
+                          return item.id === formState.department;
+                        })
                       ] || null
                     }
                     /** For setting errors */
@@ -699,9 +807,9 @@ export default function AddEditRawMaterial(props) {
                     isHelperText={hasError("department", error)}
                     helperText={
                       hasError("department", error)
-                        ? error["department"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["department"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("department", error)}
@@ -709,14 +817,14 @@ export default function AddEditRawMaterial(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Size"
                     name="size"
                     disabled={isView}
                     value={formState.size}
                     id="size"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -733,22 +841,22 @@ export default function AddEditRawMaterial(props) {
                     }}
                     value={
                       units[
-                      units.findIndex(function (item, i) {
-                        return item.id === formState.unit;
-                      })
+                        units.findIndex(function (item, i) {
+                          return item.id === formState.unit;
+                        })
                       ] || null
                     }
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_unit"}
                     isHelperText={hasError("unit", error)}
                     helperText={
                       hasError("unit", error)
-                        ? error["unit"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["unit"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("unit", error)}
@@ -756,10 +864,10 @@ export default function AddEditRawMaterial(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomCheckBox
-                    onChange={event => {
-                      setFormState(formState => ({
+                    onChange={(event) => {
+                      setFormState((formState) => ({
                         ...formState,
-                        is_die: event.target.checked
+                        is_die: event.target.checked,
                       }));
                     }}
                     disabled={isView}
@@ -774,13 +882,13 @@ export default function AddEditRawMaterial(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     name="costing"
                     labelText="Costing"
                     id="costing"
                     disabled={isView}
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     type="number"
                     value={formState.costing}
@@ -791,16 +899,16 @@ export default function AddEditRawMaterial(props) {
                             ? "/" + formState.unit_name
                             : ""}
                         </InputAdornment>
-                      )
+                      ),
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_costing"}
                     isHelperText={hasError("costing", error)}
                     helperText={
                       hasError("costing", error)
-                        ? error["costing"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["costing"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("costing", error)}
@@ -808,7 +916,7 @@ export default function AddEditRawMaterial(props) {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     name="balance"
                     type="number"
                     labelText={"Balance"}
@@ -816,16 +924,16 @@ export default function AddEditRawMaterial(props) {
                     disabled={isView}
                     value={formState.balance}
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_balance"}
                     isHelperText={hasError("balance", error)}
                     helperText={
                       hasError("balance", error)
-                        ? error["balance"].map(error => {
-                          return error + " ";
-                        })
+                        ? error["balance"].map((error) => {
+                            return error + " ";
+                          })
                         : null
                     }
                     error={hasError("balance", error)}
@@ -856,11 +964,11 @@ export default function AddEditRawMaterial(props) {
                       name="name"
                       disabled={isView}
                       value={formState.name_value[key].name || ""}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleChangeRepeatableComponent(event, key)
                       }
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -870,12 +978,12 @@ export default function AddEditRawMaterial(props) {
                       id="value"
                       name="value"
                       disabled={isView}
-                      onChange={event =>
+                      onChange={(event) =>
                         handleChangeRepeatableComponent(event, key)
                       }
                       value={formState.name_value[key].value || ""}
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -891,12 +999,12 @@ export default function AddEditRawMaterial(props) {
                         align={"end"}
                         size={"small"}
                         onClick={() => {
-                          setFormState(formState => ({
+                          setFormState((formState) => ({
                             ...formState,
                             name_value: [
                               ...formState.name_value.slice(0, key),
-                              ...formState.name_value.slice(key + 1)
-                            ]
+                              ...formState.name_value.slice(key + 1),
+                            ],
                           }));
                         }}
                       >
@@ -909,7 +1017,7 @@ export default function AddEditRawMaterial(props) {
             </CardBody>
             {isView ? null : (
               <CardFooter>
-                <Button color="primary" onClick={e => submit(e)}>
+                <Button color="primary" onClick={(e) => submit(e)}>
                   Save
                 </Button>
               </CardFooter>

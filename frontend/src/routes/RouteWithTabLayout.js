@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import Tabs from "@mui/material/Tabs";
@@ -27,7 +27,6 @@ import {
 } from "../paths";
 import { convertNumber, getRoutesOnLogin } from "../Utils";
 import { primaryColor } from "../assets/jss/material-dashboard-react";
-import { useEffect } from "react/cjs/react.development";
 import { providerForGet } from "../api";
 import { backend_designs } from "../constants";
 
