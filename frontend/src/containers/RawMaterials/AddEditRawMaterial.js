@@ -49,6 +49,16 @@ import classNames from "classnames";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import validationForm from "./form/RawMaterialvalidation.json";
 import SearchBar from "material-ui-search-bar";
+import { BehaviorSubject, of, merge } from "rxjs";
+import {
+  debounceTime,
+  map,
+  distinctUntilChanged,
+  filter,
+  switchMap,
+  catchError,
+} from "rxjs/operators";
+
 // import { SearchService } from "../../Utils/SearchService";
 
 // const searchService = new SearchService();
@@ -61,29 +71,119 @@ export default function AddEditRawMaterial(props) {
   const [alert, setAlert] = useState(null);
   const history = useHistory();
   const [departments, setDepartments] = useState([]);
-  /** Raw material data */
-  const topFilms = [
-    { name: "The Shawshank Redemption", year: 1994 },
-    { name: "The Godfather", year: 1972 },
-    { name: "The Godfather: Part II", year: 1974 },
-    { name: "The Dark Knight", year: 2008 },
-    { name: "12 Angry Men", year: 1957 },
-    { name: "Schindler's List", year: 1993 },
-    { name: "Pulp Fiction", year: 1994 },
-    {
-      name: "The Lord of the Rings: The Return of the King",
-      year: 2003,
+  let inputRef;
+  /** RXJS */
+  const [state, setState] = useState({
+    data: {
+      data: [],
     },
-    { name: "The Good, the Bad and the Ugly", year: 1966 },
-    { name: "Fight Club", year: 1999 },
-    {
-      name: "The Lord of the Rings: The Fellowship of the Ring",
-      year: 2001,
-    },
-  ];
-  const [rawMaterialSearchDataSource, setRawMaterialSearchDataSource] =
-    useState([...topFilms]);
-  const [loading, setLoading] = useState(false);
+    loading: false,
+    errorMessage: "",
+    noResults: false,
+  });
+
+  const [subject, setSubject] = useState(null);
+  // useEffect(() => {
+  //   if(subject === null) {
+  //     const sub = new BehaviorSubject('');
+  //     setSubject(sub);
+  //   } else {
+  //     // Since this effect re-runs when subject is changed,
+  //     // after it is set we'll subscribe to the changes
+  //     subject.subscribe( term => {
+  //       let params = {
+  //         page: 1,
+  //         pageSize: 20,
+  //         name_contains : term
+  //       };
+  //       return fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+  //         method: "GET",
+  //         headers: {
+  //           "content-type": "application/json",
+  //           Authorization: "Bearer " + Auth.getToken(),
+  //         },
+  //       }).then(response => {
+  //         return response.json();
+  //       }).then(data => {
+  //         const newState = {
+  //           data,
+  //           loading: false
+  //         };
+  //         setState(s => Object.assign({}, s, newState));
+  //       });
+  //     });
+
+  //     // When the component unmounts, this will clean up the
+  //     // subscription
+  //     return () => subject.unsubscribe();
+  //   }
+  // }, [subject]);
+  console.log("inputRef ", inputRef);
+
+  useEffect(() => {
+    if (subject === null) {
+      const sub = new BehaviorSubject("");
+      setSubject(sub);
+    } else {
+      const observable = subject
+        .pipe(
+          map((s) => s.trim()),
+          distinctUntilChanged(),
+          filter((s) => s.length >= 2),
+          debounceTime(200),
+          switchMap((term) => {
+            console.log("term ", term);
+            let params = {
+              page: 1,
+              pageSize: 20,
+              name_contains: term,
+            };
+            return merge(
+              of({ loading: true, errorMessage: "", noResults: false }),
+              fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+                method: "GET",
+                headers: {
+                  "content-type": "application/json",
+                  Authorization: "Bearer " + Auth.getToken(),
+                },
+              }).then((response) => {
+                console.log("Response ", response);
+                if (response.ok) {
+                  return response.json().then((data) => ({
+                    data,
+                    loading: false,
+                    noResults: data.length === 0,
+                  }));
+                }
+                return response.json().then((data) => ({
+                  data: [],
+                  loading: false,
+                  errorMessage: data.title,
+                }));
+              })
+            );
+          }),
+          catchError((e) => ({
+            loading: false,
+            errorMessage: "An application error occured",
+          }))
+        )
+        .subscribe((newState) => {
+          console.log("new State ", newState);
+          setState((s) => Object.assign({}, s, newState));
+          if (inputRef) {
+            // inputRef.focus();
+          }
+        });
+
+      return () => {
+        observable.unsubscribe();
+        subject.unsubscribe();
+      };
+    }
+  }, [subject]);
+
+  console.log("state ", state);
 
   const [units, setUnits] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
@@ -234,6 +334,9 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       [event.target.name]: event.target.value,
     }));
+    // if (subject) {
+    //   return subject.next(event.target.value);
+    // }
   };
 
   const onBackClick = () => {
@@ -476,28 +579,6 @@ export default function AddEditRawMaterial(props) {
     }));
   };
 
-  // console.log("rawMaterialSearchDataSource ", rawMaterialSearchDataSource);
-
-  function sleep() {
-    return new Promise((resolve) => {
-      setTimeout(resolve, 1e3);
-    });
-  }
-
-  const fireOnChangeRawMaterialInput = (value) => {
-    if (value) {
-      console.log("value ", value);
-      setLoading(true);
-      (async () => {
-        await sleep(); // For demo purposes.
-        setRawMaterialSearchDataSource([...topFilms]);
-        setLoading(false);
-      })();
-    } else {
-      setRawMaterialSearchDataSource([]);
-    }
-  };
-
   return (
     <>
       <DialogForSelectingCategory
@@ -532,9 +613,56 @@ export default function AddEditRawMaterial(props) {
               <p className={classes.cardCategoryWhite}></p>
             </CardHeader>
             <CardBody>
+              {/* <CustomAutoComplete
+                freeSolo
+                autoFocus
+                filterOptions={(x) => x}
+                id="raw=material-name"
+                labelText="Name"
+                disabled={isView}
+                autocompleteId={"name"}
+                optionKey={"name"}
+                options={state.data.data}
+                formControlProps={{
+                  fullWidth: true,
+                }}
+                onInputChange={(event, value) => {
+                  if (subject) {
+                    return subject.next(value);
+                  }
+                  console.log("value 123", value);
+                  // searchService({ value: value.trim() });
+                  // fireOnChangeRawMaterialInput(value);
+                }}
+                loading={state.loading}
+                isOptionEqualToValue={(option, value) =>
+                  option.title === value.title
+                }
+                isInputPropsPresent={true}
+                InputProps={{
+                  endAdornment: (
+                    <React.Fragment>
+                      {state.loading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                    </React.Fragment>
+                  ),
+                }}
+                helperTextId={"helperText_name"}
+                isHelperText={hasError("name", error)}
+                helperText={
+                  hasError("name", error)
+                    ? error["name"].map((error) => {
+                        return error + " ";
+                      })
+                    : null
+                }
+                error={hasError("name", error)}
+              /> */}
               {/* <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
-                  {/* <SearchBar
+                  {/* 
+                  <SearchBar
                     dataSource={rawMaterialSearchDataSource}
                     onChange={(value) =>
                       setRawMaterialSearchDataSource([

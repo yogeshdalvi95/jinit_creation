@@ -69,6 +69,7 @@ module.exports = {
       notes,
       date,
       invoice_number,
+      igst_percent,
       bill_no,
     } = purchases;
 
@@ -80,6 +81,7 @@ module.exports = {
             seller: seller,
             cgst_percent: cgst_percent,
             sgst_percent: sgst_percent,
+            igst_percent: igst_percent,
             notes: notes,
             total_amt_with_tax: total_amt_with_tax,
             total_amt_without_tax: total_amt_without_tax,
@@ -153,6 +155,7 @@ module.exports = {
             date: utils.getDateInYYYYMMDD(new Date(date)),
             cgst_percent: cgst_percent,
             sgst_percent: sgst_percent,
+            igst_percent: igst_percent,
             gst_no: gst_no,
             notes: notes,
             seller: seller,

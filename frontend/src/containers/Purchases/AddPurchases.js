@@ -44,6 +44,7 @@ import {
   hasError,
   isEmptyString,
   setErrors,
+  validateNumber,
 } from "../../Utils";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -83,6 +84,7 @@ export default function AddPurchases(props) {
     type_of_bill: "",
     cgst_percent: 0,
     sgst_percent: 0,
+    igst_percent: 0,
     gst_no: "",
     total_amt_with_tax: 0,
     total_amt_without_tax: 0,
@@ -161,6 +163,7 @@ export default function AddPurchases(props) {
       type_of_bill: data.purchase.type_of_bill,
       cgst_percent: data.purchase.cgst_percent,
       sgst_percent: data.purchase.sgst_percent,
+      igst_percent: data.purchase.igst_percent,
       gst_no: data.purchase.seller ? data.purchase.seller.gst_no : "",
       total_amt_with_tax: data.purchase.total_amt_with_tax,
       total_amt_without_tax: data.purchase.total_amt_without_tax,
@@ -283,7 +286,8 @@ export default function AddPurchases(props) {
     }
     if (
       event.target.name === "cgst_percent" ||
-      event.target.name === "sgst_percent"
+      event.target.name === "sgst_percent" ||
+      event.target.name === "igst_percent"
     ) {
       calculateNewTax(event.target.name, event.target.value);
     }
@@ -296,35 +300,49 @@ export default function AddPurchases(props) {
   const calculateNewTax = (name, value) => {
     let cgst_percent = 0;
     let sgst_percent = 0;
-    if (name === "cgst_percent") {
-      if (isEmptyString(value)) {
-        cgst_percent = 0;
-      } else {
-        cgst_percent = parseFloat(value);
+    let igst_percent = 0;
+    if (name === "cgst_percent" || name === "sgst_percent") {
+      if (name === "cgst_percent") {
+        if (isEmptyString(value)) {
+          cgst_percent = 0;
+        } else {
+          cgst_percent = parseFloat(value);
+        }
+        if (!isNaN(parseFloat(formState.sgst_percent))) {
+          sgst_percent = parseFloat(formState.sgst_percent);
+        }
       }
-      if (!isNaN(parseFloat(formState.sgst_percent))) {
-        sgst_percent = parseFloat(formState.sgst_percent);
+      if (name === "sgst_percent") {
+        if (isEmptyString(value)) {
+          sgst_percent = 0;
+        } else {
+          sgst_percent = parseFloat(value);
+        }
+        if (!isNaN(parseFloat(formState.cgst_percent))) {
+          cgst_percent = parseFloat(formState.cgst_percent);
+        }
+      }
+    } else {
+      if (isEmptyString(value)) {
+        igst_percent = 0;
+      } else {
+        igst_percent = parseFloat(value);
       }
     }
-    if (name === "sgst_percent") {
-      if (isEmptyString(value)) {
-        sgst_percent = 0;
-      } else {
-        sgst_percent = parseFloat(value);
-      }
-      if (!isNaN(parseFloat(formState.cgst_percent))) {
-        cgst_percent = parseFloat(formState.cgst_percent);
-      }
-    }
+
     let total_amt_without_tax = 0;
     if (!isNaN(parseFloat(formState.total_amt_without_tax))) {
       total_amt_without_tax = parseFloat(formState.total_amt_without_tax);
     }
 
-    let cgst =
-      (parseFloat(cgst_percent) / 100) * formState.total_amt_without_tax;
+    let cgst = (parseFloat(cgst_percent) / 100) * total_amt_without_tax;
     let sgst = (parseFloat(sgst_percent) / 100) * total_amt_without_tax;
-    let totalCostWithTax = total_amt_without_tax + cgst + sgst;
+    let igst = (parseFloat(igst_percent) / 100) * total_amt_without_tax;
+
+    console.log("percent ", cgst_percent, sgst_percent, igst_percent);
+    console.log(cgst, sgst, igst);
+
+    let totalCostWithTax = total_amt_without_tax + cgst + sgst + igst;
     let totalCostWithTaxFormatted = convertNumber(
       totalCostWithTax.toFixed(2),
       true
@@ -402,9 +420,16 @@ export default function AddPurchases(props) {
       sgst_percent = 0;
     }
 
+    let igst_percent = formState.igst_percent;
+    if (isEmptyString(igst_percent)) {
+      igst_percent = 0;
+    }
+
     let cgst = (parseFloat(cgst_percent) / 100) * totalCostWithOutTax;
     let sgst = (parseFloat(sgst_percent) / 100) * totalCostWithOutTax;
-    totalCostWithTax = totalCostWithOutTax + cgst + sgst;
+    let igst = (parseFloat(igst_percent) / 100) * totalCostWithOutTax;
+
+    totalCostWithTax = totalCostWithOutTax + cgst + sgst + igst;
     totalCostWithTaxFormatted = convertNumber(
       totalCostWithTax.toFixed(2),
       true
@@ -851,7 +876,7 @@ export default function AddPurchases(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={2}>
                 <CustomDropDown
                   id="type_of_bill"
                   disabled={isView || isEdit}
@@ -868,75 +893,105 @@ export default function AddPurchases(props) {
                   }}
                 />
               </GridItem>
+            </GridContainer>
+
+            {formState.type_of_bill ? (
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomAutoComplete
+                    id="seller-name"
+                    disabled={isView || isEdit}
+                    labelText="Seller"
+                    autocompleteId={"seller-id"}
+                    optionKey={"seller_name"}
+                    options={seller}
+                    onChange={(event, value) => {
+                      delete error["seller"];
+                      setError((error) => ({
+                        ...error,
+                      }));
+                      if (value === null) {
+                        setFormState((formState) => ({
+                          ...formState,
+                          seller: null,
+                          gst_no: "",
+                        }));
+                      } else {
+                        setFormState((formState) => ({
+                          ...formState,
+                          seller: value.id,
+                          gst_no: value.gst_no,
+                        }));
+                      }
+                    }}
+                    value={
+                      seller[
+                        seller.findIndex(function (item, i) {
+                          return item.id === formState.seller;
+                        })
+                      ] || null
+                    }
+                    /** For setting errors */
+                    helperTextId={"helperText_seller"}
+                    isHelperText={hasError("seller", error)}
+                    helperText={
+                      hasError("seller", error)
+                        ? error["seller"].map((error) => {
+                            return error + " ";
+                          })
+                        : null
+                    }
+                    error={hasError("seller", error)}
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="GST No."
+                    name="gst_no"
+                    disabled
+                    value={formState.gst_no}
+                    id="gst_no"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+            ) : null}
+            <GridContainer>
               {formState.type_of_bill && formState.type_of_bill !== "" ? (
                 <>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomAutoComplete
-                      id="seller-name"
-                      disabled={isView || isEdit}
-                      labelText="Seller"
-                      autocompleteId={"seller-id"}
-                      optionKey={"seller_name"}
-                      options={seller}
-                      onChange={(event, value) => {
-                        delete error["seller"];
-                        setError((error) => ({
-                          ...error,
-                        }));
-                        if (value === null) {
-                          setFormState((formState) => ({
-                            ...formState,
-                            seller: null,
-                            gst_no: "",
-                          }));
-                        } else {
-                          setFormState((formState) => ({
-                            ...formState,
-                            seller: value.id,
-                            gst_no: value.gst_no,
-                          }));
-                        }
-                      }}
-                      value={
-                        seller[
-                          seller.findIndex(function (item, i) {
-                            return item.id === formState.seller;
-                          })
-                        ] || null
-                      }
-                      /** For setting errors */
-                      helperTextId={"helperText_seller"}
-                      isHelperText={hasError("seller", error)}
-                      helperText={
-                        hasError("seller", error)
-                          ? error["seller"].map((error) => {
-                              return error + " ";
-                            })
-                          : null
-                      }
-                      error={hasError("seller", error)}
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                    />
-                  </GridItem>
-                  {/* <GridItem xs={12} sm={12} md={4}>
-                    <DatePicker
-                      onChange={event => handleChange(event)}
-                      labelText="Purchase Date"
-                      name="date"
-                      value={formState.date || new Date()}
-                      id="date"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      disabled
-                      style={{
-                        marginTop: "2.7rem",
-                        width: "100%"
-                      }}
-                    />
-                  </GridItem> */}
+                  {formState.type_of_bill === "Pakka" ? (
+                    <GridItem xs={12} sm={12} md={3}>
+                      <CustomInput
+                        labelText="Invoice Number"
+                        name="invoice_number"
+                        onChange={(event) => handleChange(event)}
+                        value={formState.invoice_number}
+                        id="invoice_number"
+                        formControlProps={{
+                          fullWidth: true,
+                        }}
+                      />
+                    </GridItem>
+                  ) : (
+                    <GridItem xs={12} sm={12} md={3}>
+                      <CustomInput
+                        labelText="Bill Number"
+                        name="bill_no"
+                        onChange={(event) => handleChange(event)}
+                        value={formState.bill_no}
+                        id="bill_no"
+                        formControlProps={{
+                          fullWidth: true,
+                        }}
+                      />
+                    </GridItem>
+                  )}
                   <GridItem xs={12} sm={12} md={3}>
                     <DatePicker
                       onChange={(event) => handleStartDateChange(event)}
@@ -962,88 +1017,8 @@ export default function AddPurchases(props) {
                       }}
                     />
                   </GridItem>
-                </>
-              ) : null}
-            </GridContainer>
-
-            {formState.type_of_bill ? (
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={6}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="GST No."
-                    name="gst_no"
-                    disabled
-                    value={formState.gst_no}
-                    id="gst_no"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                {formState.type_of_bill === "Pakka" ? (
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CustomInput
-                      labelText="Invoice Number"
-                      name="invoice_number"
-                      onChange={(event) => handleChange(event)}
-                      value={formState.invoice_number}
-                      id="invoice_number"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                    />
-                  </GridItem>
-                ) : (
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CustomInput
-                      labelText="Bill Number"
-                      name="bill_no"
-                      onChange={(event) => handleChange(event)}
-                      value={formState.bill_no}
-                      id="bill_no"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                    />
-                  </GridItem>
-                )}
-              </GridContainer>
-            ) : null}
-
-            {formState.type_of_bill ? (
-              <>
-                <GridContainer>
                   {formState.type_of_bill === "Pakka" ? (
                     <>
-                      <GridItem xs={12} sm={12} md={3}>
-                        <CustomInput
-                          onChange={(event) => handleChange(event)}
-                          labelText="CGST(%)"
-                          name="cgst_percent"
-                          type="number"
-                          disabled={isView}
-                          value={formState.cgst_percent}
-                          id="cgst_percent"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={3}>
-                        <CustomInput
-                          onChange={(event) => handleChange(event)}
-                          labelText="SGST(%)"
-                          name="sgst_percent"
-                          disabled={isView}
-                          type="number"
-                          value={formState.sgst_percent}
-                          id="sgst_percent"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
                       <GridItem xs={12} sm={12} md={3}>
                         <CustomInput
                           labelText="Total amount in rupees(with tax)"
@@ -1083,7 +1058,63 @@ export default function AddPurchases(props) {
                       />
                     </GridItem>
                   )}
-                </GridContainer>
+                </>
+              ) : null}
+            </GridContainer>
+            {formState.type_of_bill === "Pakka" ? (
+              <GridContainer>
+                {" "}
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="CGST(%)"
+                    name="cgst_percent"
+                    type="number"
+                    disabled={isView || validateNumber(formState.igst_percent)}
+                    value={formState.cgst_percent}
+                    id="cgst_percent"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="SGST(%)"
+                    name="sgst_percent"
+                    disabled={isView || validateNumber(formState.igst_percent)}
+                    type="number"
+                    value={formState.sgst_percent}
+                    id="sgst_percent"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>{" "}
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="IGST(%)"
+                    name="igst_percent"
+                    disabled={
+                      isView ||
+                      validateNumber(formState.sgst_percent) ||
+                      validateNumber(formState.cgst_percent)
+                    }
+                    type="number"
+                    value={formState.igst_percent}
+                    id="igst_percent"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>{" "}
+              </GridContainer>
+            ) : null}
+
+            {formState.type_of_bill ? (
+              <>
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput

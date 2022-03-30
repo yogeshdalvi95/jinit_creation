@@ -47,6 +47,9 @@
     },
     "total_price_with_add_cost": {
       "type": "float"
+    },
+    "igst": {
+      "type": "float"
     }
   }
 }

@@ -191,50 +191,57 @@ module.exports = {
                       let unit = rawMaterialData.unit;
                       let is_die = rawMaterialData.is_die;
                       let category = rawMaterialData.category;
-
-                      const searchRawMaterial = await strapi
-                        .query("raw-material")
-                        .findOne({
-                          size: size,
-                          department: department,
-                          unit: unit,
-                          is_die: is_die,
-                          color: colorInRatio,
-                          category: category,
-                        });
-
-                      let totolMaterialCostInvolved = 0;
+                      let color = rawMaterialData.color;
 
                       let rawMaterial = null;
-                      if (searchRawMaterial) {
-                        totolMaterialCostInvolved =
-                          utils.validateNumber(dm.quantity) *
-                          utils.validateNumber(searchRawMaterial.costing);
-                        colorPrice = colorPrice + totolMaterialCostInvolved;
-                        rawMaterial = searchRawMaterial;
-                      } else {
-                        /** Create a new similar entry */
-                        totolMaterialCostInvolved =
-                          utils.validateNumber(dm.quantity) *
-                          utils.validateNumber(rawMaterialData.costing);
-                        colorPrice = colorPrice + totolMaterialCostInvolved;
+                      let totolMaterialCostInvolved = 0;
 
-                        rawMaterial = await strapi
+                      if (color && color === presentColor) {
+                        const searchRawMaterial = await strapi
                           .query("raw-material")
-                          .create(
-                            {
-                              ...rawMaterialData,
-                              color: colorInRatio,
-                              balance: 0,
-                            },
-                            {
-                              transacting: t,
-                            }
-                          )
-                          .then((model) => model)
-                          .catch((err) => {
-                            console.log(err);
+                          .findOne({
+                            size: size,
+                            department: department,
+                            unit: unit,
+                            is_die: is_die,
+                            color: colorInRatio,
+                            category: category,
                           });
+
+                        if (searchRawMaterial) {
+                          totolMaterialCostInvolved =
+                            utils.validateNumber(dm.quantity) *
+                            utils.validateNumber(searchRawMaterial.costing);
+                          colorPrice = colorPrice + totolMaterialCostInvolved;
+                          rawMaterial = searchRawMaterial;
+                        } else {
+                          /** Create a new similar entry */
+                          totolMaterialCostInvolved =
+                            utils.validateNumber(dm.quantity) *
+                            utils.validateNumber(rawMaterialData.costing);
+                          colorPrice = colorPrice + totolMaterialCostInvolved;
+
+                          rawMaterial = await strapi
+                            .query("raw-material")
+                            .create(
+                              {
+                                ...rawMaterialData,
+                                color: colorInRatio,
+                                balance: 0,
+                              },
+                              {
+                                transacting: t,
+                              }
+                            )
+                            .then((model) => model)
+                            .catch((err) => {
+                              console.log(err);
+                            });
+                        }
+                      } else {
+                        rawMaterial = rawMaterialData;
+                        totolMaterialCostInvolved = rawMaterialData.total_pricd;
+                        colorPrice = colorPrice + totolMaterialCostInvolved;
                       }
 
                       await strapi
