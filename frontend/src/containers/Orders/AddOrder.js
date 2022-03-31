@@ -1849,7 +1849,7 @@ export default function AddOrder(props) {
                   </Button>
                 </GridItem>
               )}
-              {design.id ? (
+              {isEdit || isView ? (
                 <>
                   <GridItem>
                     <Button color="primary" onClick={() => checkAvailibility()}>

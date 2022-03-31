@@ -16,6 +16,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RawMaterialList,
   SnackBarComponent,
 } from "../../components";
 // core components
@@ -49,7 +50,7 @@ import classNames from "classnames";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import validationForm from "./form/RawMaterialvalidation.json";
 import SearchBar from "material-ui-search-bar";
-import { BehaviorSubject, of, merge } from "rxjs";
+import { BehaviorSubject, of, merge, throwError } from "rxjs";
 import {
   debounceTime,
   map,
@@ -71,7 +72,6 @@ export default function AddEditRawMaterial(props) {
   const [alert, setAlert] = useState(null);
   const history = useHistory();
   const [departments, setDepartments] = useState([]);
-  let inputRef;
   /** RXJS */
   const [state, setState] = useState({
     data: {
@@ -81,110 +81,7 @@ export default function AddEditRawMaterial(props) {
     errorMessage: "",
     noResults: false,
   });
-
   const [subject, setSubject] = useState(null);
-  // useEffect(() => {
-  //   if(subject === null) {
-  //     const sub = new BehaviorSubject('');
-  //     setSubject(sub);
-  //   } else {
-  //     // Since this effect re-runs when subject is changed,
-  //     // after it is set we'll subscribe to the changes
-  //     subject.subscribe( term => {
-  //       let params = {
-  //         page: 1,
-  //         pageSize: 20,
-  //         name_contains : term
-  //       };
-  //       return fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
-  //         method: "GET",
-  //         headers: {
-  //           "content-type": "application/json",
-  //           Authorization: "Bearer " + Auth.getToken(),
-  //         },
-  //       }).then(response => {
-  //         return response.json();
-  //       }).then(data => {
-  //         const newState = {
-  //           data,
-  //           loading: false
-  //         };
-  //         setState(s => Object.assign({}, s, newState));
-  //       });
-  //     });
-
-  //     // When the component unmounts, this will clean up the
-  //     // subscription
-  //     return () => subject.unsubscribe();
-  //   }
-  // }, [subject]);
-  console.log("inputRef ", inputRef);
-
-  useEffect(() => {
-    if (subject === null) {
-      const sub = new BehaviorSubject("");
-      setSubject(sub);
-    } else {
-      const observable = subject
-        .pipe(
-          map((s) => s.trim()),
-          distinctUntilChanged(),
-          filter((s) => s.length >= 2),
-          debounceTime(200),
-          switchMap((term) => {
-            console.log("term ", term);
-            let params = {
-              page: 1,
-              pageSize: 20,
-              name_contains: term,
-            };
-            return merge(
-              of({ loading: true, errorMessage: "", noResults: false }),
-              fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
-                method: "GET",
-                headers: {
-                  "content-type": "application/json",
-                  Authorization: "Bearer " + Auth.getToken(),
-                },
-              }).then((response) => {
-                console.log("Response ", response);
-                if (response.ok) {
-                  return response.json().then((data) => ({
-                    data,
-                    loading: false,
-                    noResults: data.length === 0,
-                  }));
-                }
-                return response.json().then((data) => ({
-                  data: [],
-                  loading: false,
-                  errorMessage: data.title,
-                }));
-              })
-            );
-          }),
-          catchError((e) => ({
-            loading: false,
-            errorMessage: "An application error occured",
-          }))
-        )
-        .subscribe((newState) => {
-          console.log("new State ", newState);
-          setState((s) => Object.assign({}, s, newState));
-          if (inputRef) {
-            // inputRef.focus();
-          }
-        });
-
-      return () => {
-        observable.unsubscribe();
-        subject.unsubscribe();
-      };
-    }
-  }, [subject]);
-
-  console.log("state ", state);
-
   const [units, setUnits] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
@@ -226,6 +123,63 @@ export default function AddEditRawMaterial(props) {
   const [isEdit] = useState(
     props.location.state ? props.location.state.edit : false
   );
+
+  useEffect(() => {
+    if (subject === null) {
+      const sub = new BehaviorSubject("");
+      setSubject(sub);
+    } else {
+      const observable = subject
+        .pipe(
+          map((s) => s.trim()),
+          distinctUntilChanged(),
+          filter((s) => s.length >= 2),
+          debounceTime(200),
+          switchMap((term) => {
+            let params = {
+              page: 1,
+              pageSize: 20,
+              name_contains: term,
+            };
+            return merge(
+              of({ loading: true, errorMessage: "", noResults: false }),
+              fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+                method: "GET",
+                headers: {
+                  "content-type": "application/json",
+                  Authorization: "Bearer " + Auth.getToken(),
+                },
+              }).then((response) => {
+                if (response.ok) {
+                  return response.json().then((data) => ({
+                    data,
+                    loading: false,
+                    noResults: data.length === 0,
+                  }));
+                }
+                return response.json().then((data) => ({
+                  data: [],
+                  loading: false,
+                  errorMessage: data.title,
+                }));
+              })
+            );
+          }),
+          catchError((e) => ({
+            loading: false,
+            errorMessage: "An application error occured",
+          }))
+        )
+        .subscribe((newState) => {
+          setState((s) => Object.assign({}, s, newState));
+        });
+
+      return () => {
+        observable.unsubscribe();
+        subject.unsubscribe();
+      };
+    }
+  }, [subject]);
 
   useEffect(() => {
     if (
@@ -325,6 +279,19 @@ export default function AddEditRawMaterial(props) {
     }));
   };
 
+  useEffect(() => {
+    if (isEmptyString(formState.name)) {
+      setState({
+        data: {
+          data: [],
+        },
+        loading: false,
+        errorMessage: "",
+        noResults: false,
+      });
+    }
+  }, [formState.name]);
+
   const handleChange = (event) => {
     delete error[event.target.name];
     setError((error) => ({
@@ -334,9 +301,20 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       [event.target.name]: event.target.value,
     }));
-    // if (subject) {
-    //   return subject.next(event.target.value);
-    // }
+    if (isEmptyString(event.target.value)) {
+      setState({
+        data: {
+          data: [],
+        },
+        loading: false,
+        errorMessage: "",
+        noResults: false,
+      });
+    } else {
+      if (subject) {
+        return subject.next(event.target.value);
+      }
+    }
   };
 
   const onBackClick = () => {
@@ -579,6 +557,36 @@ export default function AddEditRawMaterial(props) {
     }));
   };
 
+  const handleSelectRawMaterial = (rawMaterial) => {
+    setState({
+      data: {
+        data: [],
+      },
+      loading: false,
+      errorMessage: "",
+      noResults: false,
+    });
+    setFormState((formState) => ({
+      ...formState,
+      color: rawMaterial?.color?.id ? rawMaterial.color.id : null,
+      category: rawMaterial?.category?.id ? rawMaterial.category.id : null,
+      colorName: rawMaterial?.color?.name ? rawMaterial.color.name : "",
+      categoryName: rawMaterial?.category?.name
+        ? rawMaterial.category.name
+        : null,
+      size: rawMaterial?.size ? rawMaterial.size : "--",
+      balance: 0,
+      costing: rawMaterial?.costing ? rawMaterial.costing : 0,
+      department: rawMaterial?.department?.id
+        ? rawMaterial.department.id
+        : null,
+      unit: rawMaterial?.unit?.id ? rawMaterial.unit.id : null,
+      unit_name: "",
+      is_die: rawMaterial?.is_die ? true : false,
+      name_value: rawMaterial?.name_value ? rawMaterial.name_value : [],
+    }));
+  };
+
   return (
     <>
       <DialogForSelectingCategory
@@ -730,6 +738,7 @@ export default function AddEditRawMaterial(props) {
                     name="name"
                     value={formState.name}
                     id="name"
+                    autoComplete="off"
                     formControlProps={{
                       fullWidth: true,
                     }}
@@ -747,6 +756,16 @@ export default function AddEditRawMaterial(props) {
                   />
                 </GridItem>
               </GridContainer>
+              {state.data && state.data.data && state.data.data.length ? (
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <RawMaterialList
+                      data={state.data.data}
+                      handleSelectRawMaterial={handleSelectRawMaterial}
+                    />
+                  </GridItem>
+                </GridContainer>
+              ) : null}
               <GridContainer>
                 <GridItem
                   xs={12}

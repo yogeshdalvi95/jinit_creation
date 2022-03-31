@@ -341,10 +341,10 @@ export default function ViewOrders(props) {
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
-                    labelText="Material Number"
-                    value={filter["ready_material.material_no_contains"] || ""}
-                    name="ready_material.material_no_contains"
-                    id="ready_material.material_no_contains"
+                    labelText="Design Number"
+                    value={filter["design.material_no_contains"] || ""}
+                    name="design.material_no_contains"
+                    id="design.material_no_contains"
                     formControlProps={{
                       fullWidth: true,
                     }}
