@@ -316,7 +316,6 @@ export default function DesignMaterials(props) {
         message: "Quantity should be a positive number",
       }));
     } else {
-      console.log("newData.raw_material?.costing ", newData);
       let obj = {
         total_price: num * validateNumber(newData?.raw_material?.costing),
         quantity: num,
@@ -405,36 +404,23 @@ export default function DesignMaterials(props) {
     }
   };
 
-  const addDesign = async (val, obj = {}) => {
+  const addDesign = async (val, obj = {}, pcs = 1) => {
     let setRef = tableRef.current;
     handleCloseDialogForDesignMaterial();
     setOpenBackDrop(true);
     if (filter.design) {
+      let quantity = validateNumber(pcs) ? validateNumber(pcs) : 1;
       let data = {
-        raw_material: null,
+        raw_material: val.id,
         ready_material: null,
         design: filter.design,
         color: filter?.isColor ? filter?.color : null,
-        quantity: 1,
-        price_per_piece: filter?.isRawMaterial
-          ? val.costing
-          : val.price_per_piece,
-        total_price: filter?.isRawMaterial ? val.costing : val.price_per_piece,
+        quantity: quantity,
+        price_per_piece: validateNumber(val.costing),
+        total_price: validateNumber(val.costing) * quantity,
         isRawMaterial: filter?.isRawMaterial ? true : false,
         isColor: filter?.isColor ? true : false,
       };
-
-      if (filter.isRawMaterial) {
-        data = {
-          ...data,
-          raw_material: val.id,
-        };
-      } else {
-        data = {
-          ...data,
-          ready_material: val.id,
-        };
-      }
 
       await providerForPost(
         backend_designs_and_materials,
@@ -521,6 +507,7 @@ export default function DesignMaterials(props) {
         open={openDialogForSelectingRawMaterial}
         filterId={filter.design}
         filterBy="design"
+        isAcceptQuantity
       />
       <DialogBoxForSelectingReadyMaterial
         handleCancel={handleCloseDialogForDesignMaterial}

@@ -57,7 +57,7 @@ export {
   DialogBoxForDuplicatingDesign,
   DialogBoxForSelectingDesign,
 } from "./DialogBox";
-export { RawMaterialDetail } from "./RawMaterialDetail";
+export { RawMaterialDetail, RawMaterialList } from "./RawMaterialDetail";
 export { DesignData, StockData, RatioData } from "./DesignData";
 export { SellerDetails } from "./SellerDetails";
 export { MultiSelect } from "./MultiSelect";

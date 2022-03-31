@@ -5,7 +5,12 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { Auth, Button } from "..";
-import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
+import {
+  Backdrop,
+  CircularProgress,
+  InputAdornment,
+  makeStyles,
+} from "@material-ui/core";
 import { GridContainer, GridItem } from "../Grid";
 import { CustomInput } from "../CustomInput";
 import { useState } from "react";
@@ -21,6 +26,7 @@ import commonStyles from "../../assets/jss/material-dashboard-react/controllers/
 const useStyles = makeStyles(commonStyles);
 export default function DialogBoxForSelectingRawMaterial(props) {
   const classes = useStyles();
+  const [pcs, setPcs] = useState(1);
   const tableRef = React.createRef();
   const [departments, setDepartments] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
@@ -29,11 +35,6 @@ export default function DialogBoxForSelectingRawMaterial(props) {
   });
 
   const columns = [
-    {
-      title: "Id",
-      field: "id",
-      render: (rowData) => "#" + rowData.id,
-    },
     {
       title: "Name",
       field: "name",
@@ -132,10 +133,11 @@ export default function DialogBoxForSelectingRawMaterial(props) {
   const convertData = (data) => {
     let arr = [];
     data.map((d) => {
-      let department = d.department.name;
+      let department = d?.department?.name ? d.department.name : "--";
       let costing = d.costing ? d.costing + "/" + d.unit.name : 0;
-      let color = d.color ? d.color.name : "";
-      let category = d.category ? d.category.name : "";
+      let color = d?.color?.name ? d.color.name : "--";
+      let category = d?.category?.name ? d.category.name : "--";
+      let unit = d?.unit?.name ? d.unit.name : "--";
       arr.push({
         id: d.id,
         name: d.name,
@@ -147,6 +149,7 @@ export default function DialogBoxForSelectingRawMaterial(props) {
         balance: d.balance ? d.balance : "0",
         is_die: d.is_die,
         value: d,
+        unit: unit,
       });
     });
     return arr;
@@ -193,6 +196,25 @@ export default function DialogBoxForSelectingRawMaterial(props) {
         <DialogContent>
           <DialogContentText id="dialog-description">
             <>
+              {props.isAcceptQuantity ? (
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={3}>
+                    <CustomInput
+                      onChange={(e) => setPcs(e.target.value)}
+                      type="number"
+                      labelText="Quantity"
+                      name="quantity"
+                      value={pcs}
+                      id="quantity"
+                      noMargin
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                    />
+                  </GridItem>
+                </GridContainer>
+              ) : null}
+
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <GridContainer>
@@ -385,7 +407,8 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                           } else {
                             props.handleAddRawMaterial(
                               rowData.value,
-                              nameObject
+                              nameObject,
+                              pcs
                             );
                           }
                         },
