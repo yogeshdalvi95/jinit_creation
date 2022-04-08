@@ -1,8 +1,13 @@
 "use strict";
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
-const { convertNumber } = require("../../../config/utils");
-
+const {
+  noDataImg,
+  generatePDF,
+  getDateInMMDDYYYY,
+  base64_encode,
+} = require("../../../config/utils");
+var path = require("path");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -67,8 +72,8 @@ module.exports = {
       return {
         ...el,
         color: el.color.id,
+        colorData: el.color,
         design: el.design,
-        colorName: el.color.name,
         quantity: el.quantity,
         quantityCompleted: el.quantity_completed,
         order: el.order,
@@ -167,7 +172,10 @@ module.exports = {
                   colorPresent.push(colorInRatio);
 
                   if (isAtleastOneColorPresent) {
-                    /** Add new color in present array */
+                    /** Present Color takes
+                     *  one color from existing
+                     *  color to make a new design
+                     **/
                     let presentColor = colorPresent[0];
                     let colorPrice = 0;
 
@@ -361,7 +369,6 @@ module.exports = {
       const checkIfOrderIdExist = await strapi.query("orders").find({
         order_id: order_id,
       });
-      console.log("checkIfOrderIdExist ", checkIfOrderIdExist);
       if (checkIfOrderIdExist && checkIfOrderIdExist.length === 1) {
         if (order_id) {
           if (order_id !== checkIfOrderIdExist[0].order_id) {
@@ -475,35 +482,45 @@ module.exports = {
   },
 
   async check_availibility(ctx) {
-    let {
-      design,
+    let { id } = ctx.params;
+
+    let finalRawMaterialJson = {};
+    const ratio = await strapi.query("order-ratios").find(
+      {
+        order: id,
+      },
+      []
+    );
+
+    finalRawMaterialJson = await getRawMaterialAvailibilityPerOrder(
+      finalRawMaterialJson,
       ratio,
-      remaining_quantity,
-      buffer_quantity,
-      total_quantity,
-      completed_quantity,
-    } = ctx.request.body;
+      ctx
+    );
+
+    let arrOfMaterialKeys = Object.keys(finalRawMaterialJson);
+    let jsonArray = [];
+
+    arrOfMaterialKeys.forEach((d) => {
+      jsonArray.push(finalRawMaterialJson[d]);
+    });
+
+    let buffer = utils.utilityFunctionForGettingBytesExcelData(
+      jsonArray,
+      `Raw Material Availibility`
+    );
 
     /**
-      design: d.design,
-      color: d.color?.id,
-      colorName: d.color?.name,
-      quantity: 0,
-      quantityCompleted: 0,
-      order: null,
-      designPrice: designPrice.toFixed(2),
-     */
-
-    ratio = ratio.map((r) => {
+    * ratio = ratio.map((r) => {
       return {
         quantity: r.quantity,
         quantity_completed: r.quantityCompleted,
         color: r.color,
-        name: r.colorName,
+        name: r.colorData.name,
       };
     });
-
-    const dataToSend = await getRawMaterialAvailibility(
+      
+      const dataToSend = await getRawMaterialAvailibility(
       design,
       ratio,
       total_quantity,
@@ -512,8 +529,79 @@ module.exports = {
       buffer_quantity,
       ctx
     );
+    **/
 
-    ctx.send(dataToSend);
+    ctx.send(buffer);
+  },
+
+  async check_all_order_availibility(ctx) {
+    const { query } = utils.getRequestParams(ctx.request.query);
+    const data = await strapi.query("orders").find(query);
+    let finalRawMaterialJson = {};
+
+    await utils.asyncForEach(data, async (order) => {
+      const ratio = await strapi.query("order-ratios").find(
+        {
+          order: order.id,
+        },
+        []
+      );
+      finalRawMaterialJson = await getRawMaterialAvailibilityPerOrder(
+        finalRawMaterialJson,
+        ratio,
+        ctx
+      );
+    });
+
+    let arrOfMaterialKeys = Object.keys(finalRawMaterialJson);
+    let jsonArray = [];
+    let jsonArray2 = [];
+    arrOfMaterialKeys.forEach((d) => {
+      if (finalRawMaterialJson[d]["Difference"] < 0) {
+        jsonArray2.push({
+          Name: finalRawMaterialJson[d].Name,
+          Category: finalRawMaterialJson[d].Category,
+          "Is Die?": finalRawMaterialJson[d]["Is Die?"],
+          Unit: finalRawMaterialJson[d].Unit,
+          Size: finalRawMaterialJson[d].Size,
+          "Current Balance": finalRawMaterialJson[d]["Current Balance"],
+          /** Quantity requires for making remaining order */
+          "Total Required": finalRawMaterialJson[d]["Total Required"],
+          "Total need to order": finalRawMaterialJson[d].Difference,
+        });
+      }
+      jsonArray.push(finalRawMaterialJson[d]);
+    });
+
+    let buffer = utils.utilityFunctionForGettingBytesExcelDataForMultipleSheets(
+      {
+        "Raw Material Availibility": jsonArray,
+        "Need to purchase": jsonArray2,
+      }
+    );
+
+    /**
+    * ratio = ratio.map((r) => {
+      return {
+        quantity: r.quantity,
+        quantity_completed: r.quantityCompleted,
+        color: r.color,
+        name: r.colorData.name,
+      };
+    });
+      
+      const dataToSend = await getRawMaterialAvailibility(
+      design,
+      ratio,
+      total_quantity,
+      completed_quantity,
+      remaining_quantity,
+      buffer_quantity,
+      ctx
+    );
+    **/
+
+    ctx.send(buffer);
   },
 
   async check_availibility1(ctx) {
@@ -733,6 +821,367 @@ module.exports = {
 
     ctx.send(200);
   },
+
+  async downloadOrder(ctx) {
+    const orderData = await strapi.query("orders").find(ctx.request.body);
+
+    let finalData = [];
+    if (orderData.length) {
+      await utils.asyncForEach(orderData, async (order) => {
+        const ratio = await strapi.query("order-ratios").find({
+          order: order.id,
+        });
+        if (ratio.length) {
+          let output = "";
+          ratio.forEach((el, index) => {
+            const temp =
+              el.color?.name +
+              ": " +
+              utils.validateNumber(el.quantity_completed) +
+              "/" +
+              utils.validateNumber(el.quantity);
+            if (index === 0) {
+              output = output + temp;
+            } else {
+              output = output + ", " + temp;
+            }
+          });
+
+          finalData.push({
+            orderId: order.order_id,
+            design: order.design?.material_no,
+            partyName: order.party?.party_name,
+            ratio: output,
+          });
+        }
+      });
+    }
+    let html = "";
+    if (finalData.length) {
+      html =
+        html +
+        `
+        <br>
+        <table class="table">
+            <thead>
+            <tr>
+              <th colspan = "2" class="th leftAlignText">Order Id</th>
+              <th colspan = "2" class="th leftAlignText">Design</th>
+              <th colspan = "4" class="th leftAlignText">Party Name</th>
+              <th colspan = "6" class="th leftAlignText">Ratio</th>
+            </tr>
+        </thead>
+        <tbody>
+        `;
+
+      finalData.forEach((fd) => {
+        html =
+          html +
+          `
+            <tr>
+              <td colspan = "2" class="td leftAlignText">${fd.orderId}</td>
+              <td colspan = "2" class="td leftAlignText">${fd.design}</td>
+              <td colspan = "4" class="td leftAlignText">${fd.partyName}</td>
+              <td colspan = "6" class="td leftAlignText">${fd.ratio}</td>
+            </tr>
+        `;
+      });
+      html =
+        html +
+        `
+          </body>
+        </table>
+      `;
+    } else {
+      html = `<img
+        src='${noDataImg}'
+        class="center"
+        alt="No data"
+      />`;
+    }
+
+    try {
+      let buffer = await generatePDF("Orders", html);
+      ctx.send(buffer);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  async downloadOrderSheet(ctx) {
+    const { id } = ctx.request.body;
+    const orderData = await strapi
+      .query("orders")
+      .findOne({ id: id }, ["party"]);
+    let html = "";
+    if (orderData) {
+      const designData = await strapi.query("designs").findOne({
+        id: orderData.design,
+      });
+
+      const ratio = await strapi.query("order-ratios").find({
+        order: id,
+      });
+      const departments = await strapi.query("department").find();
+
+      const department_order_sheet = await strapi
+        .query("department-order-sheet")
+        .findOne({
+          order: id,
+        });
+
+      let department_order_sheet_with_color = [];
+      if (department_order_sheet) {
+        department_order_sheet_with_color = await strapi
+          .query("department-sheet-with-color")
+          .find(
+            {
+              department_order_sheet: department_order_sheet.id,
+            },
+            []
+          );
+      }
+
+      const generateDepartmentDateTable = () => {
+        let data = "";
+        departments.forEach((d) => {
+          let date = "-----";
+          for (let i = 0; i < department_order_sheet_with_color.length; i++) {
+            if (department_order_sheet_with_color[i].department === d.id) {
+              date = department_order_sheet_with_color[i].in_date
+                ? getDateInMMDDYYYY(
+                    department_order_sheet_with_color[i].in_date
+                  )
+                : "-----";
+            } else {
+              break;
+            }
+          }
+          data =
+            data +
+            `<tr> 
+                <td>${d.name}</td>
+                <td>${date}</td>
+              </tr>`;
+        });
+        return data;
+      };
+
+      const generateTbodyForRatio = () => {
+        let data = `<br>
+                    <br>
+                    <table>
+                      <tr>`;
+        ratio.forEach((r) => {
+          data = data + ` <th>${r.color.name}</th>`;
+        });
+        data = data + `</tr>`;
+        ratio.forEach((r) => {
+          data = data + `<td>${r.quantity_completed} / ${r.quantity} </td>`;
+        });
+        data = data + ` </tr></table>`;
+
+        return data;
+      };
+
+      const generateTBodyForDesign = () => {
+        let data = "";
+        let image = noDataImg;
+        if (
+          designData.images &&
+          designData.images.length &&
+          designData.images[0].url
+        ) {
+          image =
+            "data:image/png;base64," +
+            base64_encode(
+              path.resolve(
+                __dirname,
+                `./../../../public${designData.images[0].url}`
+              )
+            );
+        }
+        data =
+          data +
+          `<div class="row">
+            <div class="column">
+              <table>
+                <tr>
+                  <th>Order Date</th>
+                  <td>${getDateInMMDDYYYY(orderData.date)}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Order No</th>
+                  <td>${orderData.order_id}</td>
+                </tr>
+                <tr>
+                  <th>NL No</th>
+                  <td>${designData.material_no}</td>
+                </tr>
+                <tr>
+                  <th>Order Quantity</th>
+                  <td>${orderData.quantity}</td>
+                </tr>
+                <tr>
+                  <td rowspan = "20" colspan = "2" style= "align-content : center;" >
+                    <img
+                    src='${image}'
+                    class="center"
+                    alt="No data"
+                    height="15rem"
+                    />
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="column1">
+              <table>
+                <tr>
+                  <th>Department Name</th>
+                  <th>Date</th>
+                </tr>
+                ${generateDepartmentDateTable()}
+              </table>
+            </div>
+          </div>
+          `;
+
+        return data;
+      };
+
+      html = html + generateTBodyForDesign() + generateTbodyForRatio();
+    } else {
+      html = `<img
+        src='${noDataImg}'
+        class="center"
+        alt="No data"
+      />`;
+    }
+    let buffer = await generatePDF("Order Sheet", html);
+    ctx.send(buffer);
+  },
+};
+
+const getRawMaterialAvailibilityPerOrder = async (
+  finalRawMaterialJson,
+  ratio,
+  ctx
+) => {
+  await utils.asyncForEach(ratio, async (or) => {
+    let totalQuantity = utils.validateNumber(or.quantity);
+    let quantityCompleted = utils.validateNumber(or.quantity_completed);
+    let remainingQuantity = totalQuantity - quantityCompleted;
+
+    const designMaterial = await strapi.query("designs-and-materials").find(
+      {
+        design: or.design,
+        color: or.color,
+        isRawMaterial: true,
+        isColor: true,
+      },
+      [
+        "raw_material",
+        "raw_material.category",
+        "raw_material.department",
+        "raw_material.unit",
+        "ready_material",
+      ]
+    );
+
+    if (designMaterial.length) {
+      designMaterial.forEach((dM) => {
+        let rawMaterialId = dM?.raw_material?.id;
+        if (rawMaterialId) {
+          /** Quantity requires for making single piece of design */
+          let quantityRequiredPerPieceOfDesign = utils.validateNumber(
+            dM.quantity
+          );
+          /** Price of single raw material */
+          let ppp = utils.validateNumber(dM?.raw_material?.costing);
+          /** Balance */
+          let rawMaterialBalance = utils.validateNumber(
+            dM?.raw_material?.balance
+          );
+          /** Total raw material required for remaining quantity
+           *  Quantity for single piece  *  remaining quantity
+           */
+          let totalMaterialsRequiredForRemainingQuantity =
+            quantityRequiredPerPieceOfDesign * remainingQuantity;
+          let totalMaterialsUsedForCompletedQuantity =
+            quantityRequiredPerPieceOfDesign * quantityCompleted;
+          let costofRawMaterialRequiredForOrderCompletion =
+            totalMaterialsRequiredForRemainingQuantity * ppp;
+          let costofRawMaterialUsedForCompletedQuantity =
+            totalMaterialsUsedForCompletedQuantity * ppp;
+          let difference =
+            rawMaterialBalance - totalMaterialsRequiredForRemainingQuantity;
+
+          let rawMaterialData = {
+            Name: dM?.raw_material?.name,
+            Category: dM.raw_material?.category?.name,
+            "Is Die?": dM?.raw_material?.is_die,
+            Unit: dM?.raw_material?.unit?.name,
+            Size: dM?.raw_material?.size,
+            "Current Balance": rawMaterialBalance,
+            /** Quantity requires for making remaining order */
+            "Total Required": totalMaterialsRequiredForRemainingQuantity,
+            Difference: difference,
+            /** Quantity required for making completed order */
+            "Total Used": totalMaterialsUsedForCompletedQuantity,
+            /** Price of single raw material */
+            "Costing (Rs:-)": ppp,
+            /** Cost of raw material for completing order */
+            "Cost for order completion (Rs:-)":
+              costofRawMaterialRequiredForOrderCompletion,
+            /** Cost of raw material required for completed order */
+            "Cost incurred for completed orders (Rs:-)":
+              costofRawMaterialUsedForCompletedQuantity,
+          };
+
+          if (
+            finalRawMaterialJson.hasOwnProperty(rawMaterialId) &&
+            finalRawMaterialJson.rawMaterialId
+          ) {
+            let temp1 = finalRawMaterialJson[rawMaterialId]["Total Required"];
+            let temp2 = finalRawMaterialJson[rawMaterialId]["Total Used"];
+            let temp3 =
+              finalRawMaterialJson[rawMaterialId][
+                "Cost for order completion (Rs:-)"
+              ];
+            let temp4 =
+              finalRawMaterialJson[rawMaterialId][
+                "Cost incurred for completed orders (Rs:-)"
+              ];
+            let temp5 = finalRawMaterialJson[rawMaterialId]["Difference"];
+
+            finalRawMaterialJson = {
+              ...finalRawMaterialJson,
+              [rawMaterialId]: {
+                ...finalRawMaterialJson[rawMaterialId],
+                ["Total Required"]:
+                  temp1 + totalMaterialsRequiredForRemainingQuantity,
+                ["Total Used"]: temp2 + totalMaterialsUsedForCompletedQuantity,
+                ["Cost for order completion (Rs:-)"]:
+                  temp3 + costofRawMaterialRequiredForOrderCompletion,
+                ["Cost incurred for completed orders (Rs:-)"]:
+                  temp4 + costofRawMaterialUsedForCompletedQuantity,
+                Difference: temp5 + difference,
+              },
+            };
+          } else {
+            finalRawMaterialJson = {
+              ...finalRawMaterialJson,
+              [rawMaterialId]: {
+                ...rawMaterialData,
+              },
+            };
+          }
+        }
+      });
+    }
+  });
+  return finalRawMaterialJson;
 };
 
 const getRawMaterialAvailibility = async (
@@ -766,12 +1215,77 @@ const getRawMaterialAvailibility = async (
     rawMaterials: [],
     isColorPresent: false,
   };
+
   if (orderRatio.length) {
     finalDataToSend = {
       ...finalDataToSend,
       isColorPresent: true,
       orderRatios: {},
     };
+
+    await utils.asyncForEach(orderRatio, async (or) => {
+      /** General calculation for single ratio */
+      let totalQuantity = utils.validateNumber(or.quantity);
+      let quantityCompleted = utils.validateNumber(or.quantity_completed);
+      let remainingQuantity = totalQuantity - quantityCompleted;
+
+      const designMaterial = await strapi.query("designs-and-materials").find(
+        {
+          design: designId,
+          color: or.color,
+          isRawMaterial: true,
+          isColor: true,
+        },
+        [
+          "raw_material",
+          "raw_material.category",
+          "raw_material.department",
+          "raw_material.unit",
+          "ready_material",
+        ]
+      );
+
+      if (designMaterial.length) {
+        designMaterial.forEach((dM) => {
+          /** Quantity requires for making single piece of design */
+          let quantityRequiredPerPieceOfDesign = utils.validateNumber(
+            dM.quantity
+          );
+          /** Price of single raw material */
+          let ppp = utils.validateNumber(dM?.raw_material?.costing);
+          /** Cost of raw material for making single design */
+          let costOfRawMaterialPerDesign =
+            quantityRequiredPerPieceOfDesign * ppp;
+          /** Balance */
+          let rawMaterialBalance = utils.validateNumber(
+            dM?.raw_material?.balance
+          );
+          /** Total raw material required for remaining quantity
+           *  Quantity for single piece  *  remaining quantity
+           */
+          let totalMaterialsRequiredForRemainingQuantity =
+            quantityRequiredPerPieceOfDesign * remainingQuantity;
+
+          let rawMaterialData = {
+            id: dM?.raw_material?.id,
+            name: dM?.raw_material?.name,
+            currentBalance: rawMaterialBalance,
+            category: dM.raw_material?.category?.name,
+            unit: dM?.raw_material?.unit?.name,
+            isDie: dM?.raw_material?.is_die,
+            size: dM?.raw_material?.size,
+            /** Price of single raw material */
+            ppp: ppp,
+            /** Quantity requires for making single piece of design */
+            quantityRequiredPerPieceOfDesign: quantityRequiredPerPieceOfDesign,
+            /** Cost of raw material for making single design */
+            costOfRawMaterialPerDesign: costOfRawMaterialPerDesign,
+          };
+        });
+      } else {
+      }
+    });
+
     orderRatio.forEach((or) => {
       let totalQuantity = isNaN(parseFloat(or.quantity))
         ? 0
@@ -900,16 +1414,36 @@ const getDepartmentSheetDetails = async (id) => {
   const orderDetail = await strapi.query("orders").findOne({
     id: id,
   });
-  const ratio = orderDetail.ratio;
+
+  const orderRatio = await strapi.query("order-ratios").find({
+    order: id,
+  });
+
+  const ratio = orderRatio;
   const colorList = ratio.map((r) => {
     if (r.color) {
       let color = r.color;
       return {
         id: color.id,
         name: color.name,
+        quantity: r.quantity,
+        quantityCompleted: r.quantity_completed,
       };
     }
   });
+
+  output = {
+    ...output,
+    order_id: id,
+    nl_no: orderDetail?.design?.material_no
+      ? orderDetail.design.material_no
+      : "----",
+    quantity: orderDetail.quantity,
+    order_date: orderDetail.date,
+    order_no: orderDetail.order_id,
+    colorList: colorList,
+    departmentList: departmentList,
+  };
 
   const department_order_sheet = await strapi
     .query("department-order-sheet")
@@ -917,18 +1451,6 @@ const getDepartmentSheetDetails = async (id) => {
       order: id,
     });
 
-  output = {
-    ...output,
-    order_id: id,
-    nl_no: orderDetail.ready_material
-      ? orderDetail.ready_material.material_no
-      : "",
-    quantity: orderDetail.quantity,
-    order_date: orderDetail.date,
-    order_no: orderDetail.order_id,
-    colorList: colorList,
-    departmentList: departmentList,
-  };
   if (department_order_sheet) {
     const department_order_sheet_with_color = await strapi
       .query("department-sheet-with-color")

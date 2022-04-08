@@ -124,6 +124,14 @@ export const convertNumber = (
   return num;
 };
 
+//s2ab method
+export function s2ab(s) {
+  var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+  var view = new Uint8Array(buf); //create uint8array as viewer
+  for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff; //convert to octet
+  return buf;
+}
+
 export function formatDate(value) {
   let date = new Date(value);
   const day = date.toLocaleString("default", { day: "2-digit" });

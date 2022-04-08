@@ -58,3 +58,6 @@ export const backend_raw_material_and_quantity_for_ready_material_for_delete_raw
 export const backend_order = `${apiUrl}/orders`;
 export const backend_order_to_get_department_sheet = `${apiUrl}/orders/department_sheet`;
 export const backend_order_check_raw_material_availibility = `${apiUrl}/orders/check_availibility`;
+export const backend_order_check_raw_material_availibility_for_all_order = `${apiUrl}/orders/check_all_order_availibility`;
+export const backend_download_all_orders = `${apiUrl}/orders/download-order`;
+export const backend_download_orders_sheet = `${apiUrl}/orders/download-order-sheet`;

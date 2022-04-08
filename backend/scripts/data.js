@@ -271,6 +271,9 @@ const ROLES = {
           "check_availibility",
           "getdepartmentsheet",
           "createupdatedepartmentsheet",
+          "check_all_order_availibility",
+          "downloadorder",
+          "downloadordersheet",
         ],
       },
       {
@@ -451,6 +454,9 @@ const ROLES = {
           "check_availibility",
           "getdepartmentsheet",
           "createupdatedepartmentsheet",
+          "check_all_order_availibility",
+          "downloadorder",
+          "downloadordersheet",
         ],
       },
       {

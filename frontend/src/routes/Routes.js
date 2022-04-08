@@ -31,13 +31,10 @@ import {
   ADDREADYMATERIAL,
   EDITREADYMATERIAL,
   VIEWREADYMATERIAL,
-  VIEWSALES,
   PARTIES,
   ADDPARTIES,
   EDITPARTIES,
   ADDORDER,
-  EDITORDER,
-  VIEWORDER,
   ORDERS,
   ADDCOLOR,
   EDITCOLOR,
@@ -45,11 +42,9 @@ import {
   ADDCATEGORIES,
   EDITCATEGORIES,
   CATEGORIES,
-  DEPARTMENTSHEET,
   LEDGER,
   SALES,
   ADDSALES,
-  EDITSALES,
   NOTFOUNDPAGE,
   SALERETURN,
   ADDSALERETURN,
@@ -65,6 +60,8 @@ import {
   EDITSALESID,
   EDITORDERID,
   VIEWORDERID,
+  VIEWDEPARTMENTSHEETID,
+  EDITDEPARTMENTSHEETID,
 } from "../paths";
 import {
   Login,
@@ -454,10 +451,22 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={DEPARTMENTSHEET}
+          path={VIEWDEPARTMENTSHEETID}
           exact
           component={DepartmentSheet}
-          header={"Department Sheet"}
+          header={"View Department Sheet"}
+          isDependent={true}
+          isView={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITDEPARTMENTSHEETID}
+          exact
+          component={DepartmentSheet}
+          header={"Edit Department Sheet"}
+          isDependent={true}
+          isEdit={true}
         />
 
         {/** Colors */}

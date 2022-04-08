@@ -12,6 +12,7 @@ export {
   getInitials,
   getRoutesOnLogin,
   validateNumber,
+  s2ab,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

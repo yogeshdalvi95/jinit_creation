@@ -54,7 +54,10 @@ export const VIEWORDER = "/view-order";
 export const VIEWORDERID = `${VIEWORDER}/:id`;
 export const EDITORDERID = `${EDITORDER}/:id`;
 
-export const DEPARTMENTSHEET = "/department-sheet";
+export const VIEWDEPARTMENTSHEET = "/view-department-sheet";
+export const EDITDEPARTMENTSHEET = "/edit-department-sheet";
+export const VIEWDEPARTMENTSHEETID = `${VIEWDEPARTMENTSHEET}/:id`;
+export const EDITDEPARTMENTSHEETID = `${EDITDEPARTMENTSHEET}/:id`;
 
 export const SALES = "/sales";
 export const ADDSALES = "/add-sales";

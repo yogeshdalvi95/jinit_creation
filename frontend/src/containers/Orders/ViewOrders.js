@@ -1,12 +1,22 @@
 import React, { useState } from "react";
 
-import { FormControlLabel, Icon, makeStyles, Switch } from "@material-ui/core";
+import { saveAs } from "file-saver";
+import {
+  Backdrop,
+  CircularProgress,
+  FormControlLabel,
+  Icon,
+  makeStyles,
+  Switch,
+} from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { convertNumber, isEmptyString, dateToDDMMYYYY } from "../../Utils";
+import { isEmptyString, dateToDDMMYYYY, s2ab } from "../../Utils";
 import {
+  backend_download_all_orders,
   backend_order,
-  backend_order_to_get_department_sheet,
+  backend_order_check_raw_material_availibility_for_all_order,
+  backend_download_orders_sheet,
 } from "../../constants";
 import {
   Auth,
@@ -14,26 +24,28 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomDropDown,
   CustomInput,
   DatePicker,
   FAB,
   GridContainer,
   GridItem,
-  RatioTable,
   SnackBarComponent,
   Table,
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { ADDORDER, DEPARTMENTSHEET, EDITORDER, VIEWORDER } from "../../paths";
+import {
+  ADDORDER,
+  EDITDEPARTMENTSHEET,
+  EDITORDER,
+  VIEWORDER,
+} from "../../paths";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
-import { providerForGet } from "../../api";
-import { useEffect } from "react";
 import moment from "moment";
-import { Typography } from "@mui/material";
 import { validateNumber } from "../../Utils";
+import { providerForDownload, providerForGet } from "../../api";
+import DownloadIcon from "@mui/icons-material/Download";
 
 const useStyles = makeStyles(styles);
 
@@ -42,6 +54,7 @@ export default function ViewOrders(props) {
   const tableRef = React.createRef();
   const history = useHistory();
   const [openBackDrop, setBackDrop] = useState(false);
+
   const [filter, setFilter] = useState({
     _sort: "date:desc",
     in_progress: true,
@@ -91,9 +104,9 @@ export default function ViewOrders(props) {
             const temp =
               el.color?.name +
               ": " +
-              validateNumber(el.quantity) +
+              validateNumber(el.quantity_completed) +
               "/" +
-              validateNumber(el.quantity_completed);
+              validateNumber(el.quantity);
             if (index === 0) {
               output = output + temp;
             } else {
@@ -102,7 +115,7 @@ export default function ViewOrders(props) {
             output = output + "\n\n";
           });
         } else {
-          output = rowData.quantity + "/" + rowData.completed_quantity;
+          output = rowData.completed_quantity + "/" + rowData.quantity;
         }
         return output;
       },
@@ -209,10 +222,7 @@ export default function ViewOrders(props) {
   };
 
   const handleDepartmentSheet = async (row) => {
-    history.push({
-      pathname: DEPARTMENTSHEET,
-      search: `?oid=${row.id}`,
-    });
+    history.push(`${EDITDEPARTMENTSHEET}/${row.id}`);
   };
 
   const handleChange = (event) => {
@@ -263,6 +273,86 @@ export default function ViewOrders(props) {
         date_gte: startDate,
       }));
     }
+  };
+
+  const checkAvailibility = async () => {
+    setBackDrop(true);
+    providerForGet(
+      backend_order_check_raw_material_availibility_for_all_order,
+      filter,
+      Auth.getToken()
+    )
+      .then((res) => {
+        saveAs(
+          new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
+          `raw material availibility`
+        );
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error while exporting data",
+        }));
+      });
+  };
+
+  const downloadOrder = async () => {
+    setBackDrop(true);
+    await providerForDownload(
+      backend_download_all_orders,
+      filter,
+      Auth.getToken()
+    )
+      .then((res) => {
+        const url = URL.createObjectURL(
+          new Blob([res.data], { type: "application/pdf" })
+        );
+        const pdfNewWindow = window.open();
+        pdfNewWindow.location.href = url;
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error while downloading order data",
+        }));
+      });
+  };
+
+  const downloadOrderSheet = async (rowData) => {
+    setBackDrop(true);
+    await providerForDownload(
+      backend_download_orders_sheet,
+      {
+        id: rowData.id,
+      },
+      Auth.getToken()
+    )
+      .then((res) => {
+        const url = URL.createObjectURL(
+          new Blob([res.data], { type: "application/pdf" })
+        );
+        const pdfNewWindow = window.open();
+        pdfNewWindow.location.href = url;
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        console.log("error ", err);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error while downloading order data",
+        }));
+      });
   };
 
   return (
@@ -386,15 +476,15 @@ export default function ViewOrders(props) {
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={filter["fully_completed"] ? true : false}
+                          checked={filter["completed"] ? true : false}
                           onChange={(event) => {
                             if (event.target.checked) {
                               setFilter((filter) => ({
                                 ...filter,
-                                fully_completed: event.target.checked,
+                                completed: event.target.checked,
                               }));
                             } else {
-                              delete filter["fully_completed"];
+                              delete filter["completed"];
                               setFilter((filter) => ({
                                 ...filter,
                               }));
@@ -425,15 +515,15 @@ export default function ViewOrders(props) {
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={filter["partial_completed"] ? true : false}
+                          checked={filter["in_progress"] ? true : false}
                           onChange={(event) => {
                             if (event.target.checked) {
                               setFilter((filter) => ({
                                 ...filter,
-                                partial_completed: event.target.checked,
+                                in_progress: event.target.checked,
                               }));
                             } else {
-                              delete filter["partial_completed"];
+                              delete filter["in_progress"];
                               setFilter((filter) => ({
                                 ...filter,
                               }));
@@ -450,7 +540,7 @@ export default function ViewOrders(props) {
                       classes={{
                         label: classes.label,
                       }}
-                      label="Partial completed orders"
+                      label="In progress"
                     />
                   </div>
                 </GridItem>
@@ -498,7 +588,7 @@ export default function ViewOrders(props) {
                 <GridItem
                   xs={12}
                   sm={12}
-                  md={4}
+                  md={12}
                   style={{
                     marginTop: "27px",
                   }}
@@ -521,6 +611,12 @@ export default function ViewOrders(props) {
                     }}
                   >
                     Cancel
+                  </Button>
+                  <Button color="primary" onClick={() => checkAvailibility()}>
+                    Check Stock Availability
+                  </Button>
+                  <Button color="primary" onClick={() => downloadOrder()}>
+                    Download Order
                   </Button>
                 </GridItem>
               </GridContainer>
@@ -563,29 +659,14 @@ export default function ViewOrders(props) {
                           handleDepartmentSheet(rowData);
                         },
                       }),
+                      (rowData) => ({
+                        icon: () => <DownloadIcon fontSize="small" />,
+                        tooltip: "Download Order Sheet",
+                        onClick: (event, rowData) => {
+                          downloadOrderSheet(rowData);
+                        },
+                      }),
                     ]}
-                    detailPanel={(rowData) => {
-                      if (rowData.ratio.length) {
-                        return (
-                          <GridContainer className={classes.detailPanelGrid}>
-                            <GridItem xs={12} sm={12} md={12}>
-                              <Typography
-                                variant="h6"
-                                gutterBottom
-                                component="div"
-                              >
-                                Ratio
-                              </Typography>
-                            </GridItem>
-                            <GridItem xs={12} sm={12} md={12}>
-                              <RatioTable title="Ratio" rows={rowData.ratio} />
-                            </GridItem>
-                          </GridContainer>
-                        );
-                      } else {
-                        return null;
-                      }
-                    }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,
@@ -603,6 +684,9 @@ export default function ViewOrders(props) {
           </Card>
         </GridItem>
       </GridContainer>
+      <Backdrop className={classes.backdrop} open={openBackDrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   );
 }
