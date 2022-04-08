@@ -44,7 +44,6 @@ import {
   CATEGORIES,
   ADDCATEGORIES,
   EDITCATEGORIES,
-  DEPARTMENTSHEET,
   LEDGER,
   SALES,
   SALERETURN,
@@ -57,13 +56,14 @@ import {
   VIEWDESIGN,
   EDITDESIGNID,
   VIEWDESIGNID,
-  SELECTRAWMATERIALS,
   SELECTRAWMATERIALSID,
   SELECTREADYMATERIALSID,
   VIEWSALESID,
   EDITSALESID,
   EDITORDERID,
   VIEWORDERID,
+  VIEWDEPARTMENTSHEETID,
+  EDITDEPARTMENTSHEETID,
 } from "../paths";
 
 /** Raw material and units */
@@ -142,8 +142,8 @@ const orderPathsList = [
   EDITORDERID,
   VIEWORDERID,
 ];
-const departmentSheetList = [DEPARTMENTSHEET];
-const orderPaths = [...orderPathsList, ...departmentSheetList];
+const departmentSheetPaths = [VIEWDEPARTMENTSHEETID, EDITDEPARTMENTSHEETID];
+const orderPaths = [...orderPathsList, ...departmentSheetPaths];
 
 const partiesPathList = [PARTIES, ADDPARTIES, EDITPARTIES];
 const salesPathList = [
@@ -277,13 +277,6 @@ const ordersJson = {
   pathList: orderPathsList,
 };
 
-const departmentSheetJson = {
-  path: DEPARTMENTSHEET,
-  name: "Department Sheet",
-  layout: "",
-  pathList: departmentSheetList,
-};
-
 export const DashboardStaffRoutes = [
   {
     name: "Purchases",
@@ -311,17 +304,10 @@ export const DashboardStaffRoutes = [
     pathList: designPathList,
   },
   {
-    path: LISTREADYMATERIAL,
-    name: "Ready Materials",
-    icon: Dashboard,
-    layout: "",
-    pathList: readyMaterialPath,
-  },
-  {
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson, departmentSheetJson],
+    children: [ordersJson],
   },
   {
     name: "Sales",
@@ -365,17 +351,10 @@ export const DashboardAdminRoutes = [
     pathList: designPathList,
   },
   {
-    path: LISTREADYMATERIAL,
-    name: "Ready Materials",
-    icon: Dashboard,
-    layout: "",
-    pathList: readyMaterialPath,
-  },
-  {
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson, departmentSheetJson],
+    children: [ordersJson],
   },
   {
     name: "Sales",
@@ -426,17 +405,10 @@ export const SuperAdminDashboardRoutes = [
     pathList: designPathList,
   },
   {
-    path: LISTREADYMATERIAL,
-    name: "Ready Materials",
-    icon: Dashboard,
-    layout: "",
-    pathList: readyMaterialPath,
-  },
-  {
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson, departmentSheetJson],
+    children: [ordersJson],
   },
   {
     name: "Sales",

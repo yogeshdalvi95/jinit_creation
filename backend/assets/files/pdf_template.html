@@ -12,32 +12,7 @@
         margin-right: {pdfMargin}px;
         font-family: "Montserrat", sans-serif;
       }
-      main.main {
-        margin: 0 auto;
-        font-family: "Montserrat", sans-serif;
-      }
-      .client_name {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 14px;
-        font-family: "Montserrat", sans-serif;
-        font-weight: 600;
-        padding-top: 4px;
-        padding-bottom: 4px;
-        background-color: #f4f8ff;
-        color: #000000;
-        width: {width}px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .report_date {
-        font-size: 14px;
-        margin-top: 14px;
-        text-align: left;
-        font-family: "Montserrat", sans-serif;
-        font-weight: 500;
-        color: #000000;
-      }
+
       h1.h1 {
         text-align: center;
         font-size: 16px;
@@ -48,16 +23,33 @@
         margin-left: auto;
         margin-right: auto;
       }
-      h4.h4 {
-        text-align: center;
+      th {
+        text-align: left;
         font-size: 14px;
+        font-family: "Montserrat", sans-serif;
+        border: 1.5px solid #5f5d5d !important;
+        word-break: break-word;
+        padding: 8px;
+      }
+
+      td {
+        text-align: left;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: "Montserrat", sans-serif;
+        border: 1.5px solid #5f5d5d !important;
+        padding: 8px;
+      }
+
+      .report_date {
+        font-size: 14px;
+        margin-top: 14px;
+        text-align: left;
         font-family: "Montserrat", sans-serif;
         font-weight: 500;
         color: #000000;
-        height: 16px;
-        margin-left: auto;
-        margin-right: auto;
       }
+
       .h4class {
         text-align: center;
         font-size: 14px;
@@ -69,39 +61,13 @@
         margin-right: auto;
       }
       .center {
-        margin-top: 160px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 45%;
-      }
-      .data-table {
-        margin-bottom: 25px;
-        margin-left: 0px;
-        margin-right: 0px;
-      }
-      table.table {
         width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 40px;
-        table-layout: fixed;
+        height: 400px;
+        object-fit: contain;
+        background-color: #f3f3f3;
+        border: 2px solid #aba5a5 !important;
       }
-      table.tableWithoutFixedLayout {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 40px;
-      }
-      th.th {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        background-color: #005ABA;
-        padding: 10px;
-        color: #FFFFFF;
-        border: 1.5px solid #333333;
-        word-break: break-word;
-      }
+
       th.leftAlignText {
         text-align: left !Important;
       }
@@ -110,6 +76,22 @@
       }
       th.leftPadding {
         padding-left: 30px !Important;
+      }
+      th.rightPadding {
+        padding-right: 30px !Important;
+      }
+      th.fullWidth {
+        width : 100%
+      }
+      th.mediumFont {
+        font-size: 13px;
+      }
+      th.halfWidth {
+        width: 50px !important;
+      }
+
+      td.halfWidth {
+        width: 50px !important;
       }
       td.leftAlignText {
         text-align: left !Important;
@@ -123,9 +105,6 @@
       td.rightPaddingTd {
         padding-right: 30px !Important;
       }
-      th.rightPadding {
-        padding-right: 30px !Important;
-      }
       td.borderNone {
         border : none !Important
       }
@@ -135,127 +114,30 @@
       td.noBorderTop {
         border-top : none !Important
       }
-      th.fullWidth {
-        width : 100%
-      }
-      th.mediumFont {
-        font-size: 13px;
-      }
       td.mediumFont {
         font-size: 13px;
       }
+
       .minWidth{
         width : 101px;
       }
       .calorieProteinWidth{
         width : 57px;
       }
-      .quantitySize{
-        width : 20px;
-      }
-      .portionSize{
-        width : 80px !Important;
-      }
-      .foodItemWidth{
-        width : 100px;
-      }
-      .exchangeColumnWidth{
-        width : 30px;
-      }
-      .carbColumnWidth{
-        width : 45px;
-      }
-      .fatColumnWidth{
-        width : 38px;
-      }
-      .shoppingListQuantity{
-        width : 63px;
-      }
-      .exchangeMenuWidth{
-        width : 90px;
-      }
-      .exchangePortionWidthInMenu{
-        width : 25px;
-      }
-      .mealColumnInMenuWidth{
-        width : 46px;
-      }
       .noRightBorderTh {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        background-color: #005ABA;
-        padding: 10px;
-        border-left: 1.5px solid #333333;
-        border-top: 1.5px solid #333333;
-        border-bottom: 1.5px solid #333333;
         border-right: none;
       }
       .noLeftBorderTh {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        background-color: #005ABA;
-        padding: 10px;
-        border-right: 1.5px solid #333333;
-        border-top: 1.5px solid #333333;
-        border-bottom: 1.5px solid #333333;
         border-left: none;
       }
       .noLeftRightBorderTh {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        background-color: #005ABA;
-        padding: 10px;
-        border-right: none;
-        border-top: 1.5px solid #333333;
-        border-bottom: 1.5px solid #333333;
         border-left: none;
       }
       th.rightAlignHeadings {
         text-align: right;
-        font-size: 14px;
-        font-weight: 500;
-        background-color: #005ABA;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        border: 1.5px solid #333333;
-      }
-      /* tr:nth-child(even) {
-        background-color: #F4F8FF;
-      } */
-      td.td {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        border: 1.5px solid #333333;
-        word-break: break-word;
-      }
-      td.otherTxt {
-        text-align: left;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        border-bottom: 1.5px solid #333333;
       }
       td.numClass {
         text-align: right;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        padding: 10px;
-        color: #000000;
-        border: 1.5px solid #333333;
       }
       tr.whiteRows{
         background-color: #FFFFFF;
@@ -283,116 +165,30 @@
         border-left: none !Important;
         border-right: none !Important;
       }
-      td.bmiValues {
-        width : 190px;
-        text-align: right !Important;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        border: 1.5px solid #333333;
-        border-right : none !Important;
-      }
-      td.bmiUnits {
-        text-align: left !Important;
-        color: #000000;
-        border: 1.5px solid #333333;
-        border-left : none !Important;
-      }
-      td.bmiKeys {
-        text-align: left;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        padding-left : 70px;
-        border: 1.5px solid #333333;
-        width : 300px;
-      }
-      th.bmiValues {
-        width : 190px;
-        text-align: right !Important;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        border: 1.5px solid #333333;
-      }
-      th.bmiKeys {
-        text-align: left;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "Montserrat", sans-serif;
-        color: #000000;
-        padding: 10px;
-        padding-left : 70px;
-        border: 1.5px solid #333333;
-        width : 300px;
-      }
-      .graph-title {
-        margin: 0px 14px;
-        text-align: center;
-        font-size: 14px;
-        font-family: "Montserrat", sans-serif;
-        font-weight: 500;
-        padding-bottom: 25px;
-      }
 
-      .graph {
-        margin: 25px 0px;
-        text-align: center;
-        display: block;
-      }
-      .graph-box img {
-        text-align: center;
-        width: 100%;
-        margin-bottom: 20px;
-      }
-      .pieChartHeading {
-        margin: 0px 14px;
-        margin-top: 14px;
-        color: #000000;
-        margin-bottom: 17px;
-        text-align: center;
-        font-size: 14px;
-        font-family: "Montserrat", sans-serif;
-      }
-      .graphHtml {
-        text-align: center;
-      }
-      .graphImg {
-        width: 80%;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      .report_details {
-        width : 100%
-      }
-      .graphContainer {
-        width : 100%;
-        border: 1px solid #333333;
-        margin : auto
-      }
-      .graphHeaderMainContainer {
-        width : 100%;
-        height : 39px;
-        /* border: 1.8px solid #333333; */
-        background-color : #005ABA;
-        text-align : left;
-      }
-      .graphHeader {
-        padding-top : 10px;
-        padding-left : 10px;
-        font-weight : 500;
-        color:#FFFFFF
-      }
-      .graph {
-        padding-top : 10px
-        text-align : center;
-      }
+      * {
+          box-sizing: border-box;
+        }
+
+      .row {
+          display: flex;
+          margin-left:-5px;
+          margin-right:-5px;
+        }
+        .column {
+          flex: 65%;
+          padding: 5px;
+        }
+        .column1 {
+          flex: 35%;
+          padding: 5px;
+        }
+        table {
+          border-collapse: collapse;
+          border-spacing: 0;
+          width: 100%;
+          border: 1px solid #ddd;
+        }
     </style>
     <script>
       window.onload = function () {};
@@ -400,6 +196,7 @@
   </head>
   <body class="body">
     <main class="main">
+      <h1 class="h1">{report_name}</h1>
       <div class="data-table">{htmlTag}</div>
     </main>
   </body>

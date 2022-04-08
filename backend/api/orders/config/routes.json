@@ -9,9 +9,33 @@
       }
     },
     {
-      "method": "POST",
-      "path": "/orders/check_availibility",
+      "method": "GET",
+      "path": "/orders/check_availibility/:id",
       "handler": "orders.check_availibility",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/orders/check_all_order_availibility",
+      "handler": "orders.check_all_order_availibility",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/orders/download-order",
+      "handler": "orders.downloadOrder",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/orders/download-order-sheet",
+      "handler": "orders.downloadOrderSheet",
       "config": {
         "policies": []
       }

@@ -1,6 +1,8 @@
 const _ = require("lodash");
 const XLSX = require("xlsx");
-const excel = require("exceljs");
+const fs = require("fs");
+var path = require("path");
+const puppeteer = require("puppeteer");
 const {
   PDFDocument,
   StandardFonts,
@@ -9,8 +11,6 @@ const {
   grayscale,
 } = require("pdf-lib");
 const fontkit = require("@pdf-lib/fontkit");
-var pixelWidth = require("string-pixel-width");
-const fs = require("fs");
 
 function getRequestParams(params) {
   const page = params.page ? parseInt(params.page) : 1;
@@ -167,6 +167,18 @@ function utilityFunctionForGettingBytesExcelData(data, sheet_name) {
   return wbout;
 }
 
+function utilityFunctionForGettingBytesExcelDataForMultipleSheets(data) {
+  var wb = XLSX.utils.book_new();
+  let sheetNames = Object.keys(data);
+  sheetNames.forEach((sn) => {
+    wb.SheetNames.push(sn);
+    var ws = XLSX.utils.json_to_sheet(data[sn]);
+    wb.Sheets[sn] = ws;
+  });
+  var wbout = XLSX.write(wb, { bookType: "xlsx", type: "binary" });
+  return wbout;
+}
+
 function roundNumberTo2digit(num) {
   if (!isNaN(parseFloat(num))) {
     return parseFloat(parseFloat(num).toFixed(2));
@@ -200,6 +212,54 @@ function checkIfDateFallsInCurrentMonth(date) {
   }
 }
 
+function base64_encode(file) {
+  var bitmap = fs.readFileSync(file);
+  return new Buffer.from(bitmap).toString("base64");
+}
+
+const noDataImg =
+  "data:image/png;base64," +
+  base64_encode(path.resolve(__dirname, `../assets/images/nodata.jpg`));
+
+const logo =
+  "data:image/png;base64," +
+  base64_encode(path.resolve(__dirname, `../assets/images/logo.png`));
+
+const pdfMargin = 45;
+
+const generatePDF = async (report_name, html) => {
+  var content = fs.readFileSync(
+    path.resolve(__dirname, "../assets/files/pdf_template.html"),
+    "utf-8"
+  );
+
+  var contentVal = content.replace(/{pdfMargin}/g, pdfMargin);
+
+  /** pdf margin */
+  contentVal = contentVal.replace(/{report_name}/g, report_name);
+  contentVal = contentVal.replace(/{htmlTag}/g, html);
+
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(contentVal);
+
+  const buffer = await page.pdf({
+    printBackground: false,
+    displayHeaderFooter: true,
+    margin: {
+      left: "0px",
+      top: `90px`,
+      right: "0px",
+      bottom: "90px",
+    },
+    headerTemplate: `<span><img src = '${logo}' width = '60' style='margin-left:35px;'/></span>`,
+    footerTemplate:
+      '<span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
+  });
+  await browser.close();
+  return buffer;
+};
+
 module.exports = {
   roundNumberTo2digit,
   getRequestParams,
@@ -225,4 +285,10 @@ module.exports = {
   getDateInMMDDYYYY,
   validateNumber,
   checkIfDateFallsInCurrentMonth,
+  utilityFunctionForGettingBytesExcelDataForMultipleSheets,
+  noDataImg,
+  pdfMargin,
+  generatePDF,
+  logo,
+  base64_encode,
 };

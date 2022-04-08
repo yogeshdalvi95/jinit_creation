@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { saveAs } from "file-saver";
 import {
   Backdrop,
   CircularProgress,
@@ -13,7 +13,7 @@ import {
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { hasError, isEmptyString, uuidv4 } from "../../Utils";
+import { hasError, isEmptyString, s2ab, uuidv4 } from "../../Utils";
 import {
   Auth,
   Button,
@@ -26,7 +26,6 @@ import {
   DatePicker,
   DialogBoxForSelectingDesign,
   DialogForCheckingStockAvailibility,
-  DialogForSelectingColor,
   DialogForSelectingParties,
   FAB,
   GridContainer,
@@ -35,7 +34,7 @@ import {
   SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import { DEPARTMENTSHEET, EDITORDER, NOTFOUNDPAGE, ORDERS } from "../../paths";
+import { EDITDEPARTMENTSHEETID, EDITORDER, ORDERS } from "../../paths";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
@@ -53,7 +52,6 @@ import { providerForGet, providerForPost, providerForPut } from "../../api";
 import moment from "moment";
 import { validateNumber } from "../../Utils";
 import { Chip, Typography } from "@mui/material";
-import DoneIcon from "@mui/icons-material/Done";
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -81,9 +79,6 @@ export default function AddOrder(props) {
     useState(false);
 
   const [availibleStocks, setAvailibleStocks] = useState({});
-
-  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
-    useState(false);
 
   const [error, setError] = React.useState({});
   const [info, setInfo] = React.useState({});
@@ -131,12 +126,6 @@ export default function AddOrder(props) {
   const [colorPresent, setColorPresent] = useState([]);
   const [duplicateColorAlert, setDuplicateColorAlert] = useState(null);
 
-  const [ratioQuantityStatus, setRatioQuantityStatus] = useState({
-    totalRatioQuantityPlaced: 0,
-    totalRatioQuantityCompleted: 0,
-    totalRatioQuantityRemaining: 0,
-  });
-
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
@@ -151,7 +140,12 @@ export default function AddOrder(props) {
   }, []);
 
   useEffect(() => {
-    let parsedCompletedValue = validateNumber(formState.completedQuantity);
+    let completedQuantity = 0;
+    completedQuantity = ratio.reduce((acc, currObj) => {
+      return acc + validateNumber(currObj.quantityCompleted);
+    }, completedQuantity);
+
+    let parsedCompletedValue = validateNumber(completedQuantity);
     let parsedTotalQuantity = validateNumber(formState.quantity);
     if (
       parsedCompletedValue &&
@@ -265,10 +259,6 @@ export default function AddOrder(props) {
       inProgress: data.in_progress,
       cancelled: data.cancelled,
       completed: data.completed,
-      bufferQuantity: data.buffer_quantity,
-      completedQuantity: data.completed_quantity,
-      previousCompleted: data.completed_quantity,
-      remainingQuantity: data.remaining_quantity,
       notes: data.notes,
       quantity: data.quantity,
       date: new Date(data.date),
@@ -425,8 +415,6 @@ export default function AddOrder(props) {
     }
   };
 
-  console.log("formState ", formState);
-
   const addButton = async () => {
     setBackDrop(true);
     if (isEdit) {
@@ -435,10 +423,7 @@ export default function AddOrder(props) {
         id,
         {
           order_id: formState.order_id?.trim(),
-          // design: design.id,
           quantity: formState.quantity,
-          // party: party.id,
-          // party_no: formState.party_no,
           date: formState.date,
           in_progress: formState.inProgress,
           completed: formState.completed,
@@ -509,10 +494,6 @@ export default function AddOrder(props) {
       ...error,
     }));
     handleCloseDialogForParties();
-  };
-
-  const handleCloseDialogForColor = () => {
-    setOpenDialogForSelectingColor(false);
   };
 
   const handleOrderDate = (event) => {
@@ -703,21 +684,16 @@ export default function AddOrder(props) {
 
   const checkAvailibility = async () => {
     setBackDrop(true);
-    await providerForPost(
-      backend_order_check_raw_material_availibility,
-      {
-        design: design.id,
-        ratio: ratio && ratio.length ? ratio : [],
-        remaining_quantity: validateNumber(formState.remainingQuantity),
-        buffer_quantity: validateNumber(formState.bufferQuantity),
-        total_quantity: validateNumber(formState.quantity),
-        completed_quantity: validateNumber(formState.completedQuantity),
-      },
+    providerForGet(
+      backend_order_check_raw_material_availibility + "/" + id,
+      {},
       Auth.getToken()
     )
       .then((res) => {
-        setAvailibleStocks(res.data);
-        setOpenDialogForStockAvailibility(true);
+        saveAs(
+          new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
+          `raw_material_availibility for order ${formState.order_id}`
+        );
         setBackDrop(false);
       })
       .catch((err) => {
@@ -726,7 +702,7 @@ export default function AddOrder(props) {
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error",
+          message: "Error while exporting data",
         }));
       });
   };
@@ -759,11 +735,6 @@ export default function AddOrder(props) {
       return acc + validateNumber(currObj.quantity);
     }, output);
 
-    console.log(
-      "validateNumber(formState.quantity) - output ",
-      validateNumber(formState.quantity) - output,
-      output
-    );
     return validateNumber(formState.quantity) - output;
   };
 
@@ -1187,64 +1158,6 @@ export default function AddOrder(props) {
                   error={hasError("quantity", error)}
                 />
               </GridItem>
-              {/* <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={(event) =>
-                    handleChange(event, true, "Completed Quantity")
-                  }
-                  labelText="Completed Quantity"
-                  disabled={
-                    isView || formState.cancelled || formState.completed
-                  }
-                  value={formState.completedQuantity}
-                  id="completedQuantity"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  name="completedQuantity"
-                  type="number"
-                  helperTextId={"helperText_completedQuantity"}
-                  isHelperText={hasError("completedQuantity", error)}
-                  helperText={
-                    hasError("completedQuantity", error)
-                      ? error["completedQuantity"].map((error) => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("completedQuantity", error)}
-                />
-              </GridItem> */}
-              {/* <GridItem xs={12} sm={12} md={3}>
-                <CustomInput
-                  //onChange={event => handleChangeCompletedQuantity(event)}
-                  onChange={(event) =>
-                    handleChange(event, true, "Remaining Quantity")
-                  }
-                  labelText="Remaining Quantity"
-                  disabled={
-                    isView || formState.cancelled || formState.completed
-                  }
-                  value={formState.remainingQuantity}
-                  id="remainingQuantity"
-                  formControlProps={{
-                    fullWidth: true,
-                  }}
-                  type="number"
-                  name="remainingQuantity"
-                  helperTextId={"helperText_remainingQuantity"}
-                  isHelperText={hasError("remainingQuantity", error)}
-                  helperText={
-                    hasError("remainingQuantity", error)
-                      ? error["remainingQuantity"].map((error) => {
-                          return error + " ";
-                        })
-                      : null
-                  }
-                  error={hasError("remainingQuantity", error)}
-                />
-              </GridItem> */}
               <GridItem xs={12} sm={12} md={6}>
                 <CustomInput
                   labelText="Buffer Quantity / Quantity for which ratio not present"
@@ -1861,13 +1774,10 @@ export default function AddOrder(props) {
                       <Button
                         color="primary"
                         onClick={() => {
-                          history.push({
-                            pathname: DEPARTMENTSHEET,
-                            search: `?oid=${urlParams.get("oid")}`,
-                          });
+                          history.push(`${EDITDEPARTMENTSHEETID}/${id}`);
                         }}
                       >
-                        Check Department Sheet
+                        Department Sheet
                       </Button>
                     </GridItem>
                   ) : null}

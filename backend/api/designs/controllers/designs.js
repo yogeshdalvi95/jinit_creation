@@ -311,7 +311,6 @@ module.exports = {
           });
 
         await utils.asyncForEach(colors, async (c) => {
-          console.log("color ", c);
           await strapi
             .query("design-color-price")
             .create(
@@ -340,11 +339,24 @@ module.exports = {
   },
 
   async update(ctx) {
-    const { colors } = ctx.request.body;
     const { id } = ctx.params;
-    let body = {
-      ...ctx.request.body,
-    };
+    const files = ctx.request.files;
+
+    let colors = [];
+    let body = {};
+    if (ctx.request.files && ctx.request.body.data) {
+      let { data } = ctx.request.body;
+      data = JSON.parse(data);
+      body = {
+        ...data,
+      };
+      colors = data.colors;
+    } else {
+      body = {
+        ...ctx.request.body,
+      };
+      colors = body.colors;
+    }
 
     let data = {};
     let cannotBeRemoved = [];
