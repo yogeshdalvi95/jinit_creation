@@ -59,7 +59,7 @@ bookshelf.model("goods-return", {
   requireFetch: false,
 });
 
-bookshelf.model("individual-kachha-purchase", {
+bookshelf.model("individual-purchase", {
   tableName: "individual_kachha_purchases",
   requireFetch: false,
 });

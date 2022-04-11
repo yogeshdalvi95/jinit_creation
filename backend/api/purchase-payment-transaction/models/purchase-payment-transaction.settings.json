@@ -44,6 +44,10 @@
     "is_goods_return": {
       "type": "boolean",
       "default": false
+    },
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

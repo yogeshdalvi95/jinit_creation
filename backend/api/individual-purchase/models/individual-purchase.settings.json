@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "individual_purchases",
+  "info": {
+    "name": "Individual Purchase",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "raw_material": {
+      "model": "raw-material"
+    },
+    "purchase": {
+      "model": "purchases"
+    },
+    "seller": {
+      "model": "seller"
+    },
+    "date": {
+      "type": "date"
+    },
+    "is_raw_material_added": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_kachha_purchase": {
+      "type": "boolean",
+      "default": true
+    },
+    "purchase_quantity": {
+      "type": "float"
+    },
+    "purchase_cost": {
+      "type": "float"
+    },
+    "total_purchase_cost": {
+      "type": "float"
+    }
+  }
+}

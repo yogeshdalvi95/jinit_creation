@@ -13,6 +13,8 @@ export {
   getRoutesOnLogin,
   validateNumber,
   s2ab,
+  checkIfDateFallsInAcceptableRange,
+  getMinDate,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

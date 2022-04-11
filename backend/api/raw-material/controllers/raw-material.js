@@ -85,7 +85,7 @@ module.exports = {
   async delete(ctx) {
     const { id } = ctx.params;
     const checkIfPresentInPurchases = await strapi
-      .query("individual-kachha-purchase")
+      .query("individual-purchase")
       .findOne({ raw_material: id });
 
     const checkIfPresentInReadyMaterial = await strapi

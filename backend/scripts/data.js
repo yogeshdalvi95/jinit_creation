@@ -52,7 +52,7 @@ const ROLES = {
         ],
       },
       {
-        name: "individual-kachha-purchase",
+        name: "individual-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
@@ -94,21 +94,6 @@ const ROLES = {
           "update",
           "delete",
           "getexcelsheetforexport",
-        ],
-      },
-
-      {
-        name: "raw-material-and-quantity-for-ready-material",
-        action: [
-          "find",
-          "create",
-          "update",
-          "findOne",
-          "update",
-          "delete",
-          "updatequantity",
-          "addrawmaterialtoreadymaterial",
-          "deleterawmaterialfromreadymaterial",
         ],
       },
       {
@@ -220,26 +205,12 @@ const ROLES = {
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
-        name: "individual-kachha-purchase",
+        name: "individual-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "individual-pakka-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
-      },
-      {
-        name: "raw-material-and-quantity-for-ready-material",
-        action: [
-          "find",
-          "create",
-          "update",
-          "findOne",
-          "update",
-          "delete",
-          "updatequantity",
-          "addrawmaterialtoreadymaterial",
-          "deleterawmaterialfromreadymaterial",
-        ],
       },
       {
         name: "goods-return",
@@ -403,26 +374,12 @@ const ROLES = {
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
-        name: "individual-kachha-purchase",
+        name: "individual-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "individual-pakka-purchase",
         action: ["find", "create", "update", "findOne", "update", "delete"],
-      },
-      {
-        name: "raw-material-and-quantity-for-ready-material",
-        action: [
-          "find",
-          "create",
-          "update",
-          "findOne",
-          "update",
-          "delete",
-          "updatequantity",
-          "addrawmaterialtoreadymaterial",
-          "deleterawmaterialfromreadymaterial",
-        ],
       },
       {
         name: "goods-return",

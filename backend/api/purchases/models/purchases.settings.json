@@ -12,6 +12,12 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "bill_no": {
+      "type": "text"
+    },
+    "invoice_number": {
+      "type": "text"
+    },
     "type_of_bill": {
       "type": "enumeration",
       "enum": [
@@ -28,17 +34,11 @@
     "sgst_percent": {
       "type": "float"
     },
-    "gst_no": {
-      "type": "string"
-    },
-    "notes": {
-      "type": "text"
+    "igst_percent": {
+      "type": "float"
     },
     "seller": {
       "model": "seller"
-    },
-    "seller_name": {
-      "type": "string"
     },
     "total_amt_with_tax": {
       "type": "float"
@@ -46,14 +46,8 @@
     "total_amt_without_tax": {
       "type": "float"
     },
-    "invoice_number": {
+    "notes": {
       "type": "text"
-    },
-    "bill_no": {
-      "type": "text"
-    },
-    "igst_percent": {
-      "type": "float"
     }
   }
 }
