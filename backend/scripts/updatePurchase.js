@@ -16,13 +16,13 @@ async function init() {
       let seller = r.seller;
       let date = r.date;
       const kachhaResponse = await bookshelf
-        .model("individual-kachha-purchase")
+        .model("individual-purchase")
         .where({ purchase: r.id })
         .fetchAll()
         .then((model) => model.toJSON());
       await utils.asyncForEach(kachhaResponse, async (kr) => {
         await bookshelf
-          .model("individual-kachha-purchase")
+          .model("individual-purchase")
           .where({ id: kr.id })
           .save(
             {

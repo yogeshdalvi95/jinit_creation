@@ -26,6 +26,10 @@
     },
     "notes": {
       "type": "text"
+    },
+    "total_price": {
+      "type": "float",
+      "default": 0
     }
   }
 }

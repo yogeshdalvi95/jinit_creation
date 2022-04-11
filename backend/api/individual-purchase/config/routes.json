@@ -2,48 +2,48 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/raw-material-types",
-      "handler": "raw-material-type.find",
+      "path": "/individual-purchases",
+      "handler": "individual-purchase.find",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/raw-material-types/count",
-      "handler": "raw-material-type.count",
+      "path": "/individual-purchases/count",
+      "handler": "individual-purchase.count",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/raw-material-types/:id",
-      "handler": "raw-material-type.findOne",
+      "path": "/individual-purchases/:id",
+      "handler": "individual-purchase.findOne",
       "config": {
         "policies": []
       }
     },
     {
       "method": "POST",
-      "path": "/raw-material-types",
-      "handler": "raw-material-type.create",
+      "path": "/individual-purchases",
+      "handler": "individual-purchase.create",
       "config": {
         "policies": []
       }
     },
     {
       "method": "PUT",
-      "path": "/raw-material-types/:id",
-      "handler": "raw-material-type.update",
+      "path": "/individual-purchases/:id",
+      "handler": "individual-purchase.update",
       "config": {
         "policies": []
       }
     },
     {
       "method": "DELETE",
-      "path": "/raw-material-types/:id",
-      "handler": "raw-material-type.delete",
+      "path": "/individual-purchases/:id",
+      "handler": "individual-purchase.delete",
       "config": {
         "policies": []
       }

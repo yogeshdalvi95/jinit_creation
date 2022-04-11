@@ -37,7 +37,7 @@ module.exports = {
     let individualPurchase = [];
     if (purchase_detail.type_of_bill === "Kachha") {
       individualPurchase = await strapi
-        .query("individual-kachha-purchase")
+        .query("individual-purchase")
         .find({ purchase: id }, [
           "raw_material",
           "raw_material.department",
@@ -106,7 +106,7 @@ module.exports = {
                 seller: seller,
               };
               await strapi
-                .query("individual-kachha-purchase")
+                .query("individual-purchase")
                 .update({ id: Ip.id }, individualPurchase, {
                   transacting: t,
                   patch: true,
@@ -185,7 +185,7 @@ module.exports = {
                 seller: seller,
               };
               await strapi
-                .query("individual-kachha-purchase")
+                .query("individual-purchase")
                 .create(individualPurchase, { transacting: t })
                 .then((model) => model)
                 .catch((err) => {

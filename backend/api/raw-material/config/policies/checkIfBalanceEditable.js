@@ -19,7 +19,7 @@ module.exports = async (ctx, next) => {
     const previousBalance = parseFloat(getPreviousValues.balance);
 
     const checkIfPresentInPurchases = await strapi
-      .query("individual-kachha-purchase")
+      .query("individual-purchase")
       .findOne({ raw_material: id });
 
     const checkIfPresentInReturns = await strapi

@@ -2,7 +2,8 @@
   "kind": "collectionType",
   "collectionName": "purchase_payments",
   "info": {
-    "name": "Purchase Payments"
+    "name": "Purchase Payments",
+    "description": ""
   },
   "options": {
     "increments": true,
@@ -22,6 +23,14 @@
     },
     "payment_date": {
       "type": "date"
+    },
+    "payment_type": {
+      "type": "enumeration",
+      "enum": [
+        "bank_transfer",
+        "cash"
+      ],
+      "default": "bank_transfer"
     }
   }
 }

@@ -159,3 +159,31 @@ export function validateNumber(num) {
     return parseFloat(num);
   }
 }
+
+export function checkIfDateFallsInAcceptableRange(check) {
+  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 2));
+  let fromDate = new Date(
+    previousDate.getFullYear(),
+    previousDate.getMonth(),
+    1
+  );
+  let toDate = new Date();
+  var cDate;
+  cDate = Date.parse(check);
+
+  if (cDate <= toDate && cDate >= fromDate) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export function getMinDate() {
+  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 2));
+  let fromDate = new Date(
+    previousDate.getFullYear(),
+    previousDate.getMonth(),
+    1
+  );
+  return fromDate;
+}

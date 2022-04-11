@@ -16,13 +16,13 @@ module.exports = {
     _start = (page - 1) * _limit;
 
     /**getting count */
-    const count = await strapi.query("individual-kachha-purchase").count(query);
+    const count = await strapi.query("individual-purchase").count(query);
 
     query["_limit"] = _limit;
     query["_start"] = _start;
 
     const data = await strapi
-      .query("individual-kachha-purchase")
+      .query("individual-purchase")
       .find(query, [
         "raw_material",
         "raw_material.unit",

@@ -40,7 +40,9 @@ import { useState } from "react";
 import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
 import {
   checkEmpty,
+  checkIfDateFallsInAcceptableRange,
   convertNumber,
+  getMinDate,
   hasError,
   isEmptyString,
   setErrors,
@@ -61,15 +63,10 @@ export default function AddPurchases(props) {
   const [rawMaterial, setRawMaterial] = useState([]);
   const [alert, setAlert] = useState(null);
   const [seller, setSeller] = useState([]);
-  /** VIMP to check if the data is used for viewing */
-  const [isView] = useState(
-    props.location.state ? props.location.state.view : false
-  );
 
-  /** VIMP to check if the data is used for editing */
-  const [isEdit] = useState(
-    props.location.state ? props.location.state.edit : false
-  );
+  const [isEdit] = useState(props.isEdit ? props.isEdit : null);
+  const [isView] = useState(props.isView ? props.isView : null);
+  const [id, setId] = useState(props.id ? props.id : null);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -80,12 +77,10 @@ export default function AddPurchases(props) {
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
     id: null,
-    seller: null,
     type_of_bill: "",
     cgst_percent: 0,
     sgst_percent: 0,
     igst_percent: 0,
-    gst_no: "",
     total_amt_with_tax: 0,
     total_amt_without_tax: 0,
     total_amt_with_tax_formatted: 0,
@@ -94,6 +89,8 @@ export default function AddPurchases(props) {
     date: new Date(),
     invoice_number: "",
     bill_no: "",
+    seller: null,
+    gst_no: "",
   });
 
   const kachhaPurchaseDetails = {
@@ -997,16 +994,17 @@ export default function AddPurchases(props) {
                       onChange={(event) => handleStartDateChange(event)}
                       label="Purchase Date"
                       name="date"
-                      disabled={isView}
+                      disabled={
+                        isEdit || isView
+                          ? !checkIfDateFallsInAcceptableRange(formState.date)
+                          : false
+                      }
                       value={formState.date || new Date()}
                       id="date"
                       minDate={
-                        formState.type_of_bill === "Kachha"
-                          ? new Date(
-                              new Date().getFullYear(),
-                              new Date().getMonth()
-                            )
-                          : new Date(1900, 0)
+                        checkIfDateFallsInAcceptableRange(formState.date)
+                          ? getMinDate()
+                          : null
                       }
                       formControlProps={{
                         fullWidth: true,
