@@ -7,7 +7,7 @@ export const backend_login = `${apiUrl}/auth/local`;
 export const backend_admins = `${apiUrl}/getAllAdmins`;
 export const backend_staff = `${apiUrl}/getAllStaff`;
 export const backend_departments = `${apiUrl}/departments`;
-export const backend_purchases = `${apiUrl}/purchases`;
+
 export const backend_units = `${apiUrl}/units`;
 
 export const backend_parties = `${apiUrl}/parties`;
@@ -37,7 +37,6 @@ export const backend_sales_export_data = `${apiUrl}/sales/export/downloadExcelDa
 export const backend_sale_return = `${apiUrl}/sale-returns`;
 
 export const backend_individual_kachha_purchase = `${apiUrl}/individual-kachha-purchases`;
-export const backend_individual_kachha_purchase_ledger = `${apiUrl}/individual-kachha-purchases/ledger`;
 
 export const backend_designs = `${apiUrl}/designs`;
 export const backend_view_designs = `${apiUrl}/view-design`;
@@ -61,3 +60,6 @@ export const backend_order_check_raw_material_availibility = `${apiUrl}/orders/c
 export const backend_order_check_raw_material_availibility_for_all_order = `${apiUrl}/orders/check_all_order_availibility`;
 export const backend_download_all_orders = `${apiUrl}/orders/download-order`;
 export const backend_download_orders_sheet = `${apiUrl}/orders/download-order-sheet`;
+
+export const backend_purchases = `${apiUrl}/purchases`;
+export const backend_individual_purchase_ledger = `${apiUrl}/purchases/ledger`;

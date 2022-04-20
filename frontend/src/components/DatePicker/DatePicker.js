@@ -1,17 +1,16 @@
 import "date-fns";
 import React from "react";
-import Grid from "@material-ui/core/Grid";
 import DateFnsUtils from "@date-io/date-fns";
 import {
   MuiPickersUtilsProvider,
-  KeyboardDatePicker
+  KeyboardDatePicker,
 } from "@material-ui/pickers";
 import styles from "../../assets/jss/material-dashboard-react/components/customInputStyle.js";
 import { makeStyles } from "@material-ui/core";
 import classNames from "classnames";
 import {
   primaryColor,
-  grayColor
+  grayColor,
 } from "../../assets/jss/material-dashboard-react.js";
 import styled from "styled-components";
 
@@ -21,13 +20,13 @@ export default function DatePicker(props) {
   const classes = useStyles();
   const marginTop = classNames({
     [classes.marginTop]: props.noMargin ? false : true,
-    [classes.noMargin]: props.noMargin ? true : false
+    [classes.noMargin]: props.noMargin ? true : false,
   });
 
   const underlineClasses = classNames({
     [classes.underlineError]: props.error,
     [classes.underlineSuccess]: props.success && !props.error,
-    [classes.underline]: true
+    [classes.underline]: true,
   });
 
   const StyledTextField = styled(KeyboardDatePicker)`
@@ -61,7 +60,7 @@ export default function DatePicker(props) {
         name={props.name}
         onChange={props.handleDateChange}
         KeyboardButtonProps={{
-          "aria-label": "change date"
+          "aria-label": "change date",
         }}
         maxDate={
           new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
@@ -70,7 +69,7 @@ export default function DatePicker(props) {
           root: marginTop,
           disabled: classes.disabled,
           underline: underlineClasses,
-          input: classes.input
+          input: classes.input,
         }}
         {...props}
       />

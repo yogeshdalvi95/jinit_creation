@@ -42,7 +42,7 @@ import {
   ADDCATEGORIES,
   EDITCATEGORIES,
   CATEGORIES,
-  LEDGER,
+  PURCHASELEDGER,
   SALES,
   ADDSALES,
   NOTFOUNDPAGE,
@@ -216,7 +216,7 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={LEDGER}
+          path={PURCHASELEDGER}
           exact
           component={Ledger}
           header={"Purchase Ledger"}

@@ -31,7 +31,6 @@ export {
   backend_order,
   backend_order_check_raw_material_availibility,
   backend_order_to_get_department_sheet,
-  backend_individual_kachha_purchase_ledger,
   backend_sales,
   backend_sale_return,
   backend_designs,
@@ -44,4 +43,5 @@ export {
   backend_order_check_raw_material_availibility_for_all_order,
   backend_download_all_orders,
   backend_download_orders_sheet,
+  backend_individual_purchase_ledger,
 } from "./UrlConstants";

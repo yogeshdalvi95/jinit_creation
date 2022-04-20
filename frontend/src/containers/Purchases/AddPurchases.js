@@ -83,8 +83,6 @@ export default function AddPurchases(props) {
     igst_percent: 0,
     total_amt_with_tax: 0,
     total_amt_without_tax: 0,
-    total_amt_with_tax_formatted: 0,
-    total_amt_without_tax_formatted: 0,
     notes: "",
     date: new Date(),
     invoice_number: "",
@@ -92,6 +90,8 @@ export default function AddPurchases(props) {
     seller: null,
     gst_no: "",
   });
+
+  const [purchaseHistory, setPurchaseHistory] = useState([]);
 
   const kachhaPurchaseDetails = {
     id: null,
@@ -101,7 +101,6 @@ export default function AddPurchases(props) {
     purchase_quantity: 0,
     purchase_unit: "",
     total_purchase_cost: 0,
-    total_purchase_cost_formatted: 0,
   };
 
   const pakkaPurchaseDetails = {
@@ -110,7 +109,6 @@ export default function AddPurchases(props) {
     purchase_cost: 0,
     purchase_quantity: 0,
     total_purchase_cost: 0,
-    total_purchase_cost_formatted: 0,
   };
   const [error, setError] = React.useState({});
 
@@ -158,25 +156,21 @@ export default function AddPurchases(props) {
       id: data.purchase.id,
       seller: data.purchase.seller ? data.purchase.seller.id : null,
       type_of_bill: data.purchase.type_of_bill,
-      cgst_percent: data.purchase.cgst_percent,
-      sgst_percent: data.purchase.sgst_percent,
-      igst_percent: data.purchase.igst_percent,
+      cgst_percent: validateNumber(data.purchase.cgst_percent),
+      sgst_percent: validateNumber(data.purchase.sgst_percent),
+      igst_percent: validateNumber(data.purchase.igst_percent),
       gst_no: data.purchase.seller ? data.purchase.seller.gst_no : "",
-      total_amt_with_tax: data.purchase.total_amt_with_tax,
-      total_amt_without_tax: data.purchase.total_amt_without_tax,
-      total_amt_with_tax_formatted: convertNumber(
-        data.purchase.total_amt_with_tax,
-        true
-      ),
-      total_amt_without_tax_formatted: convertNumber(
-        data.purchase.total_amt_without_tax,
-        true
+      total_amt_with_tax: validateNumber(data.purchase.total_amt_with_tax),
+      total_amt_without_tax: validateNumber(
+        data.purchase.total_amt_without_tax
       ),
       notes: data.purchase.notes,
       date: new Date(data.purchase.date),
       invoice_number: data.purchase.invoice_number,
       bill_no: data.purchase.bill_no,
     }));
+
+    setPurchaseHistory(data.purchase.history);
 
     let arr = [];
     arr = data.individualPurchase.map((d) => {
@@ -185,10 +179,6 @@ export default function AddPurchases(props) {
         purchase_cost: d.purchase_cost,
         purchase_quantity: d.purchase_quantity,
         total_purchase_cost: d.total_purchase_cost,
-        total_purchase_cost_formatted: convertNumber(
-          d.total_purchase_cost,
-          true
-        ),
       };
       if (data.purchase.type_of_bill === "Kachha") {
         let bal = "0";
@@ -216,7 +206,7 @@ export default function AddPurchases(props) {
         };
         object = {
           ...object,
-          raw_material: d.raw_material ? d.raw_material.id : null,
+          raw_material: d.raw_material,
           purchase_unit: d.unit,
           raw_material_name: nameObject,
         };
@@ -300,61 +290,28 @@ export default function AddPurchases(props) {
     let igst_percent = 0;
     if (name === "cgst_percent" || name === "sgst_percent") {
       if (name === "cgst_percent") {
-        if (isEmptyString(value)) {
-          cgst_percent = 0;
-        } else {
-          cgst_percent = parseFloat(value);
-        }
-        if (!isNaN(parseFloat(formState.sgst_percent))) {
-          sgst_percent = parseFloat(formState.sgst_percent);
-        }
+        cgst_percent = validateNumber(value);
+        sgst_percent = validateNumber(formState.sgst_percent);
       }
       if (name === "sgst_percent") {
-        if (isEmptyString(value)) {
-          sgst_percent = 0;
-        } else {
-          sgst_percent = parseFloat(value);
-        }
-        if (!isNaN(parseFloat(formState.cgst_percent))) {
-          cgst_percent = parseFloat(formState.cgst_percent);
-        }
+        sgst_percent = validateNumber(value);
+        cgst_percent = validateNumber(formState.cgst_percent);
       }
     } else {
-      if (isEmptyString(value)) {
-        igst_percent = 0;
-      } else {
-        igst_percent = parseFloat(value);
-      }
+      igst_percent = validateNumber(value);
     }
 
-    let total_amt_without_tax = 0;
-    if (!isNaN(parseFloat(formState.total_amt_without_tax))) {
-      total_amt_without_tax = parseFloat(formState.total_amt_without_tax);
-    }
-
-    let cgst = (parseFloat(cgst_percent) / 100) * total_amt_without_tax;
-    let sgst = (parseFloat(sgst_percent) / 100) * total_amt_without_tax;
-    let igst = (parseFloat(igst_percent) / 100) * total_amt_without_tax;
-
-    console.log("percent ", cgst_percent, sgst_percent, igst_percent);
-    console.log(cgst, sgst, igst);
+    let total_amt_without_tax = validateNumber(formState.total_amt_without_tax);
+    let cgst = (cgst_percent / 100) * total_amt_without_tax;
+    let sgst = (sgst_percent / 100) * total_amt_without_tax;
+    let igst = (igst_percent / 100) * total_amt_without_tax;
 
     let totalCostWithTax = total_amt_without_tax + cgst + sgst + igst;
-    let totalCostWithTaxFormatted = convertNumber(
-      totalCostWithTax.toFixed(2),
-      true
-    );
-    let total_amt_without_tax_formatted = convertNumber(
-      total_amt_without_tax.toFixed(2),
-      true
-    );
 
     setFormState((formState) => ({
       ...formState,
       total_amt_with_tax: totalCostWithTax,
-      total_amt_with_tax_formatted: totalCostWithTaxFormatted,
       total_amt_without_tax: total_amt_without_tax,
-      total_amt_without_tax_formatted: total_amt_without_tax_formatted,
     }));
   };
 
@@ -365,80 +322,38 @@ export default function AddPurchases(props) {
     let costPerRawMaterial = 0;
     let totalCostWithTax = 0;
     let totalCostWithOutTax = 0;
-    let perRawMaterialFormatted = "0";
-    let totalCostWithTaxFormatted = "0";
-    let totalCostWithOutTaxFormatted = "0";
 
     let valueToMultiply = 0;
-    if (isEmptyString(value)) {
-      value = 0;
-    }
+    value = validateNumber(value);
+
     if (name === "purchase_cost") {
-      valueToMultiply = object["purchase_quantity"];
-      if (isEmptyString(valueToMultiply)) {
-        valueToMultiply = 0;
-      }
+      valueToMultiply = validateNumber(object["purchase_quantity"]);
     } else if (name === "purchase_quantity") {
-      valueToMultiply = object["purchase_cost"];
-      if (isEmptyString(valueToMultiply)) {
-        valueToMultiply = 0;
-      }
+      valueToMultiply = validateNumber(object["purchase_cost"]);
     }
-
-    costPerRawMaterial = parseFloat(valueToMultiply) * parseFloat(value);
-    /** Convert number to amount format */
-    perRawMaterialFormatted = convertNumber(
-      costPerRawMaterial.toFixed(2),
-      true
-    );
-
+    costPerRawMaterial = valueToMultiply * value;
     arr.map((Ip, key) => {
       if (key !== k) {
         totalCostWithOutTax =
-          totalCostWithOutTax + parseFloat(Ip.total_purchase_cost);
+          totalCostWithOutTax + validateNumber(Ip.total_purchase_cost);
       }
       return null;
     });
-
     totalCostWithOutTax = totalCostWithOutTax + costPerRawMaterial;
-    totalCostWithOutTaxFormatted = convertNumber(
-      totalCostWithOutTax.toFixed(2),
-      true
-    );
 
     /** Calculate tax */
-    let cgst_percent = formState.cgst_percent;
-    if (isEmptyString(cgst_percent)) {
-      cgst_percent = 0;
-    }
-
-    let sgst_percent = formState.sgst_percent;
-    if (isEmptyString(sgst_percent)) {
-      sgst_percent = 0;
-    }
-
-    let igst_percent = formState.igst_percent;
-    if (isEmptyString(igst_percent)) {
-      igst_percent = 0;
-    }
-
-    let cgst = (parseFloat(cgst_percent) / 100) * totalCostWithOutTax;
-    let sgst = (parseFloat(sgst_percent) / 100) * totalCostWithOutTax;
-    let igst = (parseFloat(igst_percent) / 100) * totalCostWithOutTax;
+    let cgst_percent = validateNumber(formState.cgst_percent);
+    let sgst_percent = validateNumber(formState.sgst_percent);
+    let igst_percent = validateNumber(formState.igst_percent);
+    let cgst = (cgst_percent / 100) * totalCostWithOutTax;
+    let sgst = (sgst_percent / 100) * totalCostWithOutTax;
+    let igst = (igst_percent / 100) * totalCostWithOutTax;
 
     totalCostWithTax = totalCostWithOutTax + cgst + sgst + igst;
-    totalCostWithTaxFormatted = convertNumber(
-      totalCostWithTax.toFixed(2),
-      true
-    );
-
     return {
       perRawMaterial: costPerRawMaterial,
       totalCostWithTax: totalCostWithTax,
       totalCostWithOutTax: totalCostWithOutTax,
-      perRawMaterialFormatted: perRawMaterialFormatted,
-      totalCostWithTaxFormatted: totalCostWithTaxFormatted,
-      totalCostWithOutTaxFormatted: totalCostWithOutTaxFormatted,
     };
   };
 
@@ -458,7 +373,7 @@ export default function AddPurchases(props) {
           object["purchase_unit"] = "";
         }
       } else {
-        object[name] = value.id;
+        object[name] = value;
         object["raw_material_name"] = objectToAdd;
         if (name === "raw_material") {
           object["purchase_unit"] = value.unit ? value.unit.name : "unit";
@@ -530,23 +445,17 @@ export default function AddPurchases(props) {
         perRawMaterial,
         totalCostWithTax,
         totalCostWithOutTax,
-        perRawMaterialFormatted,
-        totalCostWithTaxFormatted,
-        totalCostWithOutTaxFormatted,
       } = calculateTotalCost(name, value, object, purchaseArr, key);
 
       setFormState((formState) => ({
         ...formState,
         total_amt_with_tax: totalCostWithTax,
         total_amt_without_tax: totalCostWithOutTax,
-        total_amt_with_tax_formatted: totalCostWithTaxFormatted,
-        total_amt_without_tax_formatted: totalCostWithOutTaxFormatted,
       }));
 
       object = {
         ...object,
         total_purchase_cost: perRawMaterial,
-        total_purchase_cost_formatted: perRawMaterialFormatted,
       };
     }
 
@@ -677,14 +586,12 @@ export default function AddPurchases(props) {
       if (formState.type_of_bill === "Kachha") {
         obj = {
           purchases: formState,
-          kachhaPurchase: arr,
-          pakkaPurchase: individualPakkaPurchase,
+          individual_purchase: arr,
         };
       } else {
         obj = {
           purchases: formState,
-          kachhaPurchase: individualKachhaPurchase,
-          pakkaPurchase: arr,
+          individual_purchase: arr,
         };
       }
       setBackDrop(true);
@@ -693,12 +600,20 @@ export default function AddPurchases(props) {
           history.push(PURCHASES);
           setBackDrop(false);
         })
-        .catch((err) => {});
+        .catch((err) => {
+          setBackDrop(false);
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: error,
+          }));
+        });
     } else {
       setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
-        severity: "error",
+        severity: "Please check the data you entered",
         message: error,
       }));
     }
@@ -728,36 +643,18 @@ export default function AddPurchases(props) {
 
     let total_amt_without_tax = formState.total_amt_without_tax;
     total_amt_without_tax = total_amt_without_tax - object.total_purchase_cost;
-    let total_amt_without_tax_formatted = convertNumber(
-      total_amt_without_tax.toFixed(2),
-      true
-    );
-
     /** Calculate tax */
-    let cgst_percent = formState.cgst_percent;
-    if (isEmptyString(cgst_percent)) {
-      cgst_percent = 0;
-    }
+    let cgst_percent = validateNumber(formState.cgst_percent);
+    let sgst_percent = validateNumber(formState.sgst_percent);
 
-    let sgst_percent = formState.sgst_percent;
-    if (isEmptyString(sgst_percent)) {
-      sgst_percent = 0;
-    }
-
-    let cgst = (parseFloat(cgst_percent) / 100) * total_amt_without_tax;
-    let sgst = (parseFloat(sgst_percent) / 100) * total_amt_without_tax;
+    let cgst = (cgst_percent / 100) * total_amt_without_tax;
+    let sgst = (sgst_percent / 100) * total_amt_without_tax;
     let total_amt_with_tax = total_amt_without_tax + cgst + sgst;
-    let total_amt_with_tax_formatted = convertNumber(
-      total_amt_with_tax.toFixed(2),
-      true
-    );
 
     setFormState((formState) => ({
       ...formState,
       total_amt_with_tax: total_amt_with_tax,
-      total_amt_with_tax_formatted: total_amt_with_tax_formatted,
       total_amt_without_tax: total_amt_without_tax,
-      total_amt_without_tax_formatted: total_amt_without_tax_formatted,
     }));
 
     if (purchase === "Kachha") {
@@ -873,7 +770,7 @@ export default function AddPurchases(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={2}>
+              <GridItem xs={12} sm={12} md={4}>
                 <CustomDropDown
                   id="type_of_bill"
                   disabled={isView || isEdit}
@@ -1022,7 +919,10 @@ export default function AddPurchases(props) {
                           labelText="Total amount in rupees(with tax)"
                           name="total_amt_with_tax"
                           disabled
-                          value={formState.total_amt_with_tax_formatted}
+                          value={convertNumber(
+                            formState.total_amt_with_tax,
+                            true
+                          )}
                           id="total_amt_with_tax"
                           formControlProps={{
                             fullWidth: true,
@@ -1034,7 +934,7 @@ export default function AddPurchases(props) {
                           labelText="Total amount in rupees(without tax)"
                           name="total_amt_without_tax"
                           disabled
-                          value={formState.total_amt_without_tax_formatted}
+                          value={convertNumber(formState.total_amt_without_tax)}
                           id="total_amt_without_tax"
                           formControlProps={{
                             fullWidth: true,
@@ -1048,7 +948,7 @@ export default function AddPurchases(props) {
                         labelText="Total amount in rupees"
                         name="total_amt_without_tax"
                         disabled
-                        value={formState.total_amt_without_tax_formatted}
+                        value={convertNumber(formState.total_amt_without_tax)}
                         id="total_amt_without_tax"
                         formControlProps={{
                           fullWidth: true,
@@ -1165,10 +1065,12 @@ export default function AddPurchases(props) {
                   >
                     <GridContainer
                       style={
-                        Ip.raw_material ? {} : { justifyContent: "center" }
+                        Ip.raw_material && Ip.raw_material.id
+                          ? {}
+                          : { justifyContent: "center" }
                       }
                     >
-                      {Ip.raw_material ? (
+                      {Ip.raw_material && Ip.raw_material.id ? (
                         <GridItem
                           xs={12}
                           sm={12}
@@ -1293,7 +1195,7 @@ export default function AddPurchases(props) {
                           labelText="Total Purchase Cost"
                           disabled
                           name="total_purchase_cost"
-                          value={Ip.total_purchase_cost_formatted}
+                          value={convertNumber(Ip.total_purchase_cost, true)}
                           id="quantity"
                           formControlProps={{
                             fullWidth: true,
@@ -1401,7 +1303,7 @@ export default function AddPurchases(props) {
                           disabled
                           labelText="Total Purchase Cost"
                           name="total_purchase_cost"
-                          value={Ip.total_purchase_cost_formatted}
+                          value={convertNumber(Ip.total_purchase_cost, true)}
                           id="quantity"
                           formControlProps={{
                             fullWidth: true,

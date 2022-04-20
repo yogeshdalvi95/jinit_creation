@@ -108,6 +108,7 @@ export const convertNumber = (
   prefix
 ) => {
   let num = 0;
+  val = parseFloat(validateNumber(val).toFixed(2));
   if (isAmount) {
     num = new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -161,7 +162,7 @@ export function validateNumber(num) {
 }
 
 export function checkIfDateFallsInAcceptableRange(check) {
-  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 2));
+  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 3));
   let fromDate = new Date(
     previousDate.getFullYear(),
     previousDate.getMonth(),
@@ -179,7 +180,7 @@ export function checkIfDateFallsInAcceptableRange(check) {
 }
 
 export function getMinDate() {
-  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 2));
+  let previousDate = new Date(new Date().setMonth(new Date().getMonth() - 3));
   let fromDate = new Date(
     previousDate.getFullYear(),
     previousDate.getMonth(),
