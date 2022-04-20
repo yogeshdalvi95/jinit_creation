@@ -64,11 +64,6 @@ bookshelf.model("individual-purchase", {
   requireFetch: false,
 });
 
-bookshelf.model("individual-pakka-purchase", {
-  tableName: "individual_pakka_purchases",
-  requireFetch: false,
-});
-
 bookshelf.model("raw-material", {
   tableName: "raw_materials",
   requireFetch: false,

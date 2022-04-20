@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_history_histories",
+  "info": {
+    "name": "history",
+    "icon": "history",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "comment": {
+      "type": "string"
+    }
+  }
+}

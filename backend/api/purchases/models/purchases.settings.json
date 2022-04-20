@@ -48,6 +48,11 @@
     },
     "notes": {
       "type": "text"
+    },
+    "history": {
+      "type": "component",
+      "repeatable": true,
+      "component": "history.history"
     }
   }
 }

@@ -93,6 +93,6 @@ export const CATEGORIES = "/categories";
 export const ADDCATEGORIES = "/add-category";
 export const EDITCATEGORIES = "/edit-category";
 
-export const LEDGER = "/ledger";
+export const PURCHASELEDGER = "/purchase-ledger";
 
 export const NOTFOUNDPAGE = "/404";

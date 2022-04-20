@@ -141,9 +141,24 @@ function getDateInMMDDYYYY(date) {
   return today;
 }
 
-function convertNumber(num) {
-  return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
-}
+const convertNumber = (val, isAmount, addCustomPrefix = false, prefix) => {
+  let num = 0;
+  val = parseFloat(validateNumber(val).toFixed(2));
+  if (isAmount) {
+    num = new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(val);
+    if (addCustomPrefix) {
+      num = num + prefix;
+    } else {
+      num = num + " /-";
+    }
+  } else {
+    num = new Intl.NumberFormat("en-IN", {}).format(val);
+  }
+  return num;
+};
 
 function checkEmpty(obj) {
   return Object.keys(obj).length ? false : true;
@@ -260,6 +275,14 @@ const generatePDF = async (report_name, html) => {
   return buffer;
 };
 
+function getMonthDifference(startDate, endDate) {
+  return (
+    endDate.getMonth() -
+    startDate.getMonth() +
+    12 * (endDate.getFullYear() - startDate.getFullYear())
+  );
+}
+
 module.exports = {
   roundNumberTo2digit,
   getRequestParams,
@@ -291,4 +314,5 @@ module.exports = {
   generatePDF,
   logo,
   base64_encode,
+  getMonthDifference,
 };

@@ -27,7 +27,7 @@
     "date": {
       "type": "date"
     },
-    "is_raw_material_added": {
+    "are_raw_material_clubbed": {
       "type": "boolean",
       "default": true
     },

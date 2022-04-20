@@ -20,6 +20,7 @@ import {
   SnackBarComponent,
 } from "../../components";
 // core components
+import AsyncCreatableSelect from "react-select/async-creatable";
 import ClearIcon from "@material-ui/icons/Clear";
 import EditIcon from "@material-ui/icons/Edit";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
@@ -109,10 +110,14 @@ export default function AddEditRawMaterial(props) {
 
   const buttonClasses = buttonUseStyles();
   const [error, setError] = React.useState({});
-  const [openDialogForSelectingCategory, setOpenDialogForSelectingCategory] =
-    useState(false);
-  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
-    useState(false);
+  const [
+    openDialogForSelectingCategory,
+    setOpenDialogForSelectingCategory,
+  ] = useState(false);
+  const [
+    openDialogForSelectingColor,
+    setOpenDialogForSelectingColor,
+  ] = useState(false);
 
   /** VIMP to check if the data is used for viewing */
   const [isView] = useState(
@@ -587,6 +592,55 @@ export default function AddEditRawMaterial(props) {
     }));
   };
 
+  const filterData = (data) => {
+    return data.map((d) => ({
+      label: d.name,
+      value: d.id,
+    }));
+  };
+
+  const getRawMaterialsData = (inputValue) => {
+    let params = {
+      page: 1,
+      pageSize: 20,
+      name_contains: inputValue,
+    };
+
+    return new Promise((resolve, reject) => {
+      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          Authorization: "Bearer " + Auth.getToken(),
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          //console.log((result.data)
+          resolve(filterData(result.data));
+        });
+    });
+  };
+
+  const handleChange1 = (newValue, actionMeta) => {
+    console.group("Value Changed");
+    console.log(newValue);
+    console.log(`action: ${actionMeta.action}`);
+    console.groupEnd();
+  };
+  const handleInputChange = (inputValue, actionMeta) => {
+    console.group("Input Changed");
+    console.log(inputValue);
+    console.log(`action: ${actionMeta.action}`);
+    console.groupEnd();
+    setFormState((formState) => ({
+      ...formState,
+      name: inputValue,
+    }));
+  };
+
+  console.log(formState);
+
   return (
     <>
       <DialogForSelectingCategory
@@ -621,114 +675,24 @@ export default function AddEditRawMaterial(props) {
               <p className={classes.cardCategoryWhite}></p>
             </CardHeader>
             <CardBody>
-              {/* <CustomAutoComplete
-                freeSolo
-                autoFocus
-                filterOptions={(x) => x}
-                id="raw=material-name"
-                labelText="Name"
-                disabled={isView}
-                autocompleteId={"name"}
-                optionKey={"name"}
-                options={state.data.data}
-                formControlProps={{
-                  fullWidth: true,
-                }}
-                onInputChange={(event, value) => {
-                  if (subject) {
-                    return subject.next(value);
-                  }
-                  console.log("value 123", value);
-                  // searchService({ value: value.trim() });
-                  // fireOnChangeRawMaterialInput(value);
-                }}
-                loading={state.loading}
-                isOptionEqualToValue={(option, value) =>
-                  option.title === value.title
-                }
-                isInputPropsPresent={true}
-                InputProps={{
-                  endAdornment: (
-                    <React.Fragment>
-                      {state.loading ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                    </React.Fragment>
-                  ),
-                }}
-                helperTextId={"helperText_name"}
-                isHelperText={hasError("name", error)}
-                helperText={
-                  hasError("name", error)
-                    ? error["name"].map((error) => {
-                        return error + " ";
-                      })
-                    : null
-                }
-                error={hasError("name", error)}
-              /> */}
-              {/* <GridContainer>
+              <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
-                  {/* 
-                  <SearchBar
-                    dataSource={rawMaterialSearchDataSource}
-                    onChange={(value) =>
-                      setRawMaterialSearchDataSource([
-                        value,
-                        value + value,
-                        value + value + value,
-                      ])
-                    }
-                    onRequestSearch={() => console.log("onRequestSearch")}
-                    style={{
-                      margin: "0 auto",
-                      maxWidth: 800,
-                    }}
-                  /> 
-                  <CustomAutoComplete
-                    freeSolo
-                    id="raw=material-name"
-                    labelText="Name"
-                    disabled={isView}
-                    autocompleteId={"name"}
-                    optionKey={"name"}
-                    options={rawMaterialSearchDataSource}
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    onInputChange={(event, value) => {
-                      console.log("value 123", value);
-                      /searchService({ value: value.trim() });
-                      // fireOnChangeRawMaterialInput(value);
-                    }}
-                    loading={loading}
-                    isOptionEqualToValue={(option, value) =>
-                      option.title === value.title
-                    }
-                    isInputPropsPresent={true}
-                    InputProps={{
-                      endAdornment: (
-                        <React.Fragment>
-                          {loading ? (
-                            <CircularProgress color="inherit" size={20} />
-                          ) : null}
-                        </React.Fragment>
-                      ),
-                    }}
-                    helperTextId={"helperText_name"}
-                    isHelperText={hasError("name", error)}
-                    helperText={
-                      hasError("name", error)
-                        ? error["name"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("name", error)}
+                  <AsyncCreatableSelect
+                    cacheOptions
+                    loadOptions={getRawMaterialsData}
+                    onChange={handleChange1}
+                    onInputChange={handleInputChange}
+                    // onChange={this.handleChange}
+                    // onInputChange={(event) =>  setFormState((formState) => ({
+                    //   ...formState,
+                    //   name: event
+                    // }))}
+                    inputValue={formState.name}
+                    value={formState.name}
                   />
                 </GridItem>
-              </GridContainer> 
-              */}
+              </GridContainer>
+
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
@@ -765,7 +729,13 @@ export default function AddEditRawMaterial(props) {
                     />
                   </GridItem>
                 </GridContainer>
-              ) : null}
+              ) : (
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    No data
+                  </GridItem>
+                </GridContainer>
+              )}
               <GridContainer>
                 <GridItem
                   xs={12}

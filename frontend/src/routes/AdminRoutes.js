@@ -44,7 +44,7 @@ import {
   CATEGORIES,
   ADDCATEGORIES,
   EDITCATEGORIES,
-  LEDGER,
+  PURCHASELEDGER,
   SALES,
   SALERETURN,
   VIEWSALERETURN,
@@ -93,12 +93,6 @@ const rawMaterialAndUnitPath = [
 ];
 
 /**---------------------------- */
-const readyMaterialPath = [
-  LISTREADYMATERIAL,
-  ADDREADYMATERIAL,
-  EDITREADYMATERIAL,
-  VIEWREADYMATERIAL,
-];
 
 /** Purchases and sellers path */
 const goodsReturnPath = [
@@ -109,7 +103,7 @@ const goodsReturnPath = [
 ];
 
 /** Ledger */
-const ledgerPath = [LEDGER];
+const PurchaseLedgerPath = [PURCHASELEDGER];
 
 /** Purchase  */
 const purchasesPath = [PURCHASES, ADDPURCHASES, VIEWPURCHASES, EDITPURCHASES];
@@ -125,7 +119,7 @@ const purchasesAndSellersPath = [
   ...sellerPath,
   ...goodsReturnPath,
   ...kachhaPurchaseDetailsPath,
-  ...ledgerPath,
+  ...PurchaseLedgerPath,
 ];
 
 /**--------------------------------------------- */
@@ -221,6 +215,13 @@ const kachhaPurchaseJson = {
   pathList: kachhaPurchaseDetailsPath,
 };
 
+const purchaseLedgerJson = {
+  path: PURCHASELEDGER,
+  name: "Purchase Ledger",
+  layout: "",
+  pathList: PurchaseLedgerPath,
+};
+
 const salesJson = {
   path: SALES,
   name: "Sales",
@@ -282,7 +283,13 @@ export const DashboardStaffRoutes = [
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson],
+    children: [
+      purchaseJson,
+      kachhaPurchaseJson,
+      purchaseLedgerJson,
+      goodsReturnJson,
+      sellerJson,
+    ],
   },
   {
     name: "Raw Materials",
@@ -329,7 +336,13 @@ export const DashboardAdminRoutes = [
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson],
+    children: [
+      purchaseJson,
+      kachhaPurchaseJson,
+      purchaseLedgerJson,
+      goodsReturnJson,
+      sellerJson,
+    ],
   },
   {
     name: "Raw Materials",
@@ -383,7 +396,13 @@ export const SuperAdminDashboardRoutes = [
     name: "Purchases",
     layout: "",
     pathList: purchasesAndSellersPath,
-    children: [purchaseJson, kachhaPurchaseJson, goodsReturnJson, sellerJson],
+    children: [
+      purchaseJson,
+      kachhaPurchaseJson,
+      purchaseLedgerJson,
+      goodsReturnJson,
+      sellerJson,
+    ],
   },
   {
     name: "Raw Materials",
