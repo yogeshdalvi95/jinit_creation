@@ -1,80 +1,83 @@
+import { makeStyles } from "@material-ui/core";
+import moment from "moment";
 import React, { useState } from "react";
-// @material-ui/core components
+import { useHistory } from "react-router-dom";
+import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import {
   Auth,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  CustomDropDown,
-  CustomInput,
-  DatePicker,
-  FAB,
   GridContainer,
   GridItem,
-  RemoteAutoComplete,
   SnackBarComponent,
+  Card,
+  CardHeader,
+  CardBody,
+  FAB,
+  DatePicker,
+  RemoteAutoComplete,
+  CustomDropDown,
+  Button,
   Table,
-} from "../../components";
-// core components
-import { backend_purchases, backend_sellers } from "../../constants";
-import { convertNumber, isEmptyString, plainDate } from "../../Utils";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import { makeStyles } from "@material-ui/core";
-import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { providerForDelete } from "../../api";
-import { useHistory } from "react-router-dom";
-import { VIEWPURCHASES, EDITPURCHASES, ADDPURCHASES } from "../../paths";
-import EditIcon from "@material-ui/icons/Edit";
+} from "../../../components";
+import { backend_purchase_payment, backend_sellers } from "../../../constants";
+import {
+  ADDPURCHASEPAYEMENT,
+  EDITPURCHASEPAYEMENT,
+  VIEWPURCHASEPAYEMENT,
+} from "../../../paths";
+import { convertNumber, plainDate } from "../../../Utils";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import moment from "moment";
+import EditIcon from "@material-ui/icons/Edit";
+import VisibilityIcon from "@material-ui/icons/Visibility";
+import { providerForDelete } from "../../../api";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const useStyles = makeStyles(styles);
-export default function Purchases() {
+const AllPayments = (props) => {
   const classes = useStyles();
   const history = useHistory();
   const tableRef = React.createRef();
-
   const [filter, setFilter] = useState({
-    _sort: "date:desc",
+    _sort: "payment_date:desc",
   });
-  const [selectedSeller, setSelectedSeller] = React.useState(null);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
     message: "",
   });
+  const [selectedSeller, setSelectedSeller] = React.useState(null);
 
   const columns = [
-    { title: "Type of purchase", field: "type_of_bill" },
     {
-      title: "Purchased From",
-      field: "seller",
-      render: (rowData) => (rowData.seller ? rowData.seller.seller_name : ""),
+      title: "Payment date",
+      field: "payment_date",
+      render: (rowData) => plainDate(new Date(rowData.payment_date)),
+    },
+    { title: "Seller", field: "seller.seller_name", sorting: false },
+    {
+      title: "Amount",
+      field: "amount",
+      render: (rowData) => convertNumber(rowData.amount, true),
     },
     {
-      title: "Invoice / Bill Number",
-      field: "invoice_number",
+      title: "Payment type",
+      field: "payment_type",
       render: (rowData) =>
-        rowData.type_of_bill === "Pakka"
-          ? rowData.invoice_number
-          : rowData.bill_no,
+        rowData.payment_type === "cash" ? "Cash" : "Bank Transfer",
     },
     {
-      title: "Total Amount",
-      field: "total_amt_with_tax",
-      render: (rowData) => convertNumber(rowData.total_amt_with_tax, true),
+      title: "Show in kachha ledger",
+      field: "kachha_ledger",
+      render: (rowData) => (rowData.kachha_ledger ? "Yes" : "No"),
     },
     {
-      title: "Purchase date",
-      field: "date",
-      render: (rowData) => plainDate(new Date(rowData.date)),
+      title: "Show in Pakka ledger",
+      field: "pakka_ledger",
+      render: (rowData) => (rowData.pakka_ledger ? "Yes" : "No"),
     },
   ];
 
-  const getPurchasesData = async (page, pageSize) => {
+  const getPurchasePaymentData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize,
@@ -87,7 +90,7 @@ export default function Purchases() {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_purchases + "?" + new URLSearchParams(params), {
+      fetch(backend_purchase_payment + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -119,31 +122,8 @@ export default function Purchases() {
     tableRef.current.onQueryChange();
   };
 
-  const snackBarHandleClose = () => {
-    setSnackBar((snackBar) => ({
-      ...snackBar,
-      show: false,
-      severity: "",
-      message: "",
-    }));
-  };
-
   const handleAdd = () => {
-    history.push(ADDPURCHASES);
-  };
-
-  const handleChange = (event) => {
-    if (isEmptyString(event.target.value)) {
-      delete filter[event.target.name];
-      setFilter((filter) => ({
-        ...filter,
-      }));
-    } else {
-      setFilter((filter) => ({
-        ...filter,
-        [event.target.name]: event.target.value,
-      }));
-    }
+    history.push(ADDPURCHASEPAYEMENT);
   };
 
   /** Handle End Date filter change */
@@ -151,7 +131,7 @@ export default function Purchases() {
     let endDate = moment(event).endOf("day").format("YYYY-MM-DDT23:59:59.999Z");
     if (endDate === "Invalid date") {
       endDate = null;
-      delete filter["date_lte"];
+      delete filter["payment_date_lte"];
       setFilter((filter) => ({
         ...filter,
       }));
@@ -159,7 +139,7 @@ export default function Purchases() {
       endDate = new Date(endDate).toISOString();
       setFilter((filter) => ({
         ...filter,
-        date_lte: endDate,
+        payment_date_lte: endDate,
       }));
     }
   };
@@ -169,7 +149,7 @@ export default function Purchases() {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
-      delete filter["date_gte"];
+      delete filter["payment_date_gte"];
       setFilter((filter) => ({
         ...filter,
       }));
@@ -177,9 +157,18 @@ export default function Purchases() {
       startDate = new Date(startDate).toISOString();
       setFilter((filter) => ({
         ...filter,
-        date_gte: startDate,
+        payment_date_gte: startDate,
       }));
     }
+  };
+
+  const snackBarHandleClose = () => {
+    setSnackBar((snackBar) => ({
+      ...snackBar,
+      show: false,
+      severity: "",
+      message: "",
+    }));
   };
 
   const setSeller = (seller) => {
@@ -228,18 +217,34 @@ export default function Purchases() {
               </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
-                  <CustomDropDown
-                    id="type_of_bill"
-                    onChange={(event) => handleChange(event)}
-                    labelText="Type of Purchase"
-                    name="type_of_bill"
-                    value={filter.type_of_bill || ""}
-                    nameValue={[
-                      { name: "Pakka", value: "Pakka" },
-                      { name: "Kachha", value: "Kachha" },
-                    ]}
+                  <DatePicker
+                    onChange={(event) => handleStartDateChange(event)}
+                    label="Payment Date From"
+                    name="payment_date_gte"
+                    value={filter.payment_date_gte || null}
+                    id="payment_date_gte"
                     formControlProps={{
                       fullWidth: true,
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%",
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
+                  <DatePicker
+                    onChange={(event) => handleEndDateChange(event)}
+                    label="Payment Date To"
+                    name="payment_date_lte"
+                    value={filter.payment_date_lte || null}
+                    id="payment_date_lte"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    style={{
+                      marginTop: "1.5rem",
+                      width: "100%",
                     }}
                   />
                 </GridItem>
@@ -258,63 +263,26 @@ export default function Purchases() {
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Invoice Number"
-                    value={filter.invoice_number_contains || ""}
-                    name="invoice_number_contains"
-                    id="invoice_number_contains"
+                  <CustomDropDown
+                    id="payment_type"
+                    onChange={(event) => {
+                      setFilter((filter) => ({
+                        ...filter,
+                        payment_type: event.target.value,
+                      }));
+                    }}
+                    labelText="Type of Ledger"
+                    name="payment_type"
+                    value={filter.payment_type}
+                    nameValue={[
+                      { name: "Bank Transfer", value: "bank_transfer" },
+                      { name: "Cash", value: "cash" },
+                    ]}
                     formControlProps={{
                       fullWidth: true,
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Bill Number"
-                    value={filter.bill_no_contains || ""}
-                    name="bill_no_contains"
-                    id="bill_no_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <DatePicker
-                    onChange={(event) => handleStartDateChange(event)}
-                    label="Purchase Date From"
-                    name="date_gte"
-                    value={filter.date_gte || null}
-                    id="date_gte"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    style={{
-                      marginTop: "1.5rem",
-                      width: "100%",
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <DatePicker
-                    onChange={(event) => handleEndDateChange(event)}
-                    label="Purchase Date To"
-                    name="date_lte"
-                    value={filter.date_lte || null}
-                    id="date_lte"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    style={{
-                      marginTop: "1.5rem",
-                      width: "100%",
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-              <GridContainer>
                 <GridItem
                   xs={12}
                   sm={12}
@@ -335,7 +303,7 @@ export default function Purchases() {
                     color="primary"
                     onClick={() => {
                       setFilter({
-                        _sort: "date:desc",
+                        _sort: "payment_date:desc",
                       });
                       setSelectedSeller(null);
                       tableRef.current.onQueryChange();
@@ -345,21 +313,23 @@ export default function Purchases() {
                   </Button>
                 </GridItem>
               </GridContainer>
-
               <br />
               <Table
                 tableRef={tableRef}
                 title="Purchases"
                 columns={columns}
                 data={async (query) => {
-                  return await getPurchasesData(query.page + 1, query.pageSize);
+                  return await getPurchasePaymentData(
+                    query.page + 1,
+                    query.pageSize
+                  );
                 }}
                 actions={[
                   (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      history.push(EDITPURCHASES + "/" + rowData.id);
+                      history.push(EDITPURCHASEPAYEMENT + "/" + rowData.id);
                     },
                   }),
                   (rowData) => ({
@@ -368,14 +338,14 @@ export default function Purchases() {
                     ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      history.push(VIEWPURCHASES + "/" + rowData.id);
+                      history.push(VIEWPURCHASEPAYEMENT + "/" + rowData.id);
                     },
                   }),
                 ]}
                 localization={{
                   body: {
                     editRow: {
-                      deleteText: `Are you sure you want to delete this Purchase Info?`,
+                      deleteText: `Are you sure you want to delete this Payment Info?`,
                       saveTooltip: "Delete",
                     },
                   },
@@ -388,7 +358,7 @@ export default function Purchases() {
                     new Promise((resolve) => {
                       setTimeout(async () => {
                         await providerForDelete(
-                          backend_purchases,
+                          backend_purchase_payment,
                           oldData.id,
                           Auth.getToken()
                         )
@@ -397,7 +367,7 @@ export default function Purchases() {
                               ...snackBar,
                               show: true,
                               severity: "success",
-                              message: "Successfully deleted purchase",
+                              message: "Successfully deleted payment",
                             }));
                           })
                           .catch((err) => {
@@ -405,7 +375,7 @@ export default function Purchases() {
                               ...snackBar,
                               show: true,
                               severity: "error",
-                              message: "Error deleting purchase",
+                              message: "Error deleting payment info",
                             }));
                           });
                         resolve();
@@ -429,4 +399,6 @@ export default function Purchases() {
       </GridContainer>
     </>
   );
-}
+};
+
+export default AllPayments;

@@ -287,7 +287,6 @@ module.exports = {
         })
         .then((res) => res.toJSON())
         .catch((err) => {});
-      console.log(result);
     }
     return {
       ids: ids,

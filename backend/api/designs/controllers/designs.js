@@ -177,7 +177,13 @@ module.exports = {
               isColor: true,
               color: colorId,
             },
-            ["raw_material", "raw_material.department", "raw_material.unit"]
+            [
+              "raw_material",
+              "raw_material.department",
+              "raw_material.unit",
+              "raw_material.category",
+              "raw_material.color",
+            ]
           );
 
         let colorMaterial = [];
@@ -202,6 +208,11 @@ module.exports = {
       });
     }
     ctx.send(dataToSend);
+  },
+
+  async downloadDesign(ctx) {
+    const { id } = ctx.params;
+    let designData = await strapi.query("designs").findOne({ id: id });
   },
 
   async generatePdf(ctx) {

@@ -1,6 +1,7 @@
 "use strict";
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
+const { validateNumber } = require("../../../config/utils");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -32,47 +33,241 @@ module.exports = {
   },
 
   async create(ctx) {
-    const { raw_material, seller, quantity, notes, date } = ctx.request.body;
-    await bookshelf.transaction(async (t) => {
-      let data = {
-        raw_material: raw_material,
-        quantity: quantity,
-        seller: seller,
-        date: new Date(date),
-        notes: notes,
-      };
-      await strapi
-        .query("goods-return")
-        .create(data, { transacting: t })
-        .then((model) => model)
-        .catch((err) => {
-          console.log(err);
-          throw 500;
-        });
+    const {
+      raw_material,
+      seller,
+      quantity,
+      notes,
+      date,
+      total_price,
+      kachha_ledger,
+      pakka_ledger,
+    } = ctx.request.body;
+    await bookshelf
+      .transaction(async (t) => {
+        let data = {
+          raw_material: raw_material,
+          quantity: quantity,
+          seller: seller,
+          date: new Date(date),
+          notes: notes,
+          total_price: total_price,
+          kachha_ledger: kachha_ledger,
+          pakka_ledger: pakka_ledger,
+        };
 
-      let quantityToDeduct = parseFloat(quantity);
-      let raw_material_data = await strapi
-        .query("raw-material")
-        .findOne({ id: raw_material });
-      let val = isNaN(parseFloat(raw_material_data.balance))
-        ? 0
-        : parseFloat(raw_material_data.balance);
-      let finalBalance = 0;
-      if (val >= quantityToDeduct) {
-        finalBalance = val - quantityToDeduct;
-        await strapi.query("raw-material").update(
-          { id: raw_material },
+        let goodsReturn = await strapi
+          .query("goods-return")
+          .create(data, { transacting: t })
+          .then((model) => model)
+          .catch((err) => {
+            console.log(err);
+            throw 500;
+          });
+
+        let quantityToDeduct = validateNumber(quantity);
+        let raw_material_data = await strapi
+          .query("raw-material")
+          .findOne({ id: raw_material });
+        let rawMaterialBalance = validateNumber(raw_material_data.balance);
+        let finalBalance = 0;
+        if (rawMaterialBalance >= quantityToDeduct) {
+          finalBalance = rawMaterialBalance - quantityToDeduct;
+          await strapi.query("raw-material").update(
+            { id: raw_material },
+            {
+              balance: validateNumber(finalBalance),
+            },
+            { patch: true, transacting: t }
+          );
+
+          let purchasePaymentGoodsReturnTransaction = {
+            purchase: null,
+            purchase_payment: null,
+            goods_return: goodsReturn.id,
+            seller: seller,
+            transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
+            month: new Date(date).getMonth() + 1,
+            year: new Date(date).getFullYear(),
+            comment: "GR",
+            transaction_amount: validateNumber(total_price),
+            is_purchase: false,
+            is_payment: false,
+            is_goods_return: true,
+            kachha_ledger: kachha_ledger,
+            pakka_ledger: pakka_ledger,
+          };
+
+          await strapi
+            .query("purchase-payment-transaction")
+            .create(purchasePaymentGoodsReturnTransaction, { transacting: t })
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
+        } else {
+          return ctx.badRequest(null, "Invalid value");
+        }
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
+      });
+  },
+
+  async update(ctx) {
+    const {
+      raw_material,
+      seller,
+      quantity,
+      notes,
+      date,
+      total_price,
+      kachha_ledger,
+      pakka_ledger,
+    } = ctx.request.body;
+
+    const { id } = ctx.params;
+
+    const goodsReturnData = await strapi.query("goods-return").findOne({
+      id: id,
+    });
+
+    await bookshelf
+      .transaction(async (t) => {
+        let data = {
+          raw_material: raw_material,
+          quantity: quantity,
+          seller: seller,
+          date: new Date(date),
+          notes: notes,
+          total_price: total_price,
+          kachha_ledger: kachha_ledger,
+          pakka_ledger: pakka_ledger,
+        };
+
+        await strapi
+          .query("goods-return")
+          .update({ id: id }, data, { transacting: t, patch: true })
+          .then((model) => model)
+          .catch((err) => {
+            console.log(err);
+            throw 500;
+          });
+
+        /** New quantity to deduct */
+        let quantityToDeduct = validateNumber(goodsReturnData.quantity);
+        /** previous deducted value */
+        let previousDeductedQuantity = validateNumber(quantity);
+        /** Get old value data */
+        let raw_material_data = await strapi
+          .query("raw-material")
+          .findOne({ id: raw_material });
+        let rawMaterialBalance = validateNumber(raw_material_data.balance);
+        let temp = rawMaterialBalance + previousDeductedQuantity;
+        let finalBalance = 0;
+
+        if (temp >= quantityToDeduct) {
+          finalBalance = temp - quantityToDeduct;
+          await strapi.query("raw-material").update(
+            { id: raw_material },
+            {
+              balance: validateNumber(finalBalance),
+            },
+            { patch: true, transacting: t }
+          );
+
+          let purchasePaymentGoodsReturnTransaction = {
+            purchase: null,
+            purchase_payment: null,
+            goods_return: id,
+            seller: seller,
+            transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
+            month: new Date(date).getMonth() + 1,
+            year: new Date(date).getFullYear(),
+            comment: "GR",
+            transaction_amount: validateNumber(total_price),
+            is_purchase: false,
+            is_payment: false,
+            is_goods_return: true,
+            kachha_ledger: kachha_ledger,
+            pakka_ledger: pakka_ledger,
+          };
+
+          let purchasePaymentTxnId = await strapi
+            .query("purchase-payment-transaction")
+            .findOne({
+              goods_return: id,
+            });
+
+          if (purchasePaymentTxnId) {
+            await strapi
+              .query("purchase-payment-transaction")
+              .update(
+                { id: purchasePaymentTxnId.id },
+                purchasePaymentGoodsReturnTransaction,
+                { patch: true, transacting: t }
+              )
+              .then((model) => model)
+              .catch((err) => {
+                console.log(err);
+                throw 500;
+              });
+          } else {
+            await strapi
+              .query("purchase-payment-transaction")
+              .create(purchasePaymentGoodsReturnTransaction, { transacting: t })
+              .then((model) => model)
+              .catch((err) => {
+                console.log(err);
+                throw 500;
+              });
+          }
+        } else {
+          return ctx.badRequest(null, "Invalid value");
+        }
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
+      });
+  },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+
+    await bookshelf
+      .transaction(async (t) => {
+        await strapi.query("purchase-payment-transaction").delete(
+          { goods_return: id },
           {
-            balance: utils.convertNumber(finalBalance.toFixed(2)),
-          },
-          { patch: true, transacting: t }
+            patch: true,
+            transacting: t,
+          }
         );
 
+        await strapi.query("goods-return").delete(
+          { id: id },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+      })
+      .then((res) => {
         ctx.send(200);
-      } else {
-        return ctx.badRequest(null, "Invalid value");
-      }
-    });
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
+      });
   },
 
   async findOne(ctx) {

@@ -16,8 +16,9 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  Muted,
-  SnackBarComponent
+  RawMaterialDetail,
+  SellerDetails,
+  SnackBarComponent,
 } from "../../components";
 import moment from "moment";
 import SweetAlert from "react-bootstrap-sweetalert";
@@ -29,10 +30,16 @@ import styles from "../../assets/jss/material-dashboard-react/controllers/common
 import { useHistory } from "react-router-dom";
 import { GOODRETURNLIST } from "../../paths";
 import { useEffect } from "react";
-import { providerForPost, providerForPut } from "../../api";
+import { providerForGet, providerForPost, providerForPut } from "../../api";
 import { useState } from "react";
-import { Backdrop, CircularProgress, FormHelperText } from "@material-ui/core";
-import { checkEmpty, hasError, isEmptyString, setErrors } from "../../Utils";
+import {
+  Backdrop,
+  CircularProgress,
+  FormControlLabel,
+  FormHelperText,
+  Switch,
+} from "@material-ui/core";
+import { checkEmpty, hasError, setErrors, validateNumber } from "../../Utils";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
 import { backend_goods_return } from "../../constants";
@@ -48,112 +55,91 @@ export default function AddGoodReturn(props) {
   const history = useHistory();
   const [error, setError] = React.useState({});
   const [alert, setAlert] = useState(null);
-  /** VIMP to check if the data is used for viewing */
-  const [isView] = useState(
-    props.location.state ? props.location.state.view : false
-  );
-
-  /** VIMP to check if the data is used for editing */
-  const [isEdit] = useState(
-    props.location.state ? props.location.state.edit : false
-  );
+  const [isEdit] = useState(props.isEdit ? props.isEdit : null);
+  const [isView] = useState(props.isView ? props.isView : null);
+  const [id] = useState(props.id ? props.id : null);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
-    id: null,
     seller: null,
-    gst_no: "",
-    seller_name: "",
     quantity: "",
     notes: "",
     date: new Date(),
     raw_material: null,
-    raw_material_name: "",
-    raw_material_department: "",
-    raw_material_color: "",
-    raw_material_category: "",
-    raw_material_size: "",
-    raw_material_balance: "",
-    raw_material_name_value: []
+    total_price: 0,
+    kachha_ledger: true,
+    pakka_ledger: false,
   });
+
+  const [rawMaterialData, setRawMaterialData] = useState({});
+  const [seller, setSeller] = useState({});
 
   const [openDialog, setOpenDialog] = useState(false);
   const [
     openDialogForSelectingRawMaterial,
-    setOpenDialogForSelectingRawMaterial
+    setOpenDialogForSelectingRawMaterial,
   ] = useState(false);
-  const [
-    openDialogForSelectingSeller,
-    setOpenDialogForSelectingSeller
-  ] = useState(false);
+  const [openDialogForSelectingSeller, setOpenDialogForSelectingSeller] =
+    useState(false);
 
   useEffect(() => {
-    if (
-      props.location.state &&
-      (props.location.state.view || props.location.state.edit) &&
-      props.location.state.data
-    ) {
-      setData(props.location.state.data);
+    const getGoodsReturnData = async () => {
+      setBackDrop(true);
+      await providerForGet(backend_goods_return + "/" + id, {}, Auth.getToken())
+        .then((res) => {
+          if (res && res.data && res.data.seller && res.data.raw_material) {
+            let data = {
+              ...res.data,
+            };
+            setFormState((formState) => ({
+              ...formState,
+              id: data.id,
+              seller: data.seller ? data.seller.id : null,
+              notes: data.notes,
+              quantity: validateNumber(data.quantity),
+              raw_material: data.raw_material ? data.raw_material.id : null,
+              date: new Date(data.date),
+              total_price: validateNumber(data.total_price),
+              kachha_ledger: data.kachha_ledger,
+              pakka_ledger: data.pakka_ledger,
+            }));
+            setRawMaterialData(data.raw_material);
+            setSeller(data.seller);
+            setBackDrop(false);
+          } else {
+            throw new Error();
+          }
+        })
+        .catch((err) => {
+          setBackDrop(false);
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error getting goods return info",
+          }));
+        });
+    };
+
+    if (isEdit || isView) {
+      getGoodsReturnData();
     }
-  }, []);
+  }, [isEdit, isView, id]);
 
-  const setData = data => {
-    let raw_material_data = data.raw_material;
-    let bal = "0";
-    let department = "";
-    if (raw_material_data) {
-      department = raw_material_data.department
-        ? raw_material_data.department.name
-        : "";
-      if (!raw_material_data.balance) {
-        bal = "0";
-      } else {
-        bal = raw_material_data.balance;
-      }
-    }
-
-    setFormState(formState => ({
-      ...formState,
-      id: data.id,
-      seller: data.seller ? data.seller.id : null,
-      seller_name: data.seller ? data.seller.seller_name : "",
-      gst_no: data.seller ? data.seller.gst_no : "",
-      notes: data.notes,
-      quantity: data.quantity,
-      raw_material: data.raw_material ? data.raw_material.id : null,
-      raw_material_name: raw_material_data ? raw_material_data.name : "",
-      raw_material_department: department,
-      raw_material_color:
-        raw_material_data && raw_material_data.color
-          ? raw_material_data.color.name
-          : "",
-      raw_material_category:
-        raw_material_data && raw_material_data.category
-          ? raw_material_data.category.name
-          : "",
-      raw_material_size: raw_material_data ? raw_material_data.size : "",
-      raw_material_balance: bal,
-      raw_material_name_value: raw_material_data
-        ? raw_material_data.name_value
-        : "",
-      date: new Date(data.date)
-    }));
-  };
-
-  const handleChange = event => {
+  const handleChange = (event) => {
     delete error[event.target.name];
-    setError(error => ({
-      ...error
+    setError((error) => ({
+      ...error,
     }));
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      [event.target.name]: event.target.value
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -161,7 +147,7 @@ export default function AddGoodReturn(props) {
     history.push(GOODRETURNLIST);
   };
 
-  const submit = async event => {
+  const submit = async (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
@@ -188,12 +174,12 @@ export default function AddGoodReturn(props) {
     } else {
       const confirmBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true
+        [buttonClasses["success"]]: true,
       });
 
       const cancelBtnClasses = classNames({
         [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true
+        [buttonClasses["danger"]]: true,
       });
 
       setAlert(
@@ -220,61 +206,55 @@ export default function AddGoodReturn(props) {
 
   const addEditData = async () => {
     setBackDrop(true);
+    let data = {
+      raw_material: formState.raw_material,
+      seller: formState.seller,
+      quantity: formState.quantity,
+      date: new Date(formState.date),
+      notes: formState.notes,
+      total_price: formState.total_price,
+      kachha_ledger: formState.kachha_ledger,
+      pakka_ledger: formState.pakka_ledger,
+    };
     if (isEdit) {
-      let data = {
-        seller: formState.seller,
-        notes: formState.notes
-      };
-      await providerForPut(
-        backend_goods_return,
-        formState.id,
-        data,
-        auth.getToken()
-      )
-        .then(res => {
+      await providerForPut(backend_goods_return, id, data, auth.getToken())
+        .then((res) => {
           setBackDrop(false);
           history.push(GOODRETURNLIST);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error Saving"
+            message: "Error Saving",
           }));
         });
     } else {
-      let data = {
-        raw_material: formState.raw_material,
-        seller: formState.seller,
-        quantity: formState.quantity,
-        date: new Date(formState.date),
-        notes: formState.notes
-      };
       await providerForPost(backend_goods_return, data, auth.getToken())
-        .then(res => {
+        .then((res) => {
           setBackDrop(false);
           history.push(GOODRETURNLIST);
         })
-        .catch(err => {
+        .catch((err) => {
           setBackDrop(false);
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error Saving"
+            message: "Error Saving",
           }));
         });
     }
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -294,39 +274,38 @@ export default function AddGoodReturn(props) {
     setOpenDialogForSelectingRawMaterial(false);
   };
 
-  const handleStartDateChange = event => {
+  const handleStartDateChange = (event) => {
     let startDate = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (startDate === "Invalid date") {
       startDate = null;
     } else {
       startDate = new Date(startDate).toISOString();
     }
-    setFormState(formState => ({
+    setFormState((formState) => ({
       ...formState,
-      date: startDate
+      date: startDate,
     }));
   };
 
   /** Seller Dialog boxes */
-  const handeAddSeller = row => {
+  const handeAddSeller = (row) => {
     setOpenDialogForSelectingSeller(false);
     if (row) {
       delete error["seller"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
-      setFormState(formState => ({
+      setSeller(row);
+      setFormState((formState) => ({
         ...formState,
         seller: row.id,
-        gst_no: row.gst_no,
-        seller_name: row.seller_name
       }));
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Invalid Seller"
+        message: "Invalid Seller",
       }));
     }
   };
@@ -335,30 +314,24 @@ export default function AddGoodReturn(props) {
     setOpenDialogForSelectingSeller(false);
   };
 
-  const handleAddRawMaterial = (row, nameObject) => {
+  const handleAddRawMaterial = (row) => {
     setOpenDialogForSelectingRawMaterial(false);
     if (row) {
       delete error["raw_material"];
-      setError(error => ({
-        ...error
+      setError((error) => ({
+        ...error,
       }));
-      setFormState(formState => ({
+      setFormState((formState) => ({
         ...formState,
         raw_material: row.id,
-        raw_material_name: nameObject.name,
-        raw_material_department: nameObject.department,
-        raw_material_color: nameObject.color,
-        raw_material_category: nameObject.category,
-        raw_material_size: nameObject.size,
-        raw_material_balance: nameObject.bal,
-        raw_material_name_value: row.name_value
       }));
+      setRawMaterialData(row);
     } else {
-      setSnackBar(snackBar => ({
+      setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
         severity: "error",
-        message: "Invalid Raw Material"
+        message: "Invalid Raw Material",
       }));
     }
   };
@@ -390,7 +363,7 @@ export default function AddGoodReturn(props) {
           `Please make sure you have added the right quantity and selected right raw material because
            the quantity will be deducted from the raw material`,
           `Are you sure you
-        want to proceed ?`
+        want to proceed ?`,
         ]}
       ></DialogBox>
       <DialogBoxForSelectingRawMaterial
@@ -413,210 +386,159 @@ export default function AddGoodReturn(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={6}>
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{
-                      margin: "27px 0px 0px"
-                    }}
-                  >
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Id : </b>{" "}
-                        {formState.raw_material ? formState.raw_material : ""}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Name : </b> {formState.raw_material_name}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Department : </b>
-                        {formState.raw_material_department}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Category : </b>
-                        {formState.raw_material_category}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Color :</b> {formState.raw_material_color}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Size : </b>
-                        {formState.raw_material_size}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Balance : </b>
-                        {formState.raw_material_balance}
-                      </GridItem>
-                    </GridContainer>
+              {isView || isEdit ? null : (
+                <>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        setOpenDialogForSelectingRawMaterial(true);
+                      }}
+                    >
+                      {rawMaterialData && rawMaterialData.id
+                        ? "Change Raw Material"
+                        : "Select Raw Material"}
+                    </Button>
                   </GridItem>
-                  {isView || isEdit ? null : (
-                    <>
-                      <GridItem
-                        xs={12}
-                        sm={12}
-                        md={12}
-                        style={{
-                          margin: "27px 0px 0px"
-                        }}
+                  {hasError("raw_material", error) ? (
+                    <GridItem xs={12} sm={12} md={12}>
+                      <FormHelperText
+                        id={"raw_material_helpertext_id"}
+                        error={hasError("raw_material", error)}
                       >
-                        <Button
-                          color="primary"
-                          onClick={() => {
-                            setOpenDialogForSelectingRawMaterial(true);
-                          }}
-                        >
-                          {formState.raw_material
-                            ? "Change Raw Material"
-                            : "Select Raw Material"}
-                        </Button>
-                      </GridItem>
-                      {hasError("raw_material", error) ? (
-                        <GridItem xs={12} sm={12} md={12}>
-                          <FormHelperText
-                            id={"raw_material_helpertext_id"}
-                            error={hasError("raw_material", error)}
-                          >
-                            {hasError("raw_material", error)
-                              ? error["raw_material"].map(error => {
-                                  return error + " ";
-                                })
-                              : null}
-                          </FormHelperText>
-                        </GridItem>
-                      ) : null}
-                    </>
-                  )}
-                </GridContainer>
+                        {hasError("raw_material", error)
+                          ? error["raw_material"].map((error) => {
+                              return error + " ";
+                            })
+                          : null}
+                      </FormHelperText>
+                    </GridItem>
+                  ) : null}
+                </>
+              )}
+              {rawMaterialData && rawMaterialData.id ? (
+                <GridItem xs={12} sm={12} md={12}>
+                  <RawMaterialDetail raw_material={rawMaterialData} />
+                </GridItem>
+              ) : null}
+            </GridContainer>
+            <GridContainer>
+              <GridItem
+                xs={12}
+                sm={12}
+                md={12}
+                style={{
+                  marginTop: "1.5rem",
+                  color: "#C8C8C8",
+                }}
+              >
+                <b>Sell To </b>
               </GridItem>
-              <GridItem xs={12} sm={12} md={6}>
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{
-                      margin: "27px 0px 0px"
-                    }}
-                  >
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem
-                        xs={12}
-                        sm={12}
-                        md={8}
-                        style={{
-                          color: "#C8C8C8"
-                        }}
-                      >
-                        <b>Sell To </b>
-                      </GridItem>
-                    </GridContainer>
-                    <br />
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Name : </b> {formState.seller_name}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Gst No : </b>
-                        {formState.gst_no}
-                      </GridItem>
-                    </GridContainer>
+              {seller && seller.id && (
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  style={{ marginTop: "0.8rem" }}
+                >
+                  <SellerDetails seller={seller} />
+                </GridItem>
+              )}
+              {isView || isEdit ? null : (
+                <>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        setOpenDialogForSelectingSeller(true);
+                      }}
+                    >
+                      {seller && seller.id ? "Change Seller" : "Select Seller"}
+                    </Button>
                   </GridItem>
-                  {isView ? null : (
-                    <>
-                      <GridItem
-                        xs={12}
-                        sm={12}
-                        md={12}
-                        style={{
-                          margin: "27px 0px 0px"
-                        }}
+                  {hasError("seller", error) ? (
+                    <GridItem xs={12} sm={12} md={12}>
+                      <FormHelperText
+                        id={"seller_helpertext_id"}
+                        error={hasError("seller", error)}
                       >
-                        <Button
-                          color="primary"
-                          onClick={() => {
-                            setOpenDialogForSelectingSeller(true);
-                          }}
-                        >
-                          {formState.seller ? "Change Seller" : "Select Seller"}
-                        </Button>
-                      </GridItem>
-                      {hasError("seller", error) ? (
-                        <GridItem xs={12} sm={12} md={12}>
-                          <FormHelperText
-                            id={"seller_helpertext_id"}
-                            error={hasError("seller", error)}
-                          >
-                            {hasError("seller", error)
-                              ? error["seller"].map(error => {
-                                  return error + " ";
-                                })
-                              : null}
-                          </FormHelperText>
-                        </GridItem>
-                      ) : null}
-                    </>
-                  )}
-                </GridContainer>
-              </GridItem>
+                        {hasError("seller", error)
+                          ? error["seller"].map((error) => {
+                              return error + " ";
+                            })
+                          : null}
+                      </FormHelperText>
+                    </GridItem>
+                  ) : null}
+                </>
+              )}
             </GridContainer>
             <GridContainer>
               <GridItem xs={12} sm={12} md={3}>
                 <DatePicker
-                  onChange={event => handleStartDateChange(event)}
+                  onChange={(event) => handleStartDateChange(event)}
                   label="Selling Date"
                   name="date"
-                  disabled={isView || isEdit}
+                  disabled={isView}
                   value={formState.date || new Date()}
                   id="date"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   style={{
                     marginTop: "1.5rem",
-                    width: "100%"
+                    width: "100%",
                   }}
                 />
               </GridItem>
               <GridItem xs={12} sm={12} md={3}>
                 <CustomInput
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   type="number"
-                  disabled={isView || isEdit}
-                  labelText="Selling Quantity"
+                  disabled={isView}
+                  labelText="Quantity"
                   name="quantity"
                   value={formState.quantity}
                   id="purchase_quantity"
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   /** For setting errors */
                   helperTextId={"helperText_quantity"}
                   isHelperText={hasError("quantity", error)}
                   helperText={
                     hasError("quantity", error)
-                      ? error["quantity"].map(error => {
+                      ? error["quantity"].map((error) => {
                           return error + " ";
                         })
                       : null
                   }
                   error={hasError("quantity", error)}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} md={3}>
+                <CustomInput
+                  onChange={(event) => handleChange(event)}
+                  type="number"
+                  disabled={isView}
+                  labelText="Price"
+                  name="total_price"
+                  value={formState.total_price}
+                  id="total_price"
+                  formControlProps={{
+                    fullWidth: true,
+                  }}
+                  /** For setting errors */
+                  helperTextId={"helperText_total_price"}
+                  isHelperText={hasError("total_price", error)}
+                  helperText={
+                    hasError("total_price", error)
+                      ? error["total_price"].map((error) => {
+                          return error + " ";
+                        })
+                      : null
+                  }
+                  error={hasError("total_price", error)}
                 />
               </GridItem>
             </GridContainer>
@@ -627,22 +549,90 @@ export default function AddGoodReturn(props) {
                   id="notes"
                   name="notes"
                   disabled={isView}
-                  onChange={event => handleChange(event)}
+                  onChange={(event) => handleChange(event)}
                   value={formState.notes}
                   formControlProps={{
-                    fullWidth: true
+                    fullWidth: true,
                   }}
                   inputProps={{
                     multiline: true,
-                    rows: 3
+                    rows: 3,
                   }}
                 />
+              </GridItem>
+            </GridContainer>
+            <GridContainer>
+              <GridItem
+                xs={12}
+                sm={12}
+                md={3}
+                className={classes.switchBoxInFilter}
+              >
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formState.kachha_ledger}
+                        disabled={isView}
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            kachha_ledger: event.target.checked,
+                          }));
+                        }}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar,
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label,
+                    }}
+                    label="Add in Kachha Ledger?"
+                  />
+                </div>
+              </GridItem>
+              <GridItem
+                xs={12}
+                sm={12}
+                md={3}
+                className={classes.switchBoxInFilter}
+              >
+                <div className={classes.block}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formState.pakka_ledger}
+                        disabled={isView}
+                        onChange={(event) => {
+                          setFormState((formState) => ({
+                            ...formState,
+                            pakka_ledger: event.target.checked,
+                          }));
+                        }}
+                        classes={{
+                          switchBase: classes.switchBase,
+                          checked: classes.switchChecked,
+                          thumb: classes.switchIcon,
+                          track: classes.switchBar,
+                        }}
+                      />
+                    }
+                    classes={{
+                      label: classes.label,
+                    }}
+                    label="Add in Pakka Ledger?"
+                  />
+                </div>
               </GridItem>
             </GridContainer>
           </CardBody>
           {isView ? null : (
             <CardFooter>
-              <Button color="primary" onClick={e => submit(e)}>
+              <Button color="primary" onClick={(e) => submit(e)}>
                 Save
               </Button>
             </CardFooter>
@@ -652,53 +642,6 @@ export default function AddGoodReturn(props) {
           <CircularProgress color="inherit" />
         </Backdrop>
       </GridItem>
-
-      {formState.raw_material ? (
-        <GridItem xs={12} sm={12} md={4}>
-          <Card>
-            <CardBody>
-              <GridItem xs={12} sm={12} md={12}>
-                <b>Raw Material Details</b>
-              </GridItem>
-              <br />
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>Id :{formState.raw_material}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>Name :{formState.raw_material_name}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Department : {formState.raw_material_department}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Category : {formState.raw_material_category}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Color : {formState.raw_material_color}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Size : {formState.raw_material_size}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>
-                  Balance :{" "}
-                  {isEmptyString(formState.raw_material_balance)
-                    ? "0"
-                    : formState.raw_material_balance}
-                </Muted>
-              </GridItem>
-              {formState.raw_material_name_value.map(nv => (
-                <GridItem xs={12} sm={12} md={12}>
-                  <Muted>
-                    {" "}
-                    {nv.name} : {nv.value}
-                  </Muted>
-                </GridItem>
-              ))}
-            </CardBody>
-          </Card>
-        </GridItem>
-      ) : null}
     </GridContainer>
   );
 }

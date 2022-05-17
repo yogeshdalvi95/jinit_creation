@@ -1,24 +1,20 @@
 import React from "react";
 import MaterialTable from "material-table";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, TablePagination } from "@material-ui/core";
 import {
   Box,
-  TablePagination,
   Paper,
   Table as MaterialUiTable,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  TextField,
-  Typography,
 } from "@mui/material";
 
 import { defaultFont } from "../../assets/jss/material-dashboard-react.js";
 
-const useStyles = makeStyles((theme) => ({
+export const useStyles = makeStyles((theme) => ({
   root: {
     "& .MuiPaper-root": {
       borderRadius: "100px",

@@ -163,6 +163,10 @@ const ViewDesign = (props) => {
           Design Sheet
         </Typography>
       </GridItem>
+      <GridItem xs={12} sm={12} md={12}>
+        <GridItem xs={12} sm={12} md={7}></GridItem>
+        <GridItem xs={12} sm={12} md={5}></GridItem>
+      </GridItem>
       {Object.keys(commonRawMaterialsData).length ? (
         <>
           <GridItem xs={12} sm={12} md={8}>
@@ -191,18 +195,27 @@ const ViewDesign = (props) => {
               </>
             )}
           </GridItem>
-          {commonRawMaterialsData?.commonMotiBandhaiMaterial &&
-          commonRawMaterialsData.commonMotiBandhaiMaterial.length ? (
-            <>
-              <Table
-                columns={bandhaiColumns}
-                data={commonRawMaterialsData.commonMotiBandhaiMaterial}
-                options={{
-                  paging: false,
-                }}
-              />
-            </>
-          ) : null}
+          <GridItem
+            xs={12}
+            sm={12}
+            md={4}
+            style={{
+              marginTop: "30px",
+            }}
+          >
+            {commonRawMaterialsData?.commonMotiBandhaiMaterial &&
+            commonRawMaterialsData.commonMotiBandhaiMaterial.length ? (
+              <>
+                <Table
+                  columns={bandhaiColumns}
+                  data={commonRawMaterialsData.commonMotiBandhaiMaterial}
+                  options={{
+                    paging: false,
+                  }}
+                />
+              </>
+            ) : null}
+          </GridItem>
           {colors.map((c, k) => (
             <React.Fragment key={k}>
               <GridItem

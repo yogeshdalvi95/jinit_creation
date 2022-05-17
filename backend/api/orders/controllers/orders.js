@@ -910,12 +910,11 @@ module.exports = {
                   <td>${orderData.quantity}</td>
                 </tr>
                 <tr>
-                  <td rowspan = "20" colspan = "2" style= "align-content : center;" >
+                  <td rowspan = "10" colspan = "2" style= "align-content : center;" >
                     <img
                     src='${image}'
                     class="center"
                     alt="No data"
-                    height="15rem"
                     />
                   </td>
                 </tr>

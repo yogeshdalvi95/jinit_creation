@@ -31,12 +31,6 @@ export default function RawMaterialDetail(props) {
       <GridItem xs={12} sm={12} md={12}>
         <GridContainer style={{ dispay: "flex" }}>
           <GridItem xs={12} sm={12} md={8}>
-            <b>Id : </b>
-            {`# ${props.raw_material.id}`}
-          </GridItem>
-        </GridContainer>
-        <GridContainer style={{ dispay: "flex" }}>
-          <GridItem xs={12} sm={12} md={8}>
             <b>Name : </b> {props.raw_material.name}
           </GridItem>
         </GridContainer>

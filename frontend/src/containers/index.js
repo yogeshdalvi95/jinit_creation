@@ -21,6 +21,8 @@ export {
   AddGoodReturn,
   KachhaPurchaseDetails,
   Ledger,
+  AddEditViewPayments,
+  AllPayments,
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
 export { Designs, AddEditDesign, DesignMaterials, ViewDesign } from "./Designs";

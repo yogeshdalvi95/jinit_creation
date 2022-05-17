@@ -31,6 +31,14 @@
         "cash"
       ],
       "default": "bank_transfer"
+    },
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
+    },
+    "pakka_ledger": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

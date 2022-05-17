@@ -115,7 +115,6 @@ export default function AddEditSaleReturn(props) {
     let isError = false;
     await providerForGet(backend_sale_return + "/" + id, {}, Auth.getToken())
       .then((res) => {
-        console.log(res, res.status);
         if (res.status === 200) {
           convertData(res.data);
         } else {

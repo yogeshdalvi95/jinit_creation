@@ -110,14 +110,10 @@ export default function AddEditRawMaterial(props) {
 
   const buttonClasses = buttonUseStyles();
   const [error, setError] = React.useState({});
-  const [
-    openDialogForSelectingCategory,
-    setOpenDialogForSelectingCategory,
-  ] = useState(false);
-  const [
-    openDialogForSelectingColor,
-    setOpenDialogForSelectingColor,
-  ] = useState(false);
+  const [openDialogForSelectingCategory, setOpenDialogForSelectingCategory] =
+    useState(false);
+  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
+    useState(false);
 
   /** VIMP to check if the data is used for viewing */
   const [isView] = useState(
@@ -616,7 +612,6 @@ export default function AddEditRawMaterial(props) {
       })
         .then((response) => response.json())
         .then((result) => {
-          //console.log((result.data)
           resolve(filterData(result.data));
         });
     });
@@ -638,8 +633,6 @@ export default function AddEditRawMaterial(props) {
       name: inputValue,
     }));
   };
-
-  console.log(formState);
 
   return (
     <>
@@ -675,7 +668,7 @@ export default function AddEditRawMaterial(props) {
               <p className={classes.cardCategoryWhite}></p>
             </CardHeader>
             <CardBody>
-              <GridContainer>
+              {/* <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <AsyncCreatableSelect
                     cacheOptions
@@ -691,7 +684,7 @@ export default function AddEditRawMaterial(props) {
                     value={formState.name}
                   />
                 </GridItem>
-              </GridContainer>
+              </GridContainer> */}
 
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>

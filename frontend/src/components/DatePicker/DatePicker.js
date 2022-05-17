@@ -13,11 +13,59 @@ import {
   grayColor,
 } from "../../assets/jss/material-dashboard-react.js";
 import styled from "styled-components";
+import { createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/styles";
 
 const useStyles = makeStyles(styles);
-
-export default function DatePicker(props) {
+const theme = createMuiTheme({
+  overrides: {
+    MuiPickersClock: {
+      clock: {
+        backgroundColor: "#9c27b0",
+      },
+    },
+    MuiPickersToolbar: {
+      toolbar: {
+        backgroundColor: "#9c27b0",
+      },
+    },
+    MuiPickersDay: {
+      daySelected: {
+        backgroundColor: "#9c27b0",
+      },
+    },
+    MuiTypography: {
+      colorPrimary: {
+        color: "#9c27b0",
+      },
+    },
+    MuiButton: {
+      textPrimary: {
+        color: "#9c27b0",
+      },
+    },
+    MuiPickersMonth: {
+      monthSelected: {
+        color: "#9c27b0",
+      },
+      root: {
+        "&:focus": {
+          color: "#9c27b0",
+        },
+      },
+    },
+  },
+});
+const DatePicker = (props) => {
   const classes = useStyles();
+  const {
+    formControlProps,
+    error,
+    helperTextId,
+    isHelperText,
+    helperText,
+    ...rest
+  } = props;
   const marginTop = classNames({
     [classes.marginTop]: props.noMargin ? false : true,
     [classes.noMargin]: props.noMargin ? true : false,
@@ -50,29 +98,33 @@ export default function DatePicker(props) {
   `;
 
   return (
-    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <StyledTextField
-        margin="normal"
-        id="date-picker-dialog"
-        label={props.label}
-        format="d MMM yyyy"
-        value={props.date}
-        name={props.name}
-        onChange={props.handleDateChange}
-        KeyboardButtonProps={{
-          "aria-label": "change date",
-        }}
-        maxDate={
-          new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
-        }
-        classes={{
-          root: marginTop,
-          disabled: classes.disabled,
-          underline: underlineClasses,
-          input: classes.input,
-        }}
-        {...props}
-      />
-    </MuiPickersUtilsProvider>
+    <ThemeProvider theme={theme}>
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <StyledTextField
+          margin="normal"
+          id="date-picker-dialog"
+          label={props.label}
+          format="d MMM yyyy"
+          value={props.date}
+          name={props.name}
+          onChange={props.handleDateChange}
+          KeyboardButtonProps={{
+            "aria-label": "change date",
+          }}
+          maxDate={
+            new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+          }
+          classes={{
+            root: marginTop,
+            disabled: classes.disabled,
+            underline: underlineClasses,
+            input: classes.input,
+          }}
+          {...props}
+        />
+      </MuiPickersUtilsProvider>
+    </ThemeProvider>
   );
-}
+};
+
+export default DatePicker;

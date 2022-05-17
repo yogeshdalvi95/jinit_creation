@@ -17,6 +17,14 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/purchases/download-ledger",
+      "handler": "purchases.downloadledger",
+      "config": {
+        "policies": []
+      }
+    },
+    {
       "method": "GET",
       "path": "/purchases/count",
       "handler": "purchases.count",

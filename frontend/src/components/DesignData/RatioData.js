@@ -3,7 +3,6 @@ import React from "react";
 import { GridItem } from "../Grid";
 
 export default function RatioData(props) {
-  console.log(props.data);
   if (props.data && props.data.length) {
     return (
       <>

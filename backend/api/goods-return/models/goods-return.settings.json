@@ -30,6 +30,14 @@
     "total_price": {
       "type": "float",
       "default": 0
+    },
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
+    },
+    "pakka_ledger": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

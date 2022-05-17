@@ -22,6 +22,18 @@ const ROLES = {
   "Super Admin": {
     controllers: [
       {
+        name: "category",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "color",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "purchase-payments",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "department",
         action: [],
       },
@@ -64,10 +76,7 @@ const ROLES = {
         name: "category",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
-      {
-        name: "color",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
-      },
+
       {
         name: "party",
         action: [
@@ -165,6 +174,10 @@ const ROLES = {
         ],
       },
       {
+        name: "purchase-payments",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "category",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
@@ -249,7 +262,16 @@ const ROLES = {
       },
       {
         name: "purchases",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "ledger",
+          "downloadledger",
+        ],
       },
       {
         name: "raw-material",
@@ -320,6 +342,10 @@ const ROLES = {
           "designforparties",
           "viewdesign",
         ],
+      },
+      {
+        name: "purchase-payments",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "designs-and-materials",
@@ -418,7 +444,16 @@ const ROLES = {
       },
       {
         name: "purchases",
-        action: ["find", "create", "update", "findOne", "update", "delete"],
+        action: [
+          "find",
+          "create",
+          "update",
+          "findOne",
+          "update",
+          "delete",
+          "ledger",
+          "downloadledger",
+        ],
       },
       {
         name: "raw-material",

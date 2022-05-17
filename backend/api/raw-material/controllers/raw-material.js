@@ -40,7 +40,6 @@ module.exports = {
             []
           )
           .then((res) => {
-            console.log(res);
             return res.map((r) => r.raw_material);
           })
           .catch((err) => {});
@@ -92,6 +91,10 @@ module.exports = {
       .query("designs-and-materials")
       .findOne({ raw_material: id });
 
+    const checkIfPresentInGoodsReturn = await strapi
+      .query("goods-return")
+      .findOne({ raw_material: id });
+
     const checkIfPresentInMonthlySheet = await strapi
       .query("monthly-sheet")
       .findOne({ raw_material: id });
@@ -99,7 +102,8 @@ module.exports = {
     if (
       !checkIfPresentInPurchases &&
       !checkIfPresentInReadyMaterial &&
-      !checkIfPresentInMonthlySheet
+      !checkIfPresentInMonthlySheet &&
+      !checkIfPresentInGoodsReturn
     ) {
       await strapi.query("raw-material").delete({ id: id });
       ctx.send(200);

@@ -1,7 +1,8 @@
 /**
  * * Public urls
  */
-export const apiUrl = process.env.REACT_APP_SERVER_URL;
+export const apiUrl = process.env.REACT_APP_BACKEND_SERVER_URL;
+export const frontendServerUrl = process.env.REACT_APP_SERVER_URL;
 export const apiBackendUrl = `${apiUrl}`;
 export const backend_login = `${apiUrl}/auth/local`;
 export const backend_admins = `${apiUrl}/getAllAdmins`;
@@ -62,4 +63,7 @@ export const backend_download_all_orders = `${apiUrl}/orders/download-order`;
 export const backend_download_orders_sheet = `${apiUrl}/orders/download-order-sheet`;
 
 export const backend_purchases = `${apiUrl}/purchases`;
-export const backend_individual_purchase_ledger = `${apiUrl}/purchases/ledger`;
+export const backend_purchase_ledger = `${apiUrl}/purchases/ledger`;
+export const backend_download_purchase_ledger = `${apiUrl}/purchases/download-ledger`;
+
+export const backend_purchase_payment = `${apiUrl}/purchase-payments`;

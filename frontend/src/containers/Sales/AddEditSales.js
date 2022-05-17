@@ -28,7 +28,6 @@ import {
   CustomTableRow,
   DatePicker,
   DialogBoxForSelectingDesign,
-  DialogBoxForSelectingReadyMaterial,
   DialogForSelectingParties,
   FAB,
   GridContainer,
@@ -78,7 +77,7 @@ export default function AddEditSales(props) {
 
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
-  const [id, setId] = useState(props.id ? props.id : null);
+  const [id] = useState(props.id ? props.id : null);
 
   const [formState, setFormState] = useState({
     id: null,

@@ -10,25 +10,40 @@ export const DAILYUSAGERAWMATERIALS = "/raw-material-daily-usage";
 export const USERS = "/users";
 export const PROFILE = "/profile";
 
-export const SELLERS = "/sellers";
-export const ADDSELLER = "/add-seller";
-export const EDITSELLER = "/edit-seller";
-
 export const PARTIES = "/parties";
 export const ADDPARTIES = "/add-party";
 export const EDITPARTIES = "/edit-party";
 
+/** Purchases */
 export const ADDPURCHASES = "/add-purchases";
-export const EDITPURCHASES = "/edit-purchases";
 export const PURCHASES = "/purchases";
+export const EDITPURCHASES = "/edit-purchases";
 export const VIEWPURCHASES = "/view-purchases";
+export const EDITPURCHASESID = `${EDITPURCHASES}/:id`;
+export const VIEWPURCHASESID = `${VIEWPURCHASES}/:id`;
+
+export const ADDPURCHASEPAYEMENT = "/add-purchase-payment";
+export const ALLPURCHASEPAYEMENTS = "/purchase-payments";
+export const EDITPURCHASEPAYEMENT = "/edit-purchase-payment";
+export const VIEWPURCHASEPAYEMENT = "/view-purchase-payment";
+export const EDITPURCHASEPAYEMENTID = `${EDITPURCHASEPAYEMENT}/:id`;
+export const VIEWPURCHASEPAYEMENTID = `${VIEWPURCHASEPAYEMENT}/:id`;
 
 export const VIEWKACHHAPURCHASEDETAILS = "/view-kachha-purchase-detailss";
+
+export const PURCHASELEDGER = "/purchase-ledger";
 
 export const ADDGOODRETURN = "/return-goods";
 export const VIEWGOODRETURN = "/view-returned-goods";
 export const EDITGOODRETURN = "/edit-returned-goods";
 export const GOODRETURNLIST = "/returned-goods-list";
+export const EDITGOODRETURNID = `${EDITGOODRETURN}/:id`;
+export const VIEWGOODRETURNID = `${VIEWGOODRETURN}/:id`;
+
+export const SELLERS = "/sellers";
+export const ADDSELLER = "/add-seller";
+export const EDITSELLER = "/edit-seller";
+/** ------------ */
 
 export const ADMIN = "/admins";
 export const ADDADMIN = "/add-admin";
@@ -92,7 +107,5 @@ export const EDITCOLOR = "/edit-color";
 export const CATEGORIES = "/categories";
 export const ADDCATEGORIES = "/add-category";
 export const EDITCATEGORIES = "/edit-category";
-
-export const PURCHASELEDGER = "/purchase-ledger";
 
 export const NOTFOUNDPAGE = "/404";

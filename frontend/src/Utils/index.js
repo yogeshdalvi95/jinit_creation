@@ -15,6 +15,11 @@ export {
   s2ab,
   checkIfDateFallsInAcceptableRange,
   getMinDate,
+  isNumeric,
+  onlyUnique,
+  getMonth,
+  getMonthDifference,
+  checkIFValidDateObject,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

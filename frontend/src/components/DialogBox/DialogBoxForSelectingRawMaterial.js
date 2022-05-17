@@ -14,7 +14,7 @@ import {
 import { GridContainer, GridItem } from "../Grid";
 import { CustomInput } from "../CustomInput";
 import { useState } from "react";
-import { isEmptyString } from "../../Utils";
+import { isEmptyString, validateNumber } from "../../Utils";
 import { useEffect } from "react";
 import { providerForGet } from "../../api";
 import { backend_departments, backend_raw_materials } from "../../constants";
@@ -27,6 +27,7 @@ const useStyles = makeStyles(commonStyles);
 export default function DialogBoxForSelectingRawMaterial(props) {
   const classes = useStyles();
   const [pcs, setPcs] = useState(1);
+  const [error, setError] = useState([]);
   const tableRef = React.createRef();
   const [departments, setDepartments] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
@@ -102,6 +103,13 @@ export default function DialogBoxForSelectingRawMaterial(props) {
       }
     });
 
+    if (props.rawMaterialIds && props.rawMaterialIds.length) {
+      params = {
+        ...params,
+        id_nin: props.rawMaterialIds,
+      };
+    }
+
     if (props.filterId && props.filterBy) {
       params = {
         ...params,
@@ -111,23 +119,36 @@ export default function DialogBoxForSelectingRawMaterial(props) {
     }
 
     return new Promise((resolve, reject) => {
-      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
-        method: "GET",
-        headers: {
-          "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken(),
-        },
-      })
-        .then((response) => response.json())
-        .then((result) => {
-          let data = convertData(result.data);
+      providerForGet(backend_raw_materials, params, Auth.getToken()).then(
+        (res) => {
+          let data = convertData(res.data?.data);
           resolve({
             data: data,
-            page: result.page - 1,
-            totalCount: result.totalCount,
+            page: res.data.page - 1,
+            totalCount: res.data.totalCount,
           });
-        });
+        }
+      );
     });
+
+    // return new Promise((resolve, reject) => {
+    //   fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
+    //     method: "GET",
+    //     headers: {
+    //       "content-type": "application/json",
+    //       Authorization: "Bearer " + Auth.getToken(),
+    //     },
+    //   })
+    //     .then((response) => response.json())
+    //     .then((result) => {
+    //       let data = convertData(result.data);
+    //       resolve({
+    //         data: data,
+    //         page: result.page - 1,
+    //         totalCount: result.totalCount,
+    //       });
+    //     });
+    // });
   };
 
   const convertData = (data) => {
@@ -187,7 +208,10 @@ export default function DialogBoxForSelectingRawMaterial(props) {
     <div>
       <Dialog
         open={props.open}
-        onClose={props.handleClose}
+        onClose={() => {
+          setPcs(1);
+          props.handleClose();
+        }}
         aria-labelledby="select-raw-material-title"
         aria-describedby="select-raw-material-dialog-description"
         maxWidth={"lg"}
@@ -200,7 +224,15 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={3}>
                     <CustomInput
-                      onChange={(e) => setPcs(e.target.value)}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        if (validateNumber(value) < 0 || value === 0) {
+                          setError(["Quantity cannot be zero or negative"]);
+                        } else {
+                          setError([]);
+                        }
+                        setPcs(e.target.value);
+                      }}
                       type="number"
                       labelText="Quantity"
                       name="quantity"
@@ -210,6 +242,16 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                       formControlProps={{
                         fullWidth: true,
                       }}
+                      /** For setting errors */
+                      isHelperText={error.length}
+                      helperText={
+                        error.length
+                          ? error.map((e1) => {
+                              return e1 + " ";
+                            })
+                          : null
+                      }
+                      error={error.length}
                     />
                   </GridItem>
                 </GridContainer>
@@ -402,7 +444,8 @@ export default function DialogBoxForSelectingRawMaterial(props) {
                               "raw_material",
                               rowData.value,
                               props.gridKey,
-                              nameObject
+                              nameObject,
+                              pcs
                             );
                           } else {
                             props.handleAddRawMaterial(
@@ -437,7 +480,13 @@ export default function DialogBoxForSelectingRawMaterial(props) {
             justifyContent: "center",
           }}
         >
-          <Button onClick={props.handleCancel} color="danger">
+          <Button
+            onClick={() => {
+              setPcs(1);
+              props.handleCancel();
+            }}
+            color="danger"
+          >
             Cancel
           </Button>
         </DialogActions>

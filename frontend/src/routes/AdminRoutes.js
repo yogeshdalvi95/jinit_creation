@@ -18,10 +18,6 @@ import {
   EDITSELLER,
   EDITPURCHASES,
   EDITRAWMATERIALS,
-  LISTREADYMATERIAL,
-  ADDREADYMATERIAL,
-  EDITREADYMATERIAL,
-  VIEWREADYMATERIAL,
   DAILYUSAGERAWMATERIALS,
   ADDGOODRETURN,
   EDITGOODRETURN,
@@ -64,6 +60,12 @@ import {
   VIEWORDERID,
   VIEWDEPARTMENTSHEETID,
   EDITDEPARTMENTSHEETID,
+  ALLPURCHASEPAYEMENTS,
+  ADDPURCHASEPAYEMENT,
+  EDITPURCHASEPAYEMENT,
+  VIEWPURCHASEPAYEMENT,
+  EDITPURCHASESID,
+  VIEWPURCHASESID,
 } from "../paths";
 
 /** Raw material and units */
@@ -106,7 +108,22 @@ const goodsReturnPath = [
 const PurchaseLedgerPath = [PURCHASELEDGER];
 
 /** Purchase  */
-const purchasesPath = [PURCHASES, ADDPURCHASES, VIEWPURCHASES, EDITPURCHASES];
+const purchasesPath = [
+  PURCHASES,
+  ADDPURCHASES,
+  VIEWPURCHASES,
+  EDITPURCHASES,
+  EDITPURCHASESID,
+  VIEWPURCHASESID,
+];
+
+/** Purchase Payments Json */
+const purchasePaymentsJson = [
+  ADDPURCHASEPAYEMENT,
+  EDITPURCHASEPAYEMENT,
+  VIEWPURCHASEPAYEMENT,
+  ALLPURCHASEPAYEMENTS,
+];
 
 /** Kachha Purchase */
 const kachhaPurchaseDetailsPath = [VIEWKACHHAPURCHASEDETAILS];
@@ -120,6 +137,7 @@ const purchasesAndSellersPath = [
   ...goodsReturnPath,
   ...kachhaPurchaseDetailsPath,
   ...PurchaseLedgerPath,
+  ...purchasePaymentsJson,
 ];
 
 /**--------------------------------------------- */
@@ -208,6 +226,13 @@ const purchaseJson = {
   pathList: purchasesPath,
 };
 
+const PurchasePaymentsJson = {
+  path: ALLPURCHASEPAYEMENTS,
+  name: "Payments",
+  layout: "",
+  pathList: purchasePaymentsJson,
+};
+
 const kachhaPurchaseJson = {
   path: VIEWKACHHAPURCHASEDETAILS,
   name: "Kachha Purchase Details",
@@ -285,10 +310,11 @@ export const DashboardStaffRoutes = [
     pathList: purchasesAndSellersPath,
     children: [
       purchaseJson,
-      kachhaPurchaseJson,
-      purchaseLedgerJson,
+      PurchasePaymentsJson,
       goodsReturnJson,
+      kachhaPurchaseJson,
       sellerJson,
+      purchaseLedgerJson,
     ],
   },
   {
@@ -338,10 +364,11 @@ export const DashboardAdminRoutes = [
     pathList: purchasesAndSellersPath,
     children: [
       purchaseJson,
-      kachhaPurchaseJson,
-      purchaseLedgerJson,
+      PurchasePaymentsJson,
       goodsReturnJson,
+      kachhaPurchaseJson,
       sellerJson,
+      purchaseLedgerJson,
     ],
   },
   {
@@ -398,10 +425,11 @@ export const SuperAdminDashboardRoutes = [
     pathList: purchasesAndSellersPath,
     children: [
       purchaseJson,
-      kachhaPurchaseJson,
-      purchaseLedgerJson,
+      PurchasePaymentsJson,
       goodsReturnJson,
+      kachhaPurchaseJson,
       sellerJson,
+      purchaseLedgerJson,
     ],
   },
   {

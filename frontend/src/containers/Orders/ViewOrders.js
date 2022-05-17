@@ -646,7 +646,9 @@ export default function ViewOrders(props) {
                         },
                       }),
                       (rowData) => ({
-                        icon: () => <VisibilityIcon fontSize="small" />,
+                        icon: () => (
+                          <VisibilityIcon fontSize="small" color="primary" />
+                        ),
                         tooltip: "View",
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, true);

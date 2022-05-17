@@ -62,6 +62,16 @@ import {
   VIEWORDERID,
   VIEWDEPARTMENTSHEETID,
   EDITDEPARTMENTSHEETID,
+  ADDPURCHASEPAYEMENT,
+  ALLPURCHASEPAYEMENTS,
+  EDITPURCHASEPAYEMENT,
+  VIEWPURCHASEPAYEMENT,
+  EDITPURCHASEPAYEMENTID,
+  VIEWPURCHASEPAYEMENTID,
+  EDITPURCHASESID,
+  VIEWPURCHASESID,
+  EDITGOODRETURNID,
+  VIEWGOODRETURNID,
 } from "../paths";
 import {
   Login,
@@ -99,6 +109,8 @@ import {
   AddEditDesign,
   DesignMaterials,
   ViewDesign,
+  AddEditViewPayments,
+  AllPayments,
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -185,6 +197,7 @@ const Routes = () => {
           header={"All Purchases"}
           value={0}
         />
+
         <PrivateRoute
           openSubMenu={true}
           path={ADDPURCHASES}
@@ -192,20 +205,29 @@ const Routes = () => {
           component={AddPurchases}
           header={"Add Purchases"}
         />
+
         <PrivateRoute
           openSubMenu={true}
-          path={EDITPURCHASES}
+          path={EDITPURCHASESID}
           exact
           component={AddPurchases}
           header={"Edit Purchase"}
+          defaultPathToPush={PURCHASES}
+          isDependent={true}
+          isEdit={true}
         />
+
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWPURCHASES}
+          path={VIEWPURCHASESID}
           exact
           component={AddPurchases}
           header={"View Purchase"}
+          defaultPathToPush={PURCHASES}
+          isDependent={true}
+          isView={true}
         />
+
         <PrivateRoute
           openSubMenu={true}
           path={VIEWKACHHAPURCHASEDETAILS}
@@ -221,6 +243,46 @@ const Routes = () => {
           component={Ledger}
           header={"Purchase Ledger"}
         />
+
+        {/** Purchase Payments */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDPURCHASEPAYEMENT}
+          exact
+          component={AddEditViewPayments}
+          header={"Add Purchase Payment"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITPURCHASEPAYEMENTID}
+          exact
+          component={AddEditViewPayments}
+          header={"Edit Purchase Payment"}
+          defaultPathToPush={ALLPURCHASEPAYEMENTS}
+          isDependent={true}
+          isEdit={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWPURCHASEPAYEMENTID}
+          exact
+          component={AddEditViewPayments}
+          header={"View Purchase Payment"}
+          defaultPathToPush={ALLPURCHASEPAYEMENTS}
+          isDependent={true}
+          isView={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ALLPURCHASEPAYEMENTS}
+          exact
+          component={AllPayments}
+          header={"All Purchase Payments"}
+        />
+        {/** ---------- */}
 
         {/** Raw materials */}
         <PrivateRoute
@@ -302,6 +364,7 @@ const Routes = () => {
           component={GoodsReturn}
           header={"Returned Goods"}
         />
+
         <PrivateRoute
           openSubMenu={true}
           path={ADDGOODRETURN}
@@ -309,19 +372,27 @@ const Routes = () => {
           component={AddGoodReturn}
           header={"Return Goods"}
         />
+
         <PrivateRoute
           openSubMenu={true}
-          path={EDITGOODRETURN}
+          path={EDITGOODRETURNID}
           exact
           component={AddGoodReturn}
           header={"Edit Returned Goods"}
+          defaultPathToPush={GOODRETURNLIST}
+          isDependent={true}
+          isEdit={true}
         />
+
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWGOODRETURN}
+          path={VIEWGOODRETURNID}
           exact
           component={AddGoodReturn}
           header={"View Returned Goods"}
+          defaultPathToPush={GOODRETURNLIST}
+          isDependent={true}
+          isEdit={true}
         />
 
         {/** Designs */}

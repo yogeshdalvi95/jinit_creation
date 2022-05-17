@@ -564,7 +564,9 @@ export default function Sales() {
                     },
                   }),
                   (rowData) => ({
-                    icon: () => <VisibilityIcon fontSize="small" />,
+                    icon: () => (
+                      <VisibilityIcon fontSize="small" color="primary" />
+                    ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
                       history.push(`${VIEWSALES}/${rowData.id}`);

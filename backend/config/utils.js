@@ -12,6 +12,51 @@ const {
 } = require("pdf-lib");
 const fontkit = require("@pdf-lib/fontkit");
 
+function getMonth(m_no) {
+  let month = ""; //Create a local variable to hold the string
+  switch (m_no) {
+    case 0:
+      month = "January";
+      break;
+    case 1:
+      month = "February";
+      break;
+    case 2:
+      month = "March";
+      break;
+    case 3:
+      month = "April";
+      break;
+    case 4:
+      month = "May";
+      break;
+    case 5:
+      month = "June";
+      break;
+    case 6:
+      month = "July";
+      break;
+    case 7:
+      month = "August";
+      break;
+    case 8:
+      month = "September";
+      break;
+    case 9:
+      month = "October";
+      break;
+    case 10:
+      month = "November";
+      break;
+    case 11:
+      month = "December";
+      break;
+    default:
+      month = "Invalid month";
+  }
+  return month;
+}
+
 function getRequestParams(params) {
   const page = params.page ? parseInt(params.page) : 1;
   let pageSize = 10;
@@ -258,8 +303,29 @@ const generatePDF = async (report_name, html) => {
   const page = await browser.newPage();
   await page.setContent(contentVal);
 
+  const footer = `<span style="font-size: 10px; margin-right : auto ;margin-left:35px;"> 
+                      Jinit Address
+                    </span>
+                  <span style="font-size: 10px; margin-left : auto ;margin-right:35px;"> 
+                      <span class="pageNumber"></span>
+                    </span>
+                  </span>`;
+
+  // const buffer = await page.pdf({
+  //   printBackground: false,
+  //   displayHeaderFooter: true,
+  //   margin: {
+  //     left: "0px",
+  //     top: `90px`,
+  //     right: "0px",
+  //     bottom: "90px",
+  //   },
+  //   headerTemplate: `<span><img src = '${logo}' width = '60' style='margin-left:35px;'/></span>`,
+  //   footerTemplate:
+  //     '3432524fsdfs <span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
+  // });
   const buffer = await page.pdf({
-    printBackground: false,
+    printBackground: true,
     displayHeaderFooter: true,
     margin: {
       left: "0px",
@@ -268,8 +334,7 @@ const generatePDF = async (report_name, html) => {
       bottom: "90px",
     },
     headerTemplate: `<span><img src = '${logo}' width = '60' style='margin-left:35px;'/></span>`,
-    footerTemplate:
-      '<span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
+    footerTemplate: footer,
   });
   await browser.close();
   return buffer;
@@ -315,4 +380,5 @@ module.exports = {
   logo,
   base64_encode,
   getMonthDifference,
+  getMonth,
 };

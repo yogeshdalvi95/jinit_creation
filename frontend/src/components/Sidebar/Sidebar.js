@@ -19,6 +19,7 @@ import IconExpandMore from "@material-ui/icons/ExpandMore";
 import styles from "../../assets/jss/material-dashboard-react/components/sidebarStyle.js";
 import { isEmptyString } from "../../Utils/index.js";
 import { Collapse, Divider } from "@material-ui/core";
+import { frontendServerUrl } from "../../constants/UrlConstants.js";
 
 const useStyles = makeStyles(styles);
 
@@ -169,14 +170,13 @@ export default function Sidebar(props) {
   var brand = (
     <div className={classes.logo}>
       <a
-        href="https://www.creative-tim.com?ref=mdr-sidebar"
+        href={frontendServerUrl}
         className={classNames(classes.logoLink)}
         target="_blank"
       >
         <div className={classes.logoImage}>
           <img src={logo} alt="logo" className={classes.img} />
         </div>
-        {logoText}
       </a>
     </div>
   );

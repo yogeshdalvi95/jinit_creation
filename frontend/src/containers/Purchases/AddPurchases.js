@@ -8,16 +8,20 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  CustomAutoComplete,
   CustomDropDown,
   CustomInput,
+  CustomMaterialUITable,
+  CustomTableBody,
+  CustomTableCell,
+  CustomTableHead,
+  CustomTableRow,
   DatePicker,
-  DialogBox,
   DialogBoxForSelectingRawMaterial,
   FAB,
   GridContainer,
   GridItem,
-  Muted,
+  RemoteAutoComplete,
+  SellerDetails,
   SnackBarComponent,
 } from "../../components";
 import moment from "moment";
@@ -31,13 +35,16 @@ import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { useEffect } from "react";
 import { providerForGet, providerForPost } from "../../api";
-import {
-  backend_purchases,
-  backend_raw_materials,
-  backend_sellers,
-} from "../../constants";
+import { backend_purchases, backend_sellers } from "../../constants";
 import { useState } from "react";
-import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
+import {
+  Backdrop,
+  CircularProgress,
+  FormControlLabel,
+  FormHelperText,
+  InputAdornment,
+  Switch,
+} from "@material-ui/core";
 import {
   checkEmpty,
   checkIfDateFallsInAcceptableRange,
@@ -45,13 +52,11 @@ import {
   getMinDate,
   hasError,
   isEmptyString,
-  setErrors,
   validateNumber,
 } from "../../Utils";
 import SweetAlert from "react-bootstrap-sweetalert";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
-import validationForm from "./form/PurchasesForm.json";
 
 const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -60,13 +65,12 @@ export default function AddPurchases(props) {
   const classes = useStyles();
   const buttonClasses = buttonUseStyles();
   const history = useHistory();
-  const [rawMaterial, setRawMaterial] = useState([]);
   const [alert, setAlert] = useState(null);
-  const [seller, setSeller] = useState([]);
-
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
-  const [id, setId] = useState(props.id ? props.id : null);
+  const [selectedSeller, setSelectedSeller] = React.useState(null);
+  const [id] = useState(props.id ? props.id : null);
+  const [rawMaterialIds, setRawMateralIds] = React.useState([]);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -76,7 +80,6 @@ export default function AddPurchases(props) {
 
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
-    id: null,
     type_of_bill: "",
     cgst_percent: 0,
     sgst_percent: 0,
@@ -91,34 +94,26 @@ export default function AddPurchases(props) {
     gst_no: "",
   });
 
-  const [purchaseHistory, setPurchaseHistory] = useState([]);
-
-  const kachhaPurchaseDetails = {
+  const individualPurchaseObject = {
     id: null,
     raw_material: null,
-    raw_material_name: "",
+    raw_material_obj: "",
     purchase_cost: 0,
     purchase_quantity: 0,
     purchase_unit: "",
     total_purchase_cost: 0,
+    are_raw_material_clubbed: false,
+    is_raw_material: true,
+    name: null,
+    isNew: true,
   };
 
-  const pakkaPurchaseDetails = {
-    id: null,
-    name: "",
-    purchase_cost: 0,
-    purchase_quantity: 0,
-    total_purchase_cost: 0,
-  };
   const [error, setError] = React.useState({});
 
-  const [individualKachhaPurchase, setIndividualKachhaPurchase] = useState([
-    kachhaPurchaseDetails,
+  const [individualPurchase, setIndividualPurchase] = useState([
+    individualPurchaseObject,
   ]);
 
-  const [individualPakkaPurchase, setIndividualPakkaPurchase] = useState([
-    pakkaPurchaseDetails,
-  ]);
   const [
     openDialogForSelectingRawMaterial,
     setOpenDialogForSelectingRawMaterial,
@@ -127,30 +122,26 @@ export default function AddPurchases(props) {
     status: false,
   });
 
-  const [rawMaterialDetails, setRawMaterialDetails] = useState({
-    id: null,
-    name: "",
-    department: null,
-    color: null,
-    category: null,
-    size: "",
-    balance: "",
-    name_value: [],
-  });
-
   useEffect(() => {
-    if (
-      props.location.state &&
-      (props.location.state.view || props.location.state.edit) &&
-      props.location.state.data
-    ) {
-      setData(props.location.state.data);
+    if (isEdit || isView) {
+      getPurchaseInfo();
     }
-    getRawMaterial();
-    getSellerName();
   }, []);
 
+  const getPurchaseInfo = async () => {
+    setBackDrop(true);
+    await providerForGet(backend_purchases + "/" + id, {}, Auth.getToken())
+      .then((res) => {
+        setData(res.data);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        console.log("error ---> ", err);
+      });
+  };
+
   const setData = (data) => {
+    let ids = [];
     setFormState((formState) => ({
       ...formState,
       id: data.purchase.id,
@@ -159,7 +150,6 @@ export default function AddPurchases(props) {
       cgst_percent: validateNumber(data.purchase.cgst_percent),
       sgst_percent: validateNumber(data.purchase.sgst_percent),
       igst_percent: validateNumber(data.purchase.igst_percent),
-      gst_no: data.purchase.seller ? data.purchase.seller.gst_no : "",
       total_amt_with_tax: validateNumber(data.purchase.total_amt_with_tax),
       total_amt_without_tax: validateNumber(
         data.purchase.total_amt_without_tax
@@ -170,17 +160,27 @@ export default function AddPurchases(props) {
       bill_no: data.purchase.bill_no,
     }));
 
-    setPurchaseHistory(data.purchase.history);
+    setSelectedSeller({
+      label: data.purchase?.seller?.seller_name,
+      value: data.purchase?.seller?.id,
+      allData: data.purchase?.seller,
+    });
 
     let arr = [];
-    arr = data.individualPurchase.map((d) => {
+    data.individualPurchase.forEach((d) => {
       let object = {
         id: d.id,
         purchase_cost: d.purchase_cost,
         purchase_quantity: d.purchase_quantity,
         total_purchase_cost: d.total_purchase_cost,
+        are_raw_material_clubbed: d.are_raw_material_clubbed,
+        is_raw_material: d.is_raw_material,
+        name: d.name,
+        raw_material: null,
+        purchase_unit: null,
+        raw_material_obj: null,
       };
-      if (data.purchase.type_of_bill === "Kachha") {
+      if (d.is_raw_material) {
         let bal = "0";
         if (!d.raw_material.balance) {
           bal = "0";
@@ -191,7 +191,7 @@ export default function AddPurchases(props) {
           ? d.raw_material.category.name
           : "";
         let color = d.raw_material.color ? d.raw_material.color.name : "";
-        let nameObject = {
+        let rawMaterialObj = {
           id: "#" + d.raw_material.id,
           name: d.raw_material.name,
           department: d.raw_material.department
@@ -204,72 +204,40 @@ export default function AddPurchases(props) {
             : d.raw_material.size,
           bal: bal,
         };
+        ids.push(d.raw_material.id);
         object = {
           ...object,
-          raw_material: d.raw_material,
-          purchase_unit: d.unit,
-          raw_material_name: nameObject,
-        };
-      } else {
-        object = {
-          ...object,
-          name: d.name,
+          raw_material: d.raw_material.id,
+          purchase_unit: d.raw_material?.unit
+            ? d.raw_material.unit.name
+            : "unit",
+          raw_material_obj: rawMaterialObj,
         };
       }
-      return object;
+      arr.push(object);
     });
-    if (data.purchase.type_of_bill === "Kachha") {
-      setIndividualKachhaPurchase(arr);
-    } else {
-      setIndividualPakkaPurchase(arr);
-    }
-  };
-
-  const getSellerName = async () => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_sellers,
-      {
-        pageSize: -1,
-      },
-      Auth.getToken()
-    )
-      .then((res) => {
-        setSeller(res.data.data);
-        setBackDrop(false);
-      })
-      .catch((err) => {});
-  };
-
-  const getRawMaterial = async () => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_raw_materials,
-      {
-        pageSize: -1,
-      },
-      Auth.getToken()
-    )
-      .then((res) => {
-        setRawMaterial(res.data.data);
-        setBackDrop(false);
-      })
-      .catch((err) => {});
+    setRawMateralIds(ids);
+    setIndividualPurchase(arr);
   };
 
   const handleChange = (event) => {
     if (event.target.name === "type_of_bill") {
-      setRawMaterialDetails((rawMaterialDetails) => ({
-        ...rawMaterialDetails,
-        id: null,
-        name: "",
-        department: null,
-        color: null,
-        category: null,
-        size: "",
-        balance: "",
-        name_value: [],
-      }));
+      setRawMateralIds([]);
+      setError({});
+      setSelectedSeller(null);
+      setFormState({
+        cgst_percent: 0,
+        sgst_percent: 0,
+        igst_percent: 0,
+        total_amt_with_tax: 0,
+        total_amt_without_tax: 0,
+        notes: "",
+        date: new Date(),
+        invoice_number: "",
+        bill_no: "",
+        seller: null,
+      });
+      setIndividualPurchase([individualPurchaseObject]);
     }
     if (
       event.target.name === "cgst_percent" ||
@@ -351,296 +319,307 @@ export default function AddPurchases(props) {
 
     totalCostWithTax = totalCostWithOutTax + cgst + sgst + igst;
     return {
-      perRawMaterial: costPerRawMaterial,
+      totalCostPerRawMaterial: costPerRawMaterial,
       totalCostWithTax: totalCostWithTax,
       totalCostWithOutTax: totalCostWithOutTax,
     };
   };
 
   /** Handle change for repetable compoment */
-  const handleChangeAutoCompleteForRepetableComponent = (
-    name,
-    value,
-    key,
-    objectToAdd
-  ) => {
-    if (formState.type_of_bill === "Kachha") {
-      let object = individualKachhaPurchase[key];
-      if (value === null) {
-        object[name] = null;
-        object["raw_material_name"] = {};
-        if (name === "raw_material") {
-          object["purchase_unit"] = "";
-        }
-      } else {
-        object[name] = value;
-        object["raw_material_name"] = objectToAdd;
-        if (name === "raw_material") {
-          object["purchase_unit"] = value.unit ? value.unit.name : "unit";
-        }
+  const handleChangeRawMaterial = (name, value, key, objectToAdd, pcs) => {
+    let object = individualPurchase[key];
+    let existingRawMaterialIds = [...rawMaterialIds];
+    delete error["raw_material" + key];
+    delete error["purchase_cost" + key];
+    delete error["purchase_quantity" + key];
+    setError((error) => ({
+      ...error,
+    }));
+    /** Update the raw material ids */
+    if (object["raw_material"]) {
+      const index = existingRawMaterialIds.indexOf(object["raw_material"]);
+      if (index > -1) {
+        existingRawMaterialIds.splice(index, 1);
       }
-      setIndividualKachhaPurchase([
-        ...individualKachhaPurchase.slice(0, key),
-        object,
-        ...individualKachhaPurchase.slice(key + 1),
-      ]);
-
-      if (name === "raw_material") {
-        if (value) {
-          let arr = [];
-          value.name_value.map((nv) => {
-            arr.push({
-              name: nv.name,
-              value: nv.value,
-            });
-          });
-          setRawMaterialDetails((rawMaterialDetails) => ({
-            ...rawMaterialDetails,
-            id: "#" + value.id,
-            name: value ? value.name : "",
-            department: value ? value.department.name : "",
-            size: value ? value.size : "",
-            category: objectToAdd.category,
-            balance: value ? value.balance : "",
-            color: objectToAdd.color,
-            name_value: arr,
-          }));
-        } else {
-          setRawMaterialDetails((rawMaterialDetails) => ({
-            ...rawMaterialDetails,
-            id: null,
-            name: null,
-            department: null,
-            size: null,
-            category: null,
-            balance: null,
-            color: null,
-            name_value: [],
-          }));
-        }
-      }
+      existingRawMaterialIds.push(value.id);
+    } else {
+      existingRawMaterialIds.push(value.id);
     }
+    setRawMateralIds(existingRawMaterialIds);
+
+    object = {
+      ...object,
+      [name]: value.id,
+      isNew: true,
+      raw_material_obj: objectToAdd,
+      purchase_cost: validateNumber(value.costing),
+      purchase_quantity: validateNumber(pcs),
+      total_purchase_cost: validateNumber(pcs) * validateNumber(value.costing),
+      is_raw_material: true,
+      are_raw_material_clubbed: false,
+    };
+
+    if (name === "raw_material") {
+      object = {
+        ...object,
+        purchase_unit: value.unit ? value.unit.name : "unit",
+      };
+    }
+
+    let totalCostWithTax = validateNumber(formState.total_amt_with_tax);
+    let totalCostWithOutTax = validateNumber(formState.total_amt_without_tax);
+
+    totalCostWithTax = totalCostWithTax + object.total_purchase_cost;
+    totalCostWithOutTax = totalCostWithOutTax + object.total_purchase_cost;
+
+    setFormState((formState) => ({
+      ...formState,
+      total_amt_with_tax: totalCostWithTax,
+      total_amt_without_tax: totalCostWithOutTax,
+    }));
+
+    setIndividualPurchase([
+      ...individualPurchase.slice(0, key),
+      object,
+      ...individualPurchase.slice(key + 1),
+    ]);
     handleCloseDialogForRawMaterial();
   };
 
   /** Handle change for repetable compoment */
-  const handleChangeForRepetableComponent = (event, key) => {
+  const handleChangeForRepetableComponent = (event, key, errorKey) => {
     let name = event.target.name;
-    let value = event.target.value;
-
     let object = {};
-    let purchaseArr = [];
-    if (formState.type_of_bill === "Kachha") {
-      object = individualKachhaPurchase[key];
-      purchaseArr = individualKachhaPurchase;
-      object[name] = value;
-    } else {
-      object = individualPakkaPurchase[key];
-      purchaseArr = individualPakkaPurchase;
-      object[name] = value;
-    }
+    object = individualPurchase[key];
+
     /** Calculating total cost per raw material and total cost with tax and total cost without tax */
     if (name === "purchase_cost" || name === "purchase_quantity") {
-      const {
-        perRawMaterial,
-        totalCostWithTax,
-        totalCostWithOutTax,
-      } = calculateTotalCost(name, value, object, purchaseArr, key);
-
-      setFormState((formState) => ({
-        ...formState,
-        total_amt_with_tax: totalCostWithTax,
-        total_amt_without_tax: totalCostWithOutTax,
+      let value = validateNumber(event.target.value);
+      object[name] = event.target.value;
+      if (value > 0) {
+        delete error[name + key];
+        setError((error) => ({
+          ...error,
+        }));
+        const {
+          totalCostPerRawMaterial,
+          totalCostWithTax,
+          totalCostWithOutTax,
+        } = calculateTotalCost(name, value, object, individualPurchase, key);
+        setFormState((formState) => ({
+          ...formState,
+          total_amt_with_tax: totalCostWithTax,
+          total_amt_without_tax: totalCostWithOutTax,
+        }));
+        object = {
+          ...object,
+          total_purchase_cost: totalCostPerRawMaterial,
+        };
+      } else {
+        setError((error) => ({
+          ...error,
+          [name + key]: [`${errorKey} cannot be negative or zero`],
+        }));
+      }
+    } else if (name === "is_raw_material_or_clubbed") {
+      delete error["raw_material" + key];
+      delete error["name" + key];
+      setError((error) => ({
+        ...error,
       }));
-
       object = {
-        ...object,
-        total_purchase_cost: perRawMaterial,
+        ...individualPurchaseObject,
       };
+      if (event.target.checked) {
+        object = {
+          ...object,
+          is_raw_material: true,
+          are_raw_material_clubbed: false,
+        };
+      } else {
+        object = {
+          ...object,
+          is_raw_material: false,
+          are_raw_material_clubbed: true,
+        };
+      }
+    } else if (name === "name") {
+      delete error[name + key];
+      setError((error) => ({
+        ...error,
+      }));
+      object[name] = event.target.value;
     }
 
-    /** Depending on kachha and pakka bill add data */
-    if (formState.type_of_bill === "Kachha") {
-      setIndividualKachhaPurchase([
-        ...individualKachhaPurchase.slice(0, key),
-        object,
-        ...individualKachhaPurchase.slice(key + 1),
-      ]);
-    } else {
-      setIndividualPakkaPurchase([
-        ...individualPakkaPurchase.slice(0, key),
-        object,
-        ...individualPakkaPurchase.slice(key + 1),
-      ]);
-    }
+    setIndividualPurchase([
+      ...individualPurchase.slice(0, key),
+      object,
+      ...individualPurchase.slice(key + 1),
+    ]);
   };
 
   const onBackClick = () => {
     history.push(PURCHASES);
   };
 
-  const checkRepeatableComponent = () => {
-    let finalArr = [];
-    let initArr = [];
-    let status = true;
-    let str = "";
-    let errorCount = 0;
-    if (formState.type_of_bill === "Kachha") {
-      initArr = individualKachhaPurchase;
-    } else {
-      initArr = individualPakkaPurchase;
-    }
-    initArr.map((i, k) => {
-      if (isEdit) {
-        if (!i.total_purchase_cost) {
-          status = false;
-          str =
-            `For purchase no ${k + 1} the purchase cost cannot be empty or 0 ` +
-            `${errorCount !== 0 ? " | " : ""}` +
-            str;
-
-          errorCount = errorCount + 1;
-        }
-      } else {
-        if (i.total_purchase_cost) {
-          finalArr.push(i);
-        }
-      }
-    });
-    if (isEdit) {
-      finalArr = initArr;
-    }
-    if (formState.type_of_bill === "Kachha") {
-      setIndividualKachhaPurchase(finalArr);
-    } else {
-      setIndividualPakkaPurchase(finalArr);
-    }
-
-    return {
-      arr: finalArr,
-      status: status,
-      error: str,
-    };
-  };
   const handleCheckValidation = (event) => {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
-    let error = {};
+    let err = { ...error };
     /** This will set errors as per validations defined in form */
-    error = setErrors(formState, validationForm);
+    if (!formState.seller) {
+      isValid = false;
+      err = {
+        ...err,
+        seller: ["Seller is required"],
+      };
+    }
+    if (
+      formState.type_of_bill === "Kachha" &&
+      isEmptyString(formState.bill_no)
+    ) {
+      isValid = false;
+      err = {
+        ...err,
+        bill_no: ["Bill number is required"],
+      };
+    }
+    if (
+      formState.type_of_bill === "Pakka" &&
+      isEmptyString(formState.invoice_number)
+    ) {
+      isValid = false;
+      err = {
+        ...err,
+        invoice_number: ["Invoice number is required"],
+      };
+    }
+
+    err = validatePurchaseData(err);
     /** If no errors then isValid is set true */
-    if (checkEmpty(error)) {
+    if (checkEmpty(err)) {
       setBackDrop(false);
       setError({});
       isValid = true;
     } else {
       setBackDrop(false);
-      setError(error);
+      setError(err);
     }
     if (isValid) {
       submit();
     }
   };
 
+  const validatePurchaseData = (err) => {
+    individualPurchase.forEach((Ip, key) => {
+      let purchaseCost = validateNumber(Ip.purchase_cost);
+      let purchaseQty = validateNumber(Ip.purchase_quantity);
+      if (purchaseCost <= 0) {
+        err = {
+          ...err,
+          ["purchase_cost" + key]: [`Purchase Cost cannot be negative or zero`],
+        };
+      } else {
+        delete err["purchase_cost" + key];
+      }
+      if (purchaseQty <= 0) {
+        err = {
+          ...err,
+          ["purchase_quantity" + key]: [
+            `Purchase Qty cannot be negative or zero`,
+          ],
+        };
+      } else {
+        delete err["purchase_quantity" + key];
+      }
+      if (Ip.is_raw_material && !Ip.raw_material) {
+        err = {
+          ...err,
+          ["raw_material" + key]: [`Please select a raw material`],
+        };
+      } else {
+        delete err["raw_material" + key];
+      }
+      if (Ip.are_raw_material_clubbed && isEmptyString(Ip.name)) {
+        err = {
+          ...err,
+          ["name" + key]: [`Name cannot be empty`],
+        };
+      } else {
+        delete err["name" + key];
+      }
+    });
+    return err;
+  };
+
   const submit = () => {
+    const confirmBtnClasses = classNames({
+      [buttonClasses.button]: true,
+      [buttonClasses["success"]]: true,
+    });
+
+    const cancelBtnClasses = classNames({
+      [buttonClasses.button]: true,
+      [buttonClasses["danger"]]: true,
+    });
+    let message = "";
     if (isEdit) {
-      addEditData();
+      message = `Are you sure you want to edit the payment made to ${
+        selectedSeller?.allData?.seller_name
+      } of ${convertNumber(formState.total_amt_with_tax, true)}?`;
     } else {
-      const confirmBtnClasses = classNames({
-        [buttonClasses.button]: true,
-        [buttonClasses["success"]]: true,
-      });
-
-      const cancelBtnClasses = classNames({
-        [buttonClasses.button]: true,
-        [buttonClasses["danger"]]: true,
-      });
-
-      setAlert(
-        <SweetAlert
-          warning
-          showCancel
-          confirmBtnText="Yes"
-          confirmBtnCssClass={confirmBtnClasses}
-          confirmBtnBsStyle="outline-{variant}"
-          title="Heads up?"
-          onConfirm={handleAcceptDialog}
-          onCancel={handleCloseDialog}
-          cancelBtnCssClass={cancelBtnClasses}
-          focusCancelBtn
-        >
-          Please make sure you have added the right purchases and the right
-          quantity as the quantity once added cannot be changed.
-        </SweetAlert>
-      );
+      message = `Are you sure you want to make a payment of ${convertNumber(
+        formState.total_amt_with_tax,
+        true
+      )} towards seller ${selectedSeller?.allData?.seller_name} ?`;
     }
+    setAlert(
+      <SweetAlert
+        warning
+        showCancel
+        confirmBtnText="Yes"
+        confirmBtnCssClass={confirmBtnClasses}
+        confirmBtnBsStyle="outline-{variant}"
+        title="Heads up?"
+        onConfirm={handleAcceptDialog}
+        onCancel={handleCloseDialog}
+        cancelBtnCssClass={cancelBtnClasses}
+        focusCancelBtn
+      >
+        {message}
+      </SweetAlert>
+    );
   };
 
   const addEditData = async () => {
-    const { arr, status, error } = checkRepeatableComponent();
-
-    /** Status checks if the repeatable component is proper while editing for adding it is always true */
-    if (status) {
-      let obj = {};
-      if (formState.type_of_bill === "Kachha") {
-        obj = {
-          purchases: formState,
-          individual_purchase: arr,
-        };
-      } else {
-        obj = {
-          purchases: formState,
-          individual_purchase: arr,
-        };
-      }
-      setBackDrop(true);
-      await providerForPost(backend_purchases, obj, Auth.getToken())
-        .then((res) => {
-          history.push(PURCHASES);
-          setBackDrop(false);
-        })
-        .catch((err) => {
-          setBackDrop(false);
-          setSnackBar((snackBar) => ({
-            ...snackBar,
-            show: true,
-            severity: "error",
-            message: error,
-          }));
-        });
-    } else {
-      setSnackBar((snackBar) => ({
-        ...snackBar,
-        show: true,
-        severity: "Please check the data you entered",
-        message: error,
-      }));
-    }
+    let obj = {
+      purchases: formState,
+      individual_purchase: individualPurchase,
+    };
+    setBackDrop(true);
+    await providerForPost(backend_purchases, obj, Auth.getToken())
+      .then((res) => {
+        history.push(PURCHASES);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: error,
+        }));
+      });
   };
 
-  const addNewPurchase = (type) => {
-    if (type === "Kachha") {
-      setIndividualKachhaPurchase([
-        ...individualKachhaPurchase,
-        kachhaPurchaseDetails,
-      ]);
-    } else {
-      setIndividualPakkaPurchase([
-        ...individualPakkaPurchase,
-        pakkaPurchaseDetails,
-      ]);
-    }
+  const addNewPurchase = () => {
+    setIndividualPurchase([...individualPurchase, individualPurchaseObject]);
   };
 
-  const deletePurchase = (purchase, key) => {
-    let object = {};
-    if (purchase === "Kachha") {
-      object = individualKachhaPurchase[key];
-    } else if (purchase === "Pakka") {
-      object = individualPakkaPurchase[key];
-    }
-
+  const deletePurchase = (key) => {
+    let object = individualPurchase[key];
     let total_amt_without_tax = formState.total_amt_without_tax;
     total_amt_without_tax = total_amt_without_tax - object.total_purchase_cost;
     /** Calculate tax */
@@ -657,15 +636,20 @@ export default function AddPurchases(props) {
       total_amt_without_tax: total_amt_without_tax,
     }));
 
-    if (purchase === "Kachha") {
-      setIndividualKachhaPurchase([
-        ...individualKachhaPurchase.slice(0, key),
-        ...individualKachhaPurchase.slice(key + 1),
-      ]);
-    } else if (purchase === "Pakka") {
-      setIndividualPakkaPurchase([
-        ...individualPakkaPurchase.slice(0, key),
-        ...individualPakkaPurchase.slice(key + 1),
+    delete error["raw_material" + key];
+    delete error["purchase_cost" + key];
+    delete error["purchase_quantity" + key];
+    delete error["name" + key];
+    setError((error) => ({
+      ...error,
+    }));
+
+    if (individualPurchase.length === 1) {
+      setIndividualPurchase([individualPurchaseObject]);
+    } else {
+      setIndividualPurchase([
+        ...individualPurchase.slice(0, key),
+        ...individualPurchase.slice(key + 1),
       ]);
     }
   };
@@ -723,6 +707,86 @@ export default function AddPurchases(props) {
     }));
   };
 
+  const setSeller = (seller) => {
+    delete error["seller"];
+    setError((error) => ({
+      ...error,
+    }));
+    if (seller && seller.value) {
+      setFormState((formState) => ({
+        ...formState,
+        seller: seller.value,
+      }));
+      setSelectedSeller(seller);
+    } else {
+      setFormState((formState) => ({
+        ...formState,
+        seller: null,
+      }));
+      setSelectedSeller(null);
+    }
+  };
+
+  const handleBillNumberChange = (event) => {
+    delete error["bill_no"];
+    setError((error) => ({
+      ...error,
+    }));
+    setFormState((formState) => ({
+      ...formState,
+      [event.target.name]: event.target.value,
+    }));
+    let obj = {
+      bill_no: event.target.value.trim(),
+    };
+
+    if (isEdit) {
+      obj = {
+        ...obj,
+        id_nin: [id],
+      };
+    }
+
+    providerForGet(backend_purchases, obj, Auth.getToken()).then((res) => {
+      if (res.data?.totalCount) {
+        setError((error) => ({
+          ...error,
+          bill_no: ["Bill number already taken"],
+        }));
+      }
+    });
+  };
+
+  const handleInvoiceNumberChange = (event) => {
+    delete error["invoice_number"];
+    setError((error) => ({
+      ...error,
+    }));
+    setFormState((formState) => ({
+      ...formState,
+      [event.target.name]: event.target.value,
+    }));
+    let obj = {
+      invoice_number: event.target.value.trim(),
+    };
+
+    if (isEdit) {
+      obj = {
+        ...obj,
+        id_nin: [id],
+      };
+    }
+
+    providerForGet(backend_purchases, obj, Auth.getToken()).then((res) => {
+      if (res.data?.totalCount) {
+        setError((error) => ({
+          ...error,
+          invoice_number: ["Invoice number already taken"],
+        }));
+      }
+    });
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -737,32 +801,18 @@ export default function AddPurchases(props) {
         message={snackBar.message}
         handleClose={snackBarHandleClose}
       />
-      {/* <DialogBox
-        open={openDialog}
-        dialogTitle={""}
-        handleCancel={handleCloseDialog}
-        handleClose={handleCloseDialog}
-        handleAccept={handleAcceptDialog}
-        cancelButton={"Cancel"}
-        acceptButton={"Yes"}
-        isWarning
-        text={[
-          `Please make sure you have added the right purchases and the right
-        quantity as the quantity once added cannot be changed.`,
-          `Are you sure you
-        want to proceed ?`
-        ]}
-      ></DialogBox> */}
       <DialogBoxForSelectingRawMaterial
         handleCancel={handleCloseDialogForRawMaterial}
         handleClose={handleCloseDialogForRawMaterial}
         handleAccept={handleAcceptDialogForRawMaterial}
-        handleAddRawMaterial={handleChangeAutoCompleteForRepetableComponent}
+        handleAddRawMaterial={handleChangeRawMaterial}
         isHandleKey={true}
         gridKey={openDialogForSelectingRawMaterial.key}
         open={openDialogForSelectingRawMaterial.status}
+        isAcceptQuantity={true}
+        rawMaterialIds={rawMaterialIds}
       />
-      <GridItem xs={12} sm={12} md={10}>
+      <GridItem xs={12} sm={12} md={12}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
             <h4 className={classes.cardTitleWhite}>{props.header}</h4>
@@ -770,7 +820,7 @@ export default function AddPurchases(props) {
           </CardHeader>
           <CardBody>
             <GridContainer>
-              <GridItem xs={12} sm={12} md={4}>
+              <GridItem xs={12} sm={12} md={2}>
                 <CustomDropDown
                   id="type_of_bill"
                   disabled={isView || isEdit}
@@ -787,115 +837,14 @@ export default function AddPurchases(props) {
                   }}
                 />
               </GridItem>
-            </GridContainer>
-
-            {formState.type_of_bill ? (
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomAutoComplete
-                    id="seller-name"
-                    disabled={isView || isEdit}
-                    labelText="Seller"
-                    autocompleteId={"seller-id"}
-                    optionKey={"seller_name"}
-                    options={seller}
-                    onChange={(event, value) => {
-                      delete error["seller"];
-                      setError((error) => ({
-                        ...error,
-                      }));
-                      if (value === null) {
-                        setFormState((formState) => ({
-                          ...formState,
-                          seller: null,
-                          gst_no: "",
-                        }));
-                      } else {
-                        setFormState((formState) => ({
-                          ...formState,
-                          seller: value.id,
-                          gst_no: value.gst_no,
-                        }));
-                      }
-                    }}
-                    value={
-                      seller[
-                        seller.findIndex(function (item, i) {
-                          return item.id === formState.seller;
-                        })
-                      ] || null
-                    }
-                    /** For setting errors */
-                    helperTextId={"helperText_seller"}
-                    isHelperText={hasError("seller", error)}
-                    helperText={
-                      hasError("seller", error)
-                        ? error["seller"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("seller", error)}
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="GST No."
-                    name="gst_no"
-                    disabled
-                    value={formState.gst_no}
-                    id="gst_no"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-            ) : null}
-            <GridContainer>
-              {formState.type_of_bill && formState.type_of_bill !== "" ? (
+              {formState.type_of_bill ? (
                 <>
-                  {formState.type_of_bill === "Pakka" ? (
-                    <GridItem xs={12} sm={12} md={3}>
-                      <CustomInput
-                        labelText="Invoice Number"
-                        name="invoice_number"
-                        onChange={(event) => handleChange(event)}
-                        value={formState.invoice_number}
-                        id="invoice_number"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                      />
-                    </GridItem>
-                  ) : (
-                    <GridItem xs={12} sm={12} md={3}>
-                      <CustomInput
-                        labelText="Bill Number"
-                        name="bill_no"
-                        onChange={(event) => handleChange(event)}
-                        value={formState.bill_no}
-                        id="bill_no"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                      />
-                    </GridItem>
-                  )}
-                  <GridItem xs={12} sm={12} md={3}>
+                  <GridItem xs={12} sm={12} md={2}>
                     <DatePicker
                       onChange={(event) => handleStartDateChange(event)}
                       label="Purchase Date"
                       name="date"
-                      disabled={
-                        isEdit || isView
-                          ? !checkIfDateFallsInAcceptableRange(formState.date)
-                          : false
-                      }
+                      disabled={isView}
                       value={formState.date || new Date()}
                       id="date"
                       minDate={
@@ -913,56 +862,97 @@ export default function AddPurchases(props) {
                     />
                   </GridItem>
                   {formState.type_of_bill === "Pakka" ? (
-                    <>
-                      <GridItem xs={12} sm={12} md={3}>
-                        <CustomInput
-                          labelText="Total amount in rupees(with tax)"
-                          name="total_amt_with_tax"
-                          disabled
-                          value={convertNumber(
-                            formState.total_amt_with_tax,
-                            true
-                          )}
-                          id="total_amt_with_tax"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={3}>
-                        <CustomInput
-                          labelText="Total amount in rupees(without tax)"
-                          name="total_amt_without_tax"
-                          disabled
-                          value={convertNumber(formState.total_amt_without_tax)}
-                          id="total_amt_without_tax"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                    </>
-                  ) : (
-                    <GridItem xs={12} sm={12} md={4}>
+                    <GridItem xs={12} sm={12} md={3}>
                       <CustomInput
-                        labelText="Total amount in rupees"
-                        name="total_amt_without_tax"
-                        disabled
-                        value={convertNumber(formState.total_amt_without_tax)}
-                        id="total_amt_without_tax"
+                        labelText="Invoice Number"
+                        name="invoice_number"
+                        disabled={isView}
+                        onChange={(event) => handleInvoiceNumberChange(event)}
+                        value={formState.invoice_number}
+                        id="invoice_number"
                         formControlProps={{
                           fullWidth: true,
                         }}
+                        /** For setting errors */
+                        helperTextId={"helperText_invoice_number"}
+                        isHelperText={hasError("invoice_number", error)}
+                        helperText={
+                          hasError("invoice_number", error)
+                            ? error["invoice_number"].map((error) => {
+                                return error + " ";
+                              })
+                            : null
+                        }
+                        error={hasError("invoice_number", error)}
+                      />
+                    </GridItem>
+                  ) : (
+                    <GridItem xs={12} sm={12} md={3}>
+                      <CustomInput
+                        labelText="Bill Number"
+                        name="bill_no"
+                        disabled={isView}
+                        onChange={(event) => handleBillNumberChange(event)}
+                        value={formState.bill_no}
+                        id="bill_no"
+                        formControlProps={{
+                          fullWidth: true,
+                        }}
+                        /** For setting errors */
+                        helperTextId={"helperText_bill_no"}
+                        isHelperText={hasError("bill_no", error)}
+                        helperText={
+                          hasError("bill_no", error)
+                            ? error["bill_no"].map((error) => {
+                                return error + " ";
+                              })
+                            : null
+                        }
+                        error={hasError("bill_no", error)}
+                      />
+                    </GridItem>
+                  )}
+                  {!isView && (
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={4}
+                      style={{ marginTop: "2.2rem" }}
+                    >
+                      <RemoteAutoComplete
+                        setSelectedData={setSeller}
+                        searchString={"seller_name"}
+                        apiName={backend_sellers}
+                        placeholder="Select Seller..."
+                        selectedValue={selectedSeller}
+                        isError={error.seller}
+                        errorText={"Please select a seller"}
                       />
                     </GridItem>
                   )}
                 </>
               ) : null}
             </GridContainer>
+
+            {formState.type_of_bill &&
+              selectedSeller &&
+              selectedSeller.value &&
+              selectedSeller.allData && (
+                <GridContainer>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={6}
+                    style={{ marginTop: "1.5rem" }}
+                  >
+                    <SellerDetails seller={selectedSeller.allData} />
+                  </GridItem>
+                </GridContainer>
+              )}
             {formState.type_of_bill === "Pakka" ? (
               <GridContainer>
                 {" "}
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={1}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
                     labelText="CGST(%)"
@@ -976,7 +966,7 @@ export default function AddPurchases(props) {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={1}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
                     labelText="SGST(%)"
@@ -990,7 +980,7 @@ export default function AddPurchases(props) {
                     }}
                   />
                 </GridItem>{" "}
-                <GridItem xs={12} sm={12} md={3}>
+                <GridItem xs={12} sm={12} md={1}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
                     labelText="IGST(%)"
@@ -1010,6 +1000,56 @@ export default function AddPurchases(props) {
                 </GridItem>{" "}
               </GridContainer>
             ) : null}
+            <GridContainer>
+              {formState.type_of_bill && formState.type_of_bill !== "" ? (
+                <>
+                  {formState.type_of_bill === "Pakka" ? (
+                    <>
+                      <GridItem
+                        xs={12}
+                        sm={12}
+                        md={4}
+                        style={{
+                          marginTop: "3rem",
+                        }}
+                      >
+                        <b>{`Total amount(without tax):- ${convertNumber(
+                          formState.total_amt_without_tax,
+                          true
+                        )}`}</b>
+                      </GridItem>
+                      <GridItem
+                        xs={12}
+                        sm={12}
+                        md={4}
+                        style={{
+                          marginTop: "3rem",
+                        }}
+                      >
+                        <b>{`Total amount(with tax):- ${convertNumber(
+                          formState.total_amt_with_tax,
+                          true
+                        )}`}</b>
+                      </GridItem>
+                    </>
+                  ) : (
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={4}
+                      style={{
+                        marginTop: "3rem",
+                      }}
+                    >
+                      <b>{`Total amount:- ${convertNumber(
+                        formState.total_amt_with_tax,
+                        true
+                      )}`}</b>
+                    </GridItem>
+                  )}
+                </>
+              ) : null}
+            </GridContainer>
 
             {formState.type_of_bill ? (
               <>
@@ -1034,306 +1074,357 @@ export default function AddPurchases(props) {
               </>
             ) : null}
 
-            {isView ||
-            isEdit ||
-            isEmptyString(formState.type_of_bill) ? null : (
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <FAB
-                    color="primary"
-                    size={"medium"}
-                    variant="extended"
-                    onClick={() => addNewPurchase(formState.type_of_bill)}
-                  >
-                    <AddIcon className={classes.extendedIcon} />
-                    <h5>Add new purchase</h5>
-                  </FAB>
-                </GridItem>
-              </GridContainer>
-            )}
-
             {/** Should get executed only when the bill is pakka bill */}
-            {formState.type_of_bill &&
-              formState.type_of_bill === "Kachha" &&
-              individualKachhaPurchase.map((Ip, key) => (
-                <GridContainer key={key}>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={9}
-                    className={classes.componentBorder}
-                  >
-                    <GridContainer
-                      style={
-                        Ip.raw_material && Ip.raw_material.id
-                          ? {}
-                          : { justifyContent: "center" }
-                      }
-                    >
-                      {Ip.raw_material && Ip.raw_material.id ? (
-                        <GridItem
-                          xs={12}
-                          sm={12}
-                          md={8}
-                          style={{
-                            margin: "27px 0px 0px",
-                          }}
-                        >
-                          <GridContainer style={{ dispay: "flex" }}>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Id : </b> {Ip.raw_material_name.id}
-                            </GridItem>
-                          </GridContainer>
-                          <GridContainer style={{ dispay: "flex" }}>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Name : </b> {Ip.raw_material_name.name}
-                            </GridItem>
-                          </GridContainer>
-                          <GridContainer>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Department : </b>
-                              {Ip.raw_material_name.department}
-                            </GridItem>
-                          </GridContainer>
-                          <GridContainer>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Category : </b>
-                              {Ip.raw_material_name.category}
-                            </GridItem>
-                          </GridContainer>
-                          <GridContainer>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Color :</b> {Ip.raw_material_name.color}
-                            </GridItem>
-                          </GridContainer>
-                          <GridContainer>
-                            <GridItem xs={12} sm={12} md={8}>
-                              <b>Size : </b>
-                              {Ip.raw_material_name.size}
-                            </GridItem>
-                          </GridContainer>
-                        </GridItem>
-                      ) : null}
 
-                      {isView || isEdit ? null : (
-                        <GridItem
-                          xs={12}
-                          sm={12}
-                          md={4}
-                          style={{
-                            margin: "27px 0px 0px",
-                          }}
-                        >
-                          <Button
-                            color="primary"
-                            onClick={() => {
-                              addChangeRawMaterial(key);
-                            }}
-                          >
-                            {Ip.raw_material
-                              ? "Change Raw Material"
-                              : " Select Raw Material"}
-                          </Button>
-                        </GridItem>
-                      )}
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          onChange={(event) =>
-                            handleChangeForRepetableComponent(event, key)
-                          }
-                          type="number"
-                          disabled={isView}
-                          labelText="Purchase Cost"
-                          name="purchase_cost"
-                          value={Ip.purchase_cost}
-                          id="purchase_cost"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                          inputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                {!isEmptyString(Ip.purchase_unit)
-                                  ? "/" + Ip.purchase_unit
-                                  : ""}
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          onChange={(event) =>
-                            handleChangeForRepetableComponent(event, key)
-                          }
-                          type="number"
-                          disabled={isView || isEdit}
-                          labelText="Purchase Quantity"
-                          name="purchase_quantity"
-                          value={Ip.purchase_quantity}
-                          id="purchase_quantity"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                          inputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                {!isEmptyString(Ip.purchase_unit)
-                                  ? "/" + Ip.purchase_unit
-                                  : ""}
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          labelText="Total Purchase Cost"
-                          disabled
-                          name="total_purchase_cost"
-                          value={convertNumber(Ip.total_purchase_cost, true)}
-                          id="quantity"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                  </GridItem>
-                  {isView || isEdit ? null : (
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={2}
-                      className={classes.addDeleteFabButon}
-                    >
-                      <FAB
-                        color="primary"
-                        align={"end"}
-                        size={"small"}
-                        onClick={() => {
-                          deletePurchase("Kachha", key);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </FAB>
-                    </GridItem>
-                  )}
-
-                  {/* <GridItem
-                xs={6}
-                sm={6}
-                md={2}
-                className={classes.addDeleteFabButon}
+            {formState.type_of_bill && (
+              <CustomMaterialUITable
+                sx={{ minWidth: 650 }}
+                aria-label="simple table"
               >
-                
-              </GridItem> */}
-                </GridContainer>
-              ))}
-
-            {/** Should get executed only when the bill is pakka bill */}
-            {formState.type_of_bill &&
-              formState.type_of_bill === "Pakka" &&
-              individualPakkaPurchase.map((Ip, key) => (
-                <GridContainer key={key}>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={9}
-                    className={classes.componentBorder}
-                  >
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={12}>
-                        <CustomInput
-                          onChange={(event) =>
-                            handleChangeForRepetableComponent(event, key)
-                          }
-                          labelText="Item Name"
-                          name="name"
-                          disabled={isView}
-                          value={Ip.name}
-                          id={"item_name" + key}
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          onChange={(event) =>
-                            handleChangeForRepetableComponent(event, key)
-                          }
-                          labelText="Purchase cost per unit"
-                          type="number"
-                          disabled={isView}
-                          name="purchase_cost"
-                          value={Ip.purchase_cost}
-                          id="purchase_cost"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          labelText="Purchase Quantity"
-                          type="number"
-                          disabled={isView || isEdit}
-                          name="purchase_quantity"
-                          value={Ip.purchase_quantity}
-                          onChange={(event) =>
-                            handleChangeForRepetableComponent(event, key)
-                          }
-                          id="quantity"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <CustomInput
-                          disabled
-                          labelText="Total Purchase Cost"
-                          name="total_purchase_cost"
-                          value={convertNumber(Ip.total_purchase_cost, true)}
-                          id="quantity"
-                          formControlProps={{
-                            fullWidth: true,
-                          }}
-                        />
-                      </GridItem>
-                    </GridContainer>
-                  </GridItem>
-
-                  {isView || isEdit ? null : (
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={2}
-                      className={classes.addDeleteFabButon}
+                <CustomTableHead>
+                  <CustomTableRow>
+                    <CustomTableCell
+                      sx={{
+                        width: "100px",
+                      }}
                     >
-                      <FAB
-                        color="primary"
-                        align={"end"}
-                        size={"small"}
-                        onClick={() => {
-                          deletePurchase("Pakka", key);
+                      Is Raw Material?
+                    </CustomTableCell>
+                    <CustomTableCell
+                      sx={{
+                        width: "400px",
+                      }}
+                    >
+                      Name/Select Raw Material
+                    </CustomTableCell>
+                    <CustomTableCell>Purchase Cost</CustomTableCell>
+                    <CustomTableCell>Purchase Qty</CustomTableCell>
+                    <CustomTableCell>Total</CustomTableCell>
+                    {!isView ? <CustomTableCell>Remove</CustomTableCell> : null}
+                    {!isView && <CustomTableCell>Add</CustomTableCell>}
+                  </CustomTableRow>
+                </CustomTableHead>
+                <CustomTableBody>
+                  {!individualPurchase.length ? (
+                    <CustomTableRow>
+                      <CustomTableCell
+                        colSpan={7}
+                        sx={{
+                          textAlign: "center",
+                          backgroundColor: "#dfdfdf !important",
                         }}
                       >
-                        <DeleteIcon />
-                      </FAB>
-                    </GridItem>
+                        <b>No Data</b>
+                      </CustomTableCell>
+                    </CustomTableRow>
+                  ) : (
+                    <>
+                      {individualPurchase.map((Ip, key) => (
+                        <>
+                          <CustomTableRow>
+                            <CustomTableCell>
+                              <div className={classes.block}>
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      disabled={
+                                        isView ||
+                                        (isEdit && !Ip.isNew) ||
+                                        formState.type_of_bill === "Kachha"
+                                      }
+                                      checked={
+                                        Ip.is_raw_material ? true : false
+                                      }
+                                      name={"is_raw_material_or_clubbed"}
+                                      onChange={(event) =>
+                                        handleChangeForRepetableComponent(
+                                          event,
+                                          key
+                                        )
+                                      }
+                                      classes={{
+                                        switchBase: classes.switchBase,
+                                        checked: classes.switchChecked,
+                                        thumb: classes.switchIcon,
+                                        track: classes.switchBar,
+                                      }}
+                                    />
+                                  }
+                                  classes={{
+                                    label: classes.label,
+                                  }}
+                                  label=""
+                                />
+                              </div>
+                            </CustomTableCell>
+                            <CustomTableCell>
+                              {Ip.is_raw_material ? (
+                                <GridContainer style={{ dispay: "flex" }}>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Name : </b> {Ip.raw_material_obj.name}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Department : </b>
+                                    {Ip.raw_material_obj.department}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Category : </b>
+                                    {Ip.raw_material_obj.category}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Color :</b> {Ip.raw_material_obj.color}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Size : </b>
+                                    {Ip.raw_material_obj.size}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <b>Balance : </b>
+                                    {Ip.raw_material_obj.bal}
+                                  </GridItem>
+                                  <GridItem xs={12} sm={12} md={12}>
+                                    <Button
+                                      color="primary"
+                                      disabled={
+                                        isView ||
+                                        (isEdit &&
+                                          Ip.raw_material &&
+                                          !Ip.isNew) ||
+                                        Ip.are_raw_material_clubbed
+                                      }
+                                      onClick={() => {
+                                        addChangeRawMaterial(key);
+                                      }}
+                                    >
+                                      {Ip.raw_material
+                                        ? "Change Raw Material"
+                                        : " Select Raw Material"}
+                                    </Button>
+                                    {hasError("raw_material" + key, error) ? (
+                                      <FormHelperText
+                                        id={"raw_material" + key}
+                                        error={hasError(
+                                          "raw_material" + key,
+                                          error
+                                        )}
+                                      >
+                                        {hasError("raw_material" + key, error)
+                                          ? error["raw_material" + key].map(
+                                              (error) => {
+                                                return error + " ";
+                                              }
+                                            )
+                                          : null}
+                                      </FormHelperText>
+                                    ) : null}
+                                  </GridItem>
+                                </GridContainer>
+                              ) : (
+                                <CustomInput
+                                  onChange={(event) =>
+                                    handleChangeForRepetableComponent(
+                                      event,
+                                      key,
+                                      "Name"
+                                    )
+                                  }
+                                  labelText="Name"
+                                  name="name"
+                                  disabled={isView}
+                                  value={Ip.name}
+                                  id={"name" + key}
+                                  formControlProps={{
+                                    fullWidth: true,
+                                  }}
+                                  helperTextId={"helperText_name" + key}
+                                  isHelperText={hasError("name" + key, error)}
+                                  helperText={
+                                    hasError("name" + key, error)
+                                      ? error["name" + key].map((error) => {
+                                          return error + " ";
+                                        })
+                                      : null
+                                  }
+                                  error={hasError("name" + key, error)}
+                                />
+                              )}
+                            </CustomTableCell>
+                            <CustomTableCell>
+                              <CustomInput
+                                onChange={(event) =>
+                                  handleChangeForRepetableComponent(
+                                    event,
+                                    key,
+                                    "Purchase Cost"
+                                  )
+                                }
+                                type="number"
+                                disabled={
+                                  isView ||
+                                  (Ip.is_raw_material && !Ip.raw_material)
+                                }
+                                labelText="Purchase Cost"
+                                name="purchase_cost"
+                                value={Ip.purchase_cost}
+                                id="purchase_cost"
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                inputProps={{
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      {!isEmptyString(Ip.purchase_unit)
+                                        ? "/" + Ip.purchase_unit
+                                        : ""}
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                /** For setting errors */
+                                helperTextId={"helperText_purchase_cost" + key}
+                                isHelperText={hasError(
+                                  "purchase_cost" + key,
+                                  error
+                                )}
+                                helperText={
+                                  hasError("purchase_cost" + key, error)
+                                    ? error["purchase_cost" + key].map(
+                                        (error) => {
+                                          return error + " ";
+                                        }
+                                      )
+                                    : null
+                                }
+                                error={hasError("purchase_cost" + key, error)}
+                              />
+                            </CustomTableCell>
+                            <CustomTableCell>
+                              <CustomInput
+                                onChange={(event) =>
+                                  handleChangeForRepetableComponent(
+                                    event,
+                                    key,
+                                    "Purchase Quantity"
+                                  )
+                                }
+                                type="number"
+                                disabled={
+                                  isView ||
+                                  (Ip.is_raw_material && !Ip.raw_material)
+                                }
+                                labelText="Purchase Qty"
+                                name="purchase_quantity"
+                                value={Ip.purchase_quantity}
+                                id="purchase_quantity"
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                inputProps={{
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      {!isEmptyString(Ip.purchase_unit)
+                                        ? "/" + Ip.purchase_unit
+                                        : ""}
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                /** For setting errors */
+                                helperTextId={
+                                  "helperText_purchase_quantity" + key
+                                }
+                                isHelperText={hasError(
+                                  "purchase_quantity" + key,
+                                  error
+                                )}
+                                helperText={
+                                  hasError("purchase_quantity" + key, error)
+                                    ? error["purchase_quantity" + key].map(
+                                        (error) => {
+                                          return error + " ";
+                                        }
+                                      )
+                                    : null
+                                }
+                                error={hasError(
+                                  "purchase_quantity" + key,
+                                  error
+                                )}
+                              />
+                            </CustomTableCell>
+                            <CustomTableCell
+                              sx={{
+                                minWidth: "fit-content",
+                              }}
+                            >
+                              <b>
+                                {convertNumber(Ip.total_purchase_cost, true)}
+                              </b>
+                            </CustomTableCell>
+                            {!isView && (
+                              <CustomTableCell>
+                                <FAB
+                                  disabled={isEdit && !Ip.isNew}
+                                  color="danger"
+                                  align={"end"}
+                                  size={"small"}
+                                  onClick={() => {
+                                    deletePurchase(key);
+                                  }}
+                                >
+                                  <DeleteIcon />
+                                </FAB>
+                              </CustomTableCell>
+                            )}
+                            {!isView && (
+                              <CustomTableCell>
+                                {!isView &&
+                                individualPurchase.length - 1 === key ? (
+                                  <FAB
+                                    disabled={
+                                      isView ||
+                                      (Ip.is_raw_material && !Ip.raw_material)
+                                    }
+                                    color="success"
+                                    align={"end"}
+                                    size={"small"}
+                                    onClick={() => {
+                                      addNewPurchase();
+                                    }}
+                                  >
+                                    <AddIcon />
+                                  </FAB>
+                                ) : null}
+                              </CustomTableCell>
+                            )}
+                          </CustomTableRow>
+                        </>
+                      ))}
+                      <CustomTableRow>
+                        <CustomTableCell
+                          colSpan={4}
+                          sx={{
+                            textAlign: "right",
+                          }}
+                        >
+                          <b>Total</b>
+                        </CustomTableCell>
+                        <CustomTableCell>
+                          {" "}
+                          <b>
+                            {convertNumber(
+                              formState.total_amt_without_tax,
+                              true
+                            )}
+                          </b>
+                        </CustomTableCell>
+                        {!isView && (
+                          <CustomTableCell colSpan={2}></CustomTableCell>
+                        )}
+                      </CustomTableRow>
+                    </>
                   )}
-                </GridContainer>
-              ))}
+                </CustomTableBody>
+              </CustomMaterialUITable>
+            )}
           </CardBody>
           {isView || isEmptyString(formState.type_of_bill) ? null : (
             <CardFooter>
@@ -1347,49 +1438,6 @@ export default function AddPurchases(props) {
           <CircularProgress color="inherit" />
         </Backdrop>
       </GridItem>
-
-      {rawMaterialDetails.name ? (
-        <GridItem xs={12} sm={12} md={4}>
-          <Card>
-            <CardBody>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>Id :{rawMaterialDetails.id}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>Name :{rawMaterialDetails.name}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Department : {rawMaterialDetails.department}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Category : {rawMaterialDetails.category}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Color : {rawMaterialDetails.color}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted> Size : {rawMaterialDetails.size}</Muted>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={12}>
-                <Muted>
-                  Balance :{" "}
-                  {isEmptyString(rawMaterialDetails.balance)
-                    ? "0"
-                    : rawMaterialDetails.balance}
-                </Muted>
-              </GridItem>
-              {rawMaterialDetails.name_value.map((nv) => (
-                <GridItem xs={12} sm={12} md={12}>
-                  <Muted>
-                    {" "}
-                    {nv.name} : {nv.value}
-                  </Muted>
-                </GridItem>
-              ))}
-            </CardBody>
-          </Card>
-        </GridItem>
-      ) : null}
     </GridContainer>
   );
 }

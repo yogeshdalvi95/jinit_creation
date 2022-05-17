@@ -73,7 +73,8 @@ const styles = {
     paddingTop: "0.8rem !important",
   },
   switchBoxInFilter: {
-    paddingTop: "2.5rem !important",
+    paddingTop: "2.3rem !important",
+    paddingRight: "0rem !important",
   },
   extendedIcon: {
     marginRight: "1rem",
@@ -144,6 +145,7 @@ const styles = {
     marginTop: "auto",
     display: "flex",
     justifyContent: "center",
+    marginBottom: "auto",
   },
   typo: {
     paddingLeft: "25%",

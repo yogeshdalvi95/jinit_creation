@@ -34,6 +34,7 @@ import { useEffect } from "react";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import DateRangeIcon from "@material-ui/icons/DateRange";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const useStyles = makeStyles(styles);
 export default function RawMaterials() {
@@ -93,7 +94,6 @@ export default function RawMaterials() {
       title: "Costing",
       field: "costing",
       render: (rowData) => {
-        console.log(rowData);
         let unit = rowData?.unit;
         let value = convertNumber(rowData?.costing, true, true, " /" + unit);
         return value;
@@ -502,7 +502,9 @@ export default function RawMaterials() {
                     },
                   }),
                   (rowData) => ({
-                    icon: () => <VisibilityIcon fontSize="small" />,
+                    icon: () => (
+                      <VisibilityIcon fontSize="small" color="primary" />
+                    ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
                       handleTableAction(rowData, true);
@@ -527,6 +529,9 @@ export default function RawMaterials() {
                       saveTooltip: "Delete",
                     },
                   },
+                }}
+                icons={{
+                  Delete: () => <DeleteIcon style={{ color: "red" }} />,
                 }}
                 editable={{
                   onRowDelete: (oldData) =>

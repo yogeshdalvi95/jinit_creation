@@ -188,3 +188,71 @@ export function getMinDate() {
   );
   return fromDate;
 }
+
+export function checkIFValidDateObject(d) {
+  let isValid = false;
+  if (Object.prototype.toString.call(d) === "[object Date]") {
+    isValid = true;
+    if (isNaN(d)) {
+      isValid = false;
+    } else {
+      isValid = true;
+    }
+  } else {
+    isValid = false;
+  }
+  return isValid;
+}
+
+export function getMonthDifference(startDate, endDate) {
+  return (
+    endDate.getMonth() -
+    startDate.getMonth() +
+    12 * (endDate.getFullYear() - startDate.getFullYear())
+  );
+}
+
+export function getMonth(m_no) {
+  let month = ""; //Create a local variable to hold the string
+  switch (m_no) {
+    case 0:
+      month = "January";
+      break;
+    case 1:
+      month = "February";
+      break;
+    case 2:
+      month = "March";
+      break;
+    case 3:
+      month = "April";
+      break;
+    case 4:
+      month = "May";
+      break;
+    case 5:
+      month = "June";
+      break;
+    case 6:
+      month = "July";
+      break;
+    case 7:
+      month = "August";
+      break;
+    case 8:
+      month = "September";
+      break;
+    case 9:
+      month = "October";
+      break;
+    case 10:
+      month = "November";
+      break;
+    case 11:
+      month = "December";
+      break;
+    default:
+      month = "Invalid month";
+  }
+  return month;
+}

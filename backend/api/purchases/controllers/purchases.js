@@ -1,7 +1,16 @@
 "use strict";
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
-const { validateNumber, isEmptyString } = require("../../../config/utils");
+const {
+  validateNumber,
+  isEmptyString,
+  getMonth,
+  convertNumber,
+  getDateInMMDDYYYY,
+  noDataImg,
+  generatePDF,
+  getMonthDifference,
+} = require("../../../config/utils");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -35,21 +44,15 @@ module.exports = {
   async findOne(ctx) {
     const { id } = ctx.params;
     let purchase_detail = await strapi.query("purchases").findOne({ id: id });
-    let individualPurchase = [];
-    if (purchase_detail.type_of_bill === "Kachha") {
-      individualPurchase = await strapi
-        .query("individual-purchase")
-        .find({ purchase: id }, [
-          "raw_material",
-          "raw_material.department",
-          "raw_material.category",
-          "raw_material.color",
-        ]);
-    } else {
-      individualPurchase = await strapi
-        .query("individual-pakka-purchase")
-        .find({ purchase: id });
-    }
+    const individualPurchase = await strapi
+      .query("individual-purchase")
+      .find({ purchase: id }, [
+        "raw_material",
+        "raw_material.department",
+        "raw_material.category",
+        "raw_material.color",
+        "raw_material.unit",
+      ]);
     ctx.send({
       purchase: purchase_detail,
       individualPurchase: individualPurchase,
@@ -57,19 +60,13 @@ module.exports = {
   },
 
   async create(ctx) {
-    const {
-      purchases,
-      individual_purchase,
-      kachhaPurchase,
-      pakkaPurchase,
-    } = ctx.request.body;
+    const { purchases, individual_purchase } = ctx.request.body;
     const {
       id,
       seller,
       type_of_bill,
       cgst_percent,
       sgst_percent,
-      gst_no,
       total_amt_with_tax,
       total_amt_without_tax,
       notes,
@@ -79,16 +76,30 @@ module.exports = {
       bill_no,
     } = purchases;
 
+    let comment = notes;
+    if (isEmptyString(comment)) {
+      if (type_of_bill === "Pakka") {
+        comment = `Purchase ${
+          igst_percent
+            ? `IGST ${igst_percent}%`
+            : `CGST ${cgst_percent}% SGST ${sgst_percent}%`
+        }`;
+      } else {
+        comment = `Purchase`;
+      }
+    }
+
     if (id) {
       await bookshelf
         .transaction(async (t) => {
           let purchaseData = {
+            type_of_bill: type_of_bill,
             date: utils.getDateInYYYYMMDD(new Date(date)),
-            seller: seller,
             cgst_percent: cgst_percent,
             sgst_percent: sgst_percent,
             igst_percent: igst_percent,
-            notes: notes,
+            notes: comment,
+            seller: seller,
             total_amt_with_tax: total_amt_with_tax,
             total_amt_without_tax: total_amt_without_tax,
             invoice_number: invoice_number,
@@ -103,47 +114,76 @@ module.exports = {
               console.log(err);
               throw 500;
             });
-          if (type_of_bill === "Kachha") {
-            await utils.asyncForEach(kachhaPurchase, async (Ip) => {
-              let individualPurchase = {
-                purchase_cost: Ip.purchase_cost,
-                total_purchase_cost: Ip.total_purchase_cost,
-                date: utils.getDateInYYYYMMDD(new Date(date)),
-                seller: seller,
-              };
-              await strapi
-                .query("individual-purchase")
-                .update({ id: Ip.id }, individualPurchase, {
-                  transacting: t,
-                  patch: true,
-                })
-                .then((model) => model)
-                .catch((err) => {
-                  console.log(err);
-                  throw 500;
-                });
+
+          let alreadyPresentIndividualPurchase = await strapi
+            .query("individual-purchase")
+            .find({
+              purchase: id,
             });
+
+          let temp1 = alreadyPresentIndividualPurchase.map((r) => r.id);
+          let temp2 = [];
+          await utils.asyncForEach(individual_purchase, async (Ip) => {
+            if (Ip.id) {
+              temp2.push(Ip.id);
+              await updateIndividualPurchaseData(Ip, seller, date, t);
+            } else {
+              await addIndividualPurchaseData(Ip, id, seller, date, t);
+            }
+          });
+
+          let deletedArrays = temp1.filter((x) => !temp2.includes(x));
+          if (deletedArrays.length) {
+            await utils.asyncForEach(deletedArrays, async (Ip) => {
+              await deleteIndividualPurchaseData(Ip, t);
+            });
+          }
+
+          let purchasePaymentTransaction = {
+            purchase: id,
+            purchase_payment: null,
+            goods_return: null,
+            seller: seller,
+            transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
+            month: new Date(date).getMonth() + 1,
+            year: new Date(date).getFullYear(),
+            comment: comment,
+            transaction_amount: validateNumber(total_amt_with_tax),
+            is_purchase: true,
+            is_payment: false,
+            is_goods_return: false,
+            kachha_ledger: type_of_bill === "Kachha" ? true : false,
+            pakka_ledger: type_of_bill === "Pakka" ? true : false,
+          };
+
+          let purchasePaymentTxnId = await strapi
+            .query("purchase-payment-transaction")
+            .findOne({
+              purchase: id,
+            });
+
+          if (purchasePaymentTxnId) {
+            await strapi
+              .query("purchase-payment-transaction")
+              .update(
+                { id: purchasePaymentTxnId.id },
+                purchasePaymentTransaction,
+                { patch: true, transacting: t }
+              )
+              .then((model) => model)
+              .catch((err) => {
+                console.log(err);
+                throw 500;
+              });
           } else {
-            await utils.asyncForEach(pakkaPurchase, async (Ip) => {
-              let individualPurchase = {
-                purchase_cost: Ip.purchase_cost,
-                total_purchase_cost: Ip.total_purchase_cost,
-                name: Ip.name,
-                date: utils.getDateInYYYYMMDD(new Date(date)),
-                seller: seller,
-              };
-              await strapi
-                .query("individual-pakka-purchase")
-                .update({ id: Ip.id }, individualPurchase, {
-                  transacting: t,
-                  patch: true,
-                })
-                .then((model) => model)
-                .catch((err) => {
-                  console.log(err);
-                  throw 500;
-                });
-            });
+            await strapi
+              .query("purchase-payment-transaction")
+              .create(purchasePaymentTransaction, { transacting: t })
+              .then((model) => model)
+              .catch((err) => {
+                console.log(err);
+                throw 500;
+              });
           }
         })
         .then((res) => {
@@ -156,32 +196,18 @@ module.exports = {
     } else {
       await bookshelf
         .transaction(async (t) => {
-          let comment = `Purchase of amount ${utils.convertNumber(
-            total_amt_with_tax,
-            true
-          )} done for ${
-            type_of_bill === "Pakka"
-              ? "Invoice no: " + invoice_number
-              : "Bill no: " + bill_no
-          }`;
           let purchaseData = {
             type_of_bill: type_of_bill,
             date: utils.getDateInYYYYMMDD(new Date(date)),
             cgst_percent: cgst_percent,
             sgst_percent: sgst_percent,
             igst_percent: igst_percent,
-            gst_no: gst_no,
-            notes: notes,
+            notes: comment,
             seller: seller,
             total_amt_with_tax: total_amt_with_tax,
             total_amt_without_tax: total_amt_without_tax,
             invoice_number: invoice_number,
             bill_no: bill_no,
-            history: [
-              {
-                comment: comment,
-              },
-            ],
           };
 
           let newPurchase = await strapi
@@ -194,125 +220,44 @@ module.exports = {
             });
 
           await utils.asyncForEach(individual_purchase, async (Ip) => {
-            let purchaseCost = validateNumber(Ip.purchase_cost);
-            let purchaseQuantity = validateNumber(Ip.purchase_quantity);
-            let totalPurchaseQuantity = validateNumber(Ip.total_purchase_cost);
-            let are_raw_material_clubbed = false;
-            let isNamePresent =
-              Ip.name && !isEmptyString(Ip.name) && !Ip.raw_material;
-
-            if (type_of_bill === "Pakka" && isNamePresent) {
-              are_raw_material_clubbed = true;
-            }
-            let individualPurchase = {
-              purchase: newPurchase.id,
-              seller: seller,
-              date: utils.getDateInYYYYMMDD(new Date(date)),
-              are_raw_material_clubbed: are_raw_material_clubbed,
-              is_kachha_purchase: type_of_bill === "Kachha" ? true : false,
-              purchase_quantity: purchaseQuantity,
-              purchase_cost: purchaseCost,
-              total_purchase_cost: totalPurchaseQuantity,
-            };
-
-            if (isNamePresent) {
-              individualPurchase = {
-                ...individualPurchase,
-                name: Ip.name,
-                raw_material: null,
-              };
-            } else {
-              individualPurchase = {
-                ...individualPurchase,
-                name: null,
-                raw_material: Ip.raw_material.id,
-              };
-            }
-
-            /** Kachha purchase */
-            await strapi
-              .query("individual-purchase")
-              .create(individualPurchase, { transacting: t })
-              .then((model) => model)
-              .catch((err) => {
-                console.log(err);
-                throw 500;
-              });
-
-            /** Take old data of raw material*/
-            let raw_material_data = await strapi
-              .query("raw-material")
-              .findOne({ id: Ip.raw_material.id });
-            /** Check if the value is number or ot */
-            let currentBalance = validateNumber(raw_material_data.balance);
-            /** Add value */
-            let finalValue = currentBalance + purchaseQuantity;
-            /** Update new balance */
-            await strapi.query("raw-material").update(
-              { id: Ip.raw_material.id },
-              {
-                balance: finalValue,
-              },
-              { patch: true, transacting: t }
+            await addIndividualPurchaseData(
+              Ip,
+              newPurchase.id,
+              seller,
+              date,
+              t
             );
-
-            /** Update the closing balance of raw material */
-            let currentMonth = new Date().getMonth() + 1;
-            let currentYear = new Date().getFullYear();
-
-            let isCurrentMonthEntryPresent = await strapi
-              .query("monthly-sheet")
-              .findOne({
-                raw_material: Ip.raw_material.id,
-                month: currentMonth,
-                year: currentYear,
-              });
-
-            if (isCurrentMonthEntryPresent) {
-              let newClosingBalance =
-                purchaseQuantity +
-                validateNumber(isCurrentMonthEntryPresent.closing_balance);
-
-              await strapi.query("monthly-sheet").update(
-                { id: isCurrentMonthEntryPresent.id },
-                {
-                  closing_balance: newClosingBalance,
-                },
-                { patch: true, transacting: t }
-              );
-            }
-            /** ---------------------------------------- */
-            /** Now we have to make entries in transaction */
-
-            let purchasePaymentTransaction = {
-              purchase: newPurchase.id,
-              purchase_payment: null,
-              goods_return: null,
-              seller: seller,
-              transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
-              month: new Date(date).getMonth() + 1,
-              year: new Date(date).getFullYear(),
-              comment: comment,
-              transaction_amount: validateNumber(total_amt_with_tax),
-              is_purchase: true,
-              is_payment: false,
-              is_goods_return: false,
-              kachha_ledger: type_of_bill === "Kachha" ? true : false,
-              pakka_ledger: type_of_bill === "Pakka" ? true : false,
-            };
-
-            await strapi
-              .query("purchase-payment-transaction")
-              .create(purchasePaymentTransaction, { transacting: t })
-              .then((model) => model)
-              .catch((err) => {
-                console.log(err);
-                throw 500;
-              });
           });
+          /** ---------------------------------------- */
+          /** Now we have to make entries in transaction */
+
+          let purchasePaymentTransaction = {
+            purchase: newPurchase.id,
+            purchase_payment: null,
+            goods_return: null,
+            seller: seller,
+            transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
+            month: new Date(date).getMonth() + 1,
+            year: new Date(date).getFullYear(),
+            comment: comment,
+            transaction_amount: validateNumber(total_amt_with_tax),
+            is_purchase: true,
+            is_payment: false,
+            is_goods_return: false,
+            kachha_ledger: type_of_bill === "Kachha" ? true : false,
+            pakka_ledger: type_of_bill === "Pakka" ? true : false,
+          };
+
+          await strapi
+            .query("purchase-payment-transaction")
+            .create(purchasePaymentTransaction, { transacting: t })
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
         })
         .then((res) => {
-          updateLedger(date, seller);
           ctx.send(200);
         })
         .catch((err) => {
@@ -323,202 +268,503 @@ module.exports = {
   },
 
   async ledger(ctx) {
-    const { query } = ctx.request.query;
-  },
-};
-
-async function updateLedger(dateFrom, seller) {
-  await bookshelf.transaction(async (t) => {
-    let dateToCheckFrom = new Date(dateFrom);
-
-    /** Lets check if the date is current date */
-
-    let diffOfMonths =
-      utils.getMonthDifference(dateToCheckFrom, new Date()) + 1;
-    let monthDiffArray = Array.from(
-      { length: diffOfMonths },
-      (v, i) => diffOfMonths - i - 1
+    const { date_gte, sellerId } = ctx.request.query;
+    await strapi.services["monthly-purchase-balance"].updateLedger(
+      date_gte,
+      sellerId
     );
+    let data = await generateLedger(ctx.request.query);
+    ctx.send(data);
+  },
 
-    let previousKachhaClosingBalance = 0;
-    let previousPakkaClosingBalance = 0;
+  async downloadledger(ctx) {
+    const { date_gte, date_lte, sellerId } = ctx.request.body;
+    await strapi.services["monthly-purchase-balance"].updateLedger(
+      date_gte,
+      sellerId
+    );
+    let data = await generateLedger(ctx.request.body);
+    let html = "";
+    let monthYearObject = [];
+    let dateToCheckFrom = new Date(date_gte);
+    let dateToCheckTo = new Date(date_lte);
+    let diffOfMonths = getMonthDifference(dateToCheckFrom, dateToCheckTo) + 1;
 
-    console.log("monthDiffArray ", monthDiffArray);
-    console.log("dateFrom ", dateFrom);
-    console.log("diffOfMonths ", diffOfMonths);
+    let monthDiffArray = Array.from({ length: diffOfMonths }, (v, i) => i);
 
-    await utils.asyncForEach(monthDiffArray, async (m_no) => {
-      let getMiddleDate = new Date(new Date().setDate(15));
+    monthDiffArray.forEach((m_no) => {
+      let getMiddleDate = new Date(dateToCheckFrom.setDate(15));
       let correspondingDate = new Date(
-        getMiddleDate.setMonth(getMiddleDate.getMonth() - m_no)
+        getMiddleDate.setMonth(getMiddleDate.getMonth() + m_no)
       );
       let correspondingMonth = correspondingDate.getMonth() + 1;
       let correspondingYear = correspondingDate.getFullYear();
-      let kachhaLedgerId = null;
-      let pakkaLedgerId = null;
+      let key = `${getMonth(correspondingMonth - 1)}, ${correspondingYear}`;
+      monthYearObject.push(key);
+    });
 
-      let commonData = {
-        seller: seller,
-        month: correspondingMonth,
-        year: correspondingYear,
-        date: utils.getDateInYYYYMMDD(new Date(correspondingDate)),
-      };
+    const sellerInfo = await strapi.query("seller").findOne({
+      id: sellerId,
+    });
 
-      let kachhaBalanceData = {
-        ...commonData,
-        opening_balance: 0,
-        closing_balance: 0,
-        purchase_type: "Kachha",
-      };
+    html =
+      html +
+      ` 
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">for</p>
+        <h1 class="h1">${sellerInfo?.seller_name}</h1>
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">${
+          sellerInfo?.seller_address
+        }</p>
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">Mob:- ${
+          sellerInfo?.phone
+        }</p>
+        <p class="p centerAlignedText moreTopMargin moreBottomMargin">for period</p>
+        <p class="p centerAlignedText moreBottomMargin lessTopMargin"><b>${getDateInMMDDYYYY(
+          date_gte
+        )} - ${getDateInMMDDYYYY(date_lte)}</b>
+        </p>
+        <table class="table">
+            <thead>
+            <tr>
+              <th class="th leftAlignText withBackGroundHeader">Date</th>
+              <th class="th leftAlignText withBackGroundHeader">Particulars</th>
+              <th class="th leftAlignText withBackGroundHeader">Type</th>
+              <th class="th leftAlignText withBackGroundHeader">Bill/Invoice No</th>
+              <th class="th leftAlignText withBackGroundHeader">Credit</th>
+              <th class="th leftAlignText withBackGroundHeader">Debit</th>
+            </tr>
+        </thead>
+        <tbody>
+        `;
 
-      let pakkaBalanceData = {
-        ...commonData,
-        opening_balance: 0,
-        closing_balance: 0,
-        purchase_type: "Pakka",
-      };
+    if (monthYearObject && monthYearObject.length) {
+      monthYearObject.forEach((monthYear) => {
+        html =
+          html +
+          ` <tr>
+              <th colspan = "6" class="th centerAlignText withGreyBackGround">${monthYear}</th>
+            </tr>
+            <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Opening Balance</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.opening_balance?.credit,
+                true
+              )}</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.opening_balance?.debit,
+                true
+              )}</th>
+            </tr> `;
 
-      /** If its not the 1st entry
-       *  In this case we have to check kachha and pakka closing balance calculated in previous interation.
-       */
-      let isValueSetForKachhaBalance = false;
-      let isValueSetForPakkaBalance = false;
-      if (diffOfMonths - 1 !== m_no) {
-        if (previousKachhaClosingBalance) {
-          kachhaBalanceData = {
-            ...kachhaBalanceData,
-            opening_balance: validateNumber(previousKachhaClosingBalance),
-            closing_balance: validateNumber(previousKachhaClosingBalance),
-          };
-          isValueSetForKachhaBalance = true;
+        if (
+          data[monthYear] &&
+          data[monthYear].data &&
+          data[monthYear].data.length
+        ) {
+          data[monthYear].data.forEach((l) => {
+            html =
+              html +
+              ` <tr>
+                  <td class="td leftAlignText noWrap">${l.date}</td>
+                  <td class="td leftAlignText">${l.particulars}</td>
+                  <td class="td leftAlignText">${l.type}</td>
+                  <td class="td leftAlignText">${l.bill_invoice_no}</td>
+                  <td class="td leftAlignText noWrap">${l.credit}</td>
+                  <td class="td leftAlignText noWrap">${l.debit}</td>
+                </tr> `;
+          });
         }
-        if (previousPakkaClosingBalance) {
-          pakkaBalanceData = {
-            ...pakkaBalanceData,
-            opening_balance: validateNumber(previousPakkaClosingBalance),
-            closing_balance: validateNumber(previousPakkaClosingBalance),
-          };
-          isValueSetForPakkaBalance = true;
-        }
-      }
+        html =
+          html +
+          ` <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Total</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.closing_balance?.credit,
+                true
+              )}</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.closing_balance?.debit,
+                true
+              )}</th>
+            </tr>
+            <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Closing Balance</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              ${
+                data[monthYear]?.closing_balance?.finalClosing > 0
+                  ? `
+                    <th class="th leftAlignText">---</th>
+                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
+                      true
+                    )}</th>
+                  `
+                  : data[monthYear]?.closing_balance?.finalClosing < 0
+                  ? ` <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
+                      true
+                    )}</th>
+                      <th class="th leftAlignText">---</th>
+                    `
+                  : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
+                    <th class="th leftAlignText">${convertNumber(0, true)}</th>
+                        `
+              }
+              
+            </tr>`;
+      });
+    } else {
+      html = `<img
+      src='${noDataImg}'
+      class="center"
+      alt="No data"
+    />`;
+    }
 
-      /** Get months closing balance for both ledger */
+    try {
+      let buffer = await generatePDF("Purchase Ledger", html);
+      ctx.send(buffer);
+    } catch (err) {
+      throw err;
+    }
+  },
 
-      let getMonthlyPurchaseBalance = await strapi
-        .query("monthly-purchase-balance")
-        .find({
-          month: correspondingMonth,
-          year: correspondingYear,
-          seller: seller,
-        });
+  async delete(ctx) {
+    const { id } = ctx.params;
 
-      if (getMonthlyPurchaseBalance && getMonthlyPurchaseBalance.length) {
-        getMonthlyPurchaseBalance.forEach((el) => {
-          let balance = {
-            opening_balance: validateNumber(el.opening_balance),
-            closing_balance: validateNumber(el.opening_balance),
-          };
-          if (el.purchase_type === "Pakka") {
-            pakkaLedgerId = el.id;
-            if (!isValueSetForPakkaBalance) {
-              pakkaBalanceData = {
-                ...pakkaBalanceData,
-                ...balance,
-              };
-            }
-          } else {
-            kachhaLedgerId = el.id;
-            if (!isValueSetForKachhaBalance) {
-              kachhaBalanceData = {
-                ...kachhaBalanceData,
-                ...balance,
-              };
-            }
-          }
-        });
-      }
+    let purchaseData = await strapi.query("purchases").find(
+      {
+        id: id,
+      },
+      []
+    );
 
-      /** ------- */
-
-      let getAllTransactions = await strapi
-        .query("purchase-payment-transaction")
-        .find({
-          month: correspondingMonth,
-          year: correspondingYear,
-          seller: seller,
-        });
-
-      getAllTransactions.forEach((el) => {
-        let num = validateNumber(el.transaction_amount);
-        if (el.is_payment || el.is_goods_return) {
-          num = -num;
-        }
-        if (el.kachha_ledger) {
-          kachhaBalanceData = {
-            ...kachhaBalanceData,
-            closing_balance: kachhaBalanceData.closing_balance + num,
-          };
-        }
-        if (el.pakka_ledger) {
-          pakkaBalanceData = {
-            ...pakkaBalanceData,
-            closing_balance: pakkaBalanceData.closing_balance + num,
-          };
-        }
+    let individualPurchaseData = await strapi
+      .query("individual-purchase")
+      .find({
+        purchase: id,
       });
 
-      console.log("getAllTransactions ", getAllTransactions);
-      console.log("kachhaBalanceData ", kachhaBalanceData);
-      console.log("pakkaBalanceData ", pakkaBalanceData);
+    await bookshelf
+      .transaction(async (t) => {
+        await utils.asyncForEach(individualPurchaseData, async (Ip) => {
+          await deleteIndividualPurchaseData(Ip.id, t);
+        });
 
-      previousKachhaClosingBalance = kachhaBalanceData.closing_balance;
-      previousPakkaClosingBalance = pakkaBalanceData.closing_balance;
-
-      /** For Kachha ledger */
-      if (kachhaLedgerId) {
-        await strapi.query("monthly-purchase-balance").update(
-          { id: kachhaLedgerId },
+        await strapi.query("purchase-payment-transaction").delete(
+          { purchase: id },
           {
-            opening_balance: kachhaBalanceData.opening_balance,
-            closing_balance: kachhaBalanceData.closing_balance,
-          },
-          { patch: true, transacting: t }
+            patch: true,
+            transacting: t,
+          }
         );
-      } else {
-        if (kachhaBalanceData.closing_balance) {
-          await strapi
-            .query("monthly-purchase-balance")
-            .create(kachhaBalanceData, { transacting: t })
-            .then((model) => model)
-            .catch((err) => {
-              console.log(err);
-              throw 500;
-            });
-        }
-      }
 
-      /** For Pakka ledger */
-      if (pakkaLedgerId) {
-        await strapi.query("monthly-purchase-balance").update(
-          { id: pakkaLedgerId },
+        await strapi.query("purchases").delete(
+          { id: id },
           {
-            opening_balance: pakkaBalanceData.opening_balance,
-            closing_balance: pakkaBalanceData.closing_balance,
-          },
-          { patch: true, transacting: t }
+            patch: true,
+            transacting: t,
+          }
         );
-      } else {
-        if (pakkaBalanceData.closing_balance) {
-          await strapi
-            .query("monthly-purchase-balance")
-            .create(pakkaBalanceData, { transacting: t })
-            .then((model) => model)
-            .catch((err) => {
-              console.log(err);
-              throw 500;
-            });
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
+      });
+  },
+};
+
+async function updateIndividualPurchaseData(Ip, seller, date, t) {
+  let rawMaterialId = Ip.raw_material;
+  let purchaseCost = validateNumber(Ip.purchase_cost);
+  let purchaseQuantity = validateNumber(Ip.purchase_quantity);
+  let totalPurchaseCost = validateNumber(Ip.total_purchase_cost);
+
+  let individualPurchaseObj = {
+    seller: seller,
+    date: utils.getDateInYYYYMMDD(new Date(date)),
+    purchase_quantity: purchaseQuantity,
+    purchase_cost: purchaseCost,
+    total_purchase_cost: totalPurchaseCost,
+  };
+
+  if (Ip.is_raw_material) {
+    let individualPurchase = await strapi.query("individual-purchase").findOne({
+      id: Ip.id,
+    });
+    const previousCount = validateNumber(individualPurchase.purchase_quantity);
+    const diffOfCount = purchaseQuantity - previousCount;
+
+    let raw_material_data = await strapi
+      .query("raw-material")
+      .findOne({ id: rawMaterialId });
+
+    let currentBalance = validateNumber(raw_material_data.balance);
+    let finalValue = currentBalance + diffOfCount;
+    await strapi.query("raw-material").update(
+      { id: rawMaterialId },
+      {
+        balance: finalValue,
+      },
+      { patch: true, transacting: t }
+    );
+  }
+
+  await strapi
+    .query("individual-purchase")
+    .update({ id: Ip.id }, individualPurchaseObj, {
+      patch: true,
+      transacting: t,
+    });
+}
+
+async function deleteIndividualPurchaseData(Ip_id, t) {
+  let Ip = await strapi.query("individual-purchase").findOne(
+    {
+      id: Ip_id,
+    },
+    []
+  );
+  if (Ip.is_raw_material) {
+    let rawMaterialId = Ip.raw_material;
+    const previousCount = validateNumber(Ip.purchase_quantity);
+    let raw_material_data = await strapi
+      .query("raw-material")
+      .findOne({ id: rawMaterialId }, []);
+
+    let currentBalance = validateNumber(raw_material_data.balance);
+    let finalValue = currentBalance - previousCount;
+    await strapi.query("raw-material").update(
+      { id: rawMaterialId },
+      {
+        balance: finalValue,
+      },
+      { patch: true, transacting: t }
+    );
+  }
+
+  await strapi.query("individual-purchase").delete(
+    { id: Ip_id },
+    {
+      patch: true,
+      transacting: t,
+    }
+  );
+}
+
+/** Function only  used for adding individual purchase */
+async function addIndividualPurchaseData(Ip, purchaseId, seller, date, t) {
+  let rawMaterialId = Ip.raw_material;
+  let purchaseCost = validateNumber(Ip.purchase_cost);
+  let purchaseQuantity = validateNumber(Ip.purchase_quantity);
+  let totalPurchaseCost = validateNumber(Ip.total_purchase_cost);
+  let are_raw_material_clubbed = Ip.are_raw_material_clubbed;
+  let is_raw_material = Ip.is_raw_material;
+  let individualPurchase = {
+    purchase: purchaseId,
+    seller: seller,
+    date: utils.getDateInYYYYMMDD(new Date(date)),
+    are_raw_material_clubbed: are_raw_material_clubbed,
+    is_raw_material: is_raw_material,
+    purchase_quantity: purchaseQuantity,
+    purchase_cost: purchaseCost,
+    total_purchase_cost: totalPurchaseCost,
+  };
+
+  if (are_raw_material_clubbed) {
+    individualPurchase = {
+      ...individualPurchase,
+      name: Ip.name,
+      raw_material: null,
+    };
+  } else {
+    individualPurchase = {
+      ...individualPurchase,
+      name: null,
+      raw_material: rawMaterialId,
+    };
+  }
+
+  /** Kachha purchase */
+  await strapi
+    .query("individual-purchase")
+    .create(individualPurchase, { transacting: t })
+    .then((model) => model)
+    .catch((err) => {
+      console.log(err);
+      throw 500;
+    });
+
+  /** If raw material already present then update its quantity */
+  if (is_raw_material) {
+    let raw_material_data = await strapi
+      .query("raw-material")
+      .findOne({ id: rawMaterialId });
+
+    let currentBalance = validateNumber(raw_material_data.balance);
+    let finalValue = currentBalance + purchaseQuantity;
+    await strapi.query("raw-material").update(
+      { id: rawMaterialId },
+      {
+        balance: finalValue,
+      },
+      { patch: true, transacting: t }
+    );
+
+    // let currentMonth = new Date().getMonth() + 1;
+    // let currentYear = new Date().getFullYear();
+
+    // let isCurrentMonthEntryPresent = await strapi.query("monthly-sheet").findOne({
+    //   raw_material: rawMaterialId,
+    //   month: currentMonth,
+    //   year: currentYear,
+    // });
+
+    // if (isCurrentMonthEntryPresent) {
+    //   let newClosingBalance =
+    //     purchaseQuantity +
+    //     validateNumber(isCurrentMonthEntryPresent.closing_balance);
+
+    //   await strapi.query("monthly-sheet").update(
+    //     { id: isCurrentMonthEntryPresent.id },
+    //     {
+    //       closing_balance: newClosingBalance,
+    //     },
+    //     { patch: true, transacting: t }
+    //   );
+    // }
+  }
+}
+
+async function generateLedger(params) {
+  const { type_of_bill, date_gte, date_lte, sellerId } = params;
+  let dateToCheckFrom = new Date(date_gte);
+  let dateToCheckTo = new Date(date_lte);
+
+  let diffOfMonths = getMonthDifference(dateToCheckFrom, dateToCheckTo) + 1;
+
+  let monthDiffArray = Array.from({ length: diffOfMonths }, (v, i) => i);
+
+  let data = {};
+  await utils.asyncForEach(monthDiffArray, async (m_no) => {
+    let getMiddleDate = new Date(dateToCheckFrom.setDate(15));
+    let correspondingDate = new Date(
+      getMiddleDate.setMonth(getMiddleDate.getMonth() + m_no)
+    );
+    let correspondingMonth = correspondingDate.getMonth() + 1;
+    let correspondingYear = correspondingDate.getFullYear();
+
+    let purchasePaymentTransaction = await strapi
+      .query("purchase-payment-transaction")
+      .find({
+        month: correspondingMonth,
+        year: correspondingYear,
+        seller: sellerId,
+      });
+
+    let getMonthlyPurchaseBalance = await strapi
+      .query("monthly-purchase-balance")
+      .findOne({
+        month: correspondingMonth,
+        year: correspondingYear,
+        seller: sellerId,
+        purchase_type: type_of_bill,
+      });
+
+    let monthName = getMonth(correspondingMonth - 1);
+
+    /** Openingbalance and closing balance calculation */
+    let opening_balance = validateNumber(
+      getMonthlyPurchaseBalance?.opening_balance
+    );
+
+    let debitOpeningBalance = 0;
+    let creditOpeningBalance = 0;
+
+    if (opening_balance && opening_balance < 0) {
+      debitOpeningBalance = Math.abs(opening_balance);
+    } else if (opening_balance && opening_balance > 0) {
+      creditOpeningBalance = Math.abs(opening_balance);
+    }
+
+    let totalCredit = creditOpeningBalance;
+    let totalDebit = debitOpeningBalance;
+
+    let txnData = [];
+    purchasePaymentTransaction.forEach((pt) => {
+      if (
+        (type_of_bill === "Kachha" && pt.kachha_ledger) ||
+        (type_of_bill === "Pakka" && pt.pakka_ledger)
+      ) {
+        let type = "-----";
+        let amount = convertNumber(pt.transaction_amount, true);
+        let bill_invoice_no = "-----";
+        let credit = "---";
+        let debit = "---";
+        let id = null;
+        if (pt.is_purchase) {
+          type = "Purchase";
+          if (pt.purchase && pt.purchase.type_of_bill) {
+            if (pt.purchase.type_of_bill === "Kachha") {
+              bill_invoice_no = pt.purchase.bill_no;
+            } else {
+              bill_invoice_no = pt.purchase.invoice_number;
+            }
+          }
+          credit = amount;
+          totalCredit = totalCredit + pt.transaction_amount;
+          id = pt.purchase.id;
+        } else if (pt.is_payment) {
+          type = "Payment";
+          debit = amount;
+          totalDebit = totalDebit + pt.transaction_amount;
+          id = pt.purchase_payment.id;
+        } else if (pt.is_goods_return) {
+          type = "Goods return";
+          debit = amount;
+          totalDebit = totalDebit + pt.transaction_amount;
+          id = pt.goods_return.id;
         }
+
+        txnData.push({
+          date: getDateInMMDDYYYY(new Date(pt.transaction_date)),
+          particulars: pt.comment,
+          type: type,
+          bill_invoice_no: bill_invoice_no,
+          credit: credit,
+          debit: debit,
+          id: id,
+        });
       }
     });
+    data = {
+      ...data,
+      [`${monthName}, ${correspondingYear}`]: {
+        opening_balance: {
+          credit: creditOpeningBalance,
+          debit: debitOpeningBalance,
+        },
+        closing_balance: {
+          credit: totalCredit,
+          debit: totalDebit,
+          finalClosing: totalDebit - totalCredit,
+        },
+        totalCredit: totalCredit,
+        totalDebit: totalDebit,
+        data: [...txnData],
+      },
+    };
   });
+  return data;
 }

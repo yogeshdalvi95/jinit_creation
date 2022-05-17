@@ -55,7 +55,6 @@ module.exports = {
 
   async changeIsColorDependent(ctx) {
     const { status, id } = ctx.request.body;
-    console.log("status ", status, id, typeof status);
     await strapi.query("raw-material-and-quantity-for-ready-material").update(
       { id: id },
       {

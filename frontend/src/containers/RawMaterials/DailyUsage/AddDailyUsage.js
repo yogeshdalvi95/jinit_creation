@@ -59,7 +59,6 @@ const AddDailyUsage = (props) => {
   const [monthlyData, setMonthlyData] = useState({
     data: [],
     currentMonth: new Date(),
-    openingBalance: 0,
     finalBalance: 0,
     total: 0,
     month: new Date().getMonth() + 1,
@@ -121,7 +120,6 @@ const AddDailyUsage = (props) => {
           ...monthlyData,
           data: res.data.data,
           currentMonth: new Date(res.data.currentMonth),
-          openingBalance: res.data.openingBalance,
           finalBalance: res.data.finalBalance,
           total: res.data.total,
           month: res.data.month,
@@ -348,7 +346,6 @@ const AddDailyUsage = (props) => {
           ...monthlyData,
           data: res.data.data,
           currentMonth: new Date(res.data.currentMonth),
-          openingBalance: res.data.openingBalance,
           finalBalance: res.data.finalBalance,
           total: res.data.total,
           month: res.data.month,
@@ -531,66 +528,37 @@ const AddDailyUsage = (props) => {
             <CardBody>
               <GridContainer>
                 {selectedRawMaterial ? (
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{
-                      margin: "27px 0px 0px",
-                    }}
-                  >
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Id : </b> {selectedRawMaterial.id}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer style={{ dispay: "flex" }}>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Name : </b> {selectedRawMaterial.name}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Department : </b>
-                        {selectedRawMaterial.department}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Category : </b>
-                        {selectedRawMaterial.category}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Color :</b> {selectedRawMaterial.color}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Size : </b>
-                        {selectedRawMaterial.size}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Opening balance : </b>
-                        {monthlyData.openingBalance}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Current Balance : </b>
-                        {monthlyData.finalBalance}
-                      </GridItem>
-                    </GridContainer>
-                    <GridContainer>
-                      <GridItem xs={12} sm={12} md={8}>
-                        <b>Total Used in this month : </b>
-                        {monthlyData.total}
-                      </GridItem>
-                    </GridContainer>
-                  </GridItem>
+                  <>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Id : </b> {selectedRawMaterial.id}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Name : </b> {selectedRawMaterial.name}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Department : </b>
+                      {selectedRawMaterial.department}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Category : </b>
+                      {selectedRawMaterial.category}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Color :</b> {selectedRawMaterial.color}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Size : </b>
+                      {selectedRawMaterial.size}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Current Balance : </b>
+                      {monthlyData.finalBalance}
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={8}>
+                      <b>Total Used in this month : </b>
+                      {monthlyData.total}
+                    </GridItem>
+                  </>
                 ) : null}
                 <GridItem
                   xs={12}

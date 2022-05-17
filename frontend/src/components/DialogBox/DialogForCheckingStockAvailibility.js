@@ -76,7 +76,6 @@ export default function DialogForCheckingStockAvailibility(props) {
     } else {
       return output;
     }
-    console.log("output ", output);
     return output;
   };
 

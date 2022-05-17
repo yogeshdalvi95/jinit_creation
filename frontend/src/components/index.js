@@ -25,7 +25,7 @@ export {
 } from "./Table";
 export { Footer } from "./Footer";
 export { CustomInput } from "./CustomInput";
-export { CustomAutoComplete } from "./CustomAutoComplete";
+export { CustomAutoComplete, RemoteAutoComplete } from "./CustomAutoComplete";
 export { RegularButton as Button } from "./CustomButtons";
 export { Header as Navbar } from "./Navbars";
 export { Sidebar } from "./Sidebar";
@@ -44,6 +44,7 @@ export { CustomTabs } from "./CustomTabs";
 export { CustomDropDown } from "./CustomDropDown";
 export { DatePicker, MonthYearPicker } from "./DatePicker";
 export { CustomCheckBox } from "./CustomCheckBox";
+export { CustomRadioButton } from "./CustomRadioButton";
 export {
   DialogBox,
   DialogBoxForSelectingRawMaterial,
