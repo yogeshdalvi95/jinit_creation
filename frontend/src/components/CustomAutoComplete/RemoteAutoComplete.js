@@ -2,7 +2,7 @@ import { FormHelperText } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 import { providerForGet } from "../../api";
-import { backend_sellers } from "../../constants";
+import { backend_sellers, frontendServerUrl } from "../../constants";
 import { isEmptyString } from "../../Utils";
 import Auth from "../Auth";
 
@@ -21,10 +21,10 @@ const RemoteAutoComplete = (props) => {
       boxShadow: "none",
       // overwrittes hover style
       "&:hover": {
-        border: `2px solid ${props.isError ? "red" : "#9c27b0"}`,
+        border: `2px solid ${props.isError ? "red" : "#a56863"}`,
       },
       "&:click": {
-        border: `2px solid ${props.isError ? "red" : "#9c27b0"}`,
+        border: `2px solid ${props.isError ? "red" : "#a56863"}`,
       },
     }),
     menu: (provided, state) => ({
@@ -91,9 +91,21 @@ const RemoteAutoComplete = (props) => {
             Authorization: "Bearer " + Auth.getToken(),
           },
         })
-          .then((response) => response.json())
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              if (response.status === 403) {
+                Auth.clearAppStorage();
+                window.location.href = `${frontendServerUrl}/login`;
+              }
+            }
+          })
           .then((result) => {
             resolve(filterData(result.data));
+          })
+          .catch((error) => {
+            throw error;
           });
       });
     } else {

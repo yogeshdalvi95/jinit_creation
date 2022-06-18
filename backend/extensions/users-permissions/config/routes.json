@@ -27,6 +27,16 @@
           "name": "User"
         }
       }
+    },
+    {
+      "method": "POST",
+      "path": "/auth/local",
+      "handler": "auth.callback",
+      "config": {
+        "policies": ["plugins::users-permissions.ratelimit"],
+        "prefix": "",
+        "description": "Login a user using the identifiers email and password"
+      }
     }
   ]
 }

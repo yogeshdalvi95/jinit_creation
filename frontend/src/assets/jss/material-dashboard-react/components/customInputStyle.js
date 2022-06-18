@@ -87,7 +87,7 @@ const customInputStyle = {
     fontSize: "0.900rem",
   },
   indeterminateColor: {
-    color: "#9c27b0",
+    color: "#a56863",
   },
   selectAllText: {
     fontWeight: 600,

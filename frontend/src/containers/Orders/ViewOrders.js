@@ -17,6 +17,7 @@ import {
   backend_order,
   backend_order_check_raw_material_availibility_for_all_order,
   backend_download_orders_sheet,
+  frontendServerUrl,
 } from "../../constants";
 import {
   Auth,
@@ -167,7 +168,18 @@ export default function ViewOrders(props) {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,

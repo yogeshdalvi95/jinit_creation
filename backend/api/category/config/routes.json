@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/categories",
+      "path": "/webapi/private/categories",
       "handler": "category.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/categories/count",
+      "path": "/webapi/private/categories/count",
       "handler": "category.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/categories/:id",
+      "path": "/webapi/private/categories/:id",
       "handler": "category.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/categories",
+      "path": "/webapi/private/categories",
       "handler": "category.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/categories/:id",
+      "path": "/webapi/private/categories/:id",
       "handler": "category.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/categories/:id",
+      "path": "/webapi/private/categories/:id",
       "handler": "category.delete",
       "config": {
         "policies": []

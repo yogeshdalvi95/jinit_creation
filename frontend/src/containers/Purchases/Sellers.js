@@ -11,11 +11,11 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_sellers } from "../../constants";
+import { backend_sellers, frontendServerUrl } from "../../constants";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
@@ -30,19 +30,19 @@ export default function Sellers() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "seller_name:asc"
+    _sort: "seller_name:asc",
   });
   const [openBackDrop, setBackDrop] = useState(false);
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [
     { title: "Seller Name", field: "seller_name" },
     { title: "GSTIN/UIN", field: "gst_no" },
-    { title: "Phone", field: "phone" }
+    { title: "Phone", field: "phone" },
   ];
 
   const history = useHistory();
@@ -50,10 +50,10 @@ export default function Sellers() {
   const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -64,16 +64,30 @@ export default function Sellers() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -85,37 +99,37 @@ export default function Sellers() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleEdit = async row => {
+  const handleEdit = async (row) => {
     setBackDrop(true);
     await providerForGet(backend_sellers + "/" + row.id, {}, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         setBackDrop(false);
         history.push(EDITSELLER, { data: res.data, edit: true });
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing purchase"
+          message: "Error viewing purchase",
         }));
       });
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -123,16 +137,16 @@ export default function Sellers() {
     history.push(ADDSELLER);
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -168,13 +182,13 @@ export default function Sellers() {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
-                    onChange={event => handleChange(event)}
+                    onChange={(event) => handleChange(event)}
                     labelText="Seller Name"
                     value={filter.seller_name_contains || ""}
                     name="seller_name_contains"
                     id="seller_name_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -183,7 +197,7 @@ export default function Sellers() {
                   sm={12}
                   md={4}
                   style={{
-                    marginTop: "27px"
+                    marginTop: "27px",
                   }}
                 >
                   <Button
@@ -198,9 +212,9 @@ export default function Sellers() {
                     color="primary"
                     onClick={() => {
                       delete filter["seller_name_contains"];
-                      setFilter(filter => ({
+                      setFilter((filter) => ({
                         ...filter,
-                        _sort: "seller_name:asc"
+                        _sort: "seller_name:asc",
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -214,24 +228,24 @@ export default function Sellers() {
                 tableRef={tableRef}
                 title="Purchases"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getPurchasesData(query.page + 1, query.pageSize);
                 }}
                 actions={[
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <EditOutlinedIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
                       handleEdit(rowData);
-                    }
-                  })
+                    },
+                  }),
                 ]}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,
                   search: false,
                   sorting: true,
-                  thirdSortClick: false
+                  thirdSortClick: false,
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);

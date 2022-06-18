@@ -12,12 +12,12 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../../components";
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_category } from "../../../constants";
+import { backend_category, frontendServerUrl } from "../../../constants";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -26,7 +26,7 @@ import {
   ADDCATEGORIES,
   ADDCOLOR,
   EDITCATEGORIES,
-  EDITCOLOR
+  EDITCOLOR,
 } from "../../../paths";
 import { Backdrop, CircularProgress } from "@material-ui/core";
 import { providerForDelete, providerForGet } from "../../../api";
@@ -40,13 +40,13 @@ export default function Categories() {
   const [openBackDrop, setBackDrop] = useState(false);
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "name:asc",
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [{ title: "Name", field: "name" }];
@@ -54,10 +54,10 @@ export default function Categories() {
   const getColorData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -68,23 +68,34 @@ export default function Categories() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         })
-        .catch(err => {
-          setSnackBar(snackBar => ({
+        .catch((err) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error"
+            message: "Error",
           }));
         });
     });
@@ -97,19 +108,19 @@ export default function Categories() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -120,17 +131,17 @@ export default function Categories() {
   const handleTableAction = async (row, isView) => {
     setBackDrop(true);
     await providerForGet(backend_category + "/" + row.id, {}, Auth.getToken())
-      .then(res => {
+      .then((res) => {
         setBackDrop(false);
         history.push(EDITCATEGORIES, { data: res.data, edit: true });
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error"
+          message: "Error",
         }));
       });
   };
@@ -166,16 +177,16 @@ export default function Categories() {
               <GridContainer>
                 <GridItem xs={12} sm={3} md={3}>
                   <CustomInput
-                    onChange={e => {
+                    onChange={(e) => {
                       if (isEmptyString(e.target.value)) {
                         delete filter["name_contains"];
-                        setFilter(filter => ({
-                          ...filter
+                        setFilter((filter) => ({
+                          ...filter,
                         }));
                       } else {
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          name_contains: e.target.value
+                          name_contains: e.target.value,
                         }));
                       }
                     }}
@@ -186,7 +197,7 @@ export default function Categories() {
                     value={filter["name_contains"] || ""}
                     id="name_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -204,8 +215,8 @@ export default function Categories() {
                     color="primary"
                     onClick={() => {
                       delete filter["name_contains"];
-                      setFilter(filter => ({
-                        ...filter
+                      setFilter((filter) => ({
+                        ...filter,
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -221,62 +232,62 @@ export default function Categories() {
                     tableRef={tableRef}
                     title="Departments"
                     columns={columns}
-                    data={async query => {
+                    data={async (query) => {
                       return await getColorData(query.page + 1, query.pageSize);
                     }}
                     localization={{
                       body: {
                         editRow: {
                           deleteText: `Are you sure you want to delete this Color?`,
-                          saveTooltip: "Delete"
-                        }
-                      }
+                          saveTooltip: "Delete",
+                        },
+                      },
                     }}
                     actions={[
-                      rowData => ({
+                      (rowData) => ({
                         icon: () => <EditOutlinedIcon fontSize="small" />,
                         tooltip: "Edit",
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, false);
-                        }
-                      })
+                        },
+                      }),
                     ]}
                     editable={{
-                      onRowDelete: oldData =>
-                        new Promise(resolve => {
+                      onRowDelete: (oldData) =>
+                        new Promise((resolve) => {
                           setTimeout(async () => {
                             await providerForDelete(
                               backend_category,
                               oldData.id,
                               Auth.getToken()
                             )
-                              .then(async res => {
-                                setSnackBar(snackBar => ({
+                              .then(async (res) => {
+                                setSnackBar((snackBar) => ({
                                   ...snackBar,
                                   show: true,
                                   severity: "success",
                                   message:
-                                    "Successfully deleted " + oldData.name
+                                    "Successfully deleted " + oldData.name,
                                 }));
                               })
-                              .catch(err => {
-                                setSnackBar(snackBar => ({
+                              .catch((err) => {
+                                setSnackBar((snackBar) => ({
                                   ...snackBar,
                                   show: true,
                                   severity: "error",
-                                  message: "Error deleting " + oldData.name
+                                  message: "Error deleting " + oldData.name,
                                 }));
                               });
                             resolve();
                           }, 1000);
-                        })
+                        }),
                     }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,
                       search: false,
                       sorting: true,
-                      thirdSortClick: false
+                      thirdSortClick: false,
                     }}
                     onOrderChange={(orderedColumnId, orderDirection) => {
                       orderFunc(orderedColumnId, orderDirection);

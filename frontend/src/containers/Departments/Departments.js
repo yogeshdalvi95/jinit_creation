@@ -10,12 +10,12 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_departments } from "../../constants";
+import { backend_departments, frontendServerUrl } from "../../constants";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -26,13 +26,13 @@ export default function Departments() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "name:asc",
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [{ title: "Name", field: "name" }];
@@ -40,10 +40,10 @@ export default function Departments() {
   const getAdminUserData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -54,23 +54,34 @@ export default function Departments() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         })
-        .catch(err => {
-          setSnackBar(snackBar => ({
+        .catch((err) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error"
+            message: "Error",
           }));
         });
     });
@@ -83,19 +94,19 @@ export default function Departments() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -121,7 +132,7 @@ export default function Departments() {
                     tableRef={tableRef}
                     title="Departments"
                     columns={columns}
-                    data={async query => {
+                    data={async (query) => {
                       return await getAdminUserData(
                         query.page + 1,
                         query.pageSize
@@ -131,9 +142,9 @@ export default function Departments() {
                       body: {
                         editRow: {
                           deleteText: `Are you sure you want to delete this Admin User?`,
-                          saveTooltip: "Delete"
-                        }
-                      }
+                          saveTooltip: "Delete",
+                        },
+                      },
                     }}
                     actions={[]}
                     options={{
@@ -141,7 +152,7 @@ export default function Departments() {
                       actionsColumnIndex: -1,
                       search: false,
                       sorting: true,
-                      thirdSortClick: false
+                      thirdSortClick: false,
                     }}
                     onOrderChange={(orderedColumnId, orderDirection) => {
                       orderFunc(orderedColumnId, orderDirection);

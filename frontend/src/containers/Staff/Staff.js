@@ -9,14 +9,14 @@ import {
   FAB,
   GridContainer,
   GridItem,
-  Table
+  Table,
 } from "../../components";
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { backend_staff } from "../../constants";
+import { backend_staff, frontendServerUrl } from "../../constants";
 import { useHistory } from "react-router-dom";
 import { ADDSTAFF } from "../../paths";
 
@@ -26,13 +26,13 @@ export default function Staff() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "name:asc",
   });
 
   const columns = [
     { title: "Name", field: "name" },
     { title: "Email", field: "email" },
-    { title: "Phone", field: "phone_number" }
+    { title: "Phone", field: "phone_number" },
   ];
 
   const history = useHistory();
@@ -42,10 +42,10 @@ export default function Staff() {
   const getAdminUserData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -55,16 +55,30 @@ export default function Staff() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -76,9 +90,9 @@ export default function Staff() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
@@ -101,38 +115,38 @@ export default function Staff() {
               tableRef={tableRef}
               title="Admin Users"
               columns={columns}
-              data={async query => {
+              data={async (query) => {
                 return await getAdminUserData(query.page + 1, query.pageSize);
               }}
               localization={{
                 body: {
                   editRow: {
                     deleteText: `Are you sure you want to delete this Staff User?`,
-                    saveTooltip: "Delete"
-                  }
-                }
+                    saveTooltip: "Delete",
+                  },
+                },
               }}
               actions={[
-                rowData => ({
+                (rowData) => ({
                   icon: () => <EditOutlinedIcon />,
                   tooltip: "Edit",
                   onClick: (event, rowData) => {
                     //handleClickOpen(rowData);
-                  }
+                  },
                 }),
-                rowData => ({
+                (rowData) => ({
                   icon: "delete",
                   tooltip: "Delete User",
                   onClick: (event, rowData) => {},
-                  disabled: rowData.birthYear < 2000
-                })
+                  disabled: rowData.birthYear < 2000,
+                }),
               ]}
               options={{
                 pageSize: 10,
                 actionsColumnIndex: -1,
                 search: false,
                 sorting: true,
-                thirdSortClick: false
+                thirdSortClick: false,
               }}
               onOrderChange={(orderedColumnId, orderDirection) => {
                 orderFunc(orderedColumnId, orderDirection);

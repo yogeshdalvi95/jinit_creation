@@ -35,6 +35,7 @@ import {
   backend_raw_material_and_quantity_for_ready_material_for_delete_raw_materials,
   apiUrl,
   backend_ready_materials_change_color_dependency,
+  frontendServerUrl,
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, Input } from "@material-ui/core";
@@ -460,13 +461,27 @@ export default function AddEditReadyMaterial(props) {
           },
         }
       )
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: convertData(result.data, page),
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

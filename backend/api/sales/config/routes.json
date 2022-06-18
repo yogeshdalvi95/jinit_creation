@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/sales",
+      "path": "/webapi/private/sales",
       "handler": "sales.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/sales/count",
+      "path": "/webapi/private/sales/count",
       "handler": "sales.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/sales/export/downloadExcelData",
+      "path": "/webapi/private/sales/export/downloadExcelData",
       "handler": "sales.getExcelSheetForExport",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/sales/:id",
+      "path": "/webapi/private/sales/:id",
       "handler": "sales.findOne",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/sales",
+      "path": "/webapi/private/sales",
       "handler": "sales.create",
       "config": {
         "policies": ["checkBillNumber"]
@@ -42,7 +42,7 @@
     },
     {
       "method": "PUT",
-      "path": "/sales/:id",
+      "path": "/webapi/private/sales/:id",
       "handler": "sales.update",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/sales/:id",
+      "path": "/webapi/private/sales/:id",
       "handler": "sales.delete",
       "config": {
         "policies": []

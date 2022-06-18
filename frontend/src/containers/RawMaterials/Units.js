@@ -8,10 +8,10 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
-import { backend_units } from "../../constants";
+import { backend_units, frontendServerUrl } from "../../constants";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { makeStyles } from "@material-ui/core";
@@ -22,13 +22,13 @@ export default function Units() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "name:asc"
+    _sort: "name:asc",
   });
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [{ title: "Name", field: "name" }];
@@ -36,10 +36,10 @@ export default function Units() {
   const getUnitsData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -50,23 +50,34 @@ export default function Units() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
         })
-        .catch(err => {
-          setSnackBar(snackBar => ({
+        .catch((err) => {
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Error"
+            message: "Error",
           }));
         });
     });
@@ -79,19 +90,19 @@ export default function Units() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -117,16 +128,16 @@ export default function Units() {
                     tableRef={tableRef}
                     title="UNits"
                     columns={columns}
-                    data={async query => {
+                    data={async (query) => {
                       return await getUnitsData(query.page + 1, query.pageSize);
                     }}
                     localization={{
                       body: {
                         editRow: {
                           deleteText: `Are you sure you want to delete this Admin User?`,
-                          saveTooltip: "Delete"
-                        }
-                      }
+                          saveTooltip: "Delete",
+                        },
+                      },
                     }}
                     actions={[]}
                     options={{
@@ -134,7 +145,7 @@ export default function Units() {
                       actionsColumnIndex: -1,
                       search: false,
                       sorting: true,
-                      thirdSortClick: false
+                      thirdSortClick: false,
                     }}
                     onOrderChange={(orderedColumnId, orderDirection) => {
                       orderFunc(orderedColumnId, orderDirection);

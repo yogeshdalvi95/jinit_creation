@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/ready-materials",
+      "path": "/webapi/private/ready-materials",
       "handler": "ready-material.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/ready-materials/count",
+      "path": "/webapi/private/ready-materials/count",
       "handler": "ready-material.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/ready-materials/:id",
+      "path": "/webapi/private/ready-materials/:id",
       "handler": "ready-material.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/ready-materials",
+      "path": "/webapi/private/ready-materials",
       "handler": "ready-material.create",
       "config": {
         "policies": ["checkDuplicateReadyMaterialWhileAdding"]
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/ready-materials/change_color_dependency",
+      "path": "/webapi/private/ready-materials/change_color_dependency",
       "handler": "ready-material.changeIsColorDependent",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "PUT",
-      "path": "/ready-materials/:id",
+      "path": "/webapi/private/ready-materials/:id",
       "handler": "ready-material.update",
       "config": {
         "policies": ["checkDuplicateReadyMaterialWhileEditing"]
@@ -50,7 +50,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/ready-materials/:id",
+      "path": "/webapi/private/ready-materials/:id",
       "handler": "ready-material.delete",
       "config": {
         "policies": []

@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/individual-pakka-purchases",
+      "path": "/webapi/private/individual-pakka-purchases",
       "handler": "individual-pakka-purchase.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/individual-pakka-purchases/count",
+      "path": "/webapi/private/individual-pakka-purchases/count",
       "handler": "individual-pakka-purchase.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/individual-pakka-purchases/:id",
+      "path": "/webapi/private/individual-pakka-purchases/:id",
       "handler": "individual-pakka-purchase.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/individual-pakka-purchases",
+      "path": "/webapi/private/individual-pakka-purchases",
       "handler": "individual-pakka-purchase.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/individual-pakka-purchases/:id",
+      "path": "/webapi/private/individual-pakka-purchases/:id",
       "handler": "individual-pakka-purchase.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/individual-pakka-purchases/:id",
+      "path": "/webapi/private/individual-pakka-purchases/:id",
       "handler": "individual-pakka-purchase.delete",
       "config": {
         "policies": []

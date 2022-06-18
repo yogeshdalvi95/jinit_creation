@@ -6,70 +6,70 @@ import {
   CustomInput,
   GridContainer,
   GridItem,
-  Table
+  Table,
 } from "../../components";
 // core components
-import { backend_parties } from "../../constants";
+import { backend_parties, frontendServerUrl } from "../../constants";
 import {
   Dialog,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from "@material-ui/core";
 import { convertNumber, dateToDDMMYYYY, isEmptyString } from "../../Utils";
 
 export default function DialogForSelectingOrder(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "party_name:asc"
+    _sort: "party_name:asc",
   });
 
   const columns = [
     {
       title: "Order Date",
       field: "date",
-      render: rowData => dateToDDMMYYYY(new Date(rowData.date))
+      render: (rowData) => dateToDDMMYYYY(new Date(rowData.date)),
     },
     {
       title: "Order Number",
       field: "order_id",
-      render: rowData => "#" + rowData.order_id
+      render: (rowData) => "#" + rowData.order_id,
     },
     {
       title: "Product",
       sorting: false,
       field: "ready_material",
-      render: rowData =>
-        rowData.ready_material ? rowData.ready_material.material_no : "----"
+      render: (rowData) =>
+        rowData.ready_material ? rowData.ready_material.material_no : "----",
     },
     {
       title: "Party",
       field: "party",
       sorting: false,
-      render: rowData => (rowData.party ? rowData.party.party_name : "----")
+      render: (rowData) => (rowData.party ? rowData.party.party_name : "----"),
     },
     {
       title: "Party Number",
-      field: "party_no"
+      field: "party_no",
     },
     {
       title: "Quantity",
-      field: "quantity"
+      field: "quantity",
     },
     {
       title: "Quantity saved for later",
-      field: "buffer_quantity"
+      field: "buffer_quantity",
     },
     { title: "Completed Quantity", field: "completed_quantity" },
 
     {
       title: "Total Price",
       field: "total_price",
-      render: rowData => convertNumber(rowData.total_price, true)
+      render: (rowData) => convertNumber(rowData.total_price, true),
     },
     {
       title: "Status",
-      render: rowData => {
+      render: (rowData) => {
         if (rowData.processing) {
           if (rowData.partial_completed) {
             return "Partial Completed";
@@ -81,17 +81,17 @@ export default function DialogForSelectingOrder(props) {
         } else {
           return "Cancelled";
         }
-      }
-    }
+      },
+    },
   ];
 
   const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -102,16 +102,30 @@ export default function DialogForSelectingOrder(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -123,23 +137,23 @@ export default function DialogForSelectingOrder(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -161,13 +175,13 @@ export default function DialogForSelectingOrder(props) {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={6}>
                     <CustomInput
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       labelText="Party Name"
                       value={filter.party_name_contains || ""}
                       name="party_name_contains"
                       id="party_name_contains"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -176,7 +190,7 @@ export default function DialogForSelectingOrder(props) {
                     sm={12}
                     md={6}
                     style={{
-                      marginTop: "27px"
+                      marginTop: "27px",
                     }}
                   >
                     <Button
@@ -191,9 +205,9 @@ export default function DialogForSelectingOrder(props) {
                       color="primary"
                       onClick={() => {
                         delete filter["party_name_contains"];
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          _sort: "party_name:asc"
+                          _sort: "party_name:asc",
                         }));
                         tableRef.current.onQueryChange();
                       }}
@@ -207,26 +221,26 @@ export default function DialogForSelectingOrder(props) {
                   tableRef={tableRef}
                   title="Purchases"
                   columns={columns}
-                  data={async query => {
+                  data={async (query) => {
                     return await getPurchasesData(
                       query.page + 1,
                       query.pageSize
                     );
                   }}
                   actions={[
-                    rowData => ({
+                    (rowData) => ({
                       icon: () => <Button color="primary">Select</Button>,
                       tooltip: "Select this Seller",
                       onClick: (event, rowData) => {
                         props.handleAddParties(rowData);
-                      }
-                    })
+                      },
+                    }),
                   ]}
                   options={{
                     pageSize: 10,
                     search: false,
                     sorting: true,
-                    thirdSortClick: false
+                    thirdSortClick: false,
                   }}
                   onOrderChange={(orderedColumnId, orderDirection) => {
                     orderFunc(orderedColumnId, orderDirection);

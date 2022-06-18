@@ -2,7 +2,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
-  makeStyles
+  makeStyles,
 } from "@material-ui/core";
 import * as React from "react";
 import {
@@ -15,7 +15,7 @@ import {
   CustomInput,
   GridContainer,
   GridItem,
-  SnackBarComponent
+  SnackBarComponent,
 } from "../../components";
 import bgImage from "../../assets/img/cover_image.jpg";
 import MailIcon from "@material-ui/icons/Mail";
@@ -28,7 +28,7 @@ import { useHistory } from "react-router-dom";
 import { backend_login } from "../../constants";
 import { checkEmpty, hasError, setErrors } from "../../Utils";
 import form from "./login.json";
-import { dangerColor } from "../../assets/jss/material-dashboard-react";
+import logo from "../../assets/img/reactlogo.png";
 
 const styles = {
   cardCategoryWhite: {
@@ -36,20 +36,20 @@ const styles = {
     margin: "0",
     fontSize: "14px",
     marginTop: "0",
-    marginBottom: "0"
+    marginBottom: "0",
   },
   cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
+    color: "#a56863",
+    marginTop: "15px",
     minHeight: "auto",
-    fontWeight: "300",
+    fontWeight: "500",
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
     textDecoration: "none",
-    textAlignLast: "center"
+    textAlignLast: "center",
+    marginBottom: 0,
   },
   customLogin: {
-    height: "4rem"
+    height: "4rem",
   },
   alignLoginCard: {
     margin: "auto",
@@ -57,10 +57,10 @@ const styles = {
     marginLeft: "auto",
     marginRight: "auto",
     paddingLeft: "15px",
-    paddingRight: "15px"
+    paddingRight: "15px",
   },
   header: {
-    marginTop: "9rem"
+    marginTop: "9rem",
   },
   background: {
     position: "absolute",
@@ -80,11 +80,11 @@ const styles = {
       content: '""',
       display: "block",
       background: "#333232",
-      opacity: ".58"
-    }
+      opacity: ".58",
+    },
   },
   wrapper: {
-    position: "relative"
+    position: "relative",
   },
   buttonProgress: {
     color: "#e91e63",
@@ -92,12 +92,18 @@ const styles = {
     top: "50%",
     left: "50%",
     marginTop: -12,
-    marginLeft: -12
-  }
+    marginLeft: -12,
+  },
+  logoImage: {
+    width: "50%",
+  },
+  img: {
+    width: "100%",
+  },
 };
 
 const useStyles = makeStyles(styles);
-const Login = props => {
+const Login = (props) => {
   const classes = useStyles();
   const history = useHistory();
   const [loading, setLoading] = React.useState(false);
@@ -109,10 +115,10 @@ const Login = props => {
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
-  const onsubmit = event => {
+  const onsubmit = (event) => {
     event.preventDefault();
     setLoading(true);
     let isValid = false;
@@ -132,48 +138,48 @@ const Login = props => {
   const handSubmit = async () => {
     await providerForPublicPost(backend_login, {
       identifier: values.email,
-      password: values.password
+      password: values.password,
     })
-      .then(res => {
+      .then((res) => {
         if (res.data && res.data.user.role && res.data.user.role.name) {
           Auth.setToken(res.data.jwt, true);
           Auth.setUserInfo(res.data.user, true);
           if (res.data.user.role.name === process.env.REACT_APP_STAFF) {
             history.push(RAWMATERIALSVIEW);
           } else if (res.data.user.role.name === process.env.REACT_APP_ADMIN) {
-            history.push(STAFF);
+            history.push(RAWMATERIALSVIEW);
           } else if (
             res.data.user.role.name === process.env.REACT_APP_SUPER_ADMIN
           ) {
-            history.push(ADMIN);
+            history.push(RAWMATERIALSVIEW);
           }
         } else {
-          setSnackBar(snackBar => ({
+          setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
             severity: "error",
-            message: "Login/Password Invalid"
+            message: "Login/Password Invalid",
           }));
         }
         setLoading(false);
       })
-      .catch(err => {
-        setSnackBar(snackBar => ({
+      .catch((err) => {
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Login/Password Invalid"
+          message: "Login/Password Invalid",
         }));
         setLoading(false);
       });
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -195,25 +201,51 @@ const Login = props => {
           />
           <Card className={classes.header}>
             <form className={classes.form} onSubmit={onsubmit} noValidate>
-              <CardHeader color="rose" className={classes.customLogin}>
-                <h3 className={classes.cardTitleWhite}>
-                  <LockIcon />
-                </h3>
-                <h3 className={classes.cardTitleWhite}>
-                  <span>Log in</span>
-                </h3>
-              </CardHeader>
               <CardBody>
                 <GridContainer>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={12}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className={classes.logoImage}>
+                      <img src={logo} alt="logo" className={classes.img} />
+                    </div>
+                  </GridItem>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={12}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <h3 className={classes.cardTitleWhite}>
+                      <LockIcon />
+                    </h3>
+                    <h3
+                      className={classes.cardTitleWhite}
+                      style={{
+                        marginTop: "20px",
+                      }}
+                    >
+                      <span>Log in</span>
+                    </h3>
+                  </GridItem>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
                       labelText="Email"
                       id="email-address"
                       value={values.email ? values.email : ""}
-                      onChange={event => {
-                        setValues(values => ({
+                      onChange={(event) => {
+                        setValues((values) => ({
                           ...values,
-                          email: event.target.value
+                          email: event.target.value,
                         }));
                         if (error.hasOwnProperty("email")) {
                           delete error["email"];
@@ -223,14 +255,14 @@ const Login = props => {
                       isHelperText={hasError("email", error)}
                       helperText={
                         hasError("email", error)
-                          ? error["email"].map(error => {
+                          ? error["email"].map((error) => {
                               return error + " ";
                             })
                           : null
                       }
                       error={hasError("email", error)}
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       inputProps={{
                         endAdornment: (
@@ -241,7 +273,7 @@ const Login = props => {
                               }
                             />
                           </InputAdornment>
-                        )
+                        ),
                       }}
                     />
                   </GridItem>
@@ -251,10 +283,10 @@ const Login = props => {
                       id="password"
                       autoComplete="on"
                       value={values.password ? values.password : ""}
-                      onChange={event => {
-                        setValues(values => ({
+                      onChange={(event) => {
+                        setValues((values) => ({
                           ...values,
-                          password: event.target.value
+                          password: event.target.value,
                         }));
                         if (error.hasOwnProperty("password")) {
                           delete error["password"];
@@ -264,7 +296,7 @@ const Login = props => {
                       isHelperText={hasError("password", error)}
                       helperText={
                         hasError("password", error)
-                          ? error["password"].map(error => {
+                          ? error["password"].map((error) => {
                               return error + " ";
                             })
                           : null
@@ -272,7 +304,7 @@ const Login = props => {
                       error={hasError("password", error)}
                       type={showPassword ? "text" : "password"}
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                       inputProps={{
                         endAdornment: (
@@ -282,7 +314,7 @@ const Login = props => {
                               onClick={() => {
                                 setShowPassword(!showPassword);
                               }}
-                              onMouseDown={event => {
+                              onMouseDown={(event) => {
                                 event.preventDefault();
                               }}
                               edge="end"
@@ -306,7 +338,7 @@ const Login = props => {
                               )}
                             </IconButton>
                           </InputAdornment>
-                        )
+                        ),
                       }}
                     />
                   </GridItem>
@@ -315,16 +347,11 @@ const Login = props => {
               <CardFooter
                 className={classes.alignLoginCard}
                 style={{
-                  justifyContent: "space-evenly"
+                  justifyContent: "space-evenly",
                 }}
               >
                 <div className={classes.wrapper}>
-                  <Button
-                    color="rose"
-                    borderLess
-                    type="submit"
-                    disabled={loading}
-                  >
+                  <Button color="primary" type="submit" disabled={loading}>
                     Login
                   </Button>
                   {loading && (

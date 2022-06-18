@@ -9,7 +9,7 @@ import {
   Table,
 } from "../../components";
 // core components
-import { backend_category } from "../../constants";
+import { backend_category, frontendServerUrl } from "../../constants";
 import {
   Dialog,
   DialogContent,
@@ -46,13 +46,27 @@ export default function DialogForSelectingCategory(props) {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/order-ratios",
+      "path": "/webapi/private/order-ratios",
       "handler": "order-ratios.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/order-ratios/count",
+      "path": "/webapi/private/order-ratios/count",
       "handler": "order-ratios.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/order-ratios/:id",
+      "path": "/webapi/private/order-ratios/:id",
       "handler": "order-ratios.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/order-ratios",
+      "path": "/webapi/private/order-ratios",
       "handler": "order-ratios.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/order-ratios/:id",
+      "path": "/webapi/private/order-ratios/:id",
       "handler": "order-ratios.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/order-ratios/:id",
+      "path": "/webapi/private/order-ratios/:id",
       "handler": "order-ratios.delete",
       "config": {
         "policies": []

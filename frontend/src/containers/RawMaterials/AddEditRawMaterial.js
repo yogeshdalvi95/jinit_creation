@@ -35,6 +35,7 @@ import {
   backend_departments,
   backend_raw_materials,
   backend_units,
+  frontendServerUrl,
 } from "../../constants";
 import { useState } from "react";
 import {
@@ -150,20 +151,24 @@ export default function AddEditRawMaterial(props) {
                   "content-type": "application/json",
                   Authorization: "Bearer " + Auth.getToken(),
                 },
-              }).then((response) => {
-                if (response.ok) {
-                  return response.json().then((data) => ({
-                    data,
-                    loading: false,
-                    noResults: data.length === 0,
-                  }));
-                }
-                return response.json().then((data) => ({
-                  data: [],
-                  loading: false,
-                  errorMessage: data.title,
-                }));
               })
+                .then((response) => {
+                  if (response.ok) {
+                    return response.json().then((data) => ({
+                      data,
+                      loading: false,
+                      noResults: data.length === 0,
+                    }));
+                  }
+                  return response.json().then((data) => ({
+                    data: [],
+                    loading: false,
+                    errorMessage: data.title,
+                  }));
+                })
+                .catch((error) => {
+                  throw error;
+                })
             );
           }),
           catchError((e) => ({
@@ -610,9 +615,23 @@ export default function AddEditRawMaterial(props) {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve(filterData(result.data));
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

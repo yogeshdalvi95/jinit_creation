@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/monthly-sale-balances",
+      "path": "/webapi/private/monthly-sale-balances",
       "handler": "monthly-sale-balance.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/monthly-sale-balances/count",
+      "path": "/webapi/private/monthly-sale-balances/count",
       "handler": "monthly-sale-balance.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/monthly-sale-balances/:id",
+      "path": "/webapi/private/monthly-sale-balances/:id",
       "handler": "monthly-sale-balance.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/monthly-sale-balances",
+      "path": "/webapi/private/monthly-sale-balances",
       "handler": "monthly-sale-balance.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/monthly-sale-balances/:id",
+      "path": "/webapi/private/monthly-sale-balances/:id",
       "handler": "monthly-sale-balance.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/monthly-sale-balances/:id",
+      "path": "/webapi/private/monthly-sale-balances/:id",
       "handler": "monthly-sale-balance.delete",
       "config": {
         "policies": []

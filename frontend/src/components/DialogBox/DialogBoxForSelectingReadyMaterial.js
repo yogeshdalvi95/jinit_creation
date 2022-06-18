@@ -9,7 +9,11 @@ import {
   Table,
 } from "../../components";
 // core components
-import { apiUrl, backend_ready_materials } from "../../constants";
+import {
+  apiUrl,
+  backend_ready_materials,
+  frontendServerUrl,
+} from "../../constants";
 import {
   Backdrop,
   CircularProgress,
@@ -111,13 +115,27 @@ export default function DialogBoxForSelectingReadyMaterial(props) {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

@@ -6,8 +6,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomAutoComplete,
-  CustomDropDown,
   CustomMaterialUITable,
   CustomRadioButton,
   CustomTableBody,
@@ -415,6 +413,8 @@ export default function Ledger() {
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
+                    variant="inline"
+                    openTo="month"
                     views={["year", "month"]}
                     onChange={(event) => handleStartDateChange(event)}
                     label="Month/Year from"

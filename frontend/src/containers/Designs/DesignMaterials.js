@@ -34,6 +34,7 @@ import {
 import {
   backend_departments,
   backend_designs_and_materials,
+  frontendServerUrl,
 } from "../../constants";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { convertNumber, isEmptyString, validateNumber } from "../../Utils";
@@ -280,7 +281,18 @@ export default function DesignMaterials(props) {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: [
@@ -293,6 +305,9 @@ export default function DesignMaterials(props) {
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

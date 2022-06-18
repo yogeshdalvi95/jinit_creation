@@ -15,6 +15,7 @@ import {
   DialogForGettingPreviousMonthlyData,
   GridContainer,
   GridItem,
+  MonthYearPicker,
   SnackBarComponent,
 } from "../../../components";
 import DateRangeIcon from "@material-ui/icons/DateRange";
@@ -30,13 +31,20 @@ import calenderStyles from "./CalenderStyles.module.css";
 import { useEffect } from "react";
 import { providerForGet, providerForPost } from "../../../api";
 import {
-  backend_monthly_sheet_latest_entries,
   backend_monthly_sheet_add_update_entries,
-  backend_monthly_sheet_get_selected_data,
+  frontendServerUrl,
+  backend_raw_materials,
+  backend_monthly_sheet_get_monthly_data,
 } from "../../../constants";
-import { isEmptyString, formatDate } from "../../../Utils";
+import {
+  isEmptyString,
+  formatDate,
+  checkIFValidDateObject,
+  validateNumber,
+} from "../../../Utils";
 import auth from "../../../components/Auth";
 import { Children } from "react";
+import { RAWMATERIALUSAGE } from "../../../paths";
 
 const useStyles = makeStyles(styles);
 const localizer = momentLocalizer(moment);
@@ -67,16 +75,8 @@ const AddDailyUsage = (props) => {
   });
 
   const [openBackDrop, setBackDrop] = useState(false);
-  const [selectedRawMaterial, setSelectedRawMaterial] = useState(
-    props.location.state && props.location.state.obj && props.location.state.id
-      ? props.location.state.obj
-      : null
-  );
-  const [selectedRawMaterialId, setSelectedRawMaterialId] = useState(
-    props.location.state && props.location.state.obj && props.location.state.id
-      ? props.location.state.id
-      : null
-  );
+  const [selectedRawMaterial, setSelectedRawMaterial] = useState(null);
+
   const [
     openDialogForSelectingRawMaterial,
     setOpenDialogForSelectingRawMaterial,
@@ -103,16 +103,79 @@ const AddDailyUsage = (props) => {
   };
 
   useEffect(() => {
-    getCurrentMonthDetailsOfRawMaterial();
+    const urlParams = new URLSearchParams(window.location.search);
+    let date = urlParams.get("d");
+    let r_id = urlParams.get("r_id");
+
+    /** Check dates */
+    let currentDate = new Date();
+    let year = currentDate.getFullYear();
+    let month = currentDate.getMonth() + 1;
+    let rawMaterialId = r_id;
+    if (
+      date &&
+      !isEmptyString(date) &&
+      checkIFValidDateObject(new Date(date))
+    ) {
+      currentDate = new Date(date);
+      year = currentDate.getFullYear();
+      month = currentDate.getMonth() + 1;
+    }
+
+    let sampleMonthlyData = {
+      currentMonth: currentDate,
+      month: month,
+      year: year,
+    };
+
+    setMonthlyData((monthlyData) => ({
+      ...monthlyData,
+      ...sampleMonthlyData,
+    }));
+
+    if (rawMaterialId) {
+      setBackDrop(true);
+      getRawMaterialInfo(rawMaterialId);
+      getMonthlyUsageData(rawMaterialId, month, year);
+    } else {
+      window.history.pushState(
+        "",
+        "Daily usage",
+        `${frontendServerUrl}${RAWMATERIALUSAGE}?d=${currentDate}`
+      );
+    }
   }, []);
 
-  const getCurrentMonthDetailsOfRawMaterial = async (
-    id = selectedRawMaterialId
+  const getRawMaterialInfo = async (id) => {
+    setBackDrop(true);
+    await providerForGet(backend_raw_materials + "/" + id, {}, Auth.getToken())
+      .then((res) => {
+        setSelectedRawMaterial(res.data);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+      });
+  };
+
+  const getMonthlyUsageData = async (
+    id = selectedRawMaterial.id,
+    month,
+    year
   ) => {
     setBackDrop(true);
+    window.history.pushState(
+      "",
+      "Daily usage",
+      `${frontendServerUrl}${RAWMATERIALUSAGE}?d=${new Date(
+        year,
+        month - 1,
+        1
+      )}&r_id=${id}`
+    );
     await providerForGet(
-      backend_monthly_sheet_latest_entries,
-      { raw_material: id },
+      backend_monthly_sheet_get_monthly_data,
+      { raw_material: id, month: month, year: year },
       Auth.getToken()
     )
       .then((res) => {
@@ -139,6 +202,16 @@ const AddDailyUsage = (props) => {
       });
   };
 
+  const getCurrentMonthDetailsOfRawMaterial = async (
+    id = selectedRawMaterial.id
+  ) => {
+    setBackDrop(true);
+    let date = new Date();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    getMonthlyUsageData(id, month + 1, year);
+  };
+
   const changeRawMaterial = (key) => {
     setOpenDialogForSelectingRawMaterial(true);
   };
@@ -149,7 +222,6 @@ const AddDailyUsage = (props) => {
 
   const handleSelectRawMaterial = (value, obj) => {
     setSelectedRawMaterial(obj);
-    setSelectedRawMaterialId(value.id);
     handleCloseDialogForRawMaterial();
     getCurrentMonthDetailsOfRawMaterial(value.id);
   };
@@ -177,9 +249,7 @@ const AddDailyUsage = (props) => {
   /** Selected event for edit or view */
   const selectedEvent = (event) => {
     if (new Date(event.start).getMonth() + 1 === monthlyData.month) {
-      let oldValue = isNaN(parseFloat(event.title))
-        ? 0
-        : parseFloat(event.title);
+      let oldValue = validateNumber(event.title);
       setModal((modal) => ({
         ...modal,
         open: true,
@@ -303,7 +373,7 @@ const AddDailyUsage = (props) => {
         newValue: modal.inputValue,
         isDeduct: modal.isDeduct,
         date: modal.date,
-        raw_material: selectedRawMaterialId,
+        raw_material: selectedRawMaterial.id,
       },
       auth.getToken()
     )
@@ -331,38 +401,10 @@ const AddDailyUsage = (props) => {
     setOpenDialogForSelectingPreviousMonth(false);
   };
 
-  const getPreviosMonthData = async (id) => {
+  const getPreviosMonthData = async (year, month) => {
     setBackDrop(true);
     handleCloseDialogForPreviousMonthModal();
-    providerForGet(
-      backend_monthly_sheet_get_selected_data,
-      {
-        id: id,
-      },
-      auth.getToken()
-    )
-      .then((res) => {
-        setMonthlyData((monthlyData) => ({
-          ...monthlyData,
-          data: res.data.data,
-          currentMonth: new Date(res.data.currentMonth),
-          finalBalance: res.data.finalBalance,
-          total: res.data.total,
-          month: res.data.month,
-          year: res.data.year,
-          isEditable: res.data.isEditable,
-        }));
-        setBackDrop(false);
-      })
-      .catch((err) => {
-        setSnackBar((snackBar) => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error",
-        }));
-        setBackDrop(false);
-      });
+    getMonthlyUsageData(selectedRawMaterial.id, month, year);
   };
 
   /** Custom Tool Bar */
@@ -370,11 +412,45 @@ const AddDailyUsage = (props) => {
     const label = () => {
       const date = moment(toolbar.date);
       return (
-        <span>
-          <span>
-            {date.format("MMMM")} {date.format("YYYY")}
-          </span>
-        </span>
+        <GridContainer>
+          <GridItem
+            xs={12}
+            sm={12}
+            md={6}
+            style={{
+              textAlign: "left",
+            }}
+          >
+            {date.format("MMMM")} {date.format("YYYY")}{" "}
+          </GridItem>
+          <GridItem
+            xs={12}
+            sm={12}
+            md={6}
+            style={{
+              textAlign: "right",
+            }}
+          >
+            <MonthYearPicker
+              views={["year", "month"]}
+              onChange={(event) => {
+                console.log("event ", event);
+                let date = new Date(event);
+                let year = date.getFullYear();
+                let month = date.getMonth();
+                getMonthlyUsageData(selectedRawMaterial.id, month + 1, year);
+              }}
+              label="Month/Year"
+              name="date"
+              value={new Date(monthlyData.currentMonth) || null}
+              id="date"
+              openTo="month"
+              style={{
+                marginTop: "-1rem",
+              }}
+            />
+          </GridItem>
+        </GridContainer>
       );
     };
 
@@ -444,7 +520,7 @@ const AddDailyUsage = (props) => {
         handleAccept={handleCloseDialogForPreviousMonthModal}
         getPreviosMonthData={getPreviosMonthData}
         open={openDialogForSelectingPreviousMonth}
-        selectedRawMaterialId={selectedRawMaterialId}
+        selectedRawMaterialId={selectedRawMaterial?.id}
         rawMaterialName={selectedRawMaterial ? selectedRawMaterial.name : ""}
       />
       <DialogBox
@@ -527,6 +603,18 @@ const AddDailyUsage = (props) => {
             </CardHeader>
             <CardBody>
               <GridContainer>
+                <GridItem xs={12} sm={12} md={8}>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      changeRawMaterial();
+                    }}
+                  >
+                    {selectedRawMaterial
+                      ? "Change Raw Material"
+                      : "Select Raw Material"}
+                  </Button>
+                </GridItem>
                 {selectedRawMaterial ? (
                   <>
                     <GridItem xs={12} sm={12} md={8}>
@@ -537,14 +625,14 @@ const AddDailyUsage = (props) => {
                     </GridItem>
                     <GridItem xs={12} sm={12} md={8}>
                       <b>Department : </b>
-                      {selectedRawMaterial.department}
+                      {selectedRawMaterial?.department?.name}
                     </GridItem>
                     <GridItem xs={12} sm={12} md={8}>
                       <b>Category : </b>
-                      {selectedRawMaterial.category}
+                      {selectedRawMaterial?.category?.name}
                     </GridItem>
                     <GridItem xs={12} sm={12} md={8}>
-                      <b>Color :</b> {selectedRawMaterial.color}
+                      <b>Color :</b> {selectedRawMaterial?.color?.name}
                     </GridItem>
                     <GridItem xs={12} sm={12} md={8}>
                       <b>Size : </b>
@@ -568,16 +656,6 @@ const AddDailyUsage = (props) => {
                     margin: "27px 0px 0px",
                   }}
                 >
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      changeRawMaterial();
-                    }}
-                  >
-                    {selectedRawMaterial
-                      ? "Change Raw Material"
-                      : "Select Raw Material"}
-                  </Button>
                   {selectedRawMaterial ? (
                     <>
                       <Button
@@ -617,8 +695,8 @@ const AddDailyUsage = (props) => {
                           events={monthlyData.data}
                           startAccessor="start"
                           endAccessor="end"
-                          date={monthlyData.currentMonth}
-                          defaultDate={monthlyData.currentMonth}
+                          date={new Date(monthlyData.currentMonth)}
+                          defaultDate={new Date(monthlyData.currentMonth)}
                           localizer={localizer}
                           views={{ month: true }}
                           components={{

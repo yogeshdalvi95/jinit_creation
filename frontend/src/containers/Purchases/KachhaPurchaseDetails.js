@@ -23,6 +23,7 @@ import ClearIcon from "@material-ui/icons/Clear";
 import {
   backend_individual_kachha_purchase,
   backend_sellers_for_autocomplete,
+  frontendServerUrl,
 } from "../../constants";
 import {
   convertNumber,
@@ -164,13 +165,27 @@ export default function KachhaPurchaseDetails() {
           },
         }
       )
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: convertData(result.data),
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

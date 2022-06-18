@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/designs-and-materials",
+      "path": "/webapi/private/designs-and-materials",
       "handler": "designs-and-materials.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs-and-materials/count",
+      "path": "/webapi/private/designs-and-materials/count",
       "handler": "designs-and-materials.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs-and-materials/get-material-count",
+      "path": "/webapi/private/designs-and-materials/get-material-count",
       "handler": "designs-and-materials.getMaterialCount",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs-and-materials/:id",
+      "path": "/webapi/private/designs-and-materials/:id",
       "handler": "designs-and-materials.findOne",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/designs-and-materials",
+      "path": "/webapi/private/designs-and-materials",
       "handler": "designs-and-materials.create",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "PUT",
-      "path": "/designs-and-materials/:id",
+      "path": "/webapi/private/designs-and-materials/:id",
       "handler": "designs-and-materials.update",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/designs-and-materials/:id",
+      "path": "/webapi/private/designs-and-materials/:id",
       "handler": "designs-and-materials.delete",
       "config": {
         "policies": []

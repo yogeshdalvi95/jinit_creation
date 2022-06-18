@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/purchase-payments",
+      "path": "/webapi/private/purchase-payments",
       "handler": "purchase-payments.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/purchase-payments/count",
+      "path": "/webapi/private/purchase-payments/count",
       "handler": "purchase-payments.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/purchase-payments/:id",
+      "path": "/webapi/private/purchase-payments/:id",
       "handler": "purchase-payments.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/purchase-payments",
+      "path": "/webapi/private/purchase-payments",
       "handler": "purchase-payments.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/purchase-payments/:id",
+      "path": "/webapi/private/purchase-payments/:id",
       "handler": "purchase-payments.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/purchase-payments/:id",
+      "path": "/webapi/private/purchase-payments/:id",
       "handler": "purchase-payments.delete",
       "config": {
         "policies": []

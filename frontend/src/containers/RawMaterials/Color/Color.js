@@ -17,7 +17,7 @@ import {
 // core components
 import AddIcon from "@material-ui/icons/Add";
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_color } from "../../../constants";
+import { backend_color, frontendServerUrl } from "../../../constants";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -66,7 +66,18 @@ export default function Color() {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,

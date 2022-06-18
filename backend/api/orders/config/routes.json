@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/orders",
+      "path": "/webapi/private/orders",
       "handler": "orders.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/orders/check_availibility/:id",
+      "path": "/webapi/private/orders/check_availibility/:id",
       "handler": "orders.check_availibility",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/orders/check_all_order_availibility",
+      "path": "/webapi/private/orders/check_all_order_availibility",
       "handler": "orders.check_all_order_availibility",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/orders/download-order",
+      "path": "/webapi/private/orders/download-order",
       "handler": "orders.downloadOrder",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/orders/download-order-sheet",
+      "path": "/webapi/private/orders/download-order-sheet",
       "handler": "orders.downloadOrderSheet",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "POST",
-      "path": "/orders/department_sheet",
+      "path": "/webapi/private/orders/department_sheet",
       "handler": "orders.createUpdateDepartmentSheet",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "GET",
-      "path": "/orders/department_sheet/:id",
+      "path": "/webapi/private/orders/department_sheet/:id",
       "handler": "orders.getDepartmentSheet",
       "config": {
         "policies": []
@@ -58,7 +58,7 @@
     },
     {
       "method": "GET",
-      "path": "/orders/count",
+      "path": "/webapi/private/orders/count",
       "handler": "orders.count",
       "config": {
         "policies": []
@@ -66,7 +66,7 @@
     },
     {
       "method": "GET",
-      "path": "/orders/:id",
+      "path": "/webapi/private/orders/:id",
       "handler": "orders.findOne",
       "config": {
         "policies": []
@@ -74,7 +74,7 @@
     },
     {
       "method": "POST",
-      "path": "/orders",
+      "path": "/webapi/private/orders",
       "handler": "orders.create",
       "config": {
         "policies": []
@@ -82,7 +82,7 @@
     },
     {
       "method": "PUT",
-      "path": "/orders/:id",
+      "path": "/webapi/private/orders/:id",
       "handler": "orders.update",
       "config": {
         "policies": []
@@ -90,7 +90,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/orders/:id",
+      "path": "/webapi/private/orders/:id",
       "handler": "orders.delete",
       "config": {
         "policies": []

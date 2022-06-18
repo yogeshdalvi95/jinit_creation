@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/individual-purchases",
+      "path": "/webapi/private/individual-purchases",
       "handler": "individual-purchase.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/individual-purchases/count",
+      "path": "/webapi/private/individual-purchases/count",
       "handler": "individual-purchase.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/individual-purchases/:id",
+      "path": "/webapi/private/individual-purchases/:id",
       "handler": "individual-purchase.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/individual-purchases",
+      "path": "/webapi/private/individual-purchases",
       "handler": "individual-purchase.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/individual-purchases/:id",
+      "path": "/webapi/private/individual-purchases/:id",
       "handler": "individual-purchase.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/individual-purchases/:id",
+      "path": "/webapi/private/individual-purchases/:id",
       "handler": "individual-purchase.delete",
       "config": {
         "policies": []

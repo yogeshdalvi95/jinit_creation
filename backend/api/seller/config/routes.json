@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/sellers",
+      "path": "/webapi/private/sellers",
       "handler": "seller.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/sellers/getSellerNameForAutoComplete",
+      "path": "/webapi/private/sellers/getSellerNameForAutoComplete",
       "handler": "seller.getSellerNameForAutoComplete",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/sellers/check_duplicate_seller",
+      "path": "/webapi/private/sellers/check_duplicate_seller",
       "handler": "seller.check_duplicate_seller",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/sellers/count",
+      "path": "/webapi/private/sellers/count",
       "handler": "seller.count",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "GET",
-      "path": "/sellers/:id",
+      "path": "/webapi/private/sellers/:id",
       "handler": "seller.findOne",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "POST",
-      "path": "/sellers",
+      "path": "/webapi/private/sellers",
       "handler": "seller.create",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "PUT",
-      "path": "/sellers/:id",
+      "path": "/webapi/private/sellers/:id",
       "handler": "seller.update",
       "config": {
         "policies": []
@@ -58,7 +58,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/sellers/:id",
+      "path": "/webapi/private/sellers/:id",
       "handler": "seller.delete",
       "config": {
         "policies": []

@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "active_users",
+  "info": {
+    "name": "Active Users",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "token": {
+      "type": "text"
+    },
+    "remember_me": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

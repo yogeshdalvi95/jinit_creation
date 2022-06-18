@@ -11,15 +11,19 @@ import {
   GridContainer,
   GridItem,
   SnackBarComponent,
-  Table
+  Table,
 } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { apiUrl, backend_ready_materials } from "../../constants";
+import {
+  apiUrl,
+  backend_ready_materials,
+  frontendServerUrl,
+} from "../../constants";
 import {
   ADDREADYMATERIAL,
   EDITREADYMATERIAL,
-  VIEWREADYMATERIAL
+  VIEWREADYMATERIAL,
 } from "../../paths";
 import { useHistory } from "react-router-dom";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -38,20 +42,20 @@ export default function ReadyMaterials() {
   const [openBackDrop, setBackDrop] = useState(false);
   const history = useHistory();
   const [filter, setFilter] = useState({
-    _sort: "created_at:desc"
+    _sort: "created_at:desc",
   });
   const [snackBar, setSnackBar] = React.useState({
     show: false,
     severity: "",
-    message: ""
+    message: "",
   });
 
   const columns = [
-    { title: "id", field: "id", render: rowData => `#${rowData.id}` },
+    { title: "id", field: "id", render: (rowData) => `#${rowData.id}` },
     { title: "Material No", field: "material_no" },
     {
       title: "Image",
-      render: rowData => (
+      render: (rowData) => (
         <div className={classes.imageDivInTable}>
           {rowData.images && rowData.images.length && rowData.images[0].url ? (
             <img
@@ -60,7 +64,7 @@ export default function ReadyMaterials() {
               loader={<CircularProgress />}
               style={{
                 height: "5rem",
-                width: "10rem"
+                width: "10rem",
               }}
               className={classes.UploadImage}
             />
@@ -70,33 +74,33 @@ export default function ReadyMaterials() {
               alt="ready_material_photo"
               style={{
                 height: "5rem",
-                width: "10rem"
+                width: "10rem",
               }}
               loader={<CircularProgress />}
               className={classes.DefaultNoImage}
             />
           )}
         </div>
-      )
+      ),
     },
     {
       title: "Quantity Available",
-      field: "total_quantity"
+      field: "total_quantity",
     },
     {
       title: "Price",
       field: "final_cost",
-      render: rowData => convertNumber(rowData.final_cost, true)
-    }
+      render: (rowData) => convertNumber(rowData.final_cost, true),
+    },
   ];
 
   const getReadyMaterialsData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -107,16 +111,30 @@ export default function ReadyMaterials() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -128,19 +146,19 @@ export default function ReadyMaterials() {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
   const snackBarHandleClose = () => {
-    setSnackBar(snackBar => ({
+    setSnackBar((snackBar) => ({
       ...snackBar,
       show: false,
       severity: "",
-      message: ""
+      message: "",
     }));
   };
 
@@ -155,7 +173,7 @@ export default function ReadyMaterials() {
       {},
       Auth.getToken()
     )
-      .then(res => {
+      .then((res) => {
         setBackDrop(false);
         if (isView) {
           history.push(VIEWREADYMATERIAL, { data: res.data, view: true });
@@ -163,13 +181,13 @@ export default function ReadyMaterials() {
           history.push(EDITREADYMATERIAL, { data: res.data, edit: true });
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setBackDrop(false);
-        setSnackBar(snackBar => ({
+        setSnackBar((snackBar) => ({
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error viewing ready material"
+          message: "Error viewing ready material",
         }));
       });
   };
@@ -204,16 +222,16 @@ export default function ReadyMaterials() {
               <GridContainer>
                 <GridItem xs={12} sm={3} md={3}>
                   <CustomInput
-                    onChange={e => {
+                    onChange={(e) => {
                       if (isEmptyString(e.target.value)) {
                         delete filter["material_no_contains"];
-                        setFilter(filter => ({
-                          ...filter
+                        setFilter((filter) => ({
+                          ...filter,
                         }));
                       } else {
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          material_no_contains: e.target.value
+                          material_no_contains: e.target.value,
                         }));
                       }
                     }}
@@ -224,7 +242,7 @@ export default function ReadyMaterials() {
                     value={filter["material_no_contains"] || ""}
                     id="material_no_contains"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                   />
                 </GridItem>
@@ -242,8 +260,8 @@ export default function ReadyMaterials() {
                     color="primary"
                     onClick={() => {
                       delete filter["material_no_contains"];
-                      setFilter(filter => ({
-                        ...filter
+                      setFilter((filter) => ({
+                        ...filter,
                       }));
                       tableRef.current.onQueryChange();
                     }}
@@ -257,34 +275,34 @@ export default function ReadyMaterials() {
                 tableRef={tableRef}
                 title="Ready Materials"
                 columns={columns}
-                data={async query => {
+                data={async (query) => {
                   return await getReadyMaterialsData(
                     query.page + 1,
                     query.pageSize
                   );
                 }}
                 actions={[
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <EditOutlinedIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
                       handleTableAction(rowData, false);
-                    }
+                    },
                   }),
-                  rowData => ({
+                  (rowData) => ({
                     icon: () => <VisibilityIcon fontSize="small" />,
                     tooltip: "View",
                     onClick: (event, rowData) => {
                       handleTableAction(rowData, true);
-                    }
-                  })
+                    },
+                  }),
                 ]}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,
                   search: false,
                   sorting: true,
-                  thirdSortClick: false
+                  thirdSortClick: false,
                 }}
                 onOrderChange={(orderedColumnId, orderDirection) => {
                   orderFunc(orderedColumnId, orderDirection);

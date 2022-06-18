@@ -18,7 +18,7 @@ import {
   EDITSELLER,
   EDITPURCHASES,
   EDITRAWMATERIALS,
-  DAILYUSAGERAWMATERIALS,
+  RAWMATERIALUSAGE,
   ADDGOODRETURN,
   EDITGOODRETURN,
   GOODRETURNLIST,
@@ -66,6 +66,7 @@ import {
   VIEWPURCHASEPAYEMENT,
   EDITPURCHASESID,
   VIEWPURCHASESID,
+  ADDRAWMATERIALUSAGE,
 } from "../paths";
 
 /** Raw material and units */
@@ -83,7 +84,7 @@ const unitsPathList = [UNITS];
 const departmentsPath = [DEPARTMENTS, ADDDEPARTMENTS];
 
 /** Daily Usage */
-const dailyUsage = [DAILYUSAGERAWMATERIALS];
+const dailyUsage = [RAWMATERIALUSAGE, ADDRAWMATERIALUSAGE];
 
 const rawMaterialAndUnitPath = [
   ...colorPath,
@@ -199,7 +200,7 @@ const rawMaterialsJson = {
 };
 
 const dailyUsageJson = {
-  path: DAILYUSAGERAWMATERIALS,
+  path: RAWMATERIALUSAGE,
   name: "Daily Usage",
   layout: "",
   pathList: dailyUsage,
@@ -351,13 +352,13 @@ export const DashboardStaffRoutes = [
 ];
 
 export const DashboardAdminRoutes = [
-  {
-    path: STAFF,
-    name: "Staff Users",
-    icon: "manage_accounts",
-    layout: "",
-    pathList: staffPath,
-  },
+  // {
+  //   path: STAFF,
+  //   name: "Staff Users",
+  //   icon: "manage_accounts",
+  //   layout: "",
+  //   pathList: staffPath,
+  // },
   {
     name: "Purchases",
     layout: "",
@@ -405,20 +406,20 @@ export const DashboardAdminRoutes = [
 ];
 
 export const SuperAdminDashboardRoutes = [
-  {
-    path: ADMIN,
-    name: "Admin Users",
-    icon: GroupIcon,
-    layout: "",
-    pathList: adminPath,
-  },
-  {
-    path: STAFF,
-    name: "Staff Users",
-    icon: GroupIcon,
-    layout: "",
-    pathList: staffPath,
-  },
+  // {
+  //   path: ADMIN,
+  //   name: "Admin Users",
+  //   icon: GroupIcon,
+  //   layout: "",
+  //   pathList: adminPath,
+  // },
+  // {
+  //   path: STAFF,
+  //   name: "Staff Users",
+  //   icon: GroupIcon,
+  //   layout: "",
+  //   pathList: staffPath,
+  // },
   {
     name: "Purchases",
     layout: "",

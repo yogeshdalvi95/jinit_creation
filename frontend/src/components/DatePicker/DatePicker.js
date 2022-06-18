@@ -11,6 +11,7 @@ import classNames from "classnames";
 import {
   primaryColor,
   grayColor,
+  defaultFont,
 } from "../../assets/jss/material-dashboard-react.js";
 import styled from "styled-components";
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -19,38 +20,48 @@ import { ThemeProvider } from "@material-ui/styles";
 const useStyles = makeStyles(styles);
 const theme = createMuiTheme({
   overrides: {
+    MuiInputBase: {
+      input: {
+        ...defaultFont,
+        color: grayColor[3] + " !important",
+        fontWeight: "400",
+        fontSize: "14px",
+        lineHeight: "1.42857",
+        letterSpacing: "unset",
+      },
+    },
     MuiPickersClock: {
       clock: {
-        backgroundColor: "#9c27b0",
+        backgroundColor: "#a56863",
       },
     },
     MuiPickersToolbar: {
       toolbar: {
-        backgroundColor: "#9c27b0",
+        backgroundColor: "#a56863",
       },
     },
     MuiPickersDay: {
       daySelected: {
-        backgroundColor: "#9c27b0",
+        backgroundColor: "#a56863",
       },
     },
     MuiTypography: {
       colorPrimary: {
-        color: "#9c27b0",
+        color: "#a56863",
       },
     },
     MuiButton: {
       textPrimary: {
-        color: "#9c27b0",
+        color: "#a56863",
       },
     },
     MuiPickersMonth: {
       monthSelected: {
-        color: "#9c27b0",
+        color: "#a56863",
       },
       root: {
         "&:focus": {
-          color: "#9c27b0",
+          color: "#a56863",
         },
       },
     },
@@ -89,7 +100,7 @@ const DatePicker = (props) => {
     }
     .MuiFormLabel-root {
       color: #aaaaaa !important;
-      font-size: 14px;
+      font-size: 12px !important;
       font-family: "Roboto", "Helvetica", "Arial", sans-serif;
       font-weight: 400;
       line-height: 1.42857;

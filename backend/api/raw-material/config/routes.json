@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/raw-materials",
+      "path": "/webapi/private/raw-materials",
       "handler": "raw-material.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/raw-materials/getRawMaterialNameForAutoComplete",
+      "path": "/webapi/private/raw-materials/getRawMaterialNameForAutoComplete",
       "handler": "raw-material.getRawMaterialNameForAutoComplete",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/raw-materials/count",
+      "path": "/webapi/private/raw-materials/count",
       "handler": "raw-material.count",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/raw-materials/:id",
+      "path": "/webapi/private/raw-materials/:id",
       "handler": "raw-material.findOne",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/raw-materials",
+      "path": "/webapi/private/raw-materials",
       "handler": "raw-material.create",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "PUT",
-      "path": "/raw-materials/:id",
+      "path": "/webapi/private/raw-materials/:id",
       "handler": "raw-material.update",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/raw-materials/:id",
+      "path": "/webapi/private/raw-materials/:id",
       "handler": "raw-material.delete",
       "config": {
         "policies": []

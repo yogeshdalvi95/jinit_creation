@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/parties",
+      "path": "/webapi/private/parties",
       "handler": "party.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/parties/check_duplicate_party",
+      "path": "/webapi/private/parties/check_duplicate_party",
       "handler": "party.check_duplicate_party",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/parties/count",
+      "path": "/webapi/private/parties/count",
       "handler": "party.count",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/parties/:id",
+      "path": "/webapi/private/parties/:id",
       "handler": "party.findOne",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/parties",
+      "path": "/webapi/private/parties",
       "handler": "party.create",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "PUT",
-      "path": "/parties/:id",
+      "path": "/webapi/private/parties/:id",
       "handler": "party.update",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/parties/:id",
+      "path": "/webapi/private/parties/:id",
       "handler": "party.delete",
       "config": {
         "policies": []

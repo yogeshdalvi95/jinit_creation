@@ -17,7 +17,11 @@ import {
 } from "../../components";
 // core components
 import EditIcon from "@material-ui/icons/Edit";
-import { backend_departments, backend_raw_materials } from "../../constants";
+import {
+  backend_departments,
+  backend_raw_materials,
+  frontendServerUrl,
+} from "../../constants";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
@@ -25,7 +29,7 @@ import { providerForGet, providerForDelete } from "../../api";
 import { useHistory } from "react-router-dom";
 import {
   ADDRAWMATERIALS,
-  DAILYUSAGERAWMATERIALS,
+  RAWMATERIALUSAGE,
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS,
 } from "../../paths";
@@ -149,7 +153,18 @@ export default function RawMaterials() {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           let data = convertData(result.data);
           resolve({
@@ -157,6 +172,9 @@ export default function RawMaterials() {
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -251,25 +269,7 @@ export default function RawMaterials() {
   };
 
   const handleAddDailyCount = (rowData) => {
-    let bal = "0";
-    if (!rowData.balance) {
-      bal = "0";
-    } else {
-      bal = rowData.balance;
-    }
-    let data = {
-      id: "#" + rowData.id,
-      name: rowData.name,
-      department: rowData.department,
-      category: isEmptyString(rowData.category) ? "---" : rowData.category,
-      color: isEmptyString(rowData.color) ? "---" : rowData.color,
-      size: isEmptyString(rowData.size) ? "---" : rowData.size,
-      bal: bal,
-    };
-    history.push(DAILYUSAGERAWMATERIALS, {
-      obj: data,
-      id: rowData.id,
-    });
+    history.push(RAWMATERIALUSAGE + "?d=" + new Date() + "&r_id=" + rowData.id);
   };
 
   return (

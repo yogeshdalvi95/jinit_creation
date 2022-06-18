@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/colors",
+      "path": "/webapi/private/colors",
       "handler": "color.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/colors/count",
+      "path": "/webapi/private/colors/count",
       "handler": "color.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/colors/:id",
+      "path": "/webapi/private/colors/:id",
       "handler": "color.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/colors",
+      "path": "/webapi/private/colors",
       "handler": "color.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/colors/:id",
+      "path": "/webapi/private/colors/:id",
       "handler": "color.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/colors/:id",
+      "path": "/webapi/private/colors/:id",
       "handler": "color.delete",
       "config": {
         "policies": []

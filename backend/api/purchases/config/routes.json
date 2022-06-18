@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/purchases",
+      "path": "/webapi/private/purchases",
       "handler": "purchases.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/purchases/ledger",
+      "path": "/webapi/private/purchases/ledger",
       "handler": "purchases.ledger",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "POST",
-      "path": "/purchases/download-ledger",
+      "path": "/webapi/private/purchases/download-ledger",
       "handler": "purchases.downloadledger",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/purchases/count",
+      "path": "/webapi/private/purchases/count",
       "handler": "purchases.count",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "GET",
-      "path": "/purchases/:id",
+      "path": "/webapi/private/purchases/:id",
       "handler": "purchases.findOne",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "POST",
-      "path": "/purchases",
+      "path": "/webapi/private/purchases",
       "handler": "purchases.create",
       "config": {
         "policies": []
@@ -50,7 +50,7 @@
     },
     {
       "method": "PUT",
-      "path": "/purchases/:id",
+      "path": "/webapi/private/purchases/:id",
       "handler": "purchases.update",
       "config": {
         "policies": []
@@ -58,7 +58,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/purchases/:id",
+      "path": "/webapi/private/purchases/:id",
       "handler": "purchases.delete",
       "config": {
         "policies": []

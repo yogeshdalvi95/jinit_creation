@@ -34,7 +34,7 @@ import {
   plainDate,
   dateToDDMMYYYY,
 } from "../../Utils";
-import { backend_sales } from "../../constants";
+import { backend_sales, frontendServerUrl } from "../../constants";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import moment from "moment";
@@ -125,13 +125,27 @@ export default function Sales() {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

@@ -6,38 +6,38 @@ import {
   CustomInput,
   GridContainer,
   GridItem,
-  Table
+  Table,
 } from "../../components";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
-import { backend_sellers } from "../../constants";
+import { backend_sellers, frontendServerUrl } from "../../constants";
 import {
   Dialog,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from "@material-ui/core";
 import { isEmptyString } from "../../Utils";
 
 export default function DialogForSelectingSeller(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
-    _sort: "seller_name:asc"
+    _sort: "seller_name:asc",
   });
 
   const columns = [
     { title: "Seller Name", field: "seller_name" },
     { title: "GSTIN/UIN", field: "gst_no" },
-    { title: "Phone", field: "phone" }
+    { title: "Phone", field: "phone" },
   ];
 
   const getPurchasesData = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -48,16 +48,30 @@ export default function DialogForSelectingSeller(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -69,23 +83,23 @@ export default function DialogForSelectingSeller(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -107,13 +121,13 @@ export default function DialogForSelectingSeller(props) {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={6}>
                     <CustomInput
-                      onChange={event => handleChange(event)}
+                      onChange={(event) => handleChange(event)}
                       labelText="Seller Name"
                       value={filter.seller_name_contains || ""}
                       name="seller_name_contains"
                       id="seller_name_contains"
                       formControlProps={{
-                        fullWidth: true
+                        fullWidth: true,
                       }}
                     />
                   </GridItem>
@@ -122,7 +136,7 @@ export default function DialogForSelectingSeller(props) {
                     sm={12}
                     md={6}
                     style={{
-                      marginTop: "27px"
+                      marginTop: "27px",
                     }}
                   >
                     <Button
@@ -137,9 +151,9 @@ export default function DialogForSelectingSeller(props) {
                       color="primary"
                       onClick={() => {
                         delete filter["seller_name_contains"];
-                        setFilter(filter => ({
+                        setFilter((filter) => ({
                           ...filter,
-                          _sort: "seller_name:asc"
+                          _sort: "seller_name:asc",
                         }));
                         tableRef.current.onQueryChange();
                       }}
@@ -153,26 +167,26 @@ export default function DialogForSelectingSeller(props) {
                   tableRef={tableRef}
                   title="Purchases"
                   columns={columns}
-                  data={async query => {
+                  data={async (query) => {
                     return await getPurchasesData(
                       query.page + 1,
                       query.pageSize
                     );
                   }}
                   actions={[
-                    rowData => ({
+                    (rowData) => ({
                       icon: () => <Button color="primary">Select</Button>,
                       tooltip: "Select this Seller",
                       onClick: (event, rowData) => {
                         props.handleAddSeller(rowData);
-                      }
-                    })
+                      },
+                    }),
                   ]}
                   options={{
                     pageSize: 10,
                     search: false,
                     sorting: true,
-                    thirdSortClick: false
+                    thirdSortClick: false,
                   }}
                   onOrderChange={(orderedColumnId, orderDirection) => {
                     orderFunc(orderedColumnId, orderDirection);

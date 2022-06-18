@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/monthly-sheets",
+      "path": "/webapi/private/monthly-sheets",
       "handler": "monthly-sheet.find",
       "config": {
         "policies": []
@@ -10,23 +10,15 @@
     },
     {
       "method": "GET",
-      "path": "/monthly-sheets/get_selected_data",
-      "handler": "monthly-sheet.getSelectedData",
+      "path": "/webapi/private/monthly-sheets/get-monthly-data",
+      "handler": "monthly-sheet.getMonthlyData",
       "config": {
         "policies": []
       }
     },
     {
       "method": "GET",
-      "path": "/monthly-sheets/get-latest-entries",
-      "handler": "monthly-sheet.getLatestEntries",
-      "config": {
-        "policies": []
-      }
-    },
-    {
-      "method": "GET",
-      "path": "/monthly-sheets/count",
+      "path": "/webapi/private/monthly-sheets/count",
       "handler": "monthly-sheet.count",
       "config": {
         "policies": []
@@ -34,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/monthly-sheets/:id",
+      "path": "/webapi/private/monthly-sheets/:id",
       "handler": "monthly-sheet.findOne",
       "config": {
         "policies": []
@@ -42,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/monthly-sheets",
+      "path": "/webapi/private/monthly-sheets",
       "handler": "monthly-sheet.create",
       "config": {
         "policies": []
@@ -50,7 +42,7 @@
     },
     {
       "method": "POST",
-      "path": "/monthly-sheets/add-update-entries",
+      "path": "/webapi/private/monthly-sheets/add-update-entries",
       "handler": "monthly-sheet.addUpdateEntries",
       "config": {
         "policies": []
@@ -58,7 +50,7 @@
     },
     {
       "method": "PUT",
-      "path": "/monthly-sheets/:id",
+      "path": "/webapi/private/monthly-sheets/:id",
       "handler": "monthly-sheet.update",
       "config": {
         "policies": []
@@ -66,7 +58,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/monthly-sheets/:id",
+      "path": "/webapi/private/monthly-sheets/:id",
       "handler": "monthly-sheet.delete",
       "config": {
         "policies": []

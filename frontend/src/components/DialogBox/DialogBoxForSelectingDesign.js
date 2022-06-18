@@ -6,6 +6,7 @@ import {
   apiUrl,
   backend_designs,
   backend_designs_for_parties,
+  frontendServerUrl,
 } from "../../constants";
 import {
   Backdrop,
@@ -125,13 +126,27 @@ export default function DialogBoxForSelectingDesign(props) {
           },
         }
       )
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

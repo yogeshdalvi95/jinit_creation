@@ -16,16 +16,12 @@ import {
   ADDRAWMATERIALS,
   ADDUNITS,
   ADDSELLER,
-  VIEWPURCHASES,
   EDITSELLER,
-  EDITPURCHASES,
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS,
-  DAILYUSAGERAWMATERIALS,
+  RAWMATERIALUSAGE,
   GOODRETURNLIST,
   ADDGOODRETURN,
-  EDITGOODRETURN,
-  VIEWGOODRETURN,
   VIEWKACHHAPURCHASEDETAILS,
   LISTREADYMATERIAL,
   ADDREADYMATERIAL,
@@ -64,14 +60,13 @@ import {
   EDITDEPARTMENTSHEETID,
   ADDPURCHASEPAYEMENT,
   ALLPURCHASEPAYEMENTS,
-  EDITPURCHASEPAYEMENT,
-  VIEWPURCHASEPAYEMENT,
   EDITPURCHASEPAYEMENTID,
   VIEWPURCHASEPAYEMENTID,
   EDITPURCHASESID,
   VIEWPURCHASESID,
   EDITGOODRETURNID,
   VIEWGOODRETURNID,
+  ADDRAWMATERIALUSAGE,
 } from "../paths";
 import {
   Login,
@@ -125,6 +120,7 @@ import EditRoute from "./EditRoute";
 import ViewRoute from "./ViewRoute";
 import NotFoundRoute from "./NotFoundRoute";
 import RouteWithTabLayout from "./RouteWithTabLayout";
+import DailyUsage from "../containers/RawMaterials/DailyUsage/DailyUsage";
 
 const Routes = () => {
   return (
@@ -315,12 +311,22 @@ const Routes = () => {
           component={AddEditRawMaterial}
           header={"View Raw Material"}
         />
+
+        {/** Raw Material Usage */}
         <PrivateRoute
           openSubMenu={true}
-          path={DAILYUSAGERAWMATERIALS}
+          path={RAWMATERIALUSAGE}
+          exact
+          component={DailyUsage}
+          header={"Daily Usage"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDRAWMATERIALUSAGE}
           exact
           component={AddDailyUsage}
-          header={"Daily Usage"}
+          header={"Add Edit Daily Usage"}
         />
 
         {/** Units */}

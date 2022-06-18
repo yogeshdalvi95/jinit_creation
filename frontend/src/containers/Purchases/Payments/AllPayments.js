@@ -18,7 +18,11 @@ import {
   Button,
   Table,
 } from "../../../components";
-import { backend_purchase_payment, backend_sellers } from "../../../constants";
+import {
+  backend_purchase_payment,
+  backend_sellers,
+  frontendServerUrl,
+} from "../../../constants";
 import {
   ADDPURCHASEPAYEMENT,
   EDITPURCHASEPAYEMENT,
@@ -97,13 +101,27 @@ const AllPayments = (props) => {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

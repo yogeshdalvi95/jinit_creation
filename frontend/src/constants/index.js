@@ -12,11 +12,9 @@ export {
   backend_check_seller_duplicate,
   backend_sellers_for_autocomplete,
   backend_raw_materials_for_autocomplete,
-  backend_monthly_sheet_latest_entries,
   backend_monthly_sheet,
   apiUrl,
   backend_monthly_sheet_add_update_entries,
-  backend_monthly_sheet_get_selected_data,
   backend_goods_return,
   backend_individual_kachha_purchase,
   backend_raw_material_and_quantity_for_ready_material,
@@ -47,4 +45,5 @@ export {
   backend_download_purchase_ledger,
   backend_purchase_payment,
   frontendServerUrl,
+  backend_monthly_sheet_get_monthly_data,
 } from "./UrlConstants";

@@ -17,7 +17,11 @@ import {
   Table,
 } from "../../components";
 // core components
-import { backend_purchases, backend_sellers } from "../../constants";
+import {
+  backend_purchases,
+  backend_sellers,
+  frontendServerUrl,
+} from "../../constants";
 import { convertNumber, isEmptyString, plainDate } from "../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { makeStyles } from "@material-ui/core";
@@ -87,6 +91,7 @@ export default function Purchases() {
     });
 
     return new Promise((resolve, reject) => {
+      console.log("hererererere");
       fetch(backend_purchases + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
@@ -94,13 +99,27 @@ export default function Purchases() {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

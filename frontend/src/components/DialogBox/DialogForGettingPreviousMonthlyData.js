@@ -9,7 +9,7 @@ import { GridContainer, GridItem } from "../Grid";
 import { CustomInput } from "../CustomInput";
 import { useState } from "react";
 import { getMonthName, isEmptyString } from "../../Utils";
-import { backend_monthly_sheet } from "../../constants";
+import { backend_monthly_sheet, frontendServerUrl } from "../../constants";
 import { Table } from "../Table";
 import { useEffect } from "react";
 
@@ -17,35 +17,35 @@ export default function DialogForGettingPreviousMonthlyData(props) {
   const tableRef = React.createRef();
   const [filter, setFilter] = useState({
     _sort: "id:desc",
-    raw_material: props ? props.selectedRawMaterialId : null
+    raw_material: props ? props.selectedRawMaterialId : null,
   });
 
   useEffect(() => {
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      raw_material: props ? props.selectedRawMaterialId : null
+      raw_material: props ? props.selectedRawMaterialId : null,
     }));
   }, [props]);
 
   const columns = [
     {
       title: "Year",
-      field: "year"
+      field: "year",
     },
     {
       title: "Month",
       field: "month",
-      render: rowData => getMonthName(rowData.month)
-    }
+      render: (rowData) => getMonthName(rowData.month),
+    },
   ];
 
   const getMonthYearList = async (page, pageSize) => {
     let params = {
       page: page,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
 
-    Object.keys(filter).map(res => {
+    Object.keys(filter).map((res) => {
       if (!params.hasOwnProperty(res)) {
         params[res] = filter[res];
       }
@@ -56,16 +56,30 @@ export default function DialogForGettingPreviousMonthlyData(props) {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken()
-        }
+          Authorization: "Bearer " + Auth.getToken(),
+        },
       })
-        .then(response => response.json())
-        .then(result => {
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
+        .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
-            totalCount: result.totalCount
+            totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };
@@ -77,23 +91,23 @@ export default function DialogForGettingPreviousMonthlyData(props) {
       orderByColumn = columns[columnId]["field"];
     }
     orderBy = orderByColumn + ":" + direction;
-    setFilter(filter => ({
+    setFilter((filter) => ({
       ...filter,
-      _sort: orderBy
+      _sort: orderBy,
     }));
     tableRef.current.onQueryChange();
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     if (isEmptyString(event.target.value)) {
       delete filter[event.target.name];
-      setFilter(filter => ({
-        ...filter
+      setFilter((filter) => ({
+        ...filter,
       }));
     } else {
-      setFilter(filter => ({
+      setFilter((filter) => ({
         ...filter,
-        [event.target.name]: event.target.value
+        [event.target.name]: event.target.value,
       }));
     }
   };
@@ -118,13 +132,13 @@ export default function DialogForGettingPreviousMonthlyData(props) {
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={3}>
                       <CustomInput
-                        onChange={event => handleChange(event)}
+                        onChange={(event) => handleChange(event)}
                         labelText="Year"
                         value={filter.year_contains || ""}
                         name="year_contains"
                         id="year"
                         formControlProps={{
-                          fullWidth: true
+                          fullWidth: true,
                         }}
                       />
                     </GridItem>
@@ -134,7 +148,7 @@ export default function DialogForGettingPreviousMonthlyData(props) {
                       sm={12}
                       md={10}
                       style={{
-                        marginTop: "27px"
+                        marginTop: "27px",
                       }}
                     >
                       <Button
@@ -149,9 +163,9 @@ export default function DialogForGettingPreviousMonthlyData(props) {
                         color="primary"
                         onClick={() => {
                           delete filter["year_contains"];
-                          setFilter(filter => ({
+                          setFilter((filter) => ({
                             ...filter,
-                            _sort: "id:desc"
+                            _sort: "id:desc",
                           }));
                           tableRef.current.onQueryChange();
                         }}
@@ -166,26 +180,29 @@ export default function DialogForGettingPreviousMonthlyData(props) {
                     tableRef={tableRef}
                     title="Raw Materials"
                     columns={columns}
-                    data={async query => {
+                    data={async (query) => {
                       return await getMonthYearList(
                         query.page + 1,
                         query.pageSize
                       );
                     }}
                     actions={[
-                      rowData => ({
+                      (rowData) => ({
                         icon: () => <Button color="primary">Select</Button>,
                         tooltip: "Select this month and year",
                         onClick: (event, rowData) => {
-                          props.getPreviosMonthData(rowData.id);
-                        }
-                      })
+                          props.getPreviosMonthData(
+                            rowData.year,
+                            rowData.month
+                          );
+                        },
+                      }),
                     ]}
                     options={{
                       pageSize: 5,
                       search: false,
                       sorting: true,
-                      thirdSortClick: false
+                      thirdSortClick: false,
                     }}
                     onOrderChange={(orderedColumnId, orderDirection) => {
                       orderFunc(orderedColumnId, orderDirection);
@@ -198,7 +215,7 @@ export default function DialogForGettingPreviousMonthlyData(props) {
         </DialogContent>
         <DialogActions
           style={{
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           <Button onClick={props.handleCancel} color="danger">

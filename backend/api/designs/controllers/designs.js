@@ -213,6 +213,7 @@ module.exports = {
   async downloadDesign(ctx) {
     const { id } = ctx.params;
     let designData = await strapi.query("designs").findOne({ id: id });
+    
   },
 
   async generatePdf(ctx) {

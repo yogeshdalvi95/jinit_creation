@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/departments",
+      "path": "/webapi/private/departments",
       "handler": "department.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/departments/count",
+      "path": "/webapi/private/departments/count",
       "handler": "department.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/departments/:id",
+      "path": "/webapi/private/departments/:id",
       "handler": "department.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/departments",
+      "path": "/webapi/private/departments",
       "handler": "department.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/departments/:id",
+      "path": "/webapi/private/departments/:id",
       "handler": "department.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/departments/:id",
+      "path": "/webapi/private/departments/:id",
       "handler": "department.delete",
       "config": {
         "policies": []

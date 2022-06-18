@@ -19,6 +19,7 @@ import {
   backend_goods_return,
   backend_sellers,
   backend_raw_materials,
+  frontendServerUrl,
 } from "../../constants";
 import { convertNumber, isEmptyString, plainDate } from "../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
@@ -102,13 +103,27 @@ export default function GoodsReturn() {
           Authorization: "Bearer " + Auth.getToken(),
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            if (response.status === 403) {
+              Auth.clearAppStorage();
+              window.location.href = `${frontendServerUrl}/login`;
+            } else {
+              throw new Error("Something went wrong");
+            }
+          }
+        })
         .then((result) => {
           resolve({
             data: result.data,
             page: result.page - 1,
             totalCount: result.totalCount,
           });
+        })
+        .catch((error) => {
+          throw error;
         });
     });
   };

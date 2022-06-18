@@ -1,4 +1,6 @@
 import axios from "axios";
+import { Auth as auth } from "../components";
+import { frontendServerUrl } from "../constants/UrlConstants";
 
 export const serviceProviderForGetRequest = async (
   url,
@@ -6,17 +8,27 @@ export const serviceProviderForGetRequest = async (
   token,
   headers = {
     "content-type": "application/json",
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   }
 ) => {
   const URL = url;
   return await axios(URL, {
     method: "GET",
     headers: headers,
-    params: payload
+    params: payload,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -28,7 +40,7 @@ export const serviceProviderForPostRequest = async (
   params = {},
   headers = {
     "content-type": "application/json",
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   }
 ) => {
   const URL = url;
@@ -36,10 +48,20 @@ export const serviceProviderForPostRequest = async (
     method: "POST",
     headers: headers,
     data: payload,
-    params: params
+    params: params,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -49,7 +71,7 @@ export const serviceProviderForPublicPostRequest = async (
   payload = {},
   params = {},
   headers = {
-    "content-type": "application/json"
+    "content-type": "application/json",
   }
 ) => {
   const URL = url;
@@ -57,10 +79,20 @@ export const serviceProviderForPublicPostRequest = async (
     method: "POST",
     headers: headers,
     data: payload,
-    params: params
+    params: params,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -73,7 +105,7 @@ export const serviceProviderForPutRequest = async (
   params = {},
   headers = {
     "content-type": "application/json",
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   }
 ) => {
   const URL = url + "/" + id;
@@ -81,10 +113,20 @@ export const serviceProviderForPutRequest = async (
     method: "PUT",
     headers: headers,
     data: body,
-    params: params
+    params: params,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -96,17 +138,27 @@ export const serviceProviderForDeleteRequest = async (
   params = {},
   headers = {
     "content-type": "application/json",
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   }
 ) => {
   const URL = url + "/" + id;
   return await axios(URL, {
     method: "DELETE",
     headers: headers,
-    params: params
+    params: params,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -121,7 +173,7 @@ export const serviceProviderForGetRequestDownloadPDFFile = async (
     "content-type": "application/json",
     Authorization: `Bearer ${token}`,
 
-    Accept: "application/pdf"
+    Accept: "application/pdf",
   }
 ) => {
   const URL = url;
@@ -131,10 +183,20 @@ export const serviceProviderForGetRequestDownloadPDFFile = async (
     headers: headers,
     data: payload,
     params: params,
-    onDownloadProgress: onDownloadProgress
+    onDownloadProgress: onDownloadProgress,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };
@@ -149,7 +211,7 @@ export const serviceProviderForGetRequestDownloadPDFFileWithGraph = async (
     "content-type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
 
-    Accept: "application/pdf"
+    Accept: "application/pdf",
   }
 ) => {
   const URL = url;
@@ -159,10 +221,20 @@ export const serviceProviderForGetRequestDownloadPDFFileWithGraph = async (
     headers: headers,
     data: payload,
     params: params,
-    onDownloadProgress: onDownloadProgress
+    onDownloadProgress: onDownloadProgress,
   })
-    .then(response => response)
-    .catch(error => {
+    .then((response) => response)
+    .catch((error) => {
+      console.log("error => ", error.response, error);
+      if (
+        error &&
+        error.response &&
+        (error.response.status || error.response.statusCode) &&
+        (error.response.status === 403 || error.response.statusCode === 403)
+      ) {
+        auth.clearAppStorage();
+        window.location.href = `${frontendServerUrl}/login`;
+      }
       throw error;
     });
 };

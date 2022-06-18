@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/sale-payments",
+      "path": "/webapi/private/sale-payments",
       "handler": "sale-payment.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/sale-payments/count",
+      "path": "/webapi/private/sale-payments/count",
       "handler": "sale-payment.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/sale-payments/:id",
+      "path": "/webapi/private/sale-payments/:id",
       "handler": "sale-payment.findOne",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "POST",
-      "path": "/sale-payments",
+      "path": "/webapi/private/sale-payments",
       "handler": "sale-payment.create",
       "config": {
         "policies": []
@@ -34,7 +34,7 @@
     },
     {
       "method": "PUT",
-      "path": "/sale-payments/:id",
+      "path": "/webapi/private/sale-payments/:id",
       "handler": "sale-payment.update",
       "config": {
         "policies": []
@@ -42,7 +42,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/sale-payments/:id",
+      "path": "/webapi/private/sale-payments/:id",
       "handler": "sale-payment.delete",
       "config": {
         "policies": []

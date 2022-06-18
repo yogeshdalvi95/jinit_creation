@@ -241,6 +241,7 @@ const ROLES = {
           "delete",
           "addupdateentries",
           "getselecteddata",
+          "getmonthlydata",
         ],
       },
       {
@@ -423,6 +424,7 @@ const ROLES = {
           "delete",
           "addupdateentries",
           "getselecteddata",
+          "getmonthlydata",
         ],
       },
       {

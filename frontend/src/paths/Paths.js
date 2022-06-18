@@ -5,7 +5,8 @@ export const RAWMATERIALSVIEW = "/raw-materials";
 export const ADDRAWMATERIALS = "/add-raw-materials";
 export const EDITRAWMATERIALS = "/edit-raw-material";
 export const VIEWRAWMATERIALS = "/view-raw-material";
-export const DAILYUSAGERAWMATERIALS = "/raw-material-daily-usage";
+export const RAWMATERIALUSAGE = "/raw-material-usage";
+export const ADDRAWMATERIALUSAGE = "/add-edit-raw-material-usage";
 
 export const USERS = "/users";
 export const PROFILE = "/profile";

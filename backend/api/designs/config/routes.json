@@ -2,7 +2,7 @@
   "routes": [
     {
       "method": "GET",
-      "path": "/designs",
+      "path": "/webapi/private/designs",
       "handler": "designs.find",
       "config": {
         "policies": []
@@ -10,7 +10,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs/count",
+      "path": "/webapi/private/designs/count",
       "handler": "designs.count",
       "config": {
         "policies": []
@@ -18,7 +18,7 @@
     },
     {
       "method": "GET",
-      "path": "/view-design/:id",
+      "path": "/webapi/private/view-design/:id",
       "handler": "designs.viewDesign",
       "config": {
         "policies": []
@@ -26,7 +26,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs/:id",
+      "path": "/webapi/private/designs/:id",
       "handler": "designs.findOne",
       "config": {
         "policies": []
@@ -34,7 +34,15 @@
     },
     {
       "method": "POST",
-      "path": "/designs",
+      "path": "/webapi/private/designs/download/:id",
+      "handler": "designs.downloadDesign",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/designs",
       "handler": "designs.create",
       "config": {
         "policies": ["checkDuplicateDesignWhileAdding"]
@@ -42,7 +50,7 @@
     },
     {
       "method": "POST",
-      "path": "/designs/duplicate-design",
+      "path": "/webapi/private/designs/duplicate-design",
       "handler": "designs.duplicateDesign",
       "config": {
         "policies": []
@@ -51,7 +59,7 @@
 
     {
       "method": "PUT",
-      "path": "/designs/:id",
+      "path": "/webapi/private/designs/:id",
       "handler": "designs.update",
       "config": {
         "policies": ["checkDuplicateDesignWhileEditing"]
@@ -59,7 +67,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/designs/:id",
+      "path": "/webapi/private/designs/:id",
       "handler": "designs.delete",
       "config": {
         "policies": []
@@ -67,7 +75,7 @@
     },
     {
       "method": "GET",
-      "path": "/designs-for-parties",
+      "path": "/webapi/private/designs-for-parties",
       "handler": "designs.designForParties",
       "config": {
         "policies": []
