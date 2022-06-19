@@ -61,7 +61,7 @@ export default function Departments() {
           if (response.ok) {
             return response.json();
           } else {
-            if (response.status === 403) {
+            if (response.status === 401) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {

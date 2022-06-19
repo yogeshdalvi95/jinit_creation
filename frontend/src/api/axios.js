@@ -24,7 +24,7 @@ export const serviceProviderForGetRequest = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -57,7 +57,7 @@ export const serviceProviderForPostRequest = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -88,7 +88,7 @@ export const serviceProviderForPublicPostRequest = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -122,7 +122,7 @@ export const serviceProviderForPutRequest = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -154,7 +154,7 @@ export const serviceProviderForDeleteRequest = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -192,7 +192,7 @@ export const serviceProviderForGetRequestDownloadPDFFile = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;
@@ -230,7 +230,7 @@ export const serviceProviderForGetRequestDownloadPDFFileWithGraph = async (
         error &&
         error.response &&
         (error.response.status || error.response.statusCode) &&
-        (error.response.status === 403 || error.response.statusCode === 403)
+        (error.response.status === 401 || error.response.statusCode === 401)
       ) {
         auth.clearAppStorage();
         window.location.href = `${frontendServerUrl}/login`;

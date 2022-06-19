@@ -31,16 +31,20 @@ module.exports = (strapi) => {
                   await strapi.query("active-users").delete({
                     user: id,
                   });
-                  return ctx.response.forbidden(
+                  // ctx.response.unauthorized([message], [scheme], [attributes])
+                  return ctx.response.unauthorized(
                     ["Forbidden"],
                     ["No login details present, logging out"]
                   );
                 }
               } catch (err) {
-                return ctx.response.forbidden(["Forbidden"], ["Invalid token"]);
+                return ctx.response.unauthorized(
+                  ["Forbidden"],
+                  ["Invalid token"]
+                );
               }
             } else {
-              return ctx.response.forbidden(["Forbidden"], ["No auth"]);
+              return ctx.response.unauthorized(["Forbidden"], ["No auth"]);
             }
           } else {
             ctx.response.badRequest(["Not Found"], [""]);
