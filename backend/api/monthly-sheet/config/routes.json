@@ -18,6 +18,22 @@
     },
     {
       "method": "GET",
+      "path": "/webapi/private/monthly-sheets/get-todays-data",
+      "handler": "monthly-sheet.getTodaysData",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/monthly-sheets/get-by-month",
+      "handler": "monthly-sheet.getByMonth",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/webapi/private/monthly-sheets/count",
       "handler": "monthly-sheet.count",
       "config": {

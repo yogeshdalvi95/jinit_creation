@@ -33,6 +33,14 @@ module.exports = {
     };
   },
 
+  async getTodaysData(ctx) {
+    
+  },
+  
+  async getByMonth(ctx) {
+
+  },
+
   async getMonthlyData(ctx) {
     const { raw_material, month, year } = ctx.request.query;
     const monthData = await strapi.query("monthly-sheet").findOne({
