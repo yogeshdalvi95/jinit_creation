@@ -106,6 +106,10 @@ const DatePicker = (props) => {
       line-height: 1.42857;
       letter-spacing: unset;
     }
+    .MuiInputBase-input {
+      font-size: 0.900rem,
+      color: #555555 !important
+    }
   `;
 
   return (

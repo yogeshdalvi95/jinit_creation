@@ -38,6 +38,16 @@
     "pakka_ledger": {
       "type": "boolean",
       "default": false
+    },
+    "isPurchasePresent": {
+      "type": "boolean",
+      "default": false
+    },
+    "purchase": {
+      "model": "purchases"
+    },
+    "price_per_piece": {
+      "type": "float"
     }
   }
 }

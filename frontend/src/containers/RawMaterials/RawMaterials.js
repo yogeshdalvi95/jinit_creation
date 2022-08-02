@@ -29,9 +29,9 @@ import { providerForGet, providerForDelete } from "../../api";
 import { useHistory } from "react-router-dom";
 import {
   ADDRAWMATERIALS,
-  RAWMATERIALUSAGE,
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS,
+  ADDRAWMATERIALUSAGE,
 } from "../../paths";
 import { convertNumber, isEmptyString } from "../../Utils";
 import { useEffect } from "react";
@@ -161,7 +161,6 @@ export default function RawMaterials() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
             }
           }
         })
@@ -269,7 +268,9 @@ export default function RawMaterials() {
   };
 
   const handleAddDailyCount = (rowData) => {
-    history.push(RAWMATERIALUSAGE + "?d=" + new Date() + "&r_id=" + rowData.id);
+    history.push(
+      ADDRAWMATERIALUSAGE + "?d=" + new Date() + "&r_id=" + rowData.id
+    );
   };
 
   return (

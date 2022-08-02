@@ -398,7 +398,7 @@ const Routes = () => {
           header={"View Returned Goods"}
           defaultPathToPush={GOODRETURNLIST}
           isDependent={true}
-          isEdit={true}
+          isView={true}
         />
 
         {/** Designs */}

@@ -75,7 +75,7 @@ export default function Sellers() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
+              
             }
           }
         })

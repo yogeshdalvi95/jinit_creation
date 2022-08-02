@@ -42,6 +42,9 @@ module.exports = {
       total_price,
       kachha_ledger,
       pakka_ledger,
+      price_per_piece,
+      purchase,
+      isPurchasePresent,
     } = ctx.request.body;
     await bookshelf
       .transaction(async (t) => {
@@ -54,6 +57,9 @@ module.exports = {
           total_price: total_price,
           kachha_ledger: kachha_ledger,
           pakka_ledger: pakka_ledger,
+          price_per_piece: price_per_piece,
+          purchase: purchase,
+          isPurchasePresent: isPurchasePresent,
         };
 
         let goodsReturn = await strapi
@@ -129,6 +135,9 @@ module.exports = {
       total_price,
       kachha_ledger,
       pakka_ledger,
+      price_per_piece,
+      purchase,
+      isPurchasePresent,
     } = ctx.request.body;
 
     const { id } = ctx.params;
@@ -148,6 +157,9 @@ module.exports = {
           total_price: total_price,
           kachha_ledger: kachha_ledger,
           pakka_ledger: pakka_ledger,
+          price_per_piece: price_per_piece,
+          purchase: purchase,
+          isPurchasePresent: isPurchasePresent,
         };
 
         await strapi
@@ -160,9 +172,9 @@ module.exports = {
           });
 
         /** New quantity to deduct */
-        let quantityToDeduct = validateNumber(goodsReturnData.quantity);
+        let quantityToDeduct = validateNumber(quantity);
         /** previous deducted value */
-        let previousDeductedQuantity = validateNumber(quantity);
+        let previousDeductedQuantity = validateNumber(goodsReturnData.quantity);
         /** Get old value data */
         let raw_material_data = await strapi
           .query("raw-material")
@@ -242,9 +254,27 @@ module.exports = {
 
   async delete(ctx) {
     const { id } = ctx.params;
+    let goodsReturnDetail = await strapi
+      .query("goods-return")
+      .findOne({ id: id }, []);
 
+    let quantityToAddBack = validateNumber(goodsReturnDetail.quantity);
+    let rawMaterial = goodsReturnDetail.raw_material;
+    let raw_material_data = await strapi
+      .query("raw-material")
+      .findOne({ id: rawMaterial });
+    let rawMaterialBalance = validateNumber(raw_material_data.balance);
+    let finalBalance = rawMaterialBalance + quantityToAddBack;
     await bookshelf
       .transaction(async (t) => {
+        await strapi.query("raw-material").update(
+          { id: rawMaterial },
+          {
+            balance: validateNumber(finalBalance),
+          },
+          { patch: true, transacting: t }
+        );
+
         await strapi.query("purchase-payment-transaction").delete(
           { goods_return: id },
           {
@@ -272,19 +302,17 @@ module.exports = {
 
   async findOne(ctx) {
     const { id } = ctx.params;
-    let purchase_detail = await strapi
+    console.log("id => ", id);
+    let goodsReturnDetail = await strapi
       .query("goods-return")
-      .findOne({ id: id });
-    let raw_material_id = purchase_detail.raw_material
-      ? purchase_detail.raw_material.id
-      : null;
-    let raw_material_data = await strapi
-      .query("raw-material")
-      .findOne({ id: raw_material_id });
-    purchase_detail = {
-      ...purchase_detail,
-      raw_material: raw_material_data,
-    };
-    ctx.send(purchase_detail);
+      .findOne({ id: id }, [
+        "raw_material",
+        "raw_material.department",
+        "raw_material.unit",
+        "raw_material.color",
+        "raw_material.category",
+        "seller",
+      ]);
+    ctx.send(goodsReturnDetail);
   },
 };

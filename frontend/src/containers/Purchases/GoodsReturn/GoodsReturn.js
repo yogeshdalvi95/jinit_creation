@@ -13,26 +13,26 @@ import {
   RemoteAutoComplete,
   SnackBarComponent,
   Table,
-} from "../../components";
+} from "../../../components";
 // core components
 import {
   backend_goods_return,
   backend_sellers,
   backend_raw_materials,
   frontendServerUrl,
-} from "../../constants";
-import { convertNumber, isEmptyString, plainDate } from "../../Utils";
+} from "../../../constants";
+import { convertNumber, isEmptyString, plainDate } from "../../../Utils";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
-import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
+import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { ADDGOODRETURN, VIEWGOODRETURN, EDITGOODRETURN } from "../../paths";
+import { ADDGOODRETURN, VIEWGOODRETURN, EDITGOODRETURN } from "../../../paths";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import moment from "moment";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { providerForDelete } from "../../api";
+import { providerForDelete } from "../../../api";
 
 const useStyles = makeStyles(styles);
 export default function GoodsReturn() {
@@ -111,7 +111,6 @@ export default function GoodsReturn() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
             }
           }
         })

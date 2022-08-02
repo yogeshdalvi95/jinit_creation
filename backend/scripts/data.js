@@ -150,6 +150,7 @@ const ROLES = {
       {
         name: "designs",
         action: [
+          "downloaddesign",
           "find",
           "create",
           "update",
@@ -333,6 +334,7 @@ const ROLES = {
       {
         name: "designs",
         action: [
+          "downloaddesign",
           "find",
           "create",
           "update",

@@ -75,7 +75,7 @@ export default function Parties() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
+              
             }
           }
         })

@@ -43,6 +43,7 @@ export const backend_designs = `${apiBackendUrl}/designs`;
 export const backend_view_designs = `${apiBackendUrl}/view-design`;
 export const backend_designs_for_parties = `${apiBackendUrl}/designs-for-parties`;
 export const backend_duplicate_designs = `${apiBackendUrl}/designs/duplicate-design`;
+export const backend_download_designs = `${apiBackendUrl}/designs/download`;
 
 export const backend_designs_and_materials = `${apiBackendUrl}/designs-and-materials`;
 export const backend_designs_and_materials_get_material_count = `${apiBackendUrl}/designs-and-materials/get-material-count`;

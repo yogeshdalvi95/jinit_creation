@@ -20,18 +20,16 @@ import {
 } from "../../../components";
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import {
-  Backdrop,
-  CircularProgress,
-  makeStyles,
-  Typography,
-} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import moment from "moment";
+import { useHistory } from "react-router-dom";
+import { ADDRAWMATERIALUSAGE } from "../../../paths";
 
 const useStyles = makeStyles(styles);
 const DailyUsage = (props) => {
   const classes = useStyles();
+  const history = useHistory();
   const [filter, setFilter] = useState({
     _sort: "date:desc",
   });
@@ -42,7 +40,6 @@ const DailyUsage = (props) => {
     message: "",
   });
   const [openBackDrop, setBackDrop] = useState(false);
-  const [selectedRawMaterial, setSelectedRawMaterial] = useState(null);
 
   const [
     openDialogForSelectingRawMaterial,
@@ -67,7 +64,9 @@ const DailyUsage = (props) => {
   };
 
   const handleSelectRawMaterial = (value, obj) => {
-    setSelectedRawMaterial(obj);
+    history.push(
+      ADDRAWMATERIALUSAGE + "?d=" + new Date() + "&r_id=" + value.id
+    );
     handleCloseDialogForRawMaterial();
   };
 
@@ -218,10 +217,8 @@ const DailyUsage = (props) => {
                     <CustomTableCell>Total Used</CustomTableCell>
                   </CustomTableRow>
                 </CustomTableHead>
-                <CustomTableBody>
-
-                </CustomTableBody>
-                </CustomMaterialUITable>
+                <CustomTableBody></CustomTableBody>
+              </CustomMaterialUITable>
             </CardBody>
           </Card>
         </GridItem>

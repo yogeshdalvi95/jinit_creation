@@ -71,6 +71,8 @@ export default function AddPurchases(props) {
   const [selectedSeller, setSelectedSeller] = React.useState(null);
   const [id] = useState(props.id ? props.id : null);
   const [rawMaterialIds, setRawMateralIds] = React.useState([]);
+  const [rawMaterialIdTohighLight, setRawMaterialToHighLight] =
+    React.useState(null);
 
   const [snackBar, setSnackBar] = React.useState({
     show: false,
@@ -125,6 +127,11 @@ export default function AddPurchases(props) {
   useEffect(() => {
     if (isEdit || isView) {
       getPurchaseInfo();
+    }
+    if (isView) {
+      const urlParams = new URLSearchParams(window.location.search);
+      let highlightRawMaterialId = urlParams.get("highlight");
+      setRawMaterialToHighLight(highlightRawMaterialId);
     }
   }, []);
 
@@ -1119,285 +1126,332 @@ export default function AddPurchases(props) {
                     </CustomTableRow>
                   ) : (
                     <>
-                      {individualPurchase.map((Ip, key) => (
-                        <>
-                          <CustomTableRow>
-                            <CustomTableCell>
-                              <div className={classes.block}>
-                                <FormControlLabel
-                                  control={
-                                    <Switch
-                                      disabled={
-                                        isView ||
-                                        (isEdit && !Ip.isNew) ||
-                                        formState.type_of_bill === "Kachha"
-                                      }
-                                      checked={
-                                        Ip.is_raw_material ? true : false
-                                      }
-                                      name={"is_raw_material_or_clubbed"}
-                                      onChange={(event) =>
-                                        handleChangeForRepetableComponent(
-                                          event,
-                                          key
-                                        )
-                                      }
-                                      classes={{
-                                        switchBase: classes.switchBase,
-                                        checked: classes.switchChecked,
-                                        thumb: classes.switchIcon,
-                                        track: classes.switchBar,
-                                      }}
-                                    />
-                                  }
-                                  classes={{
-                                    label: classes.label,
-                                  }}
-                                  label=""
-                                />
-                              </div>
-                            </CustomTableCell>
-                            <CustomTableCell>
-                              {Ip.is_raw_material ? (
-                                <GridContainer style={{ dispay: "flex" }}>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Name : </b> {Ip.raw_material_obj.name}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Department : </b>
-                                    {Ip.raw_material_obj.department}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Category : </b>
-                                    {Ip.raw_material_obj.category}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Color :</b> {Ip.raw_material_obj.color}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Size : </b>
-                                    {Ip.raw_material_obj.size}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <b>Balance : </b>
-                                    {Ip.raw_material_obj.bal}
-                                  </GridItem>
-                                  <GridItem xs={12} sm={12} md={12}>
-                                    <Button
-                                      color="primary"
-                                      disabled={
-                                        isView ||
-                                        (isEdit &&
-                                          Ip.raw_material &&
-                                          !Ip.isNew) ||
-                                        Ip.are_raw_material_clubbed
-                                      }
-                                      onClick={() => {
-                                        addChangeRawMaterial(key);
-                                      }}
-                                    >
-                                      {Ip.raw_material
-                                        ? "Change Raw Material"
-                                        : " Select Raw Material"}
-                                    </Button>
-                                    {hasError("raw_material" + key, error) ? (
-                                      <FormHelperText
-                                        id={"raw_material" + key}
-                                        error={hasError(
-                                          "raw_material" + key,
-                                          error
-                                        )}
+                      {individualPurchase.map((Ip, key) => {
+                        console.log("Ip =>", Ip);
+                        let rawMaterial = Ip.raw_material;
+                        let isHighLight =
+                          rawMaterial == rawMaterialIdTohighLight;
+                        return (
+                          <>
+                            <CustomTableRow>
+                              <CustomTableCell
+                                style={{
+                                  backgroundColor: isHighLight
+                                    ? "#e1e1e1"
+                                    : "transparent",
+                                }}
+                              >
+                                <div className={classes.block}>
+                                  <FormControlLabel
+                                    control={
+                                      <Switch
+                                        disabled={
+                                          isView ||
+                                          (isEdit && !Ip.isNew) ||
+                                          formState.type_of_bill === "Kachha"
+                                        }
+                                        checked={
+                                          Ip.is_raw_material ? true : false
+                                        }
+                                        name={"is_raw_material_or_clubbed"}
+                                        onChange={(event) =>
+                                          handleChangeForRepetableComponent(
+                                            event,
+                                            key
+                                          )
+                                        }
+                                        classes={{
+                                          switchBase: classes.switchBase,
+                                          checked: classes.switchChecked,
+                                          thumb: classes.switchIcon,
+                                          track: classes.switchBar,
+                                        }}
+                                      />
+                                    }
+                                    classes={{
+                                      label: classes.label,
+                                    }}
+                                    label=""
+                                  />
+                                </div>
+                              </CustomTableCell>
+                              <CustomTableCell
+                                style={{
+                                  backgroundColor: isHighLight
+                                    ? "#e1e1e1"
+                                    : "transparent",
+                                }}
+                              >
+                                {Ip.is_raw_material ? (
+                                  <GridContainer style={{ dispay: "flex" }}>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Name : </b> {Ip.raw_material_obj.name}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Department : </b>
+                                      {Ip.raw_material_obj.department}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Category : </b>
+                                      {Ip.raw_material_obj.category}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Color :</b> {Ip.raw_material_obj.color}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Size : </b>
+                                      {Ip.raw_material_obj.size}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <b>Balance : </b>
+                                      {Ip.raw_material_obj.bal}
+                                    </GridItem>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <Button
+                                        color="primary"
+                                        disabled={
+                                          isView ||
+                                          (isEdit &&
+                                            Ip.raw_material &&
+                                            !Ip.isNew) ||
+                                          Ip.are_raw_material_clubbed
+                                        }
+                                        onClick={() => {
+                                          addChangeRawMaterial(key);
+                                        }}
                                       >
-                                        {hasError("raw_material" + key, error)
-                                          ? error["raw_material" + key].map(
-                                              (error) => {
-                                                return error + " ";
-                                              }
-                                            )
-                                          : null}
-                                      </FormHelperText>
-                                    ) : null}
-                                  </GridItem>
-                                </GridContainer>
-                              ) : (
+                                        {Ip.raw_material
+                                          ? "Change Raw Material"
+                                          : " Select Raw Material"}
+                                      </Button>
+                                      {hasError("raw_material" + key, error) ? (
+                                        <FormHelperText
+                                          id={"raw_material" + key}
+                                          error={hasError(
+                                            "raw_material" + key,
+                                            error
+                                          )}
+                                        >
+                                          {hasError("raw_material" + key, error)
+                                            ? error["raw_material" + key].map(
+                                                (error) => {
+                                                  return error + " ";
+                                                }
+                                              )
+                                            : null}
+                                        </FormHelperText>
+                                      ) : null}
+                                    </GridItem>
+                                  </GridContainer>
+                                ) : (
+                                  <CustomInput
+                                    onChange={(event) =>
+                                      handleChangeForRepetableComponent(
+                                        event,
+                                        key,
+                                        "Name"
+                                      )
+                                    }
+                                    labelText="Name"
+                                    name="name"
+                                    disabled={isView}
+                                    value={Ip.name}
+                                    id={"name" + key}
+                                    formControlProps={{
+                                      fullWidth: true,
+                                    }}
+                                    helperTextId={"helperText_name" + key}
+                                    isHelperText={hasError("name" + key, error)}
+                                    helperText={
+                                      hasError("name" + key, error)
+                                        ? error["name" + key].map((error) => {
+                                            return error + " ";
+                                          })
+                                        : null
+                                    }
+                                    error={hasError("name" + key, error)}
+                                  />
+                                )}
+                              </CustomTableCell>
+                              <CustomTableCell
+                                style={{
+                                  backgroundColor: isHighLight
+                                    ? "#e1e1e1"
+                                    : "transparent",
+                                }}
+                              >
                                 <CustomInput
                                   onChange={(event) =>
                                     handleChangeForRepetableComponent(
                                       event,
                                       key,
-                                      "Name"
+                                      "Purchase Cost"
                                     )
                                   }
-                                  labelText="Name"
-                                  name="name"
-                                  disabled={isView}
-                                  value={Ip.name}
-                                  id={"name" + key}
+                                  type="number"
+                                  disabled={
+                                    isView ||
+                                    (Ip.is_raw_material && !Ip.raw_material)
+                                  }
+                                  labelText="Purchase Cost"
+                                  name="purchase_cost"
+                                  value={Ip.purchase_cost}
+                                  id="purchase_cost"
                                   formControlProps={{
                                     fullWidth: true,
                                   }}
-                                  helperTextId={"helperText_name" + key}
-                                  isHelperText={hasError("name" + key, error)}
+                                  inputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        {!isEmptyString(Ip.purchase_unit)
+                                          ? "/" + Ip.purchase_unit
+                                          : ""}
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                  /** For setting errors */
+                                  helperTextId={
+                                    "helperText_purchase_cost" + key
+                                  }
+                                  isHelperText={hasError(
+                                    "purchase_cost" + key,
+                                    error
+                                  )}
                                   helperText={
-                                    hasError("name" + key, error)
-                                      ? error["name" + key].map((error) => {
-                                          return error + " ";
-                                        })
+                                    hasError("purchase_cost" + key, error)
+                                      ? error["purchase_cost" + key].map(
+                                          (error) => {
+                                            return error + " ";
+                                          }
+                                        )
                                       : null
                                   }
-                                  error={hasError("name" + key, error)}
+                                  error={hasError("purchase_cost" + key, error)}
                                 />
-                              )}
-                            </CustomTableCell>
-                            <CustomTableCell>
-                              <CustomInput
-                                onChange={(event) =>
-                                  handleChangeForRepetableComponent(
-                                    event,
-                                    key,
-                                    "Purchase Cost"
-                                  )
-                                }
-                                type="number"
-                                disabled={
-                                  isView ||
-                                  (Ip.is_raw_material && !Ip.raw_material)
-                                }
-                                labelText="Purchase Cost"
-                                name="purchase_cost"
-                                value={Ip.purchase_cost}
-                                id="purchase_cost"
-                                formControlProps={{
-                                  fullWidth: true,
+                              </CustomTableCell>
+                              <CustomTableCell
+                                style={{
+                                  backgroundColor: isHighLight
+                                    ? "#e1e1e1"
+                                    : "transparent",
                                 }}
-                                inputProps={{
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      {!isEmptyString(Ip.purchase_unit)
-                                        ? "/" + Ip.purchase_unit
-                                        : ""}
-                                    </InputAdornment>
-                                  ),
+                              >
+                                <CustomInput
+                                  onChange={(event) =>
+                                    handleChangeForRepetableComponent(
+                                      event,
+                                      key,
+                                      "Purchase Quantity"
+                                    )
+                                  }
+                                  type="number"
+                                  disabled={
+                                    isView ||
+                                    (Ip.is_raw_material && !Ip.raw_material)
+                                  }
+                                  labelText="Purchase Qty"
+                                  name="purchase_quantity"
+                                  value={Ip.purchase_quantity}
+                                  id="purchase_quantity"
+                                  formControlProps={{
+                                    fullWidth: true,
+                                  }}
+                                  inputProps={{
+                                    endAdornment: (
+                                      <InputAdornment position="end">
+                                        {!isEmptyString(Ip.purchase_unit)
+                                          ? "/" + Ip.purchase_unit
+                                          : ""}
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                  /** For setting errors */
+                                  helperTextId={
+                                    "helperText_purchase_quantity" + key
+                                  }
+                                  isHelperText={hasError(
+                                    "purchase_quantity" + key,
+                                    error
+                                  )}
+                                  helperText={
+                                    hasError("purchase_quantity" + key, error)
+                                      ? error["purchase_quantity" + key].map(
+                                          (error) => {
+                                            return error + " ";
+                                          }
+                                        )
+                                      : null
+                                  }
+                                  error={hasError(
+                                    "purchase_quantity" + key,
+                                    error
+                                  )}
+                                />
+                              </CustomTableCell>
+                              <CustomTableCell
+                                sx={{
+                                  minWidth: "fit-content",
+                                  backgroundColor: isHighLight
+                                    ? "#e1e1e1"
+                                    : "transparent",
                                 }}
-                                /** For setting errors */
-                                helperTextId={"helperText_purchase_cost" + key}
-                                isHelperText={hasError(
-                                  "purchase_cost" + key,
-                                  error
-                                )}
-                                helperText={
-                                  hasError("purchase_cost" + key, error)
-                                    ? error["purchase_cost" + key].map(
-                                        (error) => {
-                                          return error + " ";
-                                        }
-                                      )
-                                    : null
-                                }
-                                error={hasError("purchase_cost" + key, error)}
-                              />
-                            </CustomTableCell>
-                            <CustomTableCell>
-                              <CustomInput
-                                onChange={(event) =>
-                                  handleChangeForRepetableComponent(
-                                    event,
-                                    key,
-                                    "Purchase Quantity"
-                                  )
-                                }
-                                type="number"
-                                disabled={
-                                  isView ||
-                                  (Ip.is_raw_material && !Ip.raw_material)
-                                }
-                                labelText="Purchase Qty"
-                                name="purchase_quantity"
-                                value={Ip.purchase_quantity}
-                                id="purchase_quantity"
-                                formControlProps={{
-                                  fullWidth: true,
-                                }}
-                                inputProps={{
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      {!isEmptyString(Ip.purchase_unit)
-                                        ? "/" + Ip.purchase_unit
-                                        : ""}
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                /** For setting errors */
-                                helperTextId={
-                                  "helperText_purchase_quantity" + key
-                                }
-                                isHelperText={hasError(
-                                  "purchase_quantity" + key,
-                                  error
-                                )}
-                                helperText={
-                                  hasError("purchase_quantity" + key, error)
-                                    ? error["purchase_quantity" + key].map(
-                                        (error) => {
-                                          return error + " ";
-                                        }
-                                      )
-                                    : null
-                                }
-                                error={hasError(
-                                  "purchase_quantity" + key,
-                                  error
-                                )}
-                              />
-                            </CustomTableCell>
-                            <CustomTableCell
-                              sx={{
-                                minWidth: "fit-content",
-                              }}
-                            >
-                              <b>
-                                {convertNumber(Ip.total_purchase_cost, true)}
-                              </b>
-                            </CustomTableCell>
-                            {!isView && (
-                              <CustomTableCell>
-                                <FAB
-                                  disabled={isEdit && !Ip.isNew}
-                                  color="danger"
-                                  align={"end"}
-                                  size={"small"}
-                                  onClick={() => {
-                                    deletePurchase(key);
+                              >
+                                <b>
+                                  {convertNumber(Ip.total_purchase_cost, true)}
+                                </b>
+                              </CustomTableCell>
+                              {!isView && (
+                                <CustomTableCell
+                                  style={{
+                                    backgroundColor: isHighLight
+                                      ? "#e1e1e1"
+                                      : "transparent",
                                   }}
                                 >
-                                  <DeleteIcon />
-                                </FAB>
-                              </CustomTableCell>
-                            )}
-                            {!isView && (
-                              <CustomTableCell>
-                                {!isView &&
-                                individualPurchase.length - 1 === key ? (
                                   <FAB
-                                    disabled={
-                                      isView ||
-                                      (Ip.is_raw_material && !Ip.raw_material)
-                                    }
-                                    color="success"
+                                    disabled={isEdit && !Ip.isNew}
+                                    color="danger"
                                     align={"end"}
                                     size={"small"}
                                     onClick={() => {
-                                      addNewPurchase();
+                                      deletePurchase(key);
                                     }}
                                   >
-                                    <AddIcon />
+                                    <DeleteIcon />
                                   </FAB>
-                                ) : null}
-                              </CustomTableCell>
-                            )}
-                          </CustomTableRow>
-                        </>
-                      ))}
+                                </CustomTableCell>
+                              )}
+                              {!isView && (
+                                <CustomTableCell
+                                  style={{
+                                    backgroundColor: isHighLight
+                                      ? "#e1e1e1"
+                                      : "transparent",
+                                  }}
+                                >
+                                  {!isView &&
+                                  individualPurchase.length - 1 === key ? (
+                                    <FAB
+                                      disabled={
+                                        isView ||
+                                        (Ip.is_raw_material && !Ip.raw_material)
+                                      }
+                                      color="success"
+                                      align={"end"}
+                                      size={"small"}
+                                      onClick={() => {
+                                        addNewPurchase();
+                                      }}
+                                    >
+                                      <AddIcon />
+                                    </FAB>
+                                  ) : null}
+                                </CustomTableCell>
+                              )}
+                            </CustomTableRow>
+                          </>
+                        );
+                      })}
                       <CustomTableRow>
                         <CustomTableCell
                           colSpan={4}

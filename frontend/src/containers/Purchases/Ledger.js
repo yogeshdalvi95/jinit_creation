@@ -161,6 +161,7 @@ export default function Ledger() {
         const url = URL.createObjectURL(
           new Blob([res.data], { type: "application/pdf" })
         );
+        console.log("url =>", url);
         const pdfNewWindow = window.open();
         pdfNewWindow.location.href = url;
         setBackDrop(false);
@@ -320,8 +321,6 @@ export default function Ledger() {
     }));
     setSellerInfo(seller);
   };
-
-  console.log("seller ", sellerInfo);
 
   const editTxn = (id, txnType) => {
     let url = "";

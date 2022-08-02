@@ -469,7 +469,7 @@ export default function AddEditReadyMaterial(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
+              
             }
           }
         })

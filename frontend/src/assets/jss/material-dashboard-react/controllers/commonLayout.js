@@ -8,6 +8,7 @@ import {
 } from "../../material-dashboard-react";
 
 const styles = {
+  primaryColor: primaryColor,
   detailPanelGrid: {
     padding: "1rem !important",
   },
@@ -244,6 +245,18 @@ const styles = {
   },
   colorPrimary: {
     color: primaryColor[0],
+  },
+  labelStylesForAddForm: {
+    marginTop: "0.8rem",
+    color: "#C8C8C8",
+    marginBottom: "0.8rem",
+  },
+  labelButtonStylesForAddForm: {
+    marginTop: "0.8rem",
+    marginBottom: "0.8rem",
+  },
+  rootLabelButtonGridBorderRight: {
+    borderRight: "2px solid #bebdbd",
   },
 };
 

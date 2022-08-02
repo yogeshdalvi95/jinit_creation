@@ -34,7 +34,7 @@ export const VIEWKACHHAPURCHASEDETAILS = "/view-kachha-purchase-detailss";
 
 export const PURCHASELEDGER = "/purchase-ledger";
 
-export const ADDGOODRETURN = "/return-goods";
+export const ADDGOODRETURN = "/add-return-goods";
 export const VIEWGOODRETURN = "/view-returned-goods";
 export const EDITGOODRETURN = "/edit-returned-goods";
 export const GOODRETURNLIST = "/returned-goods-list";

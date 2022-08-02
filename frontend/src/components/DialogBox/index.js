@@ -9,3 +9,4 @@ export { default as DialogBoxForSelectingReadyMaterial } from "./DialogBoxForSel
 export { default as DialogForCheckingStockAvailibility } from "./DialogForCheckingStockAvailibility";
 export { default as DialogBoxForDuplicatingDesign } from "./DialogBoxForDuplicatingDesign";
 export { default as DialogBoxForSelectingDesign } from "./DialogBoxForSelectingDesign";
+export { default as DialogForSelectingPurchase } from "./DialogForSelectingPurchase";

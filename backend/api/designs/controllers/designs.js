@@ -134,7 +134,12 @@ module.exports = {
         design: id,
         isColor: false,
       },
-      ["raw_material", "raw_material.department", "raw_material.unit"]
+      [
+        "raw_material",
+        "raw_material.department",
+        "raw_material.unit",
+        "raw_material.category",
+      ]
     );
 
     let commonMaterialsWithoutDie = [];
@@ -211,9 +216,110 @@ module.exports = {
   },
 
   async downloadDesign(ctx) {
-    const { id } = ctx.params;
+    const {    } = ctx.request.body;
     let designData = await strapi.query("designs").findOne({ id: id });
-    
+    let dataToDownload = {};
+    const commonRawMaterials = await strapi.query("designs-and-materials").find(
+      {
+        design: id,
+        isColor: false,
+      },
+      [
+        "raw_material",
+        "raw_material.department",
+        "raw_material.unit",
+        "raw_material.category",
+      ]
+    );
+
+    let commonMaterialsWithoutDie = [];
+    let commonMaterialsWithDie = [];
+    let commonMotiBandhaiMaterial = [];
+
+    commonRawMaterials.forEach((el) => {
+      if (el?.raw_material?.is_die) {
+        commonMaterialsWithDie.push(el);
+      } else if (el.raw_material?.department?.name === "MOTI BANDHAI") {
+        commonMotiBandhaiMaterial.push(el);
+      } else {
+        commonMaterialsWithoutDie.push(el);
+      }
+    });
+
+    dataToDownload = {
+      ...dataToDownload,
+      designData: designData,
+      commonRawMaterials: {
+        commonMaterialsWithoutDie: commonMaterialsWithoutDie,
+        commonMaterialsWithDie: commonMaterialsWithDie,
+        commonMotiBandhaiMaterial: commonMotiBandhaiMaterial,
+      },
+    };
+
+    let designColors = designData?.colors;
+
+    /** Download all colors */
+    if (!downloadAll) {
+      if (color) {
+        designColors = designColors.filter((o, i) => {
+          if (o.id == color) {
+            return true; // stop searching
+          }
+        });
+      } else {
+        return ctx.badRequest(null, "Not a valid color");
+      }
+    }
+
+    if (
+      Object.prototype.toString.call(designColors) === "[object Array]" &&
+      designColors.length
+    ) {
+      await utils.asyncForEach(designColors, async (c) => {
+        let colorId = c.id;
+        let colorName = c.name;
+        const colorRawMaterials = await strapi
+          .query("designs-and-materials")
+          .find(
+            {
+              design: id,
+              isColor: true,
+              color: colorId,
+            },
+            [
+              "raw_material",
+              "raw_material.department",
+              "raw_material.unit",
+              "raw_material.category",
+              "raw_material.color",
+            ]
+          );
+
+        let colorMaterial = [];
+        let colorBandhaiMaterials = [];
+
+        colorRawMaterials.forEach((el) => {
+          if (el.raw_material?.department?.name === "MOTI BANDHAI") {
+            colorBandhaiMaterials.push(el);
+          } else {
+            colorMaterial.push(el);
+          }
+        });
+
+        dataToDownload = {
+          ...dataToDownload,
+          [colorId]: {
+            colorName: colorName,
+            colorMaterial: colorMaterial,
+            colorBandhaiMaterials: colorBandhaiMaterials,
+          },
+        };
+      });
+
+      ctx.send(dataToDownload);
+    } else {
+      return ctx.badRequest(null, "No colors");
+    }
   },
 
   async generatePdf(ctx) {

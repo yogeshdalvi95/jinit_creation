@@ -34,7 +34,7 @@
     },
     {
       "method": "POST",
-      "path": "/webapi/private/designs/download/:id",
+      "path": "/webapi/private/designs/download",
       "handler": "designs.downloadDesign",
       "config": {
         "policies": []

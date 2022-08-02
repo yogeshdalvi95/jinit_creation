@@ -67,9 +67,7 @@ export default function Admin() {
             if (response.status === 401) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
-            } else {
-              throw new Error("Something went wrong");
-            }
+            } 
           }
         })
         .then((result) => {

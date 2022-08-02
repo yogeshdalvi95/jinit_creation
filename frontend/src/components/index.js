@@ -57,6 +57,7 @@ export {
   DialogForCheckingStockAvailibility,
   DialogBoxForDuplicatingDesign,
   DialogBoxForSelectingDesign,
+  DialogForSelectingPurchase,
 } from "./DialogBox";
 export { RawMaterialDetail, RawMaterialList } from "./RawMaterialDetail";
 export { DesignData, StockData, RatioData } from "./DesignData";

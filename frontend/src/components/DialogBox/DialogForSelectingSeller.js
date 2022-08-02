@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import {
-  Auth,
-  Button,
-  CustomInput,
-  GridContainer,
-  GridItem,
-  Table,
-} from "../../components";
+import { Auth, Button, CustomInput, GridContainer, GridItem, Table } from "..";
 // core components
 import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import { backend_sellers, frontendServerUrl } from "../../constants";
@@ -59,7 +52,6 @@ export default function DialogForSelectingSeller(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              throw new Error("Something went wrong");
             }
           }
         })

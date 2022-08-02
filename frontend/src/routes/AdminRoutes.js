@@ -67,6 +67,8 @@ import {
   EDITPURCHASESID,
   VIEWPURCHASESID,
   ADDRAWMATERIALUSAGE,
+  VIEWGOODRETURNID,
+  EDITGOODRETURNID,
 } from "../paths";
 
 /** Raw material and units */
@@ -103,6 +105,8 @@ const goodsReturnPath = [
   EDITGOODRETURN,
   GOODRETURNLIST,
   VIEWGOODRETURN,
+  EDITGOODRETURNID,
+  VIEWGOODRETURNID,
 ];
 
 /** Ledger */
