@@ -435,6 +435,7 @@ module.exports = {
       let buffer = await generatePDF("Purchase Ledger", html);
       ctx.send(buffer);
     } catch (err) {
+      console.log("error => ", err);
       throw err;
     }
   },
