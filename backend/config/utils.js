@@ -300,11 +300,13 @@ const generatePDF = async (report_name, html) => {
   /** pdf margin */
   contentVal = contentVal.replace(/{report_name}/g, report_name);
   contentVal = contentVal.replace(/{htmlTag}/g, html);
-
+  console.log("In generate pdf 3");
   const browser = await puppeteer.launch({ headless: true });
+  console.log("In generate pdf 4");
   const page = await browser.newPage();
+  console.log("In generate pdf 5");
   await page.setContent(contentVal);
-
+  console.log("In generate pdf 6");
   const footer = `<span style="font-size: 10px; margin-right : auto ;margin-left:35px;"> 
                       Jinit Address
                     </span>
@@ -326,7 +328,7 @@ const generatePDF = async (report_name, html) => {
   //   footerTemplate:
   //     '3432524fsdfs <span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
   // });
-  console.log("In generate pdf 3");
+  console.log("In generate pdf 7");
   const buffer = await page.pdf({
     printBackground: true,
     displayHeaderFooter: true,
