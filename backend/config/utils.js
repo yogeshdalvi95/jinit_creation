@@ -301,7 +301,9 @@ const generatePDF = async (report_name, html) => {
   contentVal = contentVal.replace(/{report_name}/g, report_name);
   contentVal = contentVal.replace(/{htmlTag}/g, html);
   console.log("In generate pdf 3");
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disabled-setupid-sandbox"],
+  });
   console.log("In generate pdf 4");
   const page = await browser.newPage();
   console.log("In generate pdf 5");
