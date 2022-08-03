@@ -288,11 +288,13 @@ const logo =
 const pdfMargin = 45;
 
 const generatePDF = async (report_name, html) => {
+  console.log("In generate pdf 1");
   var content = fs.readFileSync(
     path.resolve(__dirname, "../assets/files/pdf_template.html"),
     "utf-8"
   );
 
+  console.log("In generate pdf 2");
   var contentVal = content.replace(/{pdfMargin}/g, pdfMargin);
 
   /** pdf margin */
@@ -324,6 +326,7 @@ const generatePDF = async (report_name, html) => {
   //   footerTemplate:
   //     '3432524fsdfs <span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
   // });
+  console.log("In generate pdf 3");
   const buffer = await page.pdf({
     printBackground: true,
     displayHeaderFooter: true,
@@ -336,6 +339,7 @@ const generatePDF = async (report_name, html) => {
     headerTemplate: `<span><img src = '${logo}' width = '60' style='margin-left:35px;'/></span>`,
     footerTemplate: footer,
   });
+  console.log("In generate pdf 4");
   await browser.close();
   return buffer;
 };

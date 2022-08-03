@@ -279,11 +279,14 @@ module.exports = {
 
   async downloadledger(ctx) {
     const { date_gte, date_lte, sellerId } = ctx.request.body;
+    console.log("ctx.request.body => ", ctx.request.body);
     await strapi.services["monthly-purchase-balance"].updateLedger(
       date_gte,
       sellerId
     );
+    console.log("Here 1");
     let data = await generateLedger(ctx.request.body);
+    console.log("data => ", data);
     let html = "";
     let monthYearObject = [];
     let dateToCheckFrom = new Date(date_gte);
@@ -318,7 +321,6 @@ module.exports = {
         <p class="p centerAlignedText lessBottomMargin lessTopMargin">Mob:- ${
           sellerInfo?.phone
         }</p>
-        <p class="p centerAlignedText moreTopMargin moreBottomMargin">for period</p>
         <p class="p centerAlignedText moreBottomMargin lessTopMargin"><b>${getDateInMMDDYYYY(
           date_gte
         )} - ${getDateInMMDDYYYY(date_lte)}</b>
