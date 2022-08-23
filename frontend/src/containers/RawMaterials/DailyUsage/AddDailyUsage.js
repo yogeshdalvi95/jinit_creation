@@ -13,6 +13,7 @@ import {
   DialogBox,
   DialogBoxForSelectingRawMaterial,
   DialogForGettingPreviousMonthlyData,
+  FAB,
   GridContainer,
   GridItem,
   MonthYearPicker,
@@ -20,7 +21,7 @@ import {
 } from "../../../components";
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
-
+import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import {
   Backdrop,
   CircularProgress,
@@ -44,14 +45,15 @@ import {
 } from "../../../Utils";
 import auth from "../../../components/Auth";
 import { Children } from "react";
-import { RAWMATERIALUSAGE } from "../../../paths";
+import { ADDRAWMATERIALUSAGE, RAWMATERIALUSAGE } from "../../../paths";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles(styles);
 const localizer = momentLocalizer(moment);
 
 const AddDailyUsage = (props) => {
   const classes = useStyles();
-
+  const history = useHistory();
   const [modal, setModal] = useState({
     open: false,
     date: new Date(),
@@ -167,7 +169,7 @@ const AddDailyUsage = (props) => {
     window.history.pushState(
       "",
       "Daily usage",
-      `${frontendServerUrl}${RAWMATERIALUSAGE}?d=${new Date(
+      `${frontendServerUrl}${ADDRAWMATERIALUSAGE}?d=${new Date(
         year,
         month - 1,
         1
@@ -496,6 +498,10 @@ const AddDailyUsage = (props) => {
     }
   };
 
+  const onBackClick = () => {
+    history.push(RAWMATERIALUSAGE);
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -603,17 +609,18 @@ const AddDailyUsage = (props) => {
             </CardHeader>
             <CardBody>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={8}>
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      changeRawMaterial();
-                    }}
-                  >
-                    {selectedRawMaterial
-                      ? "Change Raw Material"
-                      : "Select Raw Material"}
-                  </Button>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={12}
+                  style={{
+                    marginBottom: "10px",
+                    marginLeft: "-10px",
+                  }}
+                >
+                  <FAB align={"start"} size={"small"} onClick={onBackClick}>
+                    <KeyboardArrowLeftIcon />
+                  </FAB>
                 </GridItem>
                 {selectedRawMaterial ? (
                   <>
@@ -658,6 +665,16 @@ const AddDailyUsage = (props) => {
                 >
                   {selectedRawMaterial ? (
                     <>
+                      <Button
+                        color="primary"
+                        onClick={() => {
+                          changeRawMaterial();
+                        }}
+                      >
+                        {selectedRawMaterial
+                          ? "Change Raw Material"
+                          : "Select Raw Material"}
+                      </Button>
                       <Button
                         color="primary"
                         onClick={() => {

@@ -12,12 +12,15 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RemoteAutoComplete,
   SnackBarComponent,
   Table,
 } from "../../components";
 // core components
 import EditIcon from "@material-ui/icons/Edit";
 import {
+  backend_category,
+  backend_color,
   backend_departments,
   backend_raw_materials,
   frontendServerUrl,
@@ -32,6 +35,7 @@ import {
   EDITRAWMATERIALS,
   VIEWRAWMATERIALS,
   ADDRAWMATERIALUSAGE,
+  RAWMATERIALSVIEW,
 } from "../../paths";
 import { convertNumber, isEmptyString } from "../../Utils";
 import { useEffect } from "react";
@@ -39,16 +43,19 @@ import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Link } from "@mui/material";
 
 const useStyles = makeStyles(styles);
 export default function RawMaterials() {
   const classes = useStyles();
   const tableRef = React.createRef();
   const [departments, setDepartments] = useState([]);
+  const [autoCompleteObject, setAutoCompleteObject] = React.useState({});
   const history = useHistory();
+  const [initialParams, setInitialParams] = useState(false);
   const [openBackDrop, setBackDrop] = useState(false);
   const [filter, setFilter] = useState({
-    _sort: "id:asc",
+    _sort: "updated_at:asc",
   });
 
   const [snackBar, setSnackBar] = React.useState({
@@ -59,14 +66,20 @@ export default function RawMaterials() {
 
   const columns = [
     {
-      title: "Id",
-      field: "id",
-      render: (rowData) => "#" + rowData.id,
-    },
-    {
       title: "Name",
       field: "name",
-      render: (rowData) => (isEmptyString(rowData.name) ? "---" : rowData.name),
+      render: (rowData) =>
+        rowData?.name ? (
+          <Link
+            href={`${frontendServerUrl}${VIEWRAWMATERIALS}/${rowData.id}`}
+            underline="always"
+            target="_blank"
+          >
+            {rowData.name}
+          </Link>
+        ) : (
+          "----"
+        ),
     },
     {
       title: "Category",
@@ -112,6 +125,38 @@ export default function RawMaterials() {
       },
     },
   ];
+
+  useEffect(() => {
+    tableRef?.current?.onQueryChange();
+  }, [initialParams]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let paramObj = {};
+    for (var value of urlParams.keys()) {
+      paramObj[value] = urlParams.get(value);
+    }
+    setFilter((filter) => ({
+      ...filter,
+      ...paramObj,
+    }));
+    setInitialParams(true);
+  }, []);
+
+  useEffect(() => {
+    let url = `${frontendServerUrl}${RAWMATERIALSVIEW}`;
+    let filterArr = Object.keys(filter);
+    if (filterArr.length) {
+      url = url + "?";
+    }
+    filterArr.forEach((d, key) => {
+      url = url + `${d}=${filter[d]}`;
+      if (filterArr.length !== key + 1) {
+        url = url + "&";
+      }
+    });
+    window.history.pushState("", "Daily usage", url);
+  }, [filter, tableRef]);
 
   useEffect(() => {
     getDepartmentData();
@@ -215,32 +260,6 @@ export default function RawMaterials() {
     tableRef.current.onQueryChange();
   };
 
-  const handleTableAction = async (row, isView) => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_raw_materials + "/" + row.id,
-      {},
-      Auth.getToken()
-    )
-      .then((res) => {
-        setBackDrop(false);
-        if (isView) {
-          history.push(VIEWRAWMATERIALS, { data: res.data, view: true });
-        } else {
-          history.push(EDITRAWMATERIALS, { data: res.data, edit: true });
-        }
-      })
-      .catch((err) => {
-        setBackDrop(false);
-        setSnackBar((snackBar) => ({
-          ...snackBar,
-          show: true,
-          severity: "error",
-          message: "Error viewing raw material",
-        }));
-      });
-  };
-
   const snackBarHandleClose = () => {
     setSnackBar((snackBar) => ({
       ...snackBar,
@@ -271,6 +290,28 @@ export default function RawMaterials() {
     history.push(
       ADDRAWMATERIALUSAGE + "?d=" + new Date() + "&r_id=" + rowData.id
     );
+  };
+
+  const setAutoCompleteData = (data, key) => {
+    if (data && data.value) {
+      setFilter((filter) => ({
+        ...filter,
+        [key]: data.value,
+      }));
+      setAutoCompleteObject((autoCompleteObject) => ({
+        ...autoCompleteObject,
+        [key]: data,
+      }));
+    } else {
+      delete filter[key];
+      delete autoCompleteObject[key];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setAutoCompleteObject((autoCompleteObject) => ({
+        ...autoCompleteObject,
+      }));
+    }
   };
 
   return (
@@ -314,6 +355,66 @@ export default function RawMaterials() {
                     }}
                   />
                 </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={2}
+                  style={{ marginTop: "2.2rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "category")
+                    }
+                    searchString={"name"}
+                    apiName={backend_category}
+                    placeholder="Select Category"
+                    selectedValue={filter["category"]}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={2}
+                  style={{ marginTop: "2.2rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "department")
+                    }
+                    searchString={"name"}
+                    apiName={backend_departments}
+                    placeholder="Select Department"
+                    selectedValue={filter["department"]}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={2}
+                  style={{ marginTop: "2.2rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "color")
+                    }
+                    searchString={"name"}
+                    apiName={backend_color}
+                    placeholder="Select Color"
+                    selectedValue={filter["color"]}
+                  />
+                </GridItem>
+                {/* <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="Name"
+                    value={filter.name_contains || ""}
+                    name="name_contains"
+                    id="name"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
@@ -337,7 +438,7 @@ export default function RawMaterials() {
                       fullWidth: true,
                     }}
                   />
-                </GridItem>
+                </GridItem> */}
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
@@ -350,7 +451,7 @@ export default function RawMaterials() {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
+                {/* <GridItem xs={12} sm={12} md={2}>
                   <CustomAutoComplete
                     id="department-name"
                     labelText="Department"
@@ -381,48 +482,9 @@ export default function RawMaterials() {
                       ] || null
                     }
                   />
-                </GridItem>
+                </GridItem> */}
               </GridContainer>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Costing"
-                    value={filter.costing_contains || ""}
-                    name="costing_contains"
-                    type="number"
-                    id="costing"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Balance From"
-                    value={filter.balance_gte || ""}
-                    name="balance_gte"
-                    type="number"
-                    id="balance"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Balance To"
-                    value={filter.balance_lte || ""}
-                    name="balance_lte"
-                    type="number"
-                    id="balance"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomCheckBox
                     onChange={(event) => {
@@ -463,19 +525,10 @@ export default function RawMaterials() {
                   <Button
                     color="primary"
                     onClick={() => {
-                      delete filter["name_contains"];
-                      delete filter["color.name_contains"];
-                      delete filter["size_contains"];
-                      delete filter["department"];
-                      delete filter["costing_contains"];
-                      delete filter["balance_gte"];
-                      delete filter["balance_lte"];
-                      delete filter["is_die"];
-                      delete filter["category.name_contains"];
-                      setFilter((filter) => ({
-                        ...filter,
-                        _sort: "id:asc",
-                      }));
+                      setFilter({
+                        _sort: "updated_at:asc",
+                      });
+                      setAutoCompleteObject({});
                       tableRef.current.onQueryChange();
                     }}
                   >
@@ -499,7 +552,7 @@ export default function RawMaterials() {
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      handleTableAction(rowData, false);
+                      history.push(EDITRAWMATERIALS + "/" + rowData.id);
                     },
                   }),
                   (rowData) => ({
@@ -508,7 +561,7 @@ export default function RawMaterials() {
                     ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      handleTableAction(rowData, true);
+                      history.push(VIEWRAWMATERIALS + "/" + rowData.id);
                     },
                   }),
                   (rowData) => ({

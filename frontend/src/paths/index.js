@@ -93,4 +93,6 @@ export {
   /** ----- Raw Material Usage */
   RAWMATERIALUSAGE,
   ADDRAWMATERIALUSAGE,
+  EDITRAWMATERIALSID,
+  VIEWRAWMATERIALSID,
 } from "./Paths";

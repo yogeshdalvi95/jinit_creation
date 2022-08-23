@@ -758,7 +758,7 @@ export default function AddPurchases(props) {
       if (res.data?.totalCount) {
         setError((error) => ({
           ...error,
-          bill_no: ["Bill number already taken"],
+          bill_no: ["Bill/Invoice number already used"],
         }));
       }
     });
@@ -868,7 +868,31 @@ export default function AddPurchases(props) {
                       }}
                     />
                   </GridItem>
-                  {formState.type_of_bill === "Pakka" ? (
+                  <GridItem xs={12} sm={12} md={3}>
+                    <CustomInput
+                      labelText={"Bill/Invoice Number"}
+                      name="bill_no"
+                      disabled={isView}
+                      onChange={(event) => handleBillNumberChange(event)}
+                      value={formState.bill_no}
+                      id="bill_no"
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      /** For setting errors */
+                      helperTextId={"helperText_bill_no"}
+                      isHelperText={hasError("bill_no", error)}
+                      helperText={
+                        hasError("bill_no", error)
+                          ? error["bill_no"].map((error) => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("bill_no", error)}
+                    />
+                  </GridItem>
+                  {/* {formState.type_of_bill === "Pakka" ? (
                     <GridItem xs={12} sm={12} md={3}>
                       <CustomInput
                         labelText="Invoice Number"
@@ -880,7 +904,6 @@ export default function AddPurchases(props) {
                         formControlProps={{
                           fullWidth: true,
                         }}
-                        /** For setting errors */
                         helperTextId={"helperText_invoice_number"}
                         isHelperText={hasError("invoice_number", error)}
                         helperText={
@@ -905,7 +928,6 @@ export default function AddPurchases(props) {
                         formControlProps={{
                           fullWidth: true,
                         }}
-                        /** For setting errors */
                         helperTextId={"helperText_bill_no"}
                         isHelperText={hasError("bill_no", error)}
                         helperText={
@@ -918,7 +940,7 @@ export default function AddPurchases(props) {
                         error={hasError("bill_no", error)}
                       />
                     </GridItem>
-                  )}
+                  )} */}
                   {!isView && (
                     <GridItem
                       xs={12}
@@ -934,6 +956,7 @@ export default function AddPurchases(props) {
                         selectedValue={selectedSeller}
                         isError={error.seller}
                         errorText={"Please select a seller"}
+                        isSeller={true}
                       />
                     </GridItem>
                   )}

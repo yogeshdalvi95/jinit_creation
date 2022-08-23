@@ -243,6 +243,7 @@ const ROLES = {
           "addupdateentries",
           "getselecteddata",
           "getmonthlydata",
+          "downloadmonthlydata",
         ],
       },
       {
@@ -427,6 +428,7 @@ const ROLES = {
           "addupdateentries",
           "getselecteddata",
           "getmonthlydata",
+          "downloadmonthlydata",
         ],
       },
       {

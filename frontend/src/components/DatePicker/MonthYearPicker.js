@@ -8,6 +8,7 @@ import classNames from "classnames";
 import {
   primaryColor,
   grayColor,
+  defaultFont,
 } from "../../assets/jss/material-dashboard-react.js";
 import styled from "styled-components";
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -17,6 +18,23 @@ import { ThemeProvider } from "@material-ui/styles";
 const useStyles = makeStyles(styles);
 const theme = createMuiTheme({
   overrides: {
+    MuiInputBase: {
+      input: {
+        ...defaultFont,
+        fontWeight: "500",
+        fontSize: "14px",
+        lineHeight: "1.42857",
+        letterSpacing: "unset",
+      },
+      underline: {
+        color: "#a56863 !important",
+      },
+    },
+    MuiFormLabel: {
+      root: {
+        fontSize: "14px",
+      },
+    },
     MuiPickersClock: {
       clock: {
         backgroundColor: "#a56863",
@@ -40,6 +58,11 @@ const theme = createMuiTheme({
     MuiButton: {
       textPrimary: {
         color: "#a56863",
+      },
+    },
+    MuiInput: {
+      underline: {
+        color: "#a56863 !important",
       },
     },
     MuiPickersMonth: {

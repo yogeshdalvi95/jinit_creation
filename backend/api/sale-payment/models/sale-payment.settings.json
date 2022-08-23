@@ -22,6 +22,19 @@
     },
     "payment_date": {
       "type": "date"
+    },
+    "payment_type": {
+      "type": "enumeration",
+      "enum": ["bank_transfer", "cash"],
+      "default": "bank_transfer"
+    },
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
+    },
+    "pakka_ledger": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

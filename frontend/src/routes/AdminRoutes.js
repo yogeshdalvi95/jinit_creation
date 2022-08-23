@@ -69,6 +69,8 @@ import {
   ADDRAWMATERIALUSAGE,
   VIEWGOODRETURNID,
   EDITGOODRETURNID,
+  VIEWRAWMATERIALSID,
+  EDITRAWMATERIALSID,
 } from "../paths";
 
 /** Raw material and units */
@@ -77,6 +79,8 @@ const rawMaterialPathList = [
   RAWMATERIALSVIEW,
   ADDRAWMATERIALS,
   EDITRAWMATERIALS,
+  EDITRAWMATERIALSID,
+  VIEWRAWMATERIALSID,
 ];
 
 const colorPath = [COLORS, ADDCOLOR, EDITCOLOR];
@@ -317,7 +321,6 @@ export const DashboardStaffRoutes = [
       purchaseJson,
       PurchasePaymentsJson,
       goodsReturnJson,
-      kachhaPurchaseJson,
       sellerJson,
       purchaseLedgerJson,
     ],
@@ -371,7 +374,6 @@ export const DashboardAdminRoutes = [
       purchaseJson,
       PurchasePaymentsJson,
       goodsReturnJson,
-      kachhaPurchaseJson,
       sellerJson,
       purchaseLedgerJson,
     ],
@@ -432,7 +434,6 @@ export const SuperAdminDashboardRoutes = [
       purchaseJson,
       PurchasePaymentsJson,
       goodsReturnJson,
-      kachhaPurchaseJson,
       sellerJson,
       purchaseLedgerJson,
     ],

@@ -29,6 +29,7 @@ export const backend_raw_materials_for_autocomplete = `${apiBackendUrl}/raw-mate
 export const backend_monthly_sheet = `${apiBackendUrl}/monthly-sheets`;
 export const backend_monthly_sheet_add_update_entries = `${apiBackendUrl}/monthly-sheets/add-update-entries`;
 export const backend_monthly_sheet_get_monthly_data = `${apiBackendUrl}/monthly-sheets/get-monthly-data`;
+export const backend_monthly_sheet_download_monthly_data = `${apiBackendUrl}/monthly-sheet-download`;
 
 export const backend_goods_return = `${apiBackendUrl}/goods-returns`;
 

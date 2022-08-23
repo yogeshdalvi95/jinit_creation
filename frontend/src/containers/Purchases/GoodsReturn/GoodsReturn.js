@@ -260,7 +260,7 @@ export default function GoodsReturn() {
                 <GridItem
                   xs={12}
                   sm={12}
-                  md={3}
+                  md={4}
                   style={{ marginTop: "2.2rem" }}
                 >
                   <RemoteAutoComplete
@@ -284,6 +284,7 @@ export default function GoodsReturn() {
                     apiName={backend_sellers}
                     placeholder="Select Seller"
                     selectedValue={selectedSeller}
+                    isSeller={true}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>

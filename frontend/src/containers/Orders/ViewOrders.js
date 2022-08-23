@@ -297,7 +297,7 @@ export default function ViewOrders(props) {
       .then((res) => {
         saveAs(
           new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
-          `raw material availibility`
+          `raw_material_availibility.xlsx`
         );
         setBackDrop(false);
       })

@@ -575,8 +575,8 @@ module.exports = {
 
     let buffer = utils.utilityFunctionForGettingBytesExcelDataForMultipleSheets(
       {
-        "Raw Material Availibility": jsonArray,
-        "Need to purchase": jsonArray2,
+        "All Raw Materials": jsonArray,
+        "Raw Material Needed To Purchase": jsonArray2,
       }
     );
 

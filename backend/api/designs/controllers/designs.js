@@ -2,6 +2,14 @@
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
 const _ = require("lodash");
+const {
+  noDataImg,
+  generatePDF,
+  getDateInMMDDYYYY,
+  base64_encode,
+} = require("../../../config/utils");
+var path = require("path");
+const { PDFDocument, StandardFonts, rgb, degrees } = require("pdf-lib");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -216,7 +224,7 @@ module.exports = {
   },
 
   async downloadDesign(ctx) {
-    const {    } = ctx.request.body;
+    const { id, downloadAll, color } = ctx.request.body;
     let designData = await strapi.query("designs").findOne({ id: id });
     let dataToDownload = {};
     const commonRawMaterials = await strapi.query("designs-and-materials").find(
@@ -316,7 +324,221 @@ module.exports = {
         };
       });
 
-      ctx.send(dataToDownload);
+      let arr = [];
+      let image = noDataImg;
+      if (
+        designData.images &&
+        designData.images.length &&
+        designData.images[0].url
+      ) {
+        image =
+          "data:image/png;base64," +
+          base64_encode(
+            path.resolve(
+              __dirname,
+              `./../../../public${designData.images[0].url}`
+            )
+          );
+
+        let html = `
+            <img
+            src='${image}'
+            class="center1"
+            alt="No data"
+            />
+        `;
+        let buffer = await generatePDF(
+          "Design Details",
+          html,
+          false,
+          "A4",
+          false
+        );
+        arr.push(buffer);
+      }
+
+      await utils.asyncForEach(designColors, async (dc) => {
+        console.log("dc => ", dc);
+        let html = "";
+        html =
+          html +
+          ` <p class="p centerAlignedText moreBottomMargin lessTopMargin"><b>${dc.name}</b></p>
+            <table><tr><th>Name</th><th>Size</th><th>Quantity</th></tr>
+        `;
+
+        if (
+          dataToDownload &&
+          dataToDownload.commonRawMaterials &&
+          dataToDownload.commonRawMaterials.commonMaterialsWithoutDie &&
+          dataToDownload.commonRawMaterials.commonMaterialsWithoutDie.length
+        ) {
+          dataToDownload.commonRawMaterials.commonMaterialsWithoutDie.map(
+            (d) => {
+              html =
+                html +
+                `
+                <tr>
+                  <td>
+                    ${d.raw_material.name}
+                  </td>
+                  <td>
+                    ${d.raw_material.size}
+                  </td>
+                  <td>
+                    ${d.quantity}
+                  </td>
+                </tr>
+              `;
+            }
+          );
+        }
+        if (
+          dataToDownload &&
+          dataToDownload[dc.id] &&
+          dataToDownload[dc.id].colorMaterial &&
+          dataToDownload[dc.id].colorMaterial.length
+        ) {
+          dataToDownload[dc.id].colorMaterial.map((d) => {
+            html =
+              html +
+              `
+                <tr>
+                  <td class = "C8C8C8">
+                    ${d.raw_material.name}
+                  </td>
+                  <td class = "C8C8C8">
+                    ${d.raw_material.size}
+                  </td>
+                  <td class = "C8C8C8">
+                    ${d.quantity}
+                  </td>
+                </tr>
+              `;
+          });
+        }
+
+        html =
+          html +
+          `
+          </table>
+          <p class="p centerAlignedText moreTopMargin"><b>Die</b></p>
+          <table><tr><th>Name</th><th>Size</th><th>Quantity</th></tr>
+        `;
+
+        if (
+          dataToDownload &&
+          dataToDownload.commonRawMaterials &&
+          dataToDownload.commonRawMaterials.commonMaterialsWithDie &&
+          dataToDownload.commonRawMaterials.commonMaterialsWithDie.length
+        ) {
+          dataToDownload.commonRawMaterials.commonMaterialsWithDie.map((d) => {
+            html =
+              html +
+              `
+                <tr>
+                  <td>
+                    ${d.raw_material.name}
+                  </td>
+                  <td>
+                    ${d.raw_material.size}
+                  </td>
+                  <td>
+                    ${d.quantity}
+                  </td>
+                </tr>
+              `;
+          });
+        }
+
+        html =
+          html +
+          `
+            </table>
+            <p class="p centerAlignedText moreTopMargin"><b>Bandhai</b></p>
+            <table><tr><th>Name</th><th>Size</th><th>Quantity</th></tr>
+          `;
+
+        if (
+          dataToDownload &&
+          dataToDownload.commonRawMaterials &&
+          dataToDownload.commonRawMaterials.commonMotiBandhaiMaterial &&
+          dataToDownload.commonRawMaterials.commonMotiBandhaiMaterial.length
+        ) {
+          dataToDownload.commonRawMaterials.commonMotiBandhaiMaterial.map(
+            (d) => {
+              html =
+                html +
+                `
+                  <tr>
+                    <td>
+                      ${d.raw_material.name}
+                    </td>
+                    <td>
+                      ${d.raw_material.size}
+                    </td>
+                    <td>
+                      ${d.quantity}
+                    </td>
+                  </tr>
+                `;
+            }
+          );
+        }
+        if (
+          dataToDownload &&
+          dataToDownload[dc.id] &&
+          dataToDownload[dc.id].colorBandhaiMaterials &&
+          dataToDownload[dc.id].colorBandhaiMaterials.length
+        ) {
+          dataToDownload[dc.id].colorBandhaiMaterials.map((d) => {
+            html =
+              html +
+              `
+                  <tr>
+                    <td class = "C8C8C8">
+                      ${d.raw_material.name}
+                    </td>
+                    <td class = "C8C8C8">
+                      ${d.raw_material.size}
+                    </td>
+                    <td class = "C8C8C8">
+                      ${d.quantity}
+                    </td>
+                  </tr>
+                `;
+          });
+        }
+
+        html =
+          html +
+          `
+            </table>          `;
+
+        let buffer = await generatePDF("", html, false, "A4", false);
+        arr.push(buffer);
+      });
+
+      try {
+        const mergedPdf = await PDFDocument.create();
+        for (const pdfBytes of arr) {
+          const pdf = await PDFDocument.load(pdfBytes);
+          const copiedPages = await mergedPdf.copyPages(
+            pdf,
+            pdf.getPageIndices()
+          );
+          copiedPages.forEach((page) => {
+            mergedPdf.addPage(page);
+          });
+        }
+
+        const buf = await mergedPdf.save();
+        var pdfBuffer = Buffer.from(buf.buffer, "binary");
+
+        ctx.send(pdfBuffer);
+      } catch (err) {
+        console.log("error => ", err);
+        throw err;
+      }
     } else {
       return ctx.badRequest(null, "No colors");
     }
@@ -411,10 +633,22 @@ module.exports = {
   },
 
   async create(ctx) {
-    const { colors } = ctx.request.body;
-    let body = {
-      ...ctx.request.body,
-    };
+    let colors = [];
+    let body = {};
+    if (ctx.request.files && ctx.request.body.data) {
+      let { data } = ctx.request.body;
+      data = JSON.parse(data);
+      body = {
+        ...data,
+      };
+      colors = data.colors;
+    } else {
+      body = {
+        ...ctx.request.body,
+      };
+      colors = body.colors;
+    }
+
     let newData = {};
     await bookshelf
       .transaction(async (t) => {
@@ -427,6 +661,25 @@ module.exports = {
           .catch((err) => {
             console.log(err);
           });
+
+        const files = ctx.request.files;
+        if (files && files["files.images"]) {
+          const fileName = files["files.images"].name;
+          files["files.images"] = {
+            ...files["files.images"],
+            name: fileName.split(".")[0] + ".png",
+            mime: "image/png",
+          };
+          await strapi.plugins.upload.services.upload.upload({
+            data: {
+              fileInfo: {},
+              refId: newData.id,
+              ref: "designs",
+              field: "images",
+            },
+            files: files["files.images"],
+          });
+        }
 
         await utils.asyncForEach(colors, async (c) => {
           await strapi
@@ -497,6 +750,25 @@ module.exports = {
 
     await bookshelf
       .transaction(async (t) => {
+        const files = ctx.request.files;
+        if (files && files["files.images"]) {
+          const fileName = files["files.images"].name;
+          files["files.images"] = {
+            ...files["files.images"],
+            name: fileName.split(".")[0] + ".png",
+            mime: "image/png",
+          };
+          await strapi.plugins.upload.services.upload.upload({
+            data: {
+              fileInfo: {},
+              refId: id,
+              ref: "designs",
+              field: "images",
+            },
+            files: files["files.images"],
+          });
+        }
+
         await utils.asyncForEach(noOfColorsNewlyAdded, async (c) => {
           newlyAdded.push(c);
           await strapi

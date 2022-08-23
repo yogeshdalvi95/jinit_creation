@@ -14,37 +14,32 @@ module.exports = (strapi) => {
                 ctx.request.header.authorization.length
               );
 
-              try {
-                const { id } = await strapi.plugins[
-                  "users-permissions"
-                ].services.jwt.getToken(ctx);
+              const { id } = await strapi.plugins[
+                "users-permissions"
+              ].services.jwt.getToken(ctx);
 
-                const checkIfDataExists = await strapi
-                  .query("active-users")
-                  .findOne({
-                    user: id,
-                    token: token,
-                  });
-                if (checkIfDataExists) {
-                  console.log("Middleware passed successfully");
-                  await next();
-                } else {
-                  await strapi.query("active-users").delete({
-                    user: id,
-                  });
-                  // ctx.response.unauthorized([message], [scheme], [attributes])
-                  return ctx.response.unauthorized(
-                    ["Forbidden"],
-                    ["No login details present, logging out"]
-                  );
-                }
-              } catch (err) {
+              console.log("id => ", id);
+              const checkIfDataExists = await strapi
+                .query("active-users")
+                .findOne({
+                  user: id,
+                  token: token,
+                });
+              if (checkIfDataExists) {
+                console.log("Middleware passed successfully");
+                await next();
+              } else {
+                await strapi.query("active-users").delete({
+                  user: id,
+                });
+                // ctx.response.unauthorized([message], [scheme], [attributes])
                 return ctx.response.unauthorized(
                   ["Forbidden"],
-                  ["Invalid token"]
+                  ["No login details present, logging out"]
                 );
               }
             } else {
+              console.log("Forbidden no auth 401");
               return ctx.response.unauthorized(["Forbidden"], ["No auth"]);
             }
           } else {

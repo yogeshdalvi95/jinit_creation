@@ -116,15 +116,15 @@ export default function AddEditRawMaterial(props) {
   const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
     useState(false);
 
-  /** VIMP to check if the data is used for viewing */
-  const [isView] = useState(
-    props.location.state ? props.location.state.view : false
-  );
+  const [isEdit] = useState(props.isEdit ? props.isEdit : null);
+  const [isView] = useState(props.isView ? props.isView : null);
+  const [id] = useState(props.id ? props.id : null);
 
-  /** VIMP to check if the data is used for editing */
-  const [isEdit] = useState(
-    props.location.state ? props.location.state.edit : false
-  );
+  useEffect(() => {
+    if (isEdit || isView) {
+      getRawMaterialInfo();
+    }
+  }, []);
 
   useEffect(() => {
     if (subject === null) {
@@ -188,16 +188,27 @@ export default function AddEditRawMaterial(props) {
   }, [subject]);
 
   useEffect(() => {
-    if (
-      props.location.state &&
-      (props.location.state.view || props.location.state.edit) &&
-      props.location.state.data
-    ) {
-      setData(props.location.state.data);
-    }
     getDepartmentData();
     getUnits();
   }, []);
+
+  const getRawMaterialInfo = async () => {
+    setBackDrop(true);
+    await providerForGet(backend_raw_materials + "/" + id, {}, Auth.getToken())
+      .then((res) => {
+        setData(res.data);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error getting raw material info",
+        }));
+      });
+  };
 
   const setData = (data) => {
     setFormState((formState) => ({
@@ -623,7 +634,6 @@ export default function AddEditRawMaterial(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })

@@ -12,6 +12,15 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "design": {
+      "model": "designs"
+    },
+    "color": {
+      "model": "color"
+    },
+    "quantity": {
+      "type": "biginteger"
+    },
     "party": {
       "model": "party"
     },
@@ -21,18 +30,26 @@
     "notes": {
       "type": "text"
     },
-    "sale_return_component": {
-      "type": "component",
-      "repeatable": true,
-      "component": "sale-return-component.sale-return-component"
-    },
     "total_price": {
-      "type": "float"
+      "type": "float",
+      "default": 0
     },
-    "total_price_of_design": {
-      "type": "float"
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
     },
-    "add_cost": {
+    "pakka_ledger": {
+      "type": "boolean",
+      "default": false
+    },
+    "isSalePresent": {
+      "type": "boolean",
+      "default": false
+    },
+    "sale": {
+      "model": "sales"
+    },
+    "price_per_piece": {
       "type": "float"
     }
   }

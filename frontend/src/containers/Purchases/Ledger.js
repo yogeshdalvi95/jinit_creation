@@ -408,6 +408,7 @@ export default function Ledger() {
                     placeholder="Select Seller..."
                     isError={error.seller}
                     errorText={"Please select a seller"}
+                    isSeller={true}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>

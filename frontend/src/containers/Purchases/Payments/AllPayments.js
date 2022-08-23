@@ -109,7 +109,6 @@ const AllPayments = (props) => {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -278,6 +277,7 @@ const AllPayments = (props) => {
                     apiName={backend_sellers}
                     placeholder="Select Seller..."
                     selectedValue={selectedSeller}
+                    isSeller={true}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>

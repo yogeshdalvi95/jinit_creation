@@ -67,6 +67,8 @@ import {
   EDITGOODRETURNID,
   VIEWGOODRETURNID,
   ADDRAWMATERIALUSAGE,
+  VIEWRAWMATERIALSID,
+  EDITRAWMATERIALSID,
 } from "../paths";
 import {
   Login,
@@ -299,17 +301,21 @@ const Routes = () => {
         />
         <PrivateRoute
           openSubMenu={true}
-          path={EDITRAWMATERIALS}
+          path={EDITRAWMATERIALSID}
           exact
           component={AddEditRawMaterial}
           header={"Edit Raw Material"}
+          isDependent={true}
+          isEdit={true}
         />
         <PrivateRoute
           openSubMenu={true}
-          path={VIEWRAWMATERIALS}
+          path={VIEWRAWMATERIALSID}
           exact
           component={AddEditRawMaterial}
           header={"View Raw Material"}
+          isDependent={true}
+          isView={true}
         />
 
         {/** Raw Material Usage */}

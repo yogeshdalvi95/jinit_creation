@@ -27,11 +27,20 @@
     "transaction_date": {
       "type": "date"
     },
-    "comment": {
-      "type": "string"
+    "month": {
+      "type": "enumeration",
+      "enum": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+      "required": false
+    },
+    "year": {
+      "type": "string",
+      "required": false
     },
     "transaction_amount": {
       "type": "float"
+    },
+    "comment": {
+      "type": "string"
     },
     "is_sale": {
       "type": "boolean"
@@ -41,6 +50,14 @@
     },
     "is_sale_return": {
       "type": "boolean"
+    },
+    "kachha_ledger": {
+      "type": "boolean",
+      "default": false
+    },
+    "pakka_ledger": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

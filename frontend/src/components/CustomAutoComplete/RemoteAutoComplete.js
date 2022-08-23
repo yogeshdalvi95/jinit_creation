@@ -17,14 +17,18 @@ const RemoteAutoComplete = (props) => {
     control: (base, state) => ({
       ...base,
       // state.isFocused can display different borderColor if you need it
-      border: `2px solid ${props.isError ? "red" : "#ddd"}`,
+      borderBottom: `1px solid ${props.isError ? "red" : "#645a5a"}`,
+      borderTop: "none",
+      borderLeft: "none",
+      borderRight: "none",
+      borderRadius: "0px",
       boxShadow: "none",
       // overwrittes hover style
       "&:hover": {
-        border: `2px solid ${props.isError ? "red" : "#a56863"}`,
+        borderBottom: `2px solid ${props.isError ? "red" : "#a56863"}`,
       },
       "&:click": {
-        border: `2px solid ${props.isError ? "red" : "#a56863"}`,
+        borderBottom: `2px solid ${props.isError ? "red" : "#a56863"}`,
       },
     }),
     menu: (provided, state) => ({
@@ -33,38 +37,52 @@ const RemoteAutoComplete = (props) => {
     }),
   };
 
+  const generateRawMaterialLabel = (d) => {
+    return `${d[props.searchString]}/ Category:- ${
+      d.category.name
+    }/ Department:- ${d.department.name}`;
+  };
+
   useEffect(() => {
     let selectedData = props.selectedValue;
-    if (
-      selectedData &&
-      selectedData.value &&
-      (!selectedData.label || isEmptyString(selectedData.label))
-    ) {
-      getSellerDetails(selectedData.value);
+    if (typeof selectedData === "number" || typeof selectedData === "string") {
+      getData(selectedData);
+    } else if (typeof selectedData === "object") {
+      if (
+        selectedData &&
+        selectedData.value &&
+        (!selectedData.label || isEmptyString(selectedData.label)) &&
+        props.isSeller
+      ) {
+        getData(selectedData);
+      } else {
+        setSelectedValue(selectedData);
+      }
     } else {
-      setSelectedValue(props.selectedValue);
+      setSelectedValue(selectedData);
     }
   }, [props]);
 
-  const getSellerDetails = async (id) => {
-    await providerForGet(backend_sellers + "/" + id, {}, Auth.getToken())
+  const getData = async (id) => {
+    await providerForGet(props.apiName + "/" + id, {}, Auth.getToken())
       .then((res) => {
         setSelectedValue({
-          label: res.data.seller_name,
+          label: props.isRawMaterial
+            ? generateRawMaterialLabel(res.data)
+            : res.data[props.searchString],
           value: res.data.id,
+          allData: res.data,
         });
       })
       .catch((err) => {});
   };
 
   const filterData = (data) => {
+    console.log("data => ", data);
     return data.map((d) => {
-      console.log("data ", d);
       let label = "";
       if (props.isRawMaterial) {
-        label = `${d[props.searchString]} -${d.size} -${d.category.name} -${
-          d.department.name
-        }`;
+        label = generateRawMaterialLabel(d);
       } else {
         label = d[props.searchString];
       }

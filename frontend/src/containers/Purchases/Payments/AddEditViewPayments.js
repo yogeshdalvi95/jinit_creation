@@ -307,6 +307,7 @@ const AddEditViewPayments = (props) => {
                       selectedValue={sellerInfo}
                       isError={error.seller}
                       errorText={"Please select a seller"}
+                      isSeller={true}
                     />
                   </GridItem>
                 )}

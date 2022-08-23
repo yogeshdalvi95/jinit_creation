@@ -10,3 +10,4 @@ export { default as DialogForCheckingStockAvailibility } from "./DialogForChecki
 export { default as DialogBoxForDuplicatingDesign } from "./DialogBoxForDuplicatingDesign";
 export { default as DialogBoxForSelectingDesign } from "./DialogBoxForSelectingDesign";
 export { default as DialogForSelectingPurchase } from "./DialogForSelectingPurchase";
+export { default as DialogForDownloadingDailyUsageData } from "./DialogForDownloadingDailyUsageData";

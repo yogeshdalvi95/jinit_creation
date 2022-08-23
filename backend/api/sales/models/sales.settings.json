@@ -12,8 +12,15 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "party": {
-      "model": "party"
+    "bill_no": {
+      "type": "string"
+    },
+    "type_of_bill": {
+      "type": "enumeration",
+      "enum": ["Kachha", "Pakka"]
+    },
+    "date": {
+      "type": "date"
     },
     "cgst": {
       "type": "float"
@@ -21,23 +28,19 @@
     "sgst": {
       "type": "float"
     },
+    "igst": {
+      "type": "float"
+    },
     "total_price": {
       "type": "float"
     },
-    "is_gst_bill": {
-      "type": "boolean",
-      "default": false
+    "party": {
+      "model": "party"
     },
     "sale_ready_material": {
       "type": "component",
       "repeatable": true,
       "component": "sale-ready-material.sale-ready-material"
-    },
-    "bill_no": {
-      "type": "string"
-    },
-    "date": {
-      "type": "date"
     },
     "add_cost": {
       "type": "float"
@@ -46,9 +49,6 @@
       "type": "float"
     },
     "total_price_with_add_cost": {
-      "type": "float"
-    },
-    "igst": {
       "type": "float"
     }
   }

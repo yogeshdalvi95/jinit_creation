@@ -58,6 +58,14 @@
     },
     {
       "method": "POST",
+      "path": "/webapi/private/monthly-sheet-download",
+      "handler": "monthly-sheet.downloadMonthlyData",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
       "path": "/webapi/private/monthly-sheets/add-update-entries",
       "handler": "monthly-sheet.addUpdateEntries",
       "config": {

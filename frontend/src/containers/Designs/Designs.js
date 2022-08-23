@@ -23,13 +23,14 @@ import { apiUrl, backend_designs, frontendServerUrl } from "../../constants";
 import { ADDDESIGN, EDITDESIGN, VIEWDESIGN } from "../../paths";
 import { useHistory } from "react-router-dom";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
-import { CircularProgress, makeStyles } from "@material-ui/core";
+import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
-import { convertNumber, isEmptyString } from "../../Utils";
+import { isEmptyString } from "../../Utils";
 import no_image_icon from "../../assets/img/no_image_icon.png";
-import { providerForDelete } from "../../api";
-import { Grid, Typography } from "@mui/material";
+import { providerForDelete, providerForDownload } from "../../api";
+import DownloadIcon from "@mui/icons-material/Download";
+import { backend_download_designs } from "../../constants/UrlConstants";
 
 const useStyles = makeStyles(styles);
 export default function Designs() {
@@ -49,6 +50,7 @@ export default function Designs() {
     severity: "",
     message: "",
   });
+  const [openBackDrop, setBackDrop] = useState(false);
 
   const columns = [
     {
@@ -136,7 +138,6 @@ export default function Designs() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -201,6 +202,36 @@ export default function Designs() {
           show: true,
           severity: "error",
           message: "Error deleting design " + data?.material_no,
+        }));
+      });
+  };
+
+  const downloadDesign = async (data) => {
+    setBackDrop(true);
+    await providerForDownload(
+      backend_download_designs,
+      {
+        downloadAll: true,
+        color: null,
+        id: data.id,
+      },
+      Auth.getToken()
+    )
+      .then((res) => {
+        const url = URL.createObjectURL(
+          new Blob([res.data], { type: "application/pdf" })
+        );
+        const pdfNewWindow = window.open();
+        pdfNewWindow.location.href = url;
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error while downloading order data",
         }));
       });
   };
@@ -336,6 +367,13 @@ export default function Designs() {
                       }));
                     },
                   }),
+                  (rowData) => ({
+                    icon: () => <DownloadIcon fontSize="small" />,
+                    tooltip: "Download All Designs",
+                    onClick: (event, rowData) => {
+                      downloadDesign(rowData);
+                    },
+                  }),
                 ]}
                 editable={{
                   onRowDelete: (oldData) =>
@@ -361,6 +399,9 @@ export default function Designs() {
           </Card>
         </GridItem>
       </GridContainer>
+      <Backdrop className={classes.backdrop} open={openBackDrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   );
 }
