@@ -226,6 +226,7 @@ export default function Designs() {
         setBackDrop(false);
       })
       .catch((err) => {
+        console.log("Error => ".err);
         setBackDrop(false);
         setSnackBar((snackBar) => ({
           ...snackBar,
