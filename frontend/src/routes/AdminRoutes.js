@@ -71,6 +71,15 @@ import {
   EDITGOODRETURNID,
   VIEWRAWMATERIALSID,
   EDITRAWMATERIALSID,
+  ALLSALEPAYEMENTS,
+  ADDSALEPAYEMENT,
+  EDITSALEPAYEMENT,
+  VIEWSALEPAYEMENT,
+  EDITPURCHASEPAYEMENTID,
+  VIEWPURCHASEPAYEMENTID,
+  EDITSALEPAYEMENTID,
+  VIEWSALEPAYEMENTID,
+  SALELEDGER,
 } from "../paths";
 
 /** Raw material and units */
@@ -116,6 +125,9 @@ const goodsReturnPath = [
 /** Ledger */
 const PurchaseLedgerPath = [PURCHASELEDGER];
 
+/** Sale Ledger */
+const SaleLedgerPath = [SALELEDGER];
+
 /** Purchase  */
 const purchasesPath = [
   PURCHASES,
@@ -132,6 +144,18 @@ const purchasePaymentsJson = [
   EDITPURCHASEPAYEMENT,
   VIEWPURCHASEPAYEMENT,
   ALLPURCHASEPAYEMENTS,
+  EDITPURCHASEPAYEMENTID,
+  VIEWPURCHASEPAYEMENTID,
+];
+
+/** Sale Payments Json */
+const salePaymentsJson = [
+  ADDSALEPAYEMENT,
+  EDITSALEPAYEMENT,
+  VIEWSALEPAYEMENT,
+  ALLSALEPAYEMENTS,
+  EDITSALEPAYEMENTID,
+  VIEWSALEPAYEMENTID,
 ];
 
 /** Kachha Purchase */
@@ -187,6 +211,8 @@ const salesAllPathList = [
   ...partiesPathList,
   ...salesPathList,
   ...salesReturnPathList,
+  ...salePaymentsJson,
+  ...SaleLedgerPath,
 ];
 
 const designPathList = [
@@ -242,6 +268,13 @@ const PurchasePaymentsJson = {
   pathList: purchasePaymentsJson,
 };
 
+const SalePaymentsJson = {
+  path: ALLSALEPAYEMENTS,
+  name: "Payments",
+  layout: "",
+  pathList: salePaymentsJson,
+};
+
 const kachhaPurchaseJson = {
   path: VIEWKACHHAPURCHASEDETAILS,
   name: "Kachha Purchase Details",
@@ -254,6 +287,13 @@ const purchaseLedgerJson = {
   name: "Purchase Ledger",
   layout: "",
   pathList: PurchaseLedgerPath,
+};
+
+const saleLedgerJson = {
+  path: SALELEDGER,
+  name: "Sale Ledger",
+  layout: "",
+  pathList: SaleLedgerPath,
 };
 
 const salesJson = {
@@ -354,7 +394,13 @@ export const DashboardStaffRoutes = [
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [salesJson, saleReturnJson, partiesJson],
+    children: [
+      salesJson,
+      SalePaymentsJson,
+      saleReturnJson,
+      partiesJson,
+      saleLedgerJson,
+    ],
   },
 ];
 
@@ -407,7 +453,13 @@ export const DashboardAdminRoutes = [
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [salesJson, saleReturnJson, partiesJson],
+    children: [
+      salesJson,
+      SalePaymentsJson,
+      saleReturnJson,
+      partiesJson,
+      saleLedgerJson,
+    ],
   },
 ];
 
@@ -467,6 +519,12 @@ export const SuperAdminDashboardRoutes = [
     name: "Sales",
     layout: "",
     pathList: salesAllPathList,
-    children: [salesJson, saleReturnJson, partiesJson],
+    children: [
+      salesJson,
+      SalePaymentsJson,
+      saleReturnJson,
+      partiesJson,
+      saleLedgerJson,
+    ],
   },
 ];

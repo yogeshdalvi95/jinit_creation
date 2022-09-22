@@ -18,6 +18,22 @@
     },
     {
       "method": "GET",
+      "path": "/webapi/private/sales/ledger",
+      "handler": "sales.ledger",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/sales/download-ledger",
+      "handler": "sales.downloadledger",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
       "path": "/webapi/private/sales/export/downloadExcelData",
       "handler": "sales.getExcelSheetForExport",
       "config": {

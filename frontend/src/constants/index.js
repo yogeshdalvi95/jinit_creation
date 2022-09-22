@@ -47,4 +47,8 @@ export {
   frontendServerUrl,
   backend_monthly_sheet_get_monthly_data,
   backend_monthly_sheet_download_monthly_data,
+  backend_sale_payment,
+  backend_download_designs,
+  backend_download_sale_ledger,
+  backend_sale_ledger,
 } from "./UrlConstants";

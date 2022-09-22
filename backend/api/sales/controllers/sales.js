@@ -1,7 +1,16 @@
 "use strict";
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
-const { find } = require("../../orders/controllers/orders");
+const {
+  validateNumber,
+  isEmptyString,
+  getMonth,
+  convertNumber,
+  getDateInMMDDYYYY,
+  noDataImg,
+  generatePDF,
+  getMonthDifference,
+} = require("../../../config/utils");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -57,7 +66,7 @@ module.exports = {
     const {
       date,
       bill_no,
-      is_gst_bill,
+      type_of_bill,
       cgst,
       sgst,
       igst,
@@ -73,7 +82,7 @@ module.exports = {
     let data = {
       bill_no: bill_no,
       date: utils.getDateInYYYYMMDD(new Date(date)),
-      is_gst_bill: is_gst_bill,
+      type_of_bill: type_of_bill,
       total_price_of_all_design: total_price_of_all_design,
       total_price_with_add_cost: total_price_without_gst,
       add_cost: add_cost,
@@ -96,41 +105,7 @@ module.exports = {
             .update({ id: id }, data, { patch: true, transacting: t });
 
           saleId = id;
-          let saleTxnData = await strapi
-            .query("sale-payment-transaction")
-            .findOne({
-              sale: saleId,
-              is_sale: true,
-            });
-
-          if (saleTxnData) {
-          }
         } else {
-          /** While creating a sale */
-
-          /** Check if date for creating sale falls within the current month */
-          let isDateValid = false;
-          isDateValid = utils.checkIfDateFallsInCurrentMonth(date);
-          if (!isDateValid) {
-            throw 500;
-          }
-
-          /** Create sale date */
-          let data = {
-            bill_no: bill_no,
-            date: utils.getDateInYYYYMMDD(new Date(date)),
-            is_gst_bill: is_gst_bill,
-            total_price_of_all_design: total_price_of_all_design,
-            total_price_with_add_cost: total_price_without_gst,
-            add_cost: add_cost,
-            total_price: transaction_amount,
-            sgst: sgst,
-            cgst: cgst,
-            igst: igst,
-            party: party,
-            // sale_ready_material: getReadyMaterialForSale(designAndColor),
-          };
-
           /** Create sale */
           saleData = await strapi
             .query("sales")
@@ -142,63 +117,61 @@ module.exports = {
             });
 
           saleId = saleData.id;
+        }
 
-          /** Fill transaction details */
-          let saleTxnData = {
+        let comment = "";
+        if (type_of_bill === "Pakka") {
+          comment = `Sale ${
+            igst ? `IGST ${igst}%` : `CGST ${cgst}% SGST ${sgst}%`
+          }`;
+        } else {
+          comment = `Sale`;
+        }
+
+        let salePaymentTransaction = {
+          sale: saleId,
+          sale_payment: null,
+          sale_return: null,
+          party: party,
+          transaction_date: utils.getDateInYYYYMMDD(new Date(date)),
+          month: new Date(date).getMonth() + 1,
+          year: new Date(date).getFullYear(),
+          comment: comment,
+          transaction_amount: validateNumber(total_price),
+          is_sale: true,
+          is_payment: false,
+          is_sale_return: false,
+          kachha_ledger: type_of_bill === "Kachha" ? true : false,
+          pakka_ledger: type_of_bill === "Pakka" ? true : false,
+        };
+
+        let salePaymentTxnId = await strapi
+          .query("sale-payment-transaction")
+          .findOne({
             sale: saleId,
-            sale_payment: null,
-            sale_return: null,
-            party: party,
-            transaction_date: data.date,
-            comment: "",
-            transaction_amount: transaction_amount,
-            is_sale: true,
-            is_payment: false,
-            is_sale_return: false,
-          };
+          });
 
-          /** Create a sale txn */
+        if (salePaymentTxnId) {
           await strapi
             .query("sale-payment-transaction")
-            .create(saleTxnData, { transacting: t })
+            .update({ id: salePaymentTxnId.id }, salePaymentTransaction, {
+              patch: true,
+              transacting: t,
+            })
             .then((model) => model)
             .catch((err) => {
               console.log(err);
               throw 500;
             });
-
-          /** Check Sale Monthly Balance */
-          let saleDate = new Date();
-          let saleMonth = saleDate.getMonth() + 1;
-          let saleYear = saleDate.getFullYear();
-
-          let getSaleMonthlyBalance = await strapi
-            .query("monthly-sale-balance")
-            .findOne({
-              month: saleMonth,
-              year: saleYear,
+        } else {
+          await strapi
+            .query("sale-payment-transaction")
+            .create(salePaymentTransaction, { transacting: t })
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
             });
-          let opening_balance = 0;
-          let closing_balance = 0;
-          // if (getSaleMonthlyBalance) {
-          //   /** If current moonth data is present */
-          //   opening_balance = utils.validateNumber(
-          //     getSaleMonthlyBalance.opening_balance
-          //   );
-          //   closing_balance = closing_balance;
-          // }else {
-          //   /** If current month balance is not present check previous month balanc */
-          //   let previousMonthBalance = await strapi
-
-          //   let monthlySaleBalanceData = await strapi
-          //   .query("monthly-sale-balance")
-          //   .create(saleTxnData, { transacting: t })
-          //   .then((model) => model)
-          //   .catch((err) => {
-          //     console.log(err);
-          //     throw 500;
-          //   });
-          // }
         }
 
         /** Done adding entries in the sale payment transaction */
@@ -252,6 +225,182 @@ module.exports = {
     );
 
     ctx.send(buffer);
+  },
+
+  async ledger(ctx) {
+    const { date_gte, partyId } = ctx.request.query;
+    await strapi.services["monthly-sale-balance"].updateLedger(
+      date_gte,
+      partyId
+    );
+    let data = await generateLedger(ctx.request.query);
+    ctx.send(data);
+  },
+
+  async downloadledger(ctx) {
+    const { date_gte, date_lte, partyId } = ctx.request.body;
+    console.log("ctx.request.body => ", ctx.request.body);
+    await strapi.services["monthly-sale-balance"].updateLedger(
+      date_gte,
+      partyId
+    );
+    console.log("Here 1");
+    let data = await generateLedger(ctx.request.body);
+    console.log("data => ", data);
+    let html = "";
+    let monthYearObject = [];
+    let dateToCheckFrom = new Date(date_gte);
+    let dateToCheckTo = new Date(date_lte);
+    let diffOfMonths = getMonthDifference(dateToCheckFrom, dateToCheckTo) + 1;
+
+    let monthDiffArray = Array.from({ length: diffOfMonths }, (v, i) => i);
+
+    monthDiffArray.forEach((m_no) => {
+      let getMiddleDate = new Date(dateToCheckFrom.setDate(15));
+      let correspondingDate = new Date(
+        getMiddleDate.setMonth(getMiddleDate.getMonth() + m_no)
+      );
+      let correspondingMonth = correspondingDate.getMonth() + 1;
+      let correspondingYear = correspondingDate.getFullYear();
+      let key = `${getMonth(correspondingMonth - 1)}, ${correspondingYear}`;
+      monthYearObject.push(key);
+    });
+
+    const partyInfo = await strapi.query("party").findOne({
+      id: partyId,
+    });
+
+    html =
+      html +
+      ` 
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">for</p>
+        <h1 class="h1">${partyInfo?.party_name}</h1>
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">${
+          partyInfo?.party_address
+        }</p>
+        <p class="p centerAlignedText lessBottomMargin lessTopMargin">Mob:- ${
+          partyInfo?.phone
+        }</p>
+        <p class="p centerAlignedText moreBottomMargin lessTopMargin"><b>${getDateInMMDDYYYY(
+          date_gte
+        )} - ${getDateInMMDDYYYY(date_lte)}</b>
+        </p>
+        <table class="table">
+            <thead>
+            <tr>
+              <th class="th leftAlignText withBackGroundHeader">Date</th>
+              <th class="th leftAlignText withBackGroundHeader">Particulars</th>
+              <th class="th leftAlignText withBackGroundHeader">Type</th>
+              <th class="th leftAlignText withBackGroundHeader">Bill/Invoice No</th>
+              <th class="th leftAlignText withBackGroundHeader">Debit</th>
+              <th class="th leftAlignText withBackGroundHeader">Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+        `;
+
+    if (monthYearObject && monthYearObject.length) {
+      monthYearObject.forEach((monthYear) => {
+        html =
+          html +
+          ` <tr>
+              <th colspan = "6" class="th centerAlignText withGreyBackGround">${monthYear}</th>
+            </tr>
+            <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Opening Balance</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.opening_balance?.debit,
+                true
+              )}</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.opening_balance?.credit,
+                true
+              )}</th>
+            </tr> `;
+
+        if (
+          data[monthYear] &&
+          data[monthYear].data &&
+          data[monthYear].data.length
+        ) {
+          data[monthYear].data.forEach((l) => {
+            html =
+              html +
+              ` <tr>
+                  <td class="td leftAlignText noWrap">${l.date}</td>
+                  <td class="td leftAlignText">${l.particulars}</td>
+                  <td class="td leftAlignText">${l.type}</td>
+                  <td class="td leftAlignText">${l.bill_invoice_no}</td>
+                  <td class="td leftAlignText noWrap">${l.debit}</td>
+                  <td class="td leftAlignText noWrap">${l.credit}</td>
+                </tr> `;
+          });
+        }
+        html =
+          html +
+          ` <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Total</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.closing_balance?.debit,
+                true
+              )}</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.closing_balance?.credit,
+                true
+              )}</th>
+            </tr>
+            <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Closing Balance</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              ${
+                data[monthYear]?.closing_balance?.finalClosing > 0
+                  ? `
+                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
+                      true
+                    )}</th>  
+                    <th class="th leftAlignText">---</th>  
+                  `
+                  : data[monthYear]?.closing_balance?.finalClosing < 0
+                  ? ` 
+                      <th class="th leftAlignText">---</th>
+                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                        Math.abs(
+                          data[monthYear]?.closing_balance?.finalClosing
+                        ),
+                        true
+                      )}</th>
+                    `
+                  : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
+                    <th class="th leftAlignText">${convertNumber(0, true)}</th>
+                        `
+              }
+              
+            </tr>`;
+      });
+    } else {
+      html = `<img
+      src='${noDataImg}'
+      class="center"
+      alt="No data"
+    />`;
+    }
+
+    try {
+      let buffer = await generatePDF("Sale Ledger", html);
+      ctx.send(buffer);
+    } catch (err) {
+      console.log("error => ", err);
+      throw err;
+    }
   },
 };
 
@@ -313,3 +462,119 @@ const getReadyMaterialForSale = async (object, saleId, t) => {
     return [];
   }
 };
+
+async function generateLedger(params) {
+  const { type_of_bill, date_gte, date_lte, partyId } = params;
+  let dateToCheckFrom = new Date(date_gte);
+  let dateToCheckTo = new Date(date_lte);
+
+  let diffOfMonths = getMonthDifference(dateToCheckFrom, dateToCheckTo) + 1;
+
+  let monthDiffArray = Array.from({ length: diffOfMonths }, (v, i) => i);
+
+  let data = {};
+  await utils.asyncForEach(monthDiffArray, async (m_no) => {
+    let getMiddleDate = new Date(dateToCheckFrom.setDate(15));
+    let correspondingDate = new Date(
+      getMiddleDate.setMonth(getMiddleDate.getMonth() + m_no)
+    );
+    let correspondingMonth = correspondingDate.getMonth() + 1;
+    let correspondingYear = correspondingDate.getFullYear();
+
+    let salePaymentTransaction = await strapi
+      .query("sale-payment-transaction")
+      .find({
+        month: correspondingMonth,
+        year: correspondingYear,
+        party: partyId,
+      });
+
+    let getMonthlyPurchaseBalance = await strapi
+      .query("monthly-sale-balance")
+      .findOne({
+        month: correspondingMonth,
+        year: correspondingYear,
+        party: partyId,
+        sale_type: type_of_bill,
+      });
+
+    let monthName = getMonth(correspondingMonth - 1);
+
+    /** Openingbalance and closing balance calculation */
+    let opening_balance = validateNumber(
+      getMonthlyPurchaseBalance?.opening_balance
+    );
+
+    let debitOpeningBalance = 0;
+    let creditOpeningBalance = 0;
+
+    if (opening_balance && opening_balance < 0) {
+      debitOpeningBalance = Math.abs(opening_balance);
+    } else if (opening_balance && opening_balance > 0) {
+      creditOpeningBalance = Math.abs(opening_balance);
+    }
+
+    let totalCredit = creditOpeningBalance;
+    let totalDebit = debitOpeningBalance;
+
+    let txnData = [];
+    salePaymentTransaction.forEach((pt) => {
+      if (
+        (type_of_bill === "Kachha" && pt.kachha_ledger) ||
+        (type_of_bill === "Pakka" && pt.pakka_ledger)
+      ) {
+        let type = "-----";
+        let amount = convertNumber(pt.transaction_amount, true);
+        let bill_invoice_no = "-----";
+        let credit = "---";
+        let debit = "---";
+        let id = null;
+        if (pt.is_sale) {
+          type = "Sale";
+          bill_invoice_no = pt.sale.bill_no;
+          debit = amount;
+          totalDebit = totalDebit + pt.transaction_amount;
+          id = pt.sale.id;
+        } else if (pt.is_payment) {
+          type = "Payment";
+          credit = amount;
+          totalCredit = totalCredit + pt.transaction_amount;
+          id = pt.sale_payment.id;
+        } else if (pt.is_sale_return) {
+          type = "Sale return";
+          credit = amount;
+          totalCredit = totalCredit + pt.transaction_amount;
+          id = pt.sale_return.id;
+        }
+
+        txnData.push({
+          date: getDateInMMDDYYYY(new Date(pt.transaction_date)),
+          particulars: pt.comment,
+          type: type,
+          bill_invoice_no: bill_invoice_no,
+          credit: credit,
+          debit: debit,
+          id: id,
+        });
+      }
+    });
+    data = {
+      ...data,
+      [`${monthName}, ${correspondingYear}`]: {
+        opening_balance: {
+          credit: creditOpeningBalance,
+          debit: debitOpeningBalance,
+        },
+        closing_balance: {
+          credit: totalCredit,
+          debit: totalDebit,
+          finalClosing: totalDebit - totalCredit,
+        },
+        totalCredit: totalCredit,
+        totalDebit: totalDebit,
+        data: [...txnData],
+      },
+    };
+  });
+  return data;
+}

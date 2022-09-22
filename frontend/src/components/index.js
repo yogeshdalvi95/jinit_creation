@@ -63,4 +63,5 @@ export {
 export { RawMaterialDetail, RawMaterialList } from "./RawMaterialDetail";
 export { DesignData, StockData, RatioData } from "./DesignData";
 export { SellerDetails } from "./SellerDetails";
+export { PartyDetails } from "./PartyDetails";
 export { MultiSelect } from "./MultiSelect";

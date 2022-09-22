@@ -332,8 +332,8 @@ module.exports = {
               <th class="th leftAlignText withBackGroundHeader">Particulars</th>
               <th class="th leftAlignText withBackGroundHeader">Type</th>
               <th class="th leftAlignText withBackGroundHeader">Bill/Invoice No</th>
-              <th class="th leftAlignText withBackGroundHeader">Credit</th>
               <th class="th leftAlignText withBackGroundHeader">Debit</th>
+              <th class="th leftAlignText withBackGroundHeader">Credit</th>
             </tr>
         </thead>
         <tbody>
@@ -352,11 +352,11 @@ module.exports = {
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.credit,
+                data[monthYear]?.opening_balance?.debit,
                 true
               )}</th>
               <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.debit,
+                data[monthYear]?.opening_balance?.credit,
                 true
               )}</th>
             </tr> `;
@@ -374,8 +374,8 @@ module.exports = {
                   <td class="td leftAlignText">${l.particulars}</td>
                   <td class="td leftAlignText">${l.type}</td>
                   <td class="td leftAlignText">${l.bill_invoice_no}</td>
-                  <td class="td leftAlignText noWrap">${l.credit}</td>
                   <td class="td leftAlignText noWrap">${l.debit}</td>
+                  <td class="td leftAlignText noWrap">${l.credit}</td>
                 </tr> `;
           });
         }
@@ -387,11 +387,11 @@ module.exports = {
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.closing_balance?.credit,
+                data[monthYear]?.closing_balance?.debit,
                 true
               )}</th>
               <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.closing_balance?.debit,
+                data[monthYear]?.closing_balance?.credit,
                 true
               )}</th>
             </tr>
@@ -403,18 +403,21 @@ module.exports = {
               ${
                 data[monthYear]?.closing_balance?.finalClosing > 0
                   ? `
-                    <th class="th leftAlignText">---</th>
                     <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
                       Math.abs(data[monthYear]?.closing_balance?.finalClosing),
                       true
-                    )}</th>
+                    )}</th>  
+                    <th class="th leftAlignText">---</th>  
                   `
                   : data[monthYear]?.closing_balance?.finalClosing < 0
-                  ? ` <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
-                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
-                      true
-                    )}</th>
+                  ? ` 
                       <th class="th leftAlignText">---</th>
+                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                        Math.abs(
+                          data[monthYear]?.closing_balance?.finalClosing
+                        ),
+                        true
+                      )}</th>
                     `
                   : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
                     <th class="th leftAlignText">${convertNumber(0, true)}</th>
@@ -718,13 +721,7 @@ async function generateLedger(params) {
         let id = null;
         if (pt.is_purchase) {
           type = "Purchase";
-          if (pt.purchase && pt.purchase.type_of_bill) {
-            if (pt.purchase.type_of_bill === "Kachha") {
-              bill_invoice_no = pt.purchase.bill_no;
-            } else {
-              bill_invoice_no = pt.purchase.invoice_number;
-            }
-          }
+          bill_invoice_no = pt.purchase.bill_no;
           credit = amount;
           totalCredit = totalCredit + pt.transaction_amount;
           id = pt.purchase.id;

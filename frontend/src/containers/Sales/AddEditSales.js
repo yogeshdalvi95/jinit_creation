@@ -4,7 +4,6 @@ import {
   Backdrop,
   CircularProgress,
   FormControlLabel,
-  FormHelperText,
   makeStyles,
   Switch,
   Tooltip,
@@ -20,6 +19,7 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
+  CustomDropDown,
   CustomInput,
   CustomMaterialUITable,
   CustomTableBody,
@@ -28,10 +28,11 @@ import {
   CustomTableRow,
   DatePicker,
   DialogBoxForSelectingDesign,
-  DialogForSelectingParties,
   FAB,
   GridContainer,
   GridItem,
+  PartyDetails,
+  RemoteAutoComplete,
   SnackBarComponent,
 } from "../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
@@ -40,12 +41,10 @@ import {
   convertNumber,
   hasError,
   isEmptyString,
-  setErrors,
   validateNumber,
 } from "../../Utils";
-import addEditSaleForm from "./form/AddEditSale.json";
 import moment from "moment";
-import { apiUrl } from "../../constants";
+import { apiUrl, backend_parties } from "../../constants";
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
@@ -63,15 +62,14 @@ export default function AddEditSales(props) {
   const classes = useStyles();
   const history = useHistory();
   const buttonClasses = buttonUseStyles();
-  let saleForm = addEditSaleForm;
   const [openBackDrop, setBackDrop] = useState(false);
   const [alert, setAlert] = useState(null);
   const [openDialogForSelectingDesign, setOpenDialogForSelectingDesign] =
     useState(false);
+  const [rawMaterialIdTohighLight, setRawMaterialToHighLight] =
+    React.useState(null);
 
-  const [openDialogForSelectingParties, setOpenDialogForSelectingParties] =
-    useState(false);
-
+  const [selectedparty, setSelectedParty] = React.useState(null);
   const [selectedDesign, setSelectedDesign] = React.useState({});
   const [error, setError] = React.useState({});
 
@@ -80,10 +78,8 @@ export default function AddEditSales(props) {
   const [id] = useState(props.id ? props.id : null);
 
   const [formState, setFormState] = useState({
-    id: null,
+    type_of_bill: null,
     bill_no: "",
-    seller_name: "",
-    gst_no: "",
     date: new Date(),
     is_gst_bill: false,
     total_price_of_all_design: 0,
@@ -93,7 +89,6 @@ export default function AddEditSales(props) {
     sgst: 0,
     cgst: 0,
     igst: 0,
-    party: null,
   });
 
   const [designError, setDesignError] = useState({});
@@ -118,6 +113,15 @@ export default function AddEditSales(props) {
   useEffect(() => {
     if ((isEdit || isView) && id) {
       getEditViewData(id);
+    }
+    if (isView) {
+      const urlParams = new URLSearchParams(window.location.search);
+      let designId = urlParams.get("design");
+      let colorId = urlParams.get("color");
+      setRawMaterialToHighLight({
+        design: designId,
+        color: colorId,
+      });
     }
   }, []);
 
@@ -147,7 +151,7 @@ export default function AddEditSales(props) {
       ...formState,
       bill_no: data.bill_no,
       date: new Date(data.date),
-      is_gst_bill: data.is_gst_bill,
+      type_of_bill: data.type_of_bill,
       total_price_of_all_design: validateNumber(data.total_price_of_all_design),
       total_price_without_gst: validateNumber(data.total_price_with_add_cost),
       add_cost: validateNumber(data.add_cost),
@@ -167,6 +171,12 @@ export default function AddEditSales(props) {
       is_retailer: data.party.party_address,
       is_whole_seller: data.party.is_whole_seller,
     }));
+
+    setSelectedParty({
+      label: data.party.party_name,
+      value: data.party.id,
+      allData: data.party,
+    });
 
     let saleReadyMaterial = {};
     data.sale_ready_material.forEach((el) => {
@@ -201,6 +211,7 @@ export default function AddEditSales(props) {
               ...saleReadyMaterial[designId],
               colorsPresent: colorsPresent,
               allColors: allColors,
+              isNew: false,
             },
           };
         } else {
@@ -529,36 +540,38 @@ export default function AddEditSales(props) {
     }));
   };
 
-  const handleCloseDialogForParties = () => {
-    setOpenDialogForSelectingParties(false);
-  };
-
-  const handleAddParties = (data) => {
-    setParty((party) => ({
-      ...party,
-      gst_no: data.gst_no,
-      id: data.id,
-      party_name: data.party_name,
-      address: data.party_address,
-      is_retailer: data.is_retailer,
-      is_whole_seller: data.is_whole_seller,
-    }));
-    setFormState((formState) => ({
-      ...formState,
-      party: data.id,
-    }));
-    delete error["party"];
-    setError((error) => ({
-      ...error,
-    }));
-    handleCloseDialogForParties();
-  };
-
   const handleChange = (event) => {
     delete error[event.target.name];
     setError((error) => ({
       ...error,
     }));
+    if (event.target.name === "type_of_bill") {
+      setDesign([]);
+      setError({});
+      setParty({
+        id: null,
+        party_name: "",
+        gst_no: "",
+        address: "",
+        is_whole_seller: false,
+        is_retailer: false,
+      });
+      setSelectedParty(null);
+      setFormState({
+        type_of_bill: null,
+        bill_no: "",
+        date: new Date(),
+        is_gst_bill: false,
+        total_price_of_all_design: 0,
+        total_price_without_gst: 0,
+        add_cost: 0,
+        total_price: 0,
+        sgst: 0,
+        cgst: 0,
+        igst: 0,
+      });
+      setSelectedDesign({});
+    }
     setFormState((formState) => ({
       ...formState,
       [event.target.name]: event.target.value,
@@ -681,27 +694,6 @@ export default function AddEditSales(props) {
     }));
   };
 
-  const toggleSwitch = (event) => {
-    if (event.target.checked) {
-      setFormState((formState) => ({
-        ...formState,
-        is_gst_bill: true,
-      }));
-    } else {
-      setFormState((formState) => ({
-        ...formState,
-        total_price: formState.total_price_without_gst,
-        cgst: 0,
-        sgst: 0,
-        igst: 0,
-      }));
-      setFormState((formState) => ({
-        ...formState,
-        is_gst_bill: false,
-      }));
-    }
-  };
-
   const handleOrderDate = (event) => {
     let date = moment(event).format("YYYY-MM-DDT00:00:00.000Z");
     if (date === "Invalid date") {
@@ -724,16 +716,31 @@ export default function AddEditSales(props) {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
-    let error = {};
-    error = setErrors(formState, saleForm);
+    let err = { ...error };
+    /** This will set errors as per validations defined in form */
+    if (!party.id) {
+      isValid = false;
+      err = {
+        ...err,
+        seller: ["Party is required"],
+      };
+    }
+    if (isEmptyString(formState.bill_no)) {
+      isValid = false;
+      err = {
+        ...err,
+        bill_no: ["Bill number is required"],
+      };
+    }
+
     /** If no errors then isValid is set true */
-    if (checkEmpty(error) && checkEmpty(designError)) {
+    if (checkEmpty(err) && checkEmpty(designError)) {
       setBackDrop(false);
       setError({});
       isValid = true;
     } else {
       setBackDrop(false);
-      setError(error);
+      setError(err);
     }
     if (isValid) {
       submit();
@@ -856,6 +863,7 @@ export default function AddEditSales(props) {
           stock: mainDesignData.stock,
           colorsPresent: [row.color.id],
           allColors: [colorData],
+          isNew: true,
         },
       }));
     }
@@ -875,6 +883,38 @@ export default function AddEditSales(props) {
     }));
     setBackDrop(false);
   };
+
+  const setPartyData = async (data) => {
+    delete error["party"];
+    setError((error) => ({
+      ...error,
+    }));
+    if (data && data.value) {
+      setParty((party) => ({
+        ...party,
+        gst_no: data.allData.gst_no,
+        id: data.allData.id,
+        party_name: data.allData.party_name,
+        address: data.allData.party_address,
+        is_retailer: data.allData.is_retailer,
+        is_whole_seller: data.allData.is_whole_seller,
+      }));
+      setSelectedParty(data);
+    } else {
+      setParty({
+        ...formState,
+        id: null,
+        party_name: "",
+        gst_no: "",
+        address: "",
+        is_whole_seller: false,
+        is_retailer: false,
+      });
+      setSelectedParty(null);
+    }
+  };
+
+  console.log(";formState => ", formState);
 
   return (
     <React.Fragment>
@@ -912,13 +952,8 @@ export default function AddEditSales(props) {
           selectedDesign={selectedDesign}
           selectDesign={selectDesign}
         />
-        <DialogForSelectingParties
-          handleCancel={handleCloseDialogForParties}
-          handleClose={handleCloseDialogForParties}
-          handleAddParties={handleAddParties}
-          open={openDialogForSelectingParties}
-        />
-        <GridItem xs={12} sm={12} md={10}>
+
+        <GridItem xs={12} sm={12} md={12}>
           <Card>
             <CardHeader color="primary" className={classes.cardHeaderStyles}>
               <h4 className={classes.cardTitleWhite}>{props.header}</h4>
@@ -926,385 +961,273 @@ export default function AddEditSales(props) {
             </CardHeader>
             <CardBody>
               <GridContainer>
-                <GridItem xs={12} sm={12} md={5}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Bill Number"
-                    name="bill_no"
+                <GridItem xs={12} sm={12} md={2}>
+                  <CustomDropDown
+                    id="type_of_bill"
                     disabled={isView || isEdit}
-                    value={formState.bill_no}
-                    id="bill_no"
+                    onChange={(event) => handleChange(event)}
+                    labelText="Type of Sale"
+                    name="type_of_bill"
+                    value={formState.type_of_bill}
+                    nameValue={[
+                      { name: "Pakka", value: "Pakka" },
+                      { name: "Kachha", value: "Kachha" },
+                    ]}
                     formControlProps={{
                       fullWidth: true,
                     }}
-                    /** For setting errors */
-                    helperTextId={"helperText_bill_no"}
-                    isHelperText={hasError("bill_no", error)}
-                    helperText={
-                      hasError("bill_no", error)
-                        ? error["bill_no"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("bill_no", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={4}>
-                  <DatePicker
-                    onChange={(event) => handleOrderDate(event)}
-                    label="Bill Date"
-                    name="bill_date"
-                    disabled={isView || formState.cancelled}
-                    value={formState.date || new Date()}
-                    id="bill_date"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    style={{
-                      width: "100%",
-                      marginTop: "1.5rem",
-                    }}
-                  />
-                </GridItem>
-                <GridItem
-                  xs={12}
-                  sm={12}
-                  md={3}
-                  className={classes.switchBoxInFilter}
-                >
-                  <div className={classes.block}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={formState.is_gst_bill ? true : false}
-                          disabled={isView}
-                          onChange={(event) => {
-                            toggleSwitch(event);
-                          }}
-                          classes={{
-                            switchBase: classes.switchBase,
-                            checked: classes.switchChecked,
-                            thumb: classes.switchIcon,
-                            track: classes.switchBar,
-                          }}
-                        />
-                      }
-                      classes={{
-                        label: classes.label,
-                      }}
-                      label="Is Gst Bill ?"
-                    />
-                  </div>
-                </GridItem>
-              </GridContainer>
-              {party.id && isView ? (
-                <>
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={6}>
+                {formState.type_of_bill ? (
+                  <>
+                    <GridItem xs={12} sm={12} md={2}>
+                      <DatePicker
+                        onChange={(event) => handleOrderDate(event)}
+                        label="Bill Date"
+                        name="bill_date"
+                        disabled={isView}
+                        value={formState.date || new Date()}
+                        id="bill_date"
+                        formControlProps={{
+                          fullWidth: true,
+                        }}
+                        style={{
+                          width: "100%",
+                          marginTop: "1.5rem",
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={3}>
                       <CustomInput
-                        labelText="Party Name"
-                        name="party_name"
-                        disabled={true}
-                        value={party.party_name}
-                        id="party_name"
+                        onChange={(event) => handleChange(event)}
+                        labelText="Bill/Invoice Number"
+                        name="bill_no"
+                        disabled={isView || isEdit}
+                        value={formState.bill_no}
+                        id="bill_no"
                         formControlProps={{
                           fullWidth: true,
                         }}
                         /** For setting errors */
-                        helperTextId={"helperText_party_name"}
-                        isHelperText={hasError("party_name", error)}
+                        helperTextId={"helperText_bill_no"}
+                        isHelperText={hasError("bill_no", error)}
                         helperText={
-                          hasError("party_name", error)
-                            ? error["party_name"].map((error) => {
+                          hasError("bill_no", error)
+                            ? error["bill_no"].map((error) => {
                                 return error + " ";
                               })
                             : null
                         }
-                        error={hasError("party_name", error)}
+                        error={hasError("bill_no", error)}
                       />
                     </GridItem>
-                    <GridItem xs={12} sm={12} md={6}>
-                      <CustomInput
-                        labelText="Party GST Number"
-                        name="party_gst_no"
-                        disabled={true}
-                        value={party.gst_no}
-                        id="party_gst_no"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                        /** For setting errors */
-                        helperTextId={"helperText_party_gst_no"}
-                        isHelperText={hasError("party_gst_no", error)}
-                        helperText={
-                          hasError("party_gst_no", error)
-                            ? error["party_gst_no"].map((error) => {
-                                return error + " ";
-                              })
-                            : null
-                        }
-                        error={hasError("party_gst_no", error)}
-                      />
-                    </GridItem>
-                  </GridContainer>
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={12}>
-                      <CustomInput
-                        labelText="Party Address"
-                        name="party_address"
-                        disabled={true}
-                        value={party.address}
-                        id="party_address"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                        /** For setting errors */
-                        helperTextId={"helperText_party_address"}
-                        isHelperText={hasError("party_address", error)}
-                        helperText={
-                          hasError("party_address", error)
-                            ? error["party_address"].map((error) => {
-                                return error + " ";
-                              })
-                            : null
-                        }
-                        error={hasError("party_address", error)}
-                      />
-                    </GridItem>
-                  </GridContainer>
-                </>
-              ) : null}
-              {isView ? null : (
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <GridContainer>
+                    {!isView && (
                       <GridItem
                         xs={12}
                         sm={12}
-                        md={12}
-                        style={{
-                          margin: "27px 0px 0px",
-                        }}
+                        md={4}
+                        style={{ marginTop: "2.2rem" }}
                       >
-                        <GridContainer style={{ dispay: "flex" }}>
-                          <GridItem
-                            xs={12}
-                            sm={12}
-                            md={8}
-                            style={{
-                              color: "#C8C8C8",
-                            }}
-                          >
-                            <b>Party</b>
-                          </GridItem>
-                        </GridContainer>
-                        <br />
-                        <GridContainer style={{ dispay: "flex" }}>
-                          <GridItem xs={12} sm={12} md={8}>
-                            <b>Party Name : </b> {party.party_name}
-                          </GridItem>
-                        </GridContainer>
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={8}>
-                            <b>Party Gst No : </b>
-                            {party.gst_no}
-                          </GridItem>
-                        </GridContainer>
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={8}>
-                            <b>Party Address : </b>
-                            {party.address}
-                          </GridItem>
-                        </GridContainer>
-                        <br />
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={8}>
-                            <Typography
-                              variant="caption"
-                              display="block"
-                              gutterBottom
-                            >
-                              {party.is_retailer
-                                ? "Retailer party"
-                                : party.is_whole_seller
-                                ? "Whole seller party"
-                                : ""}
-                            </Typography>
-                          </GridItem>
-                        </GridContainer>
+                        <RemoteAutoComplete
+                          setSelectedData={setPartyData}
+                          searchString={"party_name"}
+                          apiName={backend_parties}
+                          placeholder="Select Party..."
+                          selectedValue={selectedparty}
+                          isError={error.seller}
+                          errorText={"Please select a party"}
+                          isSeller={true}
+                        />
                       </GridItem>
-                      {isView ? null : (
-                        <>
-                          <GridItem xs={12} sm={12} md={12}>
-                            <Button
-                              color="primary"
-                              onClick={() => {
-                                setOpenDialogForSelectingParties(true);
-                              }}
-                            >
-                              {party.id ? "Change Party" : "Select Party"}
-                            </Button>
-                          </GridItem>
-                          {hasError("party", error) ? (
-                            <GridItem xs={12} sm={12} md={12}>
-                              <FormHelperText
-                                id={"party_helpertext_id"}
-                                error={hasError("party", error)}
-                              >
-                                {hasError("party", error)
-                                  ? error["party"].map((error) => {
-                                      return error + " ";
-                                    })
-                                  : null}
-                              </FormHelperText>
-                            </GridItem>
-                          ) : null}
-                        </>
-                      )}
-                    </GridContainer>
+                    )}
+                  </>
+                ) : null}
+              </GridContainer>
+              {formState.type_of_bill &&
+                selectedparty &&
+                selectedparty.value &&
+                selectedparty.allData && (
+                  <GridContainer>
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={6}
+                      style={{ marginTop: "1.5rem" }}
+                    >
+                      <PartyDetails party={selectedparty.allData} />
+                    </GridItem>
+                  </GridContainer>
+                )}
+
+              {formState.type_of_bill === "Pakka" ? (
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={2}>
+                    <CustomInput
+                      onChange={(event) => cgstSgstValueChange(event)}
+                      labelText="CGST(%)"
+                      name="cgst"
+                      disabled={isView || validateNumber(formState.igst)}
+                      value={formState.cgst}
+                      id="cgst"
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      /** For setting errors */
+                      helperTextId={"helperText_cgst"}
+                      isHelperText={hasError("cgst", error)}
+                      helperText={
+                        hasError("cgst", error)
+                          ? error["cgst"].map((error) => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("cgst", error)}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={2}>
+                    <CustomInput
+                      onChange={(event) => cgstSgstValueChange(event)}
+                      labelText="SGST(%)"
+                      name="sgst"
+                      disabled={isView || validateNumber(formState.igst)}
+                      value={formState.sgst}
+                      id="sgst"
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      /** For setting errors */
+                      helperTextId={"helperText_sgst"}
+                      isHelperText={hasError("sgst", error)}
+                      helperText={
+                        hasError("sgst", error)
+                          ? error["sgst"].map((error) => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("sgst", error)}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={2}>
+                    <CustomInput
+                      onChange={(event) => cgstSgstValueChange(event)}
+                      labelText="IGST(%)"
+                      name="igst"
+                      disabled={
+                        isView ||
+                        validateNumber(formState.sgst) ||
+                        validateNumber(formState.cgst)
+                      }
+                      value={formState.igst}
+                      id="igst"
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      /** For setting errors */
+                      helperTextId={"helperText_igst"}
+                      isHelperText={hasError("igst", error)}
+                      helperText={
+                        hasError("igst", error)
+                          ? error["igst"].map((error) => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("igst", error)}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={3}>
+                    <CustomInput
+                      onChange={(event) => handleChangeAddCost(event)}
+                      labelText="Add. Cost"
+                      name="add_cost"
+                      type="number"
+                      disabled={isView}
+                      value={formState.add_cost}
+                      id="add_cost"
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      /** For setting errors */
+                      helperTextId={"helperText_add_cost"}
+                      isHelperText={hasError("add_cost", error)}
+                      helperText={
+                        hasError("add_cost", error)
+                          ? error["add_cost"].map((error) => {
+                              return error + " ";
+                            })
+                          : null
+                      }
+                      error={hasError("add_cost", error)}
+                    />
                   </GridItem>
                 </GridContainer>
-              )}
+              ) : null}
+
               <GridContainer>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => cgstSgstValueChange(event)}
-                    labelText="CGST(%)"
-                    name="cgst"
-                    disabled={
-                      isView ||
-                      !formState.is_gst_bill ||
-                      validateNumber(formState.igst)
-                    }
-                    value={formState.cgst}
-                    id="cgst"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_cgst"}
-                    isHelperText={hasError("cgst", error)}
-                    helperText={
-                      hasError("cgst", error)
-                        ? error["cgst"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("cgst", error)}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => cgstSgstValueChange(event)}
-                    labelText="SGST(%)"
-                    name="sgst"
-                    disabled={
-                      isView ||
-                      !formState.is_gst_bill ||
-                      validateNumber(formState.igst)
-                    }
-                    value={formState.sgst}
-                    id="sgst"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_sgst"}
-                    isHelperText={hasError("sgst", error)}
-                    helperText={
-                      hasError("sgst", error)
-                        ? error["sgst"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("sgst", error)}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => cgstSgstValueChange(event)}
-                    labelText="IGST(%)"
-                    name="igst"
-                    disabled={
-                      isView ||
-                      !formState.is_gst_bill ||
-                      validateNumber(formState.sgst) ||
-                      validateNumber(formState.cgst)
-                    }
-                    value={formState.igst}
-                    id="igst"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_igst"}
-                    isHelperText={hasError("igst", error)}
-                    helperText={
-                      hasError("igst", error)
-                        ? error["igst"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("igst", error)}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomInput
-                    onChange={(event) => handleChangeAddCost(event)}
-                    labelText="Add. Cost"
-                    name="add_cost"
-                    type="number"
-                    disabled={isView}
-                    value={formState.add_cost}
-                    id="add_cost"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_add_cost"}
-                    isHelperText={hasError("add_cost", error)}
-                    helperText={
-                      hasError("add_cost", error)
-                        ? error["add_cost"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("add_cost", error)}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Total Price"
-                    name="total_price"
-                    disabled={true}
-                    value={parseFloat(formState.total_price).toFixed(2)}
-                    id="total_price"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_total_price"}
-                    isHelperText={hasError("total_price", error)}
-                    helperText={
-                      hasError("total_price", error)
-                        ? error["total_price"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("total_price", error)}
-                  />
-                </GridItem>
+                {formState.type_of_bill && formState.type_of_bill !== "" ? (
+                  <>
+                    {formState.type_of_bill === "Pakka" ? (
+                      <>
+                        <GridItem
+                          xs={12}
+                          sm={12}
+                          md={4}
+                          style={{
+                            marginTop: "3rem",
+                          }}
+                        >
+                          <b>{`Total amount(without tax):- ${convertNumber(
+                            formState.total_price_without_gst,
+                            true
+                          )}`}</b>
+                        </GridItem>
+                        <GridItem
+                          xs={12}
+                          sm={12}
+                          md={4}
+                          style={{
+                            marginTop: "3rem",
+                          }}
+                        >
+                          <b>{`Total amount(with tax):- ${convertNumber(
+                            formState.total_price,
+                            true
+                          )}`}</b>
+                        </GridItem>
+                      </>
+                    ) : (
+                      <GridItem
+                        xs={12}
+                        sm={12}
+                        md={4}
+                        style={{
+                          marginTop: "3rem",
+                        }}
+                      >
+                        <b>{`Total amount:- ${convertNumber(
+                          formState.total_price,
+                          true
+                        )}`}</b>
+                      </GridItem>
+                    )}
+                  </>
+                ) : null}
               </GridContainer>
-              {isView ? null : (
+
+              {!isView &&
+              formState.type_of_bill &&
+              formState.type_of_bill !== "" ? (
                 <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={12}
+                    style={{
+                      marginTop: "2rem",
+                    }}
+                  >
                     <FAB
                       color="primary"
                       size={"medium"}
@@ -1313,12 +1236,27 @@ export default function AddEditSales(props) {
                       disabled={!party.id}
                       toolTip={
                         party.id
-                          ? "Select raw materials for sale"
+                          ? "Select ready materials for sale"
                           : "Select party first"
                       }
                     >
                       <AddIcon className={classes.extendedIcon} />
                       <h5>Add Ready Material</h5>
+                    </FAB>
+                    <FAB
+                      color="primary"
+                      size={"medium"}
+                      variant="extended"
+                      onClick={() => addReadyMaterial()}
+                      disabled={!party.id}
+                      toolTip={
+                        party.id
+                          ? "Select ready materials for sale"
+                          : "Select party first"
+                      }
+                    >
+                      <AddIcon className={classes.extendedIcon} />
+                      <h5>Add Text</h5>
                     </FAB>
                   </GridItem>
                   {!party.id ? (
@@ -1332,428 +1270,438 @@ export default function AddEditSales(props) {
                           Please select party first
                         </Typography>
                       </GridItem>
-                      <GridItem xs={12} sm={12} md={12}>
-                        <Typography
-                          variant="caption"
-                          display="block"
-                          gutterBottom
-                        >
-                          Note:- For wholeslellers, only the designs ordered by
-                          them would list down
-                        </Typography>
-                      </GridItem>
                     </>
                   ) : null}
                 </GridContainer>
-              )}
+              ) : null}
 
-              <GridContainer>
-                <TableContainer component={Paper}>
-                  <CustomMaterialUITable
-                    sx={{ textAlignLast: "center", ml: "15px" }}
-                    aria-label="sale-table"
-                    style={{
-                      marginTop: 30,
-                    }}
-                  >
-                    <CustomTableHead>
-                      <CustomTableRow>
-                        <CustomTableCell align="left">
-                          Ratio Name
-                        </CustomTableCell>
-                        {isEdit ? (
+              {formState.type_of_bill ? (
+                <GridContainer>
+                  <TableContainer component={Paper}>
+                    <CustomMaterialUITable
+                      sx={{ textAlignLast: "center", ml: "15px" }}
+                      aria-label="sale-table"
+                      style={{
+                        marginTop: 30,
+                      }}
+                    >
+                      <CustomTableHead>
+                        <CustomTableRow>
                           <CustomTableCell align="left">
-                            Previous Quantity
+                            Ratio Name
                           </CustomTableCell>
-                        ) : null}
-                        <CustomTableCell align="left">Pcs sold</CustomTableCell>
-                        <CustomTableCell align="left">
-                          Price per piece
-                        </CustomTableCell>
-                        <CustomTableCell align="left">
-                          Total Price
-                        </CustomTableCell>
-                        {isView ? null : (
-                          <CustomTableCell align="center">
-                            Action
+                          {isEdit ? (
+                            <CustomTableCell align="left">
+                              Previous Quantity
+                            </CustomTableCell>
+                          ) : null}
+                          <CustomTableCell align="left">
+                            Pcs sold
                           </CustomTableCell>
-                        )}
-                      </CustomTableRow>
-                    </CustomTableHead>
-                    <CustomTableBody>
-                      {selectedDesign &&
-                        Object.keys(selectedDesign).map((Ip, designKey) => (
-                          <>
-                            <CustomTableRow key={Ip} height={20}>
-                              <CustomTableCell
-                                align="center"
-                                colSpan={4}
-                                sx={{
-                                  width: "100%",
-                                  borderTop: "1px solid black !important",
-                                }}
-                              >
-                                <GridItem xs={12} sm={12} md={12}>
-                                  <GridContainer style={{ dispay: "flex" }}>
-                                    <GridItem xs={12} sm={12} md={12}>
-                                      <div className={classes.imageDivInTable}>
-                                        {selectedDesign[Ip].images &&
-                                        selectedDesign[Ip].images.length &&
-                                        selectedDesign[Ip].images[0].url ? (
-                                          <img
-                                            alt="ready_material_photo"
-                                            src={
-                                              apiUrl +
-                                              selectedDesign[Ip].images[0].url
-                                            }
-                                            loader={<CircularProgress />}
-                                            style={{
-                                              height: "5rem",
-                                              width: "10rem",
-                                            }}
-                                            className={classes.UploadImage}
-                                          />
-                                        ) : (
-                                          <img
-                                            src={no_image_icon}
-                                            alt="ready_material_photo"
-                                            style={{
-                                              height: "5rem",
-                                              width: "10rem",
-                                            }}
-                                            loader={<CircularProgress />}
-                                            className={classes.DefaultNoImage}
-                                          />
-                                        )}
-                                      </div>
-                                    </GridItem>
-                                  </GridContainer>
-                                  <GridContainer>
-                                    <GridItem xs={12} sm={12} md={12}>
-                                      <b>Material No : </b>
-                                      {selectedDesign[Ip].material_no}
-                                    </GridItem>
-                                  </GridContainer>
-                                </GridItem>
-                              </CustomTableCell>
-                            </CustomTableRow>
-                            {selectedDesign[Ip].allColors.map((c, colorKey) => (
+                          <CustomTableCell align="left">
+                            Price per piece
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Total Price
+                          </CustomTableCell>
+                          {isView ? null : (
+                            <CustomTableCell align="center">
+                              Action
+                            </CustomTableCell>
+                          )}
+                        </CustomTableRow>
+                      </CustomTableHead>
+                      <CustomTableBody>
+                        {selectedDesign &&
+                          Object.keys(selectedDesign).map((Ip, designKey) => {
+                            let readyMaterial = Ip;
+                            let color = Ip;
+                            let isHighLight = false;
+
+                            return (
                               <>
-                                <CustomTableRow
-                                  key={Ip + "-" + c.color}
-                                  sx={{
-                                    "&:last-child td, &:last-child th": {
-                                      border: 0,
-                                    },
-                                    backgroundColor: c.isDeleted
-                                      ? "#e7e7e7"
-                                      : "transparent",
-                                    textDecoration: c.isDeleted
-                                      ? "line-through"
-                                      : "none",
-                                  }}
-                                >
+                                <CustomTableRow key={Ip} height={20}>
                                   <CustomTableCell
-                                    align="left"
+                                    align="center"
+                                    colSpan={4}
                                     sx={{
-                                      pt: 0,
-                                      pb: 0,
-                                      color: "#3b3b42 !important;",
-                                      fontSize: "0.9375rem !important",
-                                      fontWeight: "400 !Important",
+                                      width: "100%",
+                                      borderTop: "1px solid black !important",
                                     }}
                                   >
-                                    {c.colorData.name}
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <GridContainer style={{ dispay: "flex" }}>
+                                        <GridItem xs={12} sm={12} md={12}>
+                                          <div
+                                            className={classes.imageDivInTable}
+                                          >
+                                            {selectedDesign[Ip].images &&
+                                            selectedDesign[Ip].images.length &&
+                                            selectedDesign[Ip].images[0].url ? (
+                                              <img
+                                                alt="ready_material_photo"
+                                                src={
+                                                  apiUrl +
+                                                  selectedDesign[Ip].images[0]
+                                                    .url
+                                                }
+                                                loader={<CircularProgress />}
+                                                style={{
+                                                  height: "5rem",
+                                                  width: "10rem",
+                                                }}
+                                                className={classes.UploadImage}
+                                              />
+                                            ) : (
+                                              <img
+                                                src={no_image_icon}
+                                                alt="ready_material_photo"
+                                                style={{
+                                                  height: "5rem",
+                                                  width: "10rem",
+                                                }}
+                                                loader={<CircularProgress />}
+                                                className={
+                                                  classes.DefaultNoImage
+                                                }
+                                              />
+                                            )}
+                                          </div>
+                                        </GridItem>
+                                      </GridContainer>
+                                      <GridContainer>
+                                        <GridItem xs={12} sm={12} md={12}>
+                                          <b>Material No : </b>
+                                          {selectedDesign[Ip].material_no}
+                                        </GridItem>
+                                      </GridContainer>
+                                    </GridItem>
                                   </CustomTableCell>
-                                  {isEdit ? (
-                                    <CustomTableCell
-                                      align="left"
-                                      sx={{
-                                        pt: 0,
-                                        pb: 0,
-                                      }}
-                                    >
-                                      {c.previousQuantity
-                                        ? c.previousQuantity
-                                        : null}
-                                    </CustomTableCell>
-                                  ) : null}
-                                  {/** Input for quantity */}
-                                  {isView ? (
-                                    <CustomTableCell align="left">
-                                      {c.quantity}
-                                    </CustomTableCell>
-                                  ) : (
-                                    <CustomTableCell
-                                      align="left"
-                                      sx={{
-                                        pt: 0,
-                                        pb: 0,
-                                      }}
-                                    >
-                                      <TextField
-                                        defaultValue="Small"
-                                        size="large"
-                                        variant="standard"
-                                        color="secondary"
-                                        onChange={(event) =>
-                                          handleChangeForRepetableComponent(
-                                            event,
-                                            colorKey,
-                                            Ip
-                                          )
-                                        }
-                                        type="number"
-                                        disabled={isView}
-                                        name="quantity"
-                                        value={c.quantity}
-                                        id={
-                                          "quantity" +
-                                          "color" +
-                                          colorKey +
-                                          "design" +
-                                          Ip
-                                        }
-                                        formControlProps={{
-                                          fullWidth: false,
+                                </CustomTableRow>
+                                {selectedDesign[Ip].allColors.map(
+                                  (c, colorKey) => (
+                                    <>
+                                      <CustomTableRow
+                                        key={Ip + "-" + c.color}
+                                        sx={{
+                                          "&:last-child td, &:last-child th": {
+                                            border: 0,
+                                          },
+                                          backgroundColor: c.isDeleted
+                                            ? "#e7e7e7"
+                                            : "transparent",
+                                          textDecoration: c.isDeleted
+                                            ? "line-through"
+                                            : "none",
                                         }}
-                                        /** For setting errors */
-                                        helperTextId={
-                                          "quantity" +
-                                          "color" +
-                                          colorKey +
-                                          "design" +
-                                          Ip
-                                        }
-                                        isHelperText={hasError(
-                                          "quantity" +
-                                            "color" +
-                                            colorKey +
-                                            "design" +
-                                            Ip,
-                                          designError
-                                        )}
-                                        helperText={
-                                          hasError(
-                                            "quantity" +
-                                              "color" +
-                                              colorKey +
-                                              "design" +
-                                              Ip,
-                                            designError
-                                          )
-                                            ? designError[
+                                      >
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            color: "#3b3b42 !important;",
+                                            fontSize: "0.9375rem !important",
+                                            fontWeight: "400 !Important",
+                                          }}
+                                        >
+                                          {c.colorData.name}
+                                        </CustomTableCell>
+                                        {isEdit ? (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                            }}
+                                          >
+                                            {c.previousQuantity
+                                              ? c.previousQuantity
+                                              : null}
+                                          </CustomTableCell>
+                                        ) : null}
+                                        {/** Input for quantity */}
+                                        {isView ? (
+                                          <CustomTableCell align="left">
+                                            {c.quantity}
+                                          </CustomTableCell>
+                                        ) : (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                            }}
+                                          >
+                                            <TextField
+                                              defaultValue="Small"
+                                              size="large"
+                                              variant="standard"
+                                              color="secondary"
+                                              onChange={(event) =>
+                                                handleChangeForRepetableComponent(
+                                                  event,
+                                                  colorKey,
+                                                  Ip
+                                                )
+                                              }
+                                              type="number"
+                                              disabled={isView}
+                                              name="quantity"
+                                              value={c.quantity}
+                                              id={
+                                                "quantity" +
+                                                "color" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              formControlProps={{
+                                                fullWidth: false,
+                                              }}
+                                              /** For setting errors */
+                                              helperTextId={
+                                                "quantity" +
+                                                "color" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              isHelperText={hasError(
                                                 "quantity" +
                                                   "color" +
                                                   colorKey +
                                                   "design" +
-                                                  Ip
-                                              ].map((error) => {
-                                                return error + " ";
-                                              })
-                                            : null
-                                        }
-                                        error={hasError(
-                                          "quantity" +
-                                            "color" +
-                                            colorKey +
-                                            "design" +
-                                            Ip,
-                                          designError
+                                                  Ip,
+                                                designError
+                                              )}
+                                              helperText={
+                                                hasError(
+                                                  "quantity" +
+                                                    "color" +
+                                                    colorKey +
+                                                    "design" +
+                                                    Ip,
+                                                  designError
+                                                )
+                                                  ? designError[
+                                                      "quantity" +
+                                                        "color" +
+                                                        colorKey +
+                                                        "design" +
+                                                        Ip
+                                                    ].map((error) => {
+                                                      return error + " ";
+                                                    })
+                                                  : null
+                                              }
+                                              error={hasError(
+                                                "quantity" +
+                                                  "color" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                            />
+                                          </CustomTableCell>
                                         )}
-                                      />
-                                    </CustomTableCell>
-                                  )}
 
-                                  {isView ? (
-                                    <CustomTableCell align="ri">
-                                      {c.price_per_unit}
-                                    </CustomTableCell>
-                                  ) : (
-                                    <CustomTableCell
-                                      align="left"
-                                      sx={{
-                                        pt: 0,
-                                        pb: 0,
-                                      }}
-                                    >
-                                      <TextField
-                                        defaultValue="Small"
-                                        size="small"
-                                        variant="standard"
-                                        color="secondary"
-                                        onChange={(event) =>
-                                          handleChangeForRepetableComponent(
-                                            event,
-                                            colorKey,
-                                            Ip
-                                          )
-                                        }
-                                        type="number"
-                                        disabled={isView}
-                                        name="price_per_unit"
-                                        value={c.price_per_unit}
-                                        id={
-                                          "price_per_unit" +
-                                          "color" +
-                                          colorKey +
-                                          "design" +
-                                          Ip
-                                        }
-                                        formControlProps={{
-                                          fullWidth: true,
-                                        }}
-                                        /** For setting errors */
-                                        helperTextId={
-                                          "price_per_unit" +
-                                          "color" +
-                                          colorKey +
-                                          "design" +
-                                          Ip
-                                        }
-                                        isHelperText={hasError(
-                                          "price_per_unit" +
-                                            "color" +
-                                            colorKey +
-                                            "design" +
-                                            Ip,
-                                          designError
-                                        )}
-                                        helperText={
-                                          hasError(
-                                            "price_per_unit" +
-                                              "color" +
-                                              colorKey +
-                                              "design" +
-                                              Ip,
-                                            designError
-                                          )
-                                            ? designError[
+                                        {isView ? (
+                                          <CustomTableCell align="ri">
+                                            {c.price_per_unit}
+                                          </CustomTableCell>
+                                        ) : (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                            }}
+                                          >
+                                            <TextField
+                                              defaultValue="Small"
+                                              size="small"
+                                              variant="standard"
+                                              color="secondary"
+                                              onChange={(event) =>
+                                                handleChangeForRepetableComponent(
+                                                  event,
+                                                  colorKey,
+                                                  Ip
+                                                )
+                                              }
+                                              type="number"
+                                              disabled={isView}
+                                              name="price_per_unit"
+                                              value={c.price_per_unit}
+                                              id={
+                                                "price_per_unit" +
+                                                "color" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              formControlProps={{
+                                                fullWidth: true,
+                                              }}
+                                              /** For setting errors */
+                                              helperTextId={
+                                                "price_per_unit" +
+                                                "color" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              isHelperText={hasError(
                                                 "price_per_unit" +
                                                   "color" +
                                                   colorKey +
                                                   "design" +
-                                                  Ip
-                                              ].map((error) => {
-                                                return error + " ";
-                                              })
-                                            : null
-                                        }
-                                        error={hasError(
-                                          "price_per_unit" +
-                                            "color" +
-                                            colorKey +
-                                            "design" +
-                                            Ip,
-                                          designError
+                                                  Ip,
+                                                designError
+                                              )}
+                                              helperText={
+                                                hasError(
+                                                  "price_per_unit" +
+                                                    "color" +
+                                                    colorKey +
+                                                    "design" +
+                                                    Ip,
+                                                  designError
+                                                )
+                                                  ? designError[
+                                                      "price_per_unit" +
+                                                        "color" +
+                                                        colorKey +
+                                                        "design" +
+                                                        Ip
+                                                    ].map((error) => {
+                                                      return error + " ";
+                                                    })
+                                                  : null
+                                              }
+                                              error={hasError(
+                                                "price_per_unit" +
+                                                  "color" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                            />
+                                          </CustomTableCell>
                                         )}
-                                      />
-                                    </CustomTableCell>
-                                  )}
-                                  {/* Price per unit */}
+                                        {/* Price per unit */}
 
-                                  <CustomTableCell
-                                    align="left"
-                                    sx={{
-                                      pt: 0,
-                                      pb: 0,
-                                    }}
-                                  >
-                                    {convertNumber(c.total_price, true)}
-                                  </CustomTableCell>
-                                  {isView ? null : (
-                                    <CustomTableCell
-                                      align="left"
-                                      sx={{
-                                        pt: 0,
-                                        pb: 0,
-                                      }}
-                                    >
-                                      <GridItem xs={12} sm={12} md={2}>
-                                        <Tooltip
-                                          title={
-                                            c.isDeleted
-                                              ? "Restore Back"
-                                              : "Delete"
-                                          }
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                          }}
                                         >
-                                          <FAB
-                                            color="primary"
-                                            align={"left"}
-                                            size={"small"}
-                                            onClick={() => {
-                                              c.isDeleted
-                                                ? restoreReadyMaterial(
-                                                    colorKey,
-                                                    Ip
-                                                  )
-                                                : removeReadyMaterial(
-                                                    colorKey,
-                                                    Ip
-                                                  );
+                                          {convertNumber(c.total_price, true)}
+                                        </CustomTableCell>
+                                        {isView ? null : (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
                                             }}
                                           >
-                                            {c.isDeleted ? (
-                                              <SettingsBackupRestoreIcon />
-                                            ) : (
-                                              <DeleteIcon />
-                                            )}
-                                          </FAB>
-                                        </Tooltip>
-                                      </GridItem>
-                                    </CustomTableCell>
-                                  )}
-                                </CustomTableRow>
-                                {/* <CustomTableRow
-                                  sx={{
-                                    "&:last-child td, &:last-child th": {
-                                      border: 0,
-                                    },
-                                    backgroundColor: c.isDeleted
-                                      ? "#e7e7e7"
-                                      : "transparent",
-                                    color: "green",
-                                  }}
-                                >
-                                  <CustomTableCell
-                                    align="left"
-                                    colSpan={5}
+                                            <GridItem xs={12} sm={12} md={2}>
+                                              <Tooltip
+                                                title={
+                                                  c.isDeleted
+                                                    ? "Restore Back"
+                                                    : "Delete"
+                                                }
+                                              >
+                                                <FAB
+                                                  color="primary"
+                                                  align={"left"}
+                                                  size={"small"}
+                                                  onClick={() => {
+                                                    c.isDeleted
+                                                      ? restoreReadyMaterial(
+                                                          colorKey,
+                                                          Ip
+                                                        )
+                                                      : removeReadyMaterial(
+                                                          colorKey,
+                                                          Ip
+                                                        );
+                                                  }}
+                                                >
+                                                  {c.isDeleted ? (
+                                                    <SettingsBackupRestoreIcon />
+                                                  ) : (
+                                                    <DeleteIcon />
+                                                  )}
+                                                </FAB>
+                                              </Tooltip>
+                                            </GridItem>
+                                          </CustomTableCell>
+                                        )}
+                                      </CustomTableRow>
+                                      {/* <CustomTableRow
                                     sx={{
+                                      "&:last-child td, &:last-child th": {
+                                        border: 0,
+                                      },
+                                      backgroundColor: c.isDeleted
+                                        ? "#e7e7e7"
+                                        : "transparent",
                                       color: "green",
                                     }}
                                   >
-                                    {c.message}
-                                  </CustomTableCell>
-                                </CustomTableRow> */}
+                                    <CustomTableCell
+                                      align="left"
+                                      colSpan={5}
+                                      sx={{
+                                        color: "green",
+                                      }}
+                                    >
+                                      {c.message}
+                                    </CustomTableCell>
+                                  </CustomTableRow> */}
+                                    </>
+                                  )
+                                )}
+
+                                {/* {-------------------} */}
                               </>
-                            ))}
+                            );
+                          })}
+                      </CustomTableBody>
+                      <CustomTableBody>
+                        <CustomTableRow>
+                          <CustomTableCell
+                            colSpan={isEdit ? 4 : 3}
+                            align="right"
+                          >
+                            Total
+                          </CustomTableCell>
 
-                            {/* {-------------------} */}
-                          </>
-                        ))}
-                    </CustomTableBody>
-                    <CustomTableBody>
-                      <CustomTableRow>
-                        <CustomTableCell colSpan={isEdit ? 4 : 3} align="right">
-                          Total
-                        </CustomTableCell>
-
-                        <CustomTableCell>
-                          {convertNumber(
-                            parseFloat(
-                              formState.total_price_of_all_design
-                            ).toFixed(2),
-                            true
-                          )}
-                        </CustomTableCell>
-                        <CustomTableCell></CustomTableCell>
-                      </CustomTableRow>
-                    </CustomTableBody>
-                  </CustomMaterialUITable>
-                </TableContainer>
-              </GridContainer>
+                          <CustomTableCell>
+                            {convertNumber(
+                              parseFloat(
+                                formState.total_price_of_all_design
+                              ).toFixed(2),
+                              true
+                            )}
+                          </CustomTableCell>
+                          <CustomTableCell></CustomTableCell>
+                        </CustomTableRow>
+                      </CustomTableBody>
+                    </CustomMaterialUITable>
+                  </TableContainer>
+                </GridContainer>
+              ) : null}
             </CardBody>
-            {isView ? null : (
+            {!formState.type_of_bill || isView ? null : (
               <CardFooter>
                 <Button
                   color="primary"

@@ -20,9 +20,9 @@ import {
 } from "../../components";
 // core components
 import {
-  backend_download_purchase_ledger,
-  backend_purchase_ledger,
-  backend_sellers,
+  backend_download_sale_ledger,
+  backend_parties,
+  backend_sale_ledger,
   frontendServerUrl,
 } from "../../constants";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
@@ -44,19 +44,21 @@ import VisibilityIcon from "@material-ui/icons/Visibility";
 import EditIcon from "@material-ui/icons/Edit";
 import {
   EDITGOODRETURN,
-  EDITPURCHASEPAYEMENT,
+  EDITSALERETURN,
   EDITPURCHASES,
-  PURCHASELEDGER,
-  VIEWGOODRETURN,
-  VIEWPURCHASEPAYEMENT,
-  VIEWPURCHASES,
+  SALELEDGER,
+  VIEWSALEPAYEMENT,
+  VIEWSALERETURN,
+  VIEWSALES,
+  EDITSALES,
+  EDITSALEPAYEMENT,
 } from "../../paths";
 
 const useStyles = makeStyles(styles);
 export default function Ledger() {
   const classes = useStyles();
   const [openBackDrop, setBackDrop] = useState(false);
-  const [sellerInfo, setSellerInfo] = useState(null);
+  const [partyInfo, setPartyInfo] = useState(null);
   const [ledgerData, setLedgerData] = useState([]);
   const [filter, setFilter] = useState({});
   const [error, setError] = useState({});
@@ -71,7 +73,7 @@ export default function Ledger() {
     const urlParams = new URLSearchParams(window.location.search);
     let startDate = urlParams.get("sd");
     let endDate = urlParams.get("ed");
-    let seller_id = urlParams.get("s");
+    let party_id = urlParams.get("s");
     let type_of_bill = urlParams.get("tol");
     let filter = {};
 
@@ -110,34 +112,34 @@ export default function Ledger() {
       type_of_bill: type_of_bill ? type_of_bill : "Kachha",
     };
     setFilter(filter);
-    if (seller_id) {
-      getSellerInfo(seller_id, filter);
+    if (party_id) {
+      getPartyInfo(party_id, filter);
       window.history.pushState(
         "",
         "Ledger",
-        `${frontendServerUrl}${PURCHASELEDGER}?sd=${filter.date_gte}&ed=${filter.date_lte}&s=${seller_id}&tol=${type_of_bill}`
+        `${frontendServerUrl}${SALELEDGER}?sd=${filter.date_gte}&ed=${filter.date_lte}&s=${party_id}&tol=${type_of_bill}`
       );
     } else {
       window.history.pushState(
         "",
         "Ledger",
-        `${frontendServerUrl}${PURCHASELEDGER}?sd=${filter.date_gte}&ed=${filter.date_lte}&tol=${type_of_bill}`
+        `${frontendServerUrl}${SALELEDGER}?sd=${filter.date_gte}&ed=${filter.date_lte}&tol=${type_of_bill}`
       );
     }
   }, []);
 
-  const getSellerInfo = async (sellerId, filter) => {
-    await providerForGet(backend_sellers + "/" + sellerId, {}, Auth.getToken())
+  const getPartyInfo = async (partyId, filter) => {
+    await providerForGet(backend_parties + "/" + partyId, {}, Auth.getToken())
       .then((res) => {
         console.log("res ", res);
-        setSellerInfo({
-          value: sellerId,
-          label: res.data.seller_name,
+        setPartyInfo({
+          value: partyId,
+          label: res.data.party_name,
           allData: res.data,
         });
         getLedgerDetails(filter, {
-          value: sellerId,
-          label: res.data.seller_name,
+          value: partyId,
+          label: res.data.party_name,
           allData: res.data,
         });
         setBackDrop(false);
@@ -150,10 +152,10 @@ export default function Ledger() {
   const downloadLedger = async () => {
     setBackDrop(true);
     await providerForDownload(
-      backend_download_purchase_ledger,
+      backend_download_sale_ledger,
       {
         ...filter,
-        sellerId: sellerInfo?.value,
+        partyId: partyInfo?.value,
       },
       Auth.getToken()
     )
@@ -203,10 +205,10 @@ export default function Ledger() {
       };
     }
 
-    if (!sellerInfo || !sellerInfo.value) {
+    if (!partyInfo || !partyInfo.value) {
       error = {
         ...error,
-        seller: ["Please select seller"],
+        party: ["Please select party"],
       };
     }
 
@@ -219,12 +221,12 @@ export default function Ledger() {
 
   const getLedgerDetails = async (
     searchFilters = filter,
-    seller = sellerInfo
+    party = partyInfo
   ) => {
     window.history.pushState(
       "",
       "Ledger",
-      `${frontendServerUrl}${PURCHASELEDGER}?sd=${searchFilters.date_gte}&ed=${searchFilters.date_lte}&s=${seller?.value}&tol=${searchFilters.type_of_bill}`
+      `${frontendServerUrl}${SALELEDGER}?sd=${searchFilters.date_gte}&ed=${searchFilters.date_lte}&s=${party?.value}&tol=${searchFilters.type_of_bill}`
     );
     setBackDrop(true);
     let monthYearObject = [];
@@ -247,10 +249,10 @@ export default function Ledger() {
     setMonthYearObject(monthYearObject);
 
     await providerForGet(
-      backend_purchase_ledger,
+      backend_sale_ledger,
       {
         ...searchFilters,
-        sellerId: seller?.value,
+        partyId: party?.value,
       },
       Auth.getToken()
     )
@@ -314,34 +316,34 @@ export default function Ledger() {
     setError({});
   };
 
-  const setSelectedSeller = (seller) => {
-    delete error["seller"];
+  const setSelectedParty = (party) => {
+    delete error["party"];
     setError((error) => ({
       ...error,
     }));
-    setSellerInfo(seller);
+    setPartyInfo(party);
   };
 
   const editTxn = (id, txnType) => {
     let url = "";
-    if (txnType === "Purchase") {
-      url = EDITPURCHASES;
+    if (txnType === "Sale") {
+      url = EDITSALES;
     } else if (txnType === "Payment") {
-      url = EDITPURCHASEPAYEMENT;
-    } else if (txnType === "Goods return") {
-      url = EDITGOODRETURN;
+      url = EDITSALEPAYEMENT;
+    } else if (txnType === "Sale return") {
+      url = EDITSALEPAYEMENT;
     }
     window.open(`${frontendServerUrl}${url}/${id}`, "_blank");
   };
 
   const viewTxn = (id, txnType) => {
     let url = "";
-    if (txnType === "Purchase") {
-      url = VIEWPURCHASES;
+    if (txnType === "Sale") {
+      url = VIEWSALES;
     } else if (txnType === "Payment") {
-      url = VIEWPURCHASEPAYEMENT;
-    } else if (txnType === "Goods return") {
-      url = VIEWGOODRETURN;
+      url = VIEWSALEPAYEMENT;
+    } else if (txnType === "Sale return") {
+      url = VIEWSALERETURN;
     }
     window.open(`${frontendServerUrl}${url}/${id}`, "_blank");
   };
@@ -401,14 +403,14 @@ export default function Ledger() {
                   style={{ marginTop: "2.2rem" }}
                 >
                   <RemoteAutoComplete
-                    setSelectedData={setSelectedSeller}
-                    selectedValue={sellerInfo}
-                    searchString={"seller_name"}
-                    apiName={backend_sellers}
-                    placeholder="Select Seller..."
-                    isError={error.seller}
-                    errorText={"Please select a seller"}
-                    isSeller={true}
+                    setSelectedData={setSelectedParty}
+                    selectedValue={partyInfo}
+                    searchString={"party_name"}
+                    apiName={backend_parties}
+                    placeholder="Select Party..."
+                    isError={error.party}
+                    errorText={"Please select a party"}
+                    isParty={true}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
@@ -664,8 +666,11 @@ export default function Ledger() {
                             <CustomTableCell>-----</CustomTableCell>
                             <CustomTableCell>-----</CustomTableCell>
                             {ledgerData[monthYear]?.closing_balance
-                              ?.finalClosing > 0 ? (
+                              ?.finalClosing < 0 ? (
                               <>
+                                <CustomTableCell>
+                                  <b>----</b>
+                                </CustomTableCell>
                                 <CustomTableCell
                                   sx={{
                                     backgroundColor: "yellow",
@@ -682,23 +687,18 @@ export default function Ledger() {
                                     )}
                                   </b>
                                 </CustomTableCell>
-                                <CustomTableCell>
-                                  <b>----</b>
-                                </CustomTableCell>
                               </>
                             ) : ledgerData[monthYear]?.closing_balance
-                                ?.finalClosing < 0 ? (
+                                ?.finalClosing > 0 ? (
                               <>
-                                <CustomTableCell>
-                                  <b>----</b>
-                                </CustomTableCell>
                                 <CustomTableCell
                                   sx={{
                                     backgroundColor: "yellow",
                                   }}
                                 >
                                   <b>
-                                    -{convertNumber(
+                                    -
+                                    {convertNumber(
                                       Math.abs(
                                         ledgerData[monthYear]?.closing_balance
                                           ?.finalClosing
@@ -706,6 +706,9 @@ export default function Ledger() {
                                       true
                                     )}
                                   </b>
+                                </CustomTableCell>
+                                <CustomTableCell>
+                                  <b>----</b>
                                 </CustomTableCell>
                               </>
                             ) : (

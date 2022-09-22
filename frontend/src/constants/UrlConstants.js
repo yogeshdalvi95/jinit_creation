@@ -34,6 +34,8 @@ export const backend_monthly_sheet_download_monthly_data = `${apiBackendUrl}/mon
 export const backend_goods_return = `${apiBackendUrl}/goods-returns`;
 
 export const backend_sales = `${apiBackendUrl}/sales`;
+export const backend_sale_ledger = `${apiBackendUrl}/sales/ledger`;
+export const backend_download_sale_ledger = `${apiBackendUrl}/sales/download-ledger`;
 export const backend_sales_export_data = `${apiBackendUrl}/sales/export/downloadExcelData`;
 
 export const backend_sale_return = `${apiBackendUrl}/sale-returns`;
@@ -69,3 +71,4 @@ export const backend_purchase_ledger = `${apiBackendUrl}/purchases/ledger`;
 export const backend_download_purchase_ledger = `${apiBackendUrl}/purchases/download-ledger`;
 
 export const backend_purchase_payment = `${apiBackendUrl}/purchase-payments`;
+export const backend_sale_payment = `${apiBackendUrl}/sale-payments`;

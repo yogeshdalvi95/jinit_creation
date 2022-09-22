@@ -103,7 +103,13 @@ const ROLES = {
           "update",
           "delete",
           "getexcelsheetforexport",
+          "ledger",
+          "downloadledger",
         ],
+      },
+      {
+        name: "sale-payment",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "monthly-sheet",
@@ -212,7 +218,13 @@ const ROLES = {
           "update",
           "delete",
           "getexcelsheetforexport",
+          "ledger",
+          "downloadledger",
         ],
+      },
+      {
+        name: "sale-payment",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "department",
@@ -397,7 +409,13 @@ const ROLES = {
           "update",
           "delete",
           "getexcelsheetforexport",
+          "ledger",
+          "downloadledger",
         ],
+      },
+      {
+        name: "sale-payment",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "department",

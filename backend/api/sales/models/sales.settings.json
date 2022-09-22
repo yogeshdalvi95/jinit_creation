@@ -17,7 +17,10 @@
     },
     "type_of_bill": {
       "type": "enumeration",
-      "enum": ["Kachha", "Pakka"]
+      "enum": [
+        "Kachha",
+        "Pakka"
+      ]
     },
     "date": {
       "type": "date"
@@ -50,6 +53,9 @@
     },
     "total_price_with_add_cost": {
       "type": "float"
+    },
+    "notes": {
+      "type": "text"
     }
   }
 }

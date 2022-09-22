@@ -30,6 +30,17 @@
     },
     "price_per_unit": {
       "type": "float"
+    },
+    "party": {
+      "model": "party"
+    },
+    "are_ready_materials_clubbed": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_ready_material": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

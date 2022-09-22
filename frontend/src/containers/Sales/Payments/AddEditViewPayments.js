@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardBody,
   RemoteAutoComplete,
-  SellerDetails,
+  PartyDetails,
   DatePicker,
   CustomDropDown,
   CustomInput,
@@ -27,8 +27,12 @@ import {
   Auth,
 } from "../../../components";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
-import { ALLPURCHASEPAYEMENTS } from "../../../paths";
-import { backend_purchase_payment, backend_sellers } from "../../../constants";
+import { ALLPURCHASEPAYEMENTS, ALLSALEPAYEMENTS } from "../../../paths";
+import {
+  backend_purchase_payment,
+  backend_parties,
+  backend_sale_payment,
+} from "../../../constants";
 import moment from "moment";
 import { hasError, validateNumber, convertNumber } from "../../../Utils";
 import classNames from "classnames";
@@ -42,7 +46,7 @@ const AddEditViewPayments = (props) => {
   const classes = useStyles();
   const buttonClasses = buttonUseStyles();
   const history = useHistory();
-  const [sellerInfo, setSellerInfo] = useState(null);
+  const [partyInfo, setPartyInfo] = useState(null);
   const [openBackDrop, setBackDrop] = useState(false);
   const [alert, setAlert] = useState(null);
   const [error, setError] = useState({});
@@ -73,14 +77,10 @@ const AddEditViewPayments = (props) => {
 
   const getPaymentData = async () => {
     setBackDrop(true);
-    await providerForGet(
-      backend_purchase_payment + "/" + id,
-      {},
-      Auth.getToken()
-    )
+    await providerForGet(backend_sale_payment + "/" + id, {}, Auth.getToken())
       .then((res) => {
         let paymentInfo = res.data;
-        if (paymentInfo && paymentInfo.seller) {
+        if (paymentInfo && paymentInfo.party) {
           let data = {
             ...res.data,
           };
@@ -92,10 +92,10 @@ const AddEditViewPayments = (props) => {
             kachha_ledger: data.kachha_ledger,
             pakka_ledger: data.pakka_ledger,
           });
-          setSellerInfo({
-            label: paymentInfo.seller.seller_name,
-            value: paymentInfo.seller.id,
-            allData: paymentInfo.seller,
+          setPartyInfo({
+            label: paymentInfo.party.party_name,
+            value: paymentInfo.party.id,
+            allData: paymentInfo.party,
           });
           setBackDrop(false);
         } else {
@@ -114,7 +114,7 @@ const AddEditViewPayments = (props) => {
   };
 
   const onBackClick = () => {
-    history.push(ALLPURCHASEPAYEMENTS);
+    history.push(ALLSALEPAYEMENTS);
   };
 
   const snackBarHandleClose = () => {
@@ -126,12 +126,12 @@ const AddEditViewPayments = (props) => {
     }));
   };
 
-  const setSelectedSeller = (seller) => {
-    delete error["seller"];
+  const setSelectedParty = (party) => {
+    delete error["party"];
     setError((error) => ({
       ...error,
     }));
-    setSellerInfo(seller);
+    setPartyInfo(party);
   };
 
   const handleDate = (event) => {
@@ -149,10 +149,10 @@ const AddEditViewPayments = (props) => {
 
   const handleCheckValidation = () => {
     let error = {};
-    if (!sellerInfo || !sellerInfo.value) {
+    if (!partyInfo || !partyInfo.value) {
       error = {
         ...error,
-        seller: ["Please select seller"],
+        party: ["Please select party"],
       };
     }
 
@@ -197,13 +197,13 @@ const AddEditViewPayments = (props) => {
     let message = "";
     if (isEdit) {
       message = `Are you sure you want to edit the payment made to ${
-        sellerInfo?.allData?.seller_name
+        partyInfo?.allData?.party_name
       } of ${convertNumber(formState.amount, true)}?`;
     } else {
       message = `Are you sure you want to make a payment of ${convertNumber(
         formState.amount,
         true
-      )} towards seller ${sellerInfo?.allData?.seller_name} ?`;
+      )} towards party ${partyInfo?.allData?.party_name} ?`;
     }
     setAlert(
       <SweetAlert
@@ -227,16 +227,16 @@ const AddEditViewPayments = (props) => {
     setBackDrop(true);
     if (id) {
       await providerForPut(
-        backend_purchase_payment,
+        backend_sale_payment,
         id,
         {
           ...formState,
-          seller: sellerInfo.value,
+          party: partyInfo.value,
         },
         Auth.getToken()
       )
         .then((res) => {
-          history.push(ALLPURCHASEPAYEMENTS);
+          history.push(ALLSALEPAYEMENTS);
           setBackDrop(false);
         })
         .catch((err) => {
@@ -250,15 +250,15 @@ const AddEditViewPayments = (props) => {
         });
     } else {
       await providerForPost(
-        backend_purchase_payment,
+        backend_sale_payment,
         {
           ...formState,
-          seller: sellerInfo.value,
+          party: partyInfo.value,
         },
         Auth.getToken()
       )
         .then((res) => {
-          history.push(ALLPURCHASEPAYEMENTS);
+          history.push(ALLSALEPAYEMENTS);
           setBackDrop(false);
         })
         .catch((err) => {
@@ -299,21 +299,21 @@ const AddEditViewPayments = (props) => {
                 {!isView && (
                   <GridItem xs={12} sm={12} md={6}>
                     <RemoteAutoComplete
-                      setSelectedData={setSelectedSeller}
-                      selectedData={sellerInfo}
-                      searchString={"seller_name"}
-                      apiName={backend_sellers}
-                      placeholder="Select Seller..."
-                      selectedValue={sellerInfo}
-                      isError={error.seller}
-                      errorText={"Please select a seller"}
-                      isSeller={true}
+                      setSelectedData={setSelectedParty}
+                      selectedData={partyInfo}
+                      searchString={"party_name"}
+                      apiName={backend_parties}
+                      placeholder="Select Party..."
+                      selectedValue={partyInfo}
+                      isError={error.party}
+                      errorText={"Please select a party"}
+                      isParty={true}
                     />
                   </GridItem>
                 )}
-                {sellerInfo && sellerInfo.value && sellerInfo.allData && (
+                {partyInfo && partyInfo.value && partyInfo.allData && (
                   <GridItem xs={12} sm={12} md={6}>
-                    <SellerDetails seller={sellerInfo.allData} />
+                    <PartyDetails party={partyInfo.allData} />
                   </GridItem>
                 )}
               </GridContainer>

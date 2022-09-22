@@ -69,6 +69,11 @@ import {
   ADDRAWMATERIALUSAGE,
   VIEWRAWMATERIALSID,
   EDITRAWMATERIALSID,
+  ADDSALEPAYEMENT,
+  EDITSALEPAYEMENTID,
+  ALLSALEPAYEMENTS,
+  VIEWSALEPAYEMENTID,
+  SALELEDGER,
 } from "../paths";
 import {
   Login,
@@ -108,6 +113,9 @@ import {
   ViewDesign,
   AddEditViewPayments,
   AllPayments,
+  AddEditViewPaymentsForSales,
+  AllPaymentsForSales,
+  SaleLedger,
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -242,6 +250,14 @@ const Routes = () => {
           header={"Purchase Ledger"}
         />
 
+        <PrivateRoute
+          openSubMenu={true}
+          path={SALELEDGER}
+          exact
+          component={SaleLedger}
+          header={"Sale Ledger"}
+        />
+
         {/** Purchase Payments */}
         <PrivateRoute
           openSubMenu={true}
@@ -278,7 +294,47 @@ const Routes = () => {
           path={ALLPURCHASEPAYEMENTS}
           exact
           component={AllPayments}
-          header={"All Purchase Payments"}
+          header={"All Sale Payments"}
+        />
+        {/** ---------- */}
+
+        {/** Sale Payments */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDSALEPAYEMENT}
+          exact
+          component={AddEditViewPaymentsForSales}
+          header={"Add Sale Payment"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITSALEPAYEMENTID}
+          exact
+          component={AddEditViewPaymentsForSales}
+          header={"Edit Sale Payment"}
+          defaultPathToPush={ALLSALEPAYEMENTS}
+          isDependent={true}
+          isEdit={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWSALEPAYEMENTID}
+          exact
+          component={AddEditViewPaymentsForSales}
+          header={"View Sale Payment"}
+          defaultPathToPush={ALLSALEPAYEMENTS}
+          isDependent={true}
+          isView={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={ALLSALEPAYEMENTS}
+          exact
+          component={AllPaymentsForSales}
+          header={"All Sale Payments"}
         />
         {/** ---------- */}
 

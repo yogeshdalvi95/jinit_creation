@@ -30,6 +30,13 @@
     "closing_balance": {
       "type": "float",
       "default": 0.0
+    },
+    "sale_type": {
+      "type": "enumeration",
+      "enum": ["Kachha", "Pakka"]
+    },
+    "date": {
+      "type": "date"
     }
   }
 }

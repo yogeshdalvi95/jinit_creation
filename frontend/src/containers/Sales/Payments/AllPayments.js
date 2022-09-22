@@ -19,14 +19,15 @@ import {
   Table,
 } from "../../../components";
 import {
-  backend_purchase_payment,
-  backend_sellers,
+  backend_sale_payment,
+  backend_parties,
   frontendServerUrl,
 } from "../../../constants";
 import {
   ADDPURCHASEPAYEMENT,
-  EDITPURCHASEPAYEMENT,
-  VIEWPURCHASEPAYEMENT,
+  ADDSALEPAYEMENT,
+  EDITSALEPAYEMENT,
+  VIEWSALEPAYEMENT,
 } from "../../../paths";
 import { convertNumber, plainDate } from "../../../Utils";
 import ListAltIcon from "@material-ui/icons/ListAlt";
@@ -49,7 +50,7 @@ const AllPayments = (props) => {
     severity: "",
     message: "",
   });
-  const [selectedSeller, setSelectedSeller] = React.useState(null);
+  const [selectedParty, setSelectedparty] = React.useState(null);
 
   const columns = [
     {
@@ -57,7 +58,7 @@ const AllPayments = (props) => {
       field: "payment_date",
       render: (rowData) => plainDate(new Date(rowData.payment_date)),
     },
-    { title: "Seller", field: "seller.seller_name", sorting: false },
+    { title: "Party", field: "party.party_name", sorting: false },
     {
       title: "Amount",
       field: "amount",
@@ -81,7 +82,7 @@ const AllPayments = (props) => {
     },
   ];
 
-  const getPurchasePaymentData = async (page, pageSize) => {
+  const getSalePaymentData = async (page, pageSize) => {
     let params = {
       page: page,
       pageSize: pageSize,
@@ -94,7 +95,7 @@ const AllPayments = (props) => {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(backend_purchase_payment + "?" + new URLSearchParams(params), {
+      fetch(backend_sale_payment + "?" + new URLSearchParams(params), {
         method: "GET",
         headers: {
           "content-type": "application/json",
@@ -140,7 +141,7 @@ const AllPayments = (props) => {
   };
 
   const handleAdd = () => {
-    history.push(ADDPURCHASEPAYEMENT);
+    history.push(ADDSALEPAYEMENT);
   };
 
   /** Handle End Date filter change */
@@ -188,19 +189,19 @@ const AllPayments = (props) => {
     }));
   };
 
-  const setSeller = (seller) => {
+  const setParty = (seller) => {
     if (seller && seller.value) {
       setFilter((filter) => ({
         ...filter,
         seller: seller.value,
       }));
-      setSelectedSeller(seller);
+      setSelectedparty(seller);
     } else {
       delete filter["seller"];
       setFilter((filter) => ({
         ...filter,
       }));
-      setSelectedSeller(null);
+      setSelectedparty(null);
     }
   };
 
@@ -272,11 +273,11 @@ const AllPayments = (props) => {
                   style={{ marginTop: "2.2rem" }}
                 >
                   <RemoteAutoComplete
-                    setSelectedData={setSeller}
-                    searchString={"seller_name"}
-                    apiName={backend_sellers}
-                    placeholder="Select Seller..."
-                    selectedValue={selectedSeller}
+                    setSelectedData={setParty}
+                    searchString={"party_name"}
+                    apiName={backend_parties}
+                    placeholder="Select Party..."
+                    selectedValue={selectedParty}
                     isSeller={true}
                   />
                 </GridItem>
@@ -323,7 +324,7 @@ const AllPayments = (props) => {
                       setFilter({
                         _sort: "payment_date:desc",
                       });
-                      setSelectedSeller(null);
+                      setSelectedparty(null);
                       tableRef.current.onQueryChange();
                     }}
                   >
@@ -334,10 +335,10 @@ const AllPayments = (props) => {
               <br />
               <Table
                 tableRef={tableRef}
-                title="Purchases"
+                title="Sales"
                 columns={columns}
                 data={async (query) => {
-                  return await getPurchasePaymentData(
+                  return await getSalePaymentData(
                     query.page + 1,
                     query.pageSize
                   );
@@ -347,7 +348,7 @@ const AllPayments = (props) => {
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      history.push(EDITPURCHASEPAYEMENT + "/" + rowData.id);
+                      history.push(EDITSALEPAYEMENT + "/" + rowData.id);
                     },
                   }),
                   (rowData) => ({
@@ -356,7 +357,7 @@ const AllPayments = (props) => {
                     ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      history.push(VIEWPURCHASEPAYEMENT + "/" + rowData.id);
+                      history.push(VIEWSALEPAYEMENT + "/" + rowData.id);
                     },
                   }),
                 ]}
@@ -376,7 +377,7 @@ const AllPayments = (props) => {
                     new Promise((resolve) => {
                       setTimeout(async () => {
                         await providerForDelete(
-                          backend_purchase_payment,
+                          backend_sale_payment,
                           oldData.id,
                           Auth.getToken()
                         )

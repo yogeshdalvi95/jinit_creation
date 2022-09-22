@@ -760,6 +760,7 @@ export default function AddOrder(props) {
         isHandleKey={false}
         open={openDialogForSelectingDesign}
         selectMultiColors={false}
+        highlightOtherPartyDesign={true}
       />
       <DialogForSelectingParties
         handleCancel={handleCloseDialogForParties}
@@ -827,167 +828,6 @@ export default function AddOrder(props) {
                     marginTop: "1.5rem",
                   }}
                 />
-              </GridItem>
-            </GridContainer>
-            <GridContainer>
-              <GridItem
-                xs={12}
-                sm={12}
-                md={12}
-                style={{
-                  margin: "20px 10px 0px 13px",
-                  overflowX: "auto",
-                }}
-              >
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{
-                      margin: "0px 0px 10px 0px",
-                      overflowX: "auto",
-                    }}
-                  >
-                    <b>Design : </b>
-                  </GridItem>
-                </GridContainer>
-
-                <GridContainer
-                  style={{
-                    margin: "2px 2px 2px 2px",
-                    border: "1px solid #C0C0C0",
-                    borderRadius: "10px",
-                    overflowX: "auto",
-                  }}
-                >
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={10}
-                    style={{
-                      margin: "15px 0px 10px 0px",
-                      overflowX: "auto",
-                    }}
-                  >
-                    {design.id ? (
-                      <div
-                        style={{
-                          textAlign: "center",
-                        }}
-                      >
-                        <GridContainer>
-                          <GridItem
-                            xs={12}
-                            md={12}
-                            lg={12}
-                            style={{ overflowX: "auto" }}
-                          >
-                            <div className={classes.imageDivInTable}>
-                              {design.images &&
-                              design.images.length &&
-                              design.images[0].url ? (
-                                <img
-                                  alt="ready_material_photo"
-                                  src={apiUrl + design.images[0].url}
-                                  loader={<CircularProgress />}
-                                  style={{
-                                    height: "10rem",
-                                    width: "20rem",
-                                  }}
-                                  className={classes.UploadImage}
-                                />
-                              ) : (
-                                <img
-                                  src={no_image_icon}
-                                  alt="ready_material_photo"
-                                  style={{
-                                    height: "10rem",
-                                    width: "20rem",
-                                  }}
-                                  loader={<CircularProgress />}
-                                  className={classes.DefaultNoImage}
-                                />
-                              )}
-                            </div>
-                          </GridItem>
-                        </GridContainer>
-                        <GridContainer>
-                          <GridItem xs={12} sm={12} md={12}>
-                            <b>Material No : </b> {design.material_no}
-                          </GridItem>
-                          <RatioData data={design.colors} />
-                        </GridContainer>
-                      </div>
-                    ) : (
-                      <GridContainer style={{ dispay: "flex" }}>
-                        <GridItem xs={12} sm={12} md={12}>
-                          No Design Selected
-                        </GridItem>
-                      </GridContainer>
-                    )}
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={1}>
-                    <Tooltip
-                      title={design.id ? "Change Design " : "Select Design"}
-                    >
-                      <IconButton
-                        disabled={
-                          isView ||
-                          isEdit ||
-                          formState.cancelled ||
-                          formState.completed
-                        }
-                        onClick={() => {
-                          openDesignDialogFunction(true);
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={1}>
-                    <IconButton
-                      disabled={
-                        isView ||
-                        isEdit ||
-                        formState.cancelled ||
-                        formState.completed
-                      }
-                      onClick={() => cancelDesign()}
-                    >
-                      <ClearIcon />
-                    </IconButton>
-                  </GridItem>
-                  {/* <Button
-                    component="span"
-                    className={
-                      formState.image
-                        ? classes.editIconOnImage
-                        : classes.addIconOnImage
-                    }
-                  >
-                    <EditIcon fontSize="small" />
-                  </Button> */}
-                </GridContainer>
-                <GridContainer>
-                  <GridItem>
-                    {hasError("ready_material", error) ? (
-                      <GridItem xs={12} sm={12} md={12}>
-                        <FormHelperText
-                          id={"ready_material_helpertext_id"}
-                          error={hasError("ready_material", error)}
-                        >
-                          {hasError("ready_material", error)
-                            ? error["ready_material"].map((error) => {
-                                return error + " ";
-                              })
-                            : null}
-                        </FormHelperText>
-                      </GridItem>
-                    ) : null}
-                  </GridItem>
-                </GridContainer>
               </GridItem>
             </GridContainer>
             <GridContainer>
@@ -1106,6 +946,184 @@ export default function AddOrder(props) {
                         </FormHelperText>
                       </GridItem>
                     ) : null}
+                  </GridItem>
+                </GridContainer>
+              </GridItem>
+            </GridContainer>
+
+            <GridContainer>
+              <GridItem
+                xs={12}
+                sm={12}
+                md={12}
+                style={{
+                  margin: "20px 10px 0px 13px",
+                  overflowX: "auto",
+                }}
+              >
+                <GridContainer>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={12}
+                    style={{
+                      margin: "0px 0px 10px 0px",
+                      overflowX: "auto",
+                      color: party.id ? "inherit" : "rgba(0, 0, 0, 0.26)",
+                    }}
+                  >
+                    <b>Design : </b>
+                  </GridItem>
+                </GridContainer>
+
+                <GridContainer
+                  style={{
+                    margin: "2px 2px 2px 2px",
+                    border: "1px solid #C0C0C0",
+                    borderRadius: "10px",
+                    overflowX: "auto",
+                    color: party.id ? "inherit" : "rgba(0, 0, 0, 0.26)",
+                  }}
+                >
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={10}
+                    style={{
+                      margin: "15px 0px 10px 0px",
+                      overflowX: "auto",
+                    }}
+                  >
+                    {design.id ? (
+                      <div
+                        style={{
+                          textAlign: "center",
+                        }}
+                      >
+                        <GridContainer>
+                          <GridItem
+                            xs={12}
+                            md={12}
+                            lg={12}
+                            style={{ overflowX: "auto" }}
+                          >
+                            <div className={classes.imageDivInTable}>
+                              {design.images &&
+                              design.images.length &&
+                              design.images[0].url ? (
+                                <img
+                                  alt="ready_material_photo"
+                                  src={apiUrl + design.images[0].url}
+                                  loader={<CircularProgress />}
+                                  style={{
+                                    height: "10rem",
+                                    width: "20rem",
+                                  }}
+                                  className={classes.UploadImage}
+                                />
+                              ) : (
+                                <img
+                                  src={no_image_icon}
+                                  alt="ready_material_photo"
+                                  style={{
+                                    height: "10rem",
+                                    width: "20rem",
+                                  }}
+                                  loader={<CircularProgress />}
+                                  className={classes.DefaultNoImage}
+                                />
+                              )}
+                            </div>
+                          </GridItem>
+                        </GridContainer>
+                        <GridContainer>
+                          <GridItem xs={12} sm={12} md={12}>
+                            <b>Material No : </b> {design.material_no}
+                          </GridItem>
+                          <RatioData data={design.colors} />
+                        </GridContainer>
+                      </div>
+                    ) : (
+                      <GridContainer style={{ dispay: "flex" }}>
+                        <GridItem xs={12} sm={12} md={12}>
+                          No Design Selected
+                        </GridItem>
+                      </GridContainer>
+                    )}
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={1}>
+                    <Tooltip
+                      title={
+                        party.id
+                          ? design.id
+                            ? "Change Design "
+                            : "Select Design"
+                          : "Please select party first"
+                      }
+                    >
+                      <IconButton
+                        disabled={
+                          isView ||
+                          isEdit ||
+                          formState.cancelled ||
+                          formState.completed ||
+                          !party.id
+                        }
+                        onClick={() => {
+                          openDesignDialogFunction(true);
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={1}>
+                    <IconButton
+                      disabled={
+                        isView ||
+                        isEdit ||
+                        formState.cancelled ||
+                        formState.completed ||
+                        !party.id
+                      }
+                      onClick={() => cancelDesign()}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </GridItem>
+                  {/* <Button
+                    component="span"
+                    className={
+                      formState.image
+                        ? classes.editIconOnImage
+                        : classes.addIconOnImage
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </Button> */}
+                </GridContainer>
+                <GridContainer>
+                  <GridItem>
+                    {party.id ? (
+                      hasError("ready_material", error) ? (
+                        <GridItem xs={12} sm={12} md={12}>
+                          <FormHelperText
+                            id={"ready_material_helpertext_id"}
+                            error={hasError("ready_material", error)}
+                          >
+                            {hasError("ready_material", error)
+                              ? error["ready_material"].map((error) => {
+                                  return error + " ";
+                                })
+                              : null}
+                          </FormHelperText>
+                        </GridItem>
+                      ) : null
+                    ) : (
+                      <FormHelperText id={"ready_material_helpertext_id"}>
+                        Please select party first
+                      </FormHelperText>
+                    )}
                   </GridItem>
                 </GridContainer>
               </GridItem>

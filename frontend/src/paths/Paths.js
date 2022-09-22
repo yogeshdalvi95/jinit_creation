@@ -85,6 +85,15 @@ export const EDITSALES = "/edit-sales";
 export const VIEWSALESID = `${VIEWSALES}/:id`;
 export const EDITSALESID = `${EDITSALES}/:id`;
 
+export const SALELEDGER = "/sale-ledger";
+
+export const ADDSALEPAYEMENT = "/add-sale-payment";
+export const ALLSALEPAYEMENTS = "/sale-payments";
+export const EDITSALEPAYEMENT = "/edit-sale-payment";
+export const VIEWSALEPAYEMENT = "/view-sale-payment";
+export const EDITSALEPAYEMENTID = `${EDITSALEPAYEMENT}/:id`;
+export const VIEWSALEPAYEMENTID = `${VIEWSALEPAYEMENT}/:id`;
+
 export const VIEWSALERETURN = "/view-sale-return";
 export const ADDSALERETURN = "/add-sale-return";
 export const EDITSALERETURN = "/edit-sale-return";

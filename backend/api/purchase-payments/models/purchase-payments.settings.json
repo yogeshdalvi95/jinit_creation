@@ -26,10 +26,7 @@
     },
     "payment_type": {
       "type": "enumeration",
-      "enum": [
-        "bank_transfer",
-        "cash"
-      ],
+      "enum": ["bank_transfer", "cash"],
       "default": "bank_transfer"
     },
     "kachha_ledger": {

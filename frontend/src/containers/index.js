@@ -26,7 +26,6 @@ export {
 } from "./Purchases";
 export { ReadyMaterials, AddEditReadyMaterial } from "./ReadyMaterials";
 export { Designs, AddEditDesign, DesignMaterials, ViewDesign } from "./Designs";
-
 export {
   AddParties,
   Parties,
@@ -34,5 +33,8 @@ export {
   AddEditSales,
   AddEditSaleReturn,
   SaleReturn,
+  AddEditViewPayments as AddEditViewPaymentsForSales,
+  AllPayments as AllPaymentsForSales,
+  Ledger as SaleLedger,
 } from "./Sales";
 export { AddOrder, ViewOrders, DepartmentSheet } from "./Orders";

@@ -90,7 +90,6 @@ export default function AddPurchases(props) {
     total_amt_without_tax: 0,
     notes: "",
     date: new Date(),
-    invoice_number: "",
     bill_no: "",
     seller: null,
     gst_no: "",
@@ -163,7 +162,6 @@ export default function AddPurchases(props) {
       ),
       notes: data.purchase.notes,
       date: new Date(data.purchase.date),
-      invoice_number: data.purchase.invoice_number,
       bill_no: data.purchase.bill_no,
     }));
 
@@ -240,7 +238,6 @@ export default function AddPurchases(props) {
         total_amt_without_tax: 0,
         notes: "",
         date: new Date(),
-        invoice_number: "",
         bill_no: "",
         seller: null,
       });
@@ -483,23 +480,12 @@ export default function AddPurchases(props) {
       };
     }
     if (
-      formState.type_of_bill === "Kachha" &&
       isEmptyString(formState.bill_no)
     ) {
       isValid = false;
       err = {
         ...err,
         bill_no: ["Bill number is required"],
-      };
-    }
-    if (
-      formState.type_of_bill === "Pakka" &&
-      isEmptyString(formState.invoice_number)
-    ) {
-      isValid = false;
-      err = {
-        ...err,
-        invoice_number: ["Invoice number is required"],
       };
     }
 
@@ -764,35 +750,7 @@ export default function AddPurchases(props) {
     });
   };
 
-  const handleInvoiceNumberChange = (event) => {
-    delete error["invoice_number"];
-    setError((error) => ({
-      ...error,
-    }));
-    setFormState((formState) => ({
-      ...formState,
-      [event.target.name]: event.target.value,
-    }));
-    let obj = {
-      invoice_number: event.target.value.trim(),
-    };
-
-    if (isEdit) {
-      obj = {
-        ...obj,
-        id_nin: [id],
-      };
-    }
-
-    providerForGet(backend_purchases, obj, Auth.getToken()).then((res) => {
-      if (res.data?.totalCount) {
-        setError((error) => ({
-          ...error,
-          invoice_number: ["Invoice number already taken"],
-        }));
-      }
-    });
-  };
+  console.log('Error => ', error)
 
   return (
     <GridContainer>
@@ -872,7 +830,7 @@ export default function AddPurchases(props) {
                     <CustomInput
                       labelText={"Bill/Invoice Number"}
                       name="bill_no"
-                      disabled={isView}
+                      disabled={isView || isEdit}
                       onChange={(event) => handleBillNumberChange(event)}
                       value={formState.bill_no}
                       id="bill_no"
@@ -892,55 +850,6 @@ export default function AddPurchases(props) {
                       error={hasError("bill_no", error)}
                     />
                   </GridItem>
-                  {/* {formState.type_of_bill === "Pakka" ? (
-                    <GridItem xs={12} sm={12} md={3}>
-                      <CustomInput
-                        labelText="Invoice Number"
-                        name="invoice_number"
-                        disabled={isView}
-                        onChange={(event) => handleInvoiceNumberChange(event)}
-                        value={formState.invoice_number}
-                        id="invoice_number"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                        helperTextId={"helperText_invoice_number"}
-                        isHelperText={hasError("invoice_number", error)}
-                        helperText={
-                          hasError("invoice_number", error)
-                            ? error["invoice_number"].map((error) => {
-                                return error + " ";
-                              })
-                            : null
-                        }
-                        error={hasError("invoice_number", error)}
-                      />
-                    </GridItem>
-                  ) : (
-                    <GridItem xs={12} sm={12} md={3}>
-                      <CustomInput
-                        labelText="Bill Number"
-                        name="bill_no"
-                        disabled={isView}
-                        onChange={(event) => handleBillNumberChange(event)}
-                        value={formState.bill_no}
-                        id="bill_no"
-                        formControlProps={{
-                          fullWidth: true,
-                        }}
-                        helperTextId={"helperText_bill_no"}
-                        isHelperText={hasError("bill_no", error)}
-                        helperText={
-                          hasError("bill_no", error)
-                            ? error["bill_no"].map((error) => {
-                                return error + " ";
-                              })
-                            : null
-                        }
-                        error={hasError("bill_no", error)}
-                      />
-                    </GridItem>
-                  )} */}
                   {!isView && (
                     <GridItem
                       xs={12}
