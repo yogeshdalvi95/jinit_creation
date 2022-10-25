@@ -479,9 +479,7 @@ export default function AddPurchases(props) {
         seller: ["Seller is required"],
       };
     }
-    if (
-      isEmptyString(formState.bill_no)
-    ) {
+    if (isEmptyString(formState.bill_no)) {
       isValid = false;
       err = {
         ...err,
@@ -750,7 +748,7 @@ export default function AddPurchases(props) {
     });
   };
 
-  console.log('Error => ', error)
+  console.log("Error => ", error);
 
   return (
     <GridContainer>
@@ -1402,9 +1400,7 @@ export default function AddPurchases(props) {
                             )}
                           </b>
                         </CustomTableCell>
-                        {!isView && (
-                          <CustomTableCell colSpan={2}></CustomTableCell>
-                        )}
+                        {!isView && <CustomTableCell></CustomTableCell>}
                       </CustomTableRow>
                     </>
                   )}

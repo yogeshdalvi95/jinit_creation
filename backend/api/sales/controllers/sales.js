@@ -178,8 +178,11 @@ module.exports = {
         let designAndColorData = await getReadyMaterialForSale(
           designAndColor,
           saleId,
-          t
+          t,
+          party
         );
+
+        console.log('designAndColorData => ', designAndColorData)
 
         saleData = await strapi.query("sales").update(
           { id: saleId },
@@ -404,7 +407,7 @@ module.exports = {
   },
 };
 
-const getReadyMaterialForSale = async (object, saleId, t) => {
+const getReadyMaterialForSale = async (object, saleId, t, party) => {
   let dataToSend = [];
   let designColorArray = Object.keys(object);
   if (
@@ -412,48 +415,68 @@ const getReadyMaterialForSale = async (object, saleId, t) => {
     designColorArray.length
   ) {
     await utils.asyncForEach(designColorArray, async (el) => {
-      let colorArray = object[el].allColors;
-      if (
-        Object.prototype.toString.call(colorArray) === "[object Array]" &&
-        colorArray.length
-      ) {
-        await utils.asyncForEach(colorArray, async (el1) => {
-          /** Get Data from each color */
-          let { design, color, quantity, quantity_to_add_deduct } = el1;
-          /** get design color data */
-          let designColorData = await strapi
-            .query("design-color-price")
-            .findOne({ design: design, color: color });
+      if (object[el].is_ready_material) {
+        let colorArray = object[el].allColors;
+        if (
+          Object.prototype.toString.call(colorArray) === "[object Array]" &&
+          colorArray.length
+        ) {
+          await utils.asyncForEach(colorArray, async (el1) => {
+            /** Get Data from each color */
+            let { design, color, quantity, quantity_to_add_deduct } = el1;
+            /** get design color data */
+            let designColorData = await strapi
+              .query("design-color-price")
+              .findOne({ design: design, color: color });
 
-          /** get color stock */
-          let designColorQuantity = utils.validateNumber(designColorData.stock);
-          let quantityToDeduct = 0;
+            /** get color stock */
+            let designColorQuantity = utils.validateNumber(
+              designColorData.stock
+            );
+            let quantityToDeduct = 0;
 
-          if (saleId) {
-            quantityToDeduct = utils.validateNumber(quantity_to_add_deduct);
-          } else {
-            quantityToDeduct = utils.validateNumber(quantity);
-          }
-          /** Final quantity */
-          let final_quantity = designColorQuantity - quantityToDeduct;
-          /** Update quantity */
-          await strapi.query("design-color-price").update(
-            { id: designColorData.id },
-            {
-              stock: final_quantity,
-            },
-            { patch: true, transacting: t }
-          );
+            if (saleId) {
+              quantityToDeduct = utils.validateNumber(quantity_to_add_deduct);
+            } else {
+              quantityToDeduct = utils.validateNumber(quantity);
+            }
+            /** Final quantity */
+            let final_quantity = designColorQuantity - quantityToDeduct;
+            /** Update quantity */
+            await strapi.query("design-color-price").update(
+              { id: designColorData.id },
+              {
+                stock: final_quantity,
+              },
+              { patch: true, transacting: t }
+            );
 
-          /** final data */
-          dataToSend.push({
-            design: el1.design,
-            sale: saleId,
-            color: el1.color,
-            quantity: utils.validateNumber(el1.quantity),
-            total_price: utils.validateNumber(el1.total_price),
-            price_per_unit: utils.validateNumber(el1.price_per_unit),
+            /** final data */
+            dataToSend.push({
+              design: el1.design,
+              sale: saleId,
+              color: el1.color,
+              quantity: utils.validateNumber(el1.quantity),
+              total_price: utils.validateNumber(el1.total_price),
+              price_per_unit: utils.validateNumber(el1.price_per_unit),
+              party: party,
+              is_ready_material: true,
+              are_ready_materials_clubbed: false,
+            });
           });
+        }
+      } else {
+        /** final data */
+        dataToSend.push({
+          design: null,
+          sale: saleId,
+          color: null,
+          quantity: utils.validateNumber(object[el].quantity),
+          total_price: utils.validateNumber(object[el].total_price),
+          price_per_unit: utils.validateNumber(object[el].price_per_unit),
+          party: party,
+          is_ready_material: false,
+          are_ready_materials_clubbed: true,
         });
       }
     });

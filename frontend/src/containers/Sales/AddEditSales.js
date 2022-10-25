@@ -68,11 +68,23 @@ export default function AddEditSales(props) {
     useState(false);
   const [rawMaterialIdTohighLight, setRawMaterialToHighLight] =
     React.useState(null);
-
   const [selectedparty, setSelectedParty] = React.useState(null);
+  let sampleDesignData = {
+    ["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]: {
+      material_no: null,
+      material_price: 0,
+      add_price: 0,
+      designId: null,
+      images: null,
+      stock: 0,
+      colorsPresent: [],
+      allColors: [],
+      isNew: true,
+      is_ready_material: true,
+      are_ready_materials_clubbed: false,
+    },
+  };
   const [selectedDesign, setSelectedDesign] = React.useState({});
-  const [error, setError] = React.useState({});
-
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
   const [id] = useState(props.id ? props.id : null);
@@ -226,6 +238,8 @@ export default function AddEditSales(props) {
               stock: design.stock,
               colorsPresent: [colorId],
               allColors: [colorData],
+              is_ready_material: true,
+              are_ready_materials_clubbed: false,
             },
           };
         }
@@ -346,23 +360,29 @@ export default function AddEditSales(props) {
   };
 
   const removeReadyMaterial = (colorKey, designKey) => {
-    let colorArray = selectedDesign[designKey]?.allColors;
-    if (Object.prototype.toString.call(colorArray) === "[object Array]") {
-      let colorObj = colorArray[colorKey];
+    console.log(selectedDesign);
+    console.log(designKey);
+    console.log(colorKey);
+    if (
+      colorKey === null &&
+      selectedDesign[designKey].are_ready_materials_clubbed
+    ) {
+      let currObject = {
+        ...selectedDesign[designKey],
+      };
+      console.log(currObject);
       setBackDrop(true);
-
+      /** Recalculate totao */
       let total_price_of_all_design =
-        formState.total_price_of_all_design -
-        validateNumber(colorObj.total_price);
+        validateNumber(formState.total_price_of_all_design) -
+        validateNumber(currObject.total_price);
       const { total_price, total_price_with_add_cost } = calculateAddCostAndGst(
         total_price_of_all_design
       );
-      delete designError[
-        "quantity" + "color" + colorKey + "design" + designKey
-      ];
-      delete designError[
-        "price_per_unit" + "color" + colorKey + "design" + designKey
-      ];
+      /** Remove all errors corresponding to that particular entry */
+      delete designError[`quantity${designKey}`];
+      delete designError[`price_per_unit${designKey}`];
+      delete designError[`name${designKey}`];
       setDesignError((designError) => ({
         ...designError,
       }));
@@ -372,39 +392,79 @@ export default function AddEditSales(props) {
         total_price_of_all_design: total_price_of_all_design,
         total_price_without_gst: total_price_with_add_cost,
       }));
-      if (colorObj["isCannotDelete"]) {
-        colorObj = {
-          ...colorObj,
-          quantity_to_add_deduct: -colorObj.previousQuantity,
-          isDeleted: true,
-          message:
-            "No of ready material added back to stock : " +
-            colorObj.previousQuantity,
-        };
+      if (currObject["isCannotDelete"]) {
+        setSelectedDesign((selectDesign) => ({
+          ...selectedDesign,
+          [designKey]: {
+            ...selectedDesign[designKey],
+            isDeleted: true,
+          },
+        }));
       } else {
-        if (colorArray.length === 1) {
-          delete selectedDesign[designKey];
-          setSelectedDesign((selectDesign) => ({
-            ...selectedDesign,
-          }));
-        } else {
-          let indexOfColor = selectedDesign[designKey].colorsPresent.indexOf(
-            colorObj.color
-          );
-          selectedDesign[designKey].allColors.splice(colorKey, 1);
-          selectedDesign[designKey].colorsPresent.splice(indexOfColor, 1);
-
-          setSelectedDesign((selectedDesign) => ({
-            ...selectedDesign,
-            [designKey]: {
-              ...selectedDesign[designKey],
-              allColors: [...selectedDesign[designKey].allColors],
-              colorsPresent: [...selectedDesign[designKey].colorsPresent],
-            },
-          }));
-        }
+        delete currObject[designKey];
+        setSelectedDesign(currObject);
       }
       setBackDrop(false);
+    } else {
+      let colorArray = selectedDesign[designKey]?.allColors;
+      if (Object.prototype.toString.call(colorArray) === "[object Array]") {
+        let colorObj = colorArray[colorKey];
+        setBackDrop(true);
+
+        let total_price_of_all_design =
+          formState.total_price_of_all_design -
+          validateNumber(colorObj.total_price);
+        const { total_price, total_price_with_add_cost } =
+          calculateAddCostAndGst(total_price_of_all_design);
+        delete designError[
+          "quantity" + "color" + colorKey + "design" + designKey
+        ];
+        delete designError[
+          "price_per_unit" + "color" + colorKey + "design" + designKey
+        ];
+        setDesignError((designError) => ({
+          ...designError,
+        }));
+        setFormState((formState) => ({
+          ...formState,
+          total_price: total_price,
+          total_price_of_all_design: total_price_of_all_design,
+          total_price_without_gst: total_price_with_add_cost,
+        }));
+        if (colorObj["isCannotDelete"]) {
+          colorObj = {
+            ...colorObj,
+            quantity_to_add_deduct: -colorObj.previousQuantity,
+            isDeleted: true,
+            message:
+              "No of ready material added back to stock : " +
+              colorObj.previousQuantity,
+          };
+        } else {
+          if (colorArray.length === 1) {
+            delete selectedDesign[designKey];
+            setSelectedDesign((selectDesign) => ({
+              ...selectedDesign,
+            }));
+          } else {
+            let indexOfColor = selectedDesign[designKey].colorsPresent.indexOf(
+              colorObj.color
+            );
+            selectedDesign[designKey].allColors.splice(colorKey, 1);
+            selectedDesign[designKey].colorsPresent.splice(indexOfColor, 1);
+
+            setSelectedDesign((selectedDesign) => ({
+              ...selectedDesign,
+              [designKey]: {
+                ...selectedDesign[designKey],
+                allColors: [...selectedDesign[designKey].allColors],
+                colorsPresent: [...selectedDesign[designKey].colorsPresent],
+              },
+            }));
+          }
+        }
+        setBackDrop(false);
+      }
     }
   };
 
@@ -520,9 +580,9 @@ export default function AddEditSales(props) {
   };
 
   const handleChangeAddCost = (event) => {
-    delete error[event.target.name];
-    setError((error) => ({
-      ...error,
+    delete designError[event.target.name];
+    setDesignError((designError) => ({
+      ...designError,
     }));
     let value = isEmptyString(event.target.value)
       ? 0
@@ -541,13 +601,13 @@ export default function AddEditSales(props) {
   };
 
   const handleChange = (event) => {
-    delete error[event.target.name];
-    setError((error) => ({
-      ...error,
+    delete designError[event.target.name];
+    setDesignError((designError) => ({
+      ...designError,
     }));
     if (event.target.name === "type_of_bill") {
       setDesign([]);
-      setError({});
+      setDesignError({});
       setParty({
         id: null,
         party_name: "",
@@ -578,75 +638,168 @@ export default function AddEditSales(props) {
     }));
   };
 
+  /** Handle change */
   const handleChangeForRepetableComponent = (event, colorKey, designKey) => {
-    let designObj = selectedDesign[designKey];
-    let colorObj = designObj.allColors[colorKey];
+    let currObject = selectedDesign[designKey];
     let name = event.target.name;
     let total_price_per_piece = 0;
+    let total_previous_price = 0;
     let isValid = false;
     let error = "";
+    if (colorKey !== null && colorKey !== undefined && colorKey >= 0) {
+      let colorObj = currObject.allColors[colorKey];
+      total_previous_price = colorObj.total_price;
+      let keyName = name + "color" + colorKey + "design" + designKey;
+      let quantity_to_add_deduct = 0;
+      let availableQuantity = validateNumber(colorObj.availableQuantity);
+      let previousQuantity = validateNumber(colorObj.previousQuantity);
 
-    let keyName = name + "color" + colorKey + "design" + designKey;
+      /** Calculations */
+      if (name === "quantity") {
+        let quantity = 0;
+        let price_per_piece = validateNumber(colorObj.price_per_unit);
+        if (event.target.value && !isNaN(event.target.value)) {
+          quantity = validateNumber(event.target.value);
+        }
+        total_price_per_piece = quantity * price_per_piece;
 
-    let quantity_to_add_deduct = 0;
-    let availableQuantity = validateNumber(colorObj.availableQuantity);
-    let previousQuantity = validateNumber(colorObj.previousQuantity);
-
-    /** Calculations */
-    if (name === "quantity") {
-      let quantity = 0;
-      let price_per_piece = validateNumber(colorObj.price_per_unit);
-      if (event.target.value && !isNaN(event.target.value)) {
-        quantity = validateNumber(event.target.value);
+        /** Set Error */
+        if (
+          quantity > previousQuantity &&
+          quantity - previousQuantity > availableQuantity
+        ) {
+          isValid = false;
+          error =
+            "Quantity cannot be greater than the available ready material quantity";
+        } else if (!quantity || quantity < 0) {
+          isValid = false;
+          error = "Quantity cannot be zero or negative";
+        } else {
+          isValid = true;
+          quantity_to_add_deduct = quantity - previousQuantity;
+        }
+      } else {
+        let quantity = validateNumber(colorObj.quantity);
+        let price_per_piece = 0;
+        if (event.target.value && !isNaN(event.target.value)) {
+          price_per_piece = validateNumber(event.target.value);
+        }
+        total_price_per_piece = quantity * price_per_piece;
+        if (!price_per_piece || price_per_piece < 0) {
+          isValid = false;
+          error = "Price per piece cannot be zero or negative";
+        } else {
+          isValid = true;
+          quantity_to_add_deduct = quantity - previousQuantity;
+        }
       }
-      total_price_per_piece = quantity * price_per_piece;
+      if (isValid) {
+        delete designError[keyName];
+        setDesignError((designError) => ({
+          ...designError,
+        }));
+      } else {
+        setDesignError((designError) => ({
+          ...designError,
+          [keyName]: [error],
+        }));
+      }
 
+      colorObj = {
+        ...colorObj,
+        quantity_to_add_deduct: quantity_to_add_deduct,
+        message: isValid
+          ? quantity_to_add_deduct
+            ? `No of ready material ${
+                quantity_to_add_deduct < 0
+                  ? "to be added back to stock"
+                  : "to be deducted from stock"
+              }: ${Math.abs(quantity_to_add_deduct)}`
+            : ""
+          : "",
+      };
+
+      colorObj = {
+        ...colorObj,
+        [name]: event.target.value,
+        total_price: total_price_per_piece,
+      };
+
+      setSelectedDesign((selectedDesign) => ({
+        ...selectedDesign,
+        [designKey]: {
+          ...selectedDesign[designKey],
+          allColors: [
+            ...selectedDesign[designKey].allColors.slice(0, colorKey),
+            colorObj,
+            ...selectedDesign[designKey].allColors.slice(colorKey + 1),
+          ],
+        },
+      }));
+      /** ------------------------------ */
+    } else {
+      /** If there is no design */
+      let keyName = `${name}${designKey}`;
+      /** Calculations */
+      if (name === "quantity") {
+        let quantity = 0;
+        let price_per_piece = validateNumber(currObject.price_per_unit);
+        if (event.target.value && !isNaN(event.target.value)) {
+          quantity = validateNumber(event.target.value);
+        }
+        total_price_per_piece = quantity * price_per_piece;
+
+        /** Set Error */
+        if (!quantity || quantity < 0) {
+          isValid = false;
+          error = "Quantity cannot be zero or negative";
+        } else {
+          isValid = true;
+        }
+      } else if (name === "price_per_unit") {
+        let quantity = validateNumber(currObject.quantity);
+        let price_per_piece = 0;
+        if (event.target.value && !isNaN(event.target.value)) {
+          price_per_piece = validateNumber(event.target.value);
+        }
+        total_price_per_piece = quantity * price_per_piece;
+        if (!price_per_piece || price_per_piece < 0) {
+          isValid = false;
+          error = "Price per piece cannot be zero or negative";
+        } else {
+          isValid = true;
+        }
+      } else {
+        isValid = true;
+      }
       /** Set Error */
-      if (
-        quantity > previousQuantity &&
-        quantity - previousQuantity > availableQuantity
-      ) {
-        isValid = false;
-        error =
-          "Quantity cannot be greater than the available ready material quantity";
-      } else if (!quantity || quantity < 0) {
-        isValid = false;
-        error = "Quantity cannot be zero or negative";
+      if (isValid) {
+        delete designError[keyName];
+        setDesignError((designError) => ({
+          ...designError,
+        }));
       } else {
-        isValid = true;
-        quantity_to_add_deduct = quantity - previousQuantity;
+        setDesignError((designError) => ({
+          ...designError,
+          [keyName]: [error],
+        }));
       }
-    } else {
-      let quantity = validateNumber(colorObj.quantity);
-      let price_per_piece = 0;
-      if (event.target.value && !isNaN(event.target.value)) {
-        price_per_piece = validateNumber(event.target.value);
-      }
-      total_price_per_piece = quantity * price_per_piece;
-      if (!price_per_piece || price_per_piece < 0) {
-        isValid = false;
-        error = "Price per piece cannot be zero or negative";
-      } else {
-        isValid = true;
-        quantity_to_add_deduct = quantity - previousQuantity;
-      }
-    }
-    if (isValid) {
-      delete designError[keyName];
-      setDesignError((designError) => ({
-        ...designError,
+      /** Set value */
+      setSelectedDesign((selectedDesign) => ({
+        ...selectedDesign,
+        [designKey]: {
+          ...selectedDesign[designKey],
+          [name]: event.target.value,
+          total_price: total_price_per_piece,
+        },
       }));
-    } else {
-      setDesignError((designError) => ({
-        ...designError,
-        [keyName]: [error],
-      }));
+      total_previous_price = currObject.total_price;
     }
+    /** New Price Calculation */
 
-    /** New Price */
     let total_price_after_deducted_old_value =
       validateNumber(formState.total_price_of_all_design) -
-      validateNumber(colorObj.total_price);
+      validateNumber(total_previous_price);
     let total_price_after_adding_new_value =
       total_price_after_deducted_old_value + total_price_per_piece;
 
@@ -654,38 +807,7 @@ export default function AddEditSales(props) {
       total_price_after_adding_new_value
     );
 
-    colorObj = {
-      ...colorObj,
-      quantity_to_add_deduct: quantity_to_add_deduct,
-      message: isValid
-        ? quantity_to_add_deduct
-          ? `No of ready material ${
-              quantity_to_add_deduct < 0
-                ? "to be added back to stock"
-                : "to be deducted from stock"
-            }: ${Math.abs(quantity_to_add_deduct)}`
-          : ""
-        : "",
-    };
-
-    colorObj = {
-      ...colorObj,
-      [name]: event.target.value,
-      total_price: total_price_per_piece,
-    };
-
-    setSelectedDesign((selectedDesign) => ({
-      ...selectedDesign,
-      [designKey]: {
-        ...selectedDesign[designKey],
-        allColors: [
-          ...selectedDesign[designKey].allColors.slice(0, colorKey),
-          colorObj,
-          ...selectedDesign[designKey].allColors.slice(colorKey + 1),
-        ],
-      },
-    }));
-
+    /** Set new price */
     setFormState((formState) => ({
       ...formState,
       total_price: total_price,
@@ -702,6 +824,11 @@ export default function AddEditSales(props) {
       date = new Date(date).toISOString();
     }
 
+    delete designError["date"];
+    setDesignError((designError) => ({
+      ...designError,
+    }));
+
     setFormState((formState) => ({
       ...formState,
       date: date,
@@ -716,7 +843,7 @@ export default function AddEditSales(props) {
     event.preventDefault();
     setBackDrop(true);
     let isValid = false;
-    let err = { ...error };
+    let err = { ...designError };
     /** This will set errors as per validations defined in form */
     if (!party.id) {
       isValid = false;
@@ -733,14 +860,16 @@ export default function AddEditSales(props) {
       };
     }
 
+    err = checkData(err);
+    console.log("Error => ", err);
     /** If no errors then isValid is set true */
     if (checkEmpty(err) && checkEmpty(designError)) {
       setBackDrop(false);
-      setError({});
+      setDesignError({});
       isValid = true;
     } else {
       setBackDrop(false);
-      setError(err);
+      setDesignError(err);
     }
     if (isValid) {
       submit();
@@ -755,6 +884,73 @@ export default function AddEditSales(props) {
   const handleAcceptDialog = () => {
     setAlert(null);
     addEditData();
+  };
+
+  const checkData = (err) => {
+    if (isEmptyString(formState.bill_no)) {
+      err = {
+        ...err,
+        bill_no: ["Bill number is required"],
+      };
+    }
+    if (!formState.date) {
+      err = {
+        ...err,
+        date: ["Sale Date is required"],
+      };
+    }
+    if (!party || (party && !party.id)) {
+      err = {
+        ...err,
+        party: ["Party is required"],
+      };
+    }
+    /** Error for Design data */
+    Object.keys(selectedDesign).forEach((Ip) => {
+      let object = selectedDesign[Ip];
+      if (object.is_ready_material) {
+        if (object.allColors && object.allColors.length) {
+          object.allColors.forEach((c, colorKey) => {
+            if (!validateNumber(c.quantity)) {
+              err = {
+                ...err,
+                ["quantitycolor" + colorKey + "design" + Ip]: [
+                  "Quantity is required",
+                ],
+              };
+            }
+            if (!validateNumber(c.price_per_unit)) {
+              err = {
+                ...err,
+                ["price_per_unitcolor" + colorKey + "design" + Ip]: [
+                  "Price per unit is required",
+                ],
+              };
+            }
+          });
+        }
+      } else {
+        if (isEmptyString(object.name)) {
+          err = {
+            ...err,
+            ["name" + Ip]: ["Name is required"],
+          };
+        }
+        if (!validateNumber(object.quantity)) {
+          err = {
+            ...err,
+            ["quantity" + Ip]: ["Quantity is required"],
+          };
+        }
+        if (!validateNumber(object.price_per_unit)) {
+          err = {
+            ...err,
+            ["price_per_unit" + Ip]: ["Price per unit is required"],
+          };
+        }
+      }
+    });
+    return err;
   };
 
   const submit = () => {
@@ -801,6 +997,8 @@ export default function AddEditSales(props) {
       party: party.id,
     };
     setBackDrop(true);
+    console.log("Object => ", obj);
+    console.log("error => ", designError);
     await providerForPost(backend_sales, obj, Auth.getToken())
       .then((res) => {
         history.push(SALES);
@@ -863,7 +1061,8 @@ export default function AddEditSales(props) {
           stock: mainDesignData.stock,
           colorsPresent: [row.color.id],
           allColors: [colorData],
-          isNew: true,
+          is_ready_material: true,
+          are_ready_materials_clubbed: false,
         },
       }));
     }
@@ -885,9 +1084,9 @@ export default function AddEditSales(props) {
   };
 
   const setPartyData = async (data) => {
-    delete error["party"];
-    setError((error) => ({
-      ...error,
+    delete designError["party"];
+    setDesignError((designError) => ({
+      ...designError,
     }));
     if (data && data.value) {
       setParty((party) => ({
@@ -902,7 +1101,7 @@ export default function AddEditSales(props) {
       setSelectedParty(data);
     } else {
       setParty({
-        ...formState,
+        ...party,
         id: null,
         party_name: "",
         gst_no: "",
@@ -914,7 +1113,32 @@ export default function AddEditSales(props) {
     }
   };
 
-  console.log(";formState => ", formState);
+  const addText = () => {
+    setSelectedDesign((selectedDesign) => ({
+      ...selectedDesign,
+      [["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]]: {
+        designId: null,
+        images: [],
+        colorsPresent: [],
+        allColors: [],
+        name: "",
+        quantity: 1,
+        price_per_unit: 0,
+        total_price: 0,
+        previousQuantity: 0,
+        isNew: true,
+        isDeleted: false,
+        isCannotDelete: false,
+        is_ready_material: false,
+        are_ready_materials_clubbed: true,
+      },
+    }));
+  };
+
+  console.log("Object => ", selectedDesign);
+  console.log("formState => ", formState);
+  console.log("party => ", party);
+  console.log("error => ", designError);
 
   return (
     <React.Fragment>
@@ -983,11 +1207,11 @@ export default function AddEditSales(props) {
                     <GridItem xs={12} sm={12} md={2}>
                       <DatePicker
                         onChange={(event) => handleOrderDate(event)}
-                        label="Bill Date"
-                        name="bill_date"
+                        label="Sale Date"
+                        name="date"
                         disabled={isView}
-                        value={formState.date || new Date()}
-                        id="bill_date"
+                        value={formState.date}
+                        id="date"
                         formControlProps={{
                           fullWidth: true,
                         }}
@@ -995,6 +1219,17 @@ export default function AddEditSales(props) {
                           width: "100%",
                           marginTop: "1.5rem",
                         }}
+                        /** For setting errors */
+                        helperTextId={"helperText_bill_date"}
+                        isHelperText={hasError("date", designError)}
+                        helperText={
+                          hasError("date", designError)
+                            ? designError["date"].map((designError) => {
+                                return designError + " ";
+                              })
+                            : null
+                        }
+                        error={hasError("date", designError)}
                       />
                     </GridItem>
                     <GridItem xs={12} sm={12} md={3}>
@@ -1010,15 +1245,15 @@ export default function AddEditSales(props) {
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_bill_no"}
-                        isHelperText={hasError("bill_no", error)}
+                        isHelperText={hasError("bill_no", designError)}
                         helperText={
-                          hasError("bill_no", error)
-                            ? error["bill_no"].map((error) => {
-                                return error + " ";
+                          hasError("bill_no", designError)
+                            ? designError["bill_no"].map((designError) => {
+                                return designError + " ";
                               })
                             : null
                         }
-                        error={hasError("bill_no", error)}
+                        error={hasError("bill_no", designError)}
                       />
                     </GridItem>
                     {!isView && (
@@ -1034,7 +1269,7 @@ export default function AddEditSales(props) {
                           apiName={backend_parties}
                           placeholder="Select Party..."
                           selectedValue={selectedparty}
-                          isError={error.seller}
+                          isError={designError.party}
                           errorText={"Please select a party"}
                           isSeller={true}
                         />
@@ -1074,15 +1309,15 @@ export default function AddEditSales(props) {
                       }}
                       /** For setting errors */
                       helperTextId={"helperText_cgst"}
-                      isHelperText={hasError("cgst", error)}
+                      isHelperText={hasError("cgst", designError)}
                       helperText={
-                        hasError("cgst", error)
-                          ? error["cgst"].map((error) => {
-                              return error + " ";
+                        hasError("cgst", designError)
+                          ? designError["cgst"].map((designError) => {
+                              return designError + " ";
                             })
                           : null
                       }
-                      error={hasError("cgst", error)}
+                      error={hasError("cgst", designError)}
                     />
                   </GridItem>
                   <GridItem xs={12} sm={12} md={2}>
@@ -1098,15 +1333,15 @@ export default function AddEditSales(props) {
                       }}
                       /** For setting errors */
                       helperTextId={"helperText_sgst"}
-                      isHelperText={hasError("sgst", error)}
+                      isHelperText={hasError("sgst", designError)}
                       helperText={
-                        hasError("sgst", error)
-                          ? error["sgst"].map((error) => {
-                              return error + " ";
+                        hasError("sgst", designError)
+                          ? designError["sgst"].map((designError) => {
+                              return designError + " ";
                             })
                           : null
                       }
-                      error={hasError("sgst", error)}
+                      error={hasError("sgst", designError)}
                     />
                   </GridItem>
                   <GridItem xs={12} sm={12} md={2}>
@@ -1126,15 +1361,15 @@ export default function AddEditSales(props) {
                       }}
                       /** For setting errors */
                       helperTextId={"helperText_igst"}
-                      isHelperText={hasError("igst", error)}
+                      isHelperText={hasError("igst", designError)}
                       helperText={
-                        hasError("igst", error)
-                          ? error["igst"].map((error) => {
-                              return error + " ";
+                        hasError("igst", designError)
+                          ? designError["igst"].map((designError) => {
+                              return designError + " ";
                             })
                           : null
                       }
-                      error={hasError("igst", error)}
+                      error={hasError("igst", designError)}
                     />
                   </GridItem>
                   <GridItem xs={12} sm={12} md={3}>
@@ -1151,15 +1386,15 @@ export default function AddEditSales(props) {
                       }}
                       /** For setting errors */
                       helperTextId={"helperText_add_cost"}
-                      isHelperText={hasError("add_cost", error)}
+                      isHelperText={hasError("add_cost", designError)}
                       helperText={
-                        hasError("add_cost", error)
-                          ? error["add_cost"].map((error) => {
-                              return error + " ";
+                        hasError("add_cost", designError)
+                          ? designError["add_cost"].map((designError) => {
+                              return designError + " ";
                             })
                           : null
                       }
-                      error={hasError("add_cost", error)}
+                      error={hasError("add_cost", designError)}
                     />
                   </GridItem>
                 </GridContainer>
@@ -1247,7 +1482,7 @@ export default function AddEditSales(props) {
                       color="primary"
                       size={"medium"}
                       variant="extended"
-                      onClick={() => addReadyMaterial()}
+                      onClick={() => addText()}
                       disabled={!party.id}
                       toolTip={
                         party.id
@@ -1287,16 +1522,15 @@ export default function AddEditSales(props) {
                     >
                       <CustomTableHead>
                         <CustomTableRow>
-                          <CustomTableCell align="left">
-                            Ratio Name
-                          </CustomTableCell>
+                          <CustomTableCell>Is Ready Material?</CustomTableCell>
+                          <CustomTableCell>Ratio Name</CustomTableCell>
                           {isEdit ? (
                             <CustomTableCell align="left">
                               Previous Quantity
                             </CustomTableCell>
                           ) : null}
                           <CustomTableCell align="left">
-                            Pcs sold
+                            Pcs to sell
                           </CustomTableCell>
                           <CustomTableCell align="left">
                             Price per piece
@@ -1304,79 +1538,365 @@ export default function AddEditSales(props) {
                           <CustomTableCell align="left">
                             Total Price
                           </CustomTableCell>
-                          {isView ? null : (
-                            <CustomTableCell align="center">
-                              Action
-                            </CustomTableCell>
-                          )}
+                          {!isView && <CustomTableCell>Remove</CustomTableCell>}
                         </CustomTableRow>
                       </CustomTableHead>
                       <CustomTableBody>
                         {selectedDesign &&
                           Object.keys(selectedDesign).map((Ip, designKey) => {
-                            let readyMaterial = Ip;
-                            let color = Ip;
-                            let isHighLight = false;
-
+                            let isNoDesign = Ip.includes("NoDesign");
                             return (
                               <>
                                 <CustomTableRow key={Ip} height={20}>
                                   <CustomTableCell
                                     align="center"
-                                    colSpan={4}
+                                    rowSpan={
+                                      (isNoDesign &&
+                                        selectedDesign[Ip].is_ready_material) ||
+                                      selectedDesign[Ip]
+                                        .are_ready_materials_clubbed
+                                        ? 1
+                                        : 1 +
+                                          selectedDesign[Ip].allColors.length
+                                    }
                                     sx={{
-                                      width: "100%",
-                                      borderTop: "1px solid black !important",
+                                      borderBottom:
+                                        "2px solid #6c6c6c !important",
                                     }}
                                   >
-                                    <GridItem xs={12} sm={12} md={12}>
-                                      <GridContainer style={{ dispay: "flex" }}>
-                                        <GridItem xs={12} sm={12} md={12}>
-                                          <div
-                                            className={classes.imageDivInTable}
-                                          >
-                                            {selectedDesign[Ip].images &&
-                                            selectedDesign[Ip].images.length &&
-                                            selectedDesign[Ip].images[0].url ? (
-                                              <img
-                                                alt="ready_material_photo"
-                                                src={
-                                                  apiUrl +
-                                                  selectedDesign[Ip].images[0]
-                                                    .url
-                                                }
-                                                loader={<CircularProgress />}
-                                                style={{
-                                                  height: "5rem",
-                                                  width: "10rem",
-                                                }}
-                                                className={classes.UploadImage}
-                                              />
-                                            ) : (
-                                              <img
-                                                src={no_image_icon}
-                                                alt="ready_material_photo"
-                                                style={{
-                                                  height: "5rem",
-                                                  width: "10rem",
-                                                }}
-                                                loader={<CircularProgress />}
-                                                className={
-                                                  classes.DefaultNoImage
-                                                }
-                                              />
-                                            )}
-                                          </div>
-                                        </GridItem>
-                                      </GridContainer>
-                                      <GridContainer>
-                                        <GridItem xs={12} sm={12} md={12}>
-                                          <b>Material No : </b>
-                                          {selectedDesign[Ip].material_no}
-                                        </GridItem>
-                                      </GridContainer>
-                                    </GridItem>
+                                    {selectedDesign[Ip].is_ready_material
+                                      ? "Yes"
+                                      : "No"}
                                   </CustomTableCell>
+                                  {(isNoDesign &&
+                                    selectedDesign[Ip].is_ready_material) ||
+                                  selectedDesign[Ip]
+                                    .are_ready_materials_clubbed ? (
+                                    <>
+                                      <CustomTableCell
+                                        align="left"
+                                        sx={{
+                                          pt: 0,
+                                          pb: 0,
+                                          borderBottom:
+                                            "2px solid #6c6c6c !important",
+                                        }}
+                                      >
+                                        <CustomInput
+                                          noMargin
+                                          onChange={(event) =>
+                                            handleChangeForRepetableComponent(
+                                              event,
+                                              null,
+                                              Ip
+                                            )
+                                          }
+                                          labelText="Name"
+                                          name="name"
+                                          disabled={isView}
+                                          value={selectedDesign[Ip].name}
+                                          id={"name" + Ip}
+                                          formControlProps={{
+                                            fullWidth: true,
+                                          }}
+                                          helperTextId={"helperText_name" + Ip}
+                                          isHelperText={hasError(
+                                            "name" + Ip,
+                                            designError
+                                          )}
+                                          helperText={
+                                            hasError("name" + Ip, designError)
+                                              ? designError["name" + Ip].map(
+                                                  (error) => {
+                                                    return error + " ";
+                                                  }
+                                                )
+                                              : null
+                                          }
+                                          error={hasError(
+                                            "name" + Ip,
+                                            designError
+                                          )}
+                                        />
+                                      </CustomTableCell>
+                                      {isEdit ? (
+                                        <CustomTableCell
+                                          align="right"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {selectedDesign[Ip].previousQuantity
+                                            ? selectedDesign[Ip]
+                                                .previousQuantity
+                                            : null}
+                                        </CustomTableCell>
+                                      ) : null}
+                                      {isView ? (
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {selectedDesign[Ip].quantity}
+                                        </CustomTableCell>
+                                      ) : (
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          <CustomInput
+                                            noMargin
+                                            defaultValue="Small"
+                                            size="large"
+                                            variant="standard"
+                                            color="secondary"
+                                            onChange={(event) =>
+                                              handleChangeForRepetableComponent(
+                                                event,
+                                                null,
+                                                Ip
+                                              )
+                                            }
+                                            type="number"
+                                            disabled={isView}
+                                            name="quantity"
+                                            value={selectedDesign[Ip].quantity}
+                                            id={"quantity" + Ip}
+                                            formControlProps={{
+                                              fullWidth: false,
+                                            }}
+                                            /** For setting errors */
+                                            helperTextId={"quantity" + Ip}
+                                            isHelperText={hasError(
+                                              "quantity" + Ip,
+                                              designError
+                                            )}
+                                            helperText={
+                                              hasError(
+                                                "quantity" + Ip,
+                                                designError
+                                              )
+                                                ? designError[
+                                                    "quantity" + Ip
+                                                  ].map((error) => {
+                                                    return error + " ";
+                                                  })
+                                                : null
+                                            }
+                                            error={hasError(
+                                              "quantity" + Ip,
+                                              designError
+                                            )}
+                                          />
+                                        </CustomTableCell>
+                                      )}
+
+                                      {isView ? (
+                                        <CustomTableCell
+                                          align="right"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {selectedDesign[Ip].price_per_unit}
+                                        </CustomTableCell>
+                                      ) : (
+                                        <CustomTableCell
+                                          align="right"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          <CustomInput
+                                            noMargin
+                                            defaultValue="Small"
+                                            size="small"
+                                            variant="standard"
+                                            color="secondary"
+                                            onChange={(event) =>
+                                              handleChangeForRepetableComponent(
+                                                event,
+                                                null,
+                                                Ip
+                                              )
+                                            }
+                                            type="number"
+                                            disabled={isView}
+                                            name="price_per_unit"
+                                            value={
+                                              selectedDesign[Ip].price_per_unit
+                                            }
+                                            id={"price_per_unit" + Ip}
+                                            formControlProps={{
+                                              fullWidth: false,
+                                            }}
+                                            /** For setting errors */
+                                            helperTextId={"price_per_unit" + Ip}
+                                            isHelperText={hasError(
+                                              "price_per_unit" + Ip,
+                                              designError
+                                            )}
+                                            helperText={
+                                              hasError(
+                                                "price_per_unit" + Ip,
+                                                designError
+                                              )
+                                                ? designError[
+                                                    "price_per_unit" + Ip
+                                                  ].map((error) => {
+                                                    return error + " ";
+                                                  })
+                                                : null
+                                            }
+                                            error={hasError(
+                                              "price_per_unit" + Ip,
+                                              designError
+                                            )}
+                                          />
+                                        </CustomTableCell>
+                                      )}
+                                      {/* Price per unit */}
+
+                                      <CustomTableCell
+                                        align="left"
+                                        sx={{
+                                          pt: 0,
+                                          pb: 0,
+                                        }}
+                                      >
+                                        {convertNumber(
+                                          selectedDesign[Ip].total_price,
+                                          true
+                                        )}
+                                      </CustomTableCell>
+                                      {isView ? null : (
+                                        <CustomTableCell
+                                          align="center"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                          }}
+                                        >
+                                          <GridItem xs={12} sm={12} md={12}>
+                                            <Tooltip
+                                              title={
+                                                selectedDesign[Ip].isDeleted
+                                                  ? "Restore Back"
+                                                  : "Delete"
+                                              }
+                                            >
+                                              <FAB
+                                                color="danger"
+                                                align={"center"}
+                                                size={"small"}
+                                                onClick={() => {
+                                                  selectedDesign[Ip].isDeleted
+                                                    ? restoreReadyMaterial(
+                                                        null,
+                                                        Ip
+                                                      )
+                                                    : removeReadyMaterial(
+                                                        null,
+                                                        Ip
+                                                      );
+                                                }}
+                                              >
+                                                {selectedDesign[Ip]
+                                                  .isDeleted ? (
+                                                  <SettingsBackupRestoreIcon />
+                                                ) : (
+                                                  <DeleteIcon />
+                                                )}
+                                              </FAB>
+                                            </Tooltip>
+                                          </GridItem>
+                                        </CustomTableCell>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <CustomTableCell
+                                      align="center"
+                                      colSpan={isView ? 4 : isEdit ? 7 : 6}
+                                      sx={{
+                                        borderTop: "1px solid black !important",
+                                      }}
+                                    >
+                                      <GridItem xs={12} sm={12} md={12}>
+                                        <GridContainer
+                                          style={{ dispay: "flex" }}
+                                        >
+                                          <GridItem xs={12} sm={12} md={12}>
+                                            <div
+                                              className={
+                                                classes.imageDivInTable
+                                              }
+                                            >
+                                              {selectedDesign[Ip].images &&
+                                              selectedDesign[Ip].images
+                                                .length &&
+                                              selectedDesign[Ip].images[0]
+                                                .url ? (
+                                                <img
+                                                  alt="ready_material_photo"
+                                                  src={
+                                                    apiUrl +
+                                                    selectedDesign[Ip].images[0]
+                                                      .url
+                                                  }
+                                                  loader={<CircularProgress />}
+                                                  style={{
+                                                    height: "5rem",
+                                                    width: "10rem",
+                                                  }}
+                                                  className={
+                                                    classes.UploadImage
+                                                  }
+                                                />
+                                              ) : (
+                                                <img
+                                                  src={no_image_icon}
+                                                  alt="ready_material_photo"
+                                                  style={{
+                                                    height: "5rem",
+                                                    width: "10rem",
+                                                  }}
+                                                  loader={<CircularProgress />}
+                                                  className={
+                                                    classes.DefaultNoImage
+                                                  }
+                                                />
+                                              )}
+                                            </div>
+                                          </GridItem>
+                                        </GridContainer>
+                                        <GridContainer>
+                                          <GridItem xs={12} sm={12} md={12}>
+                                            <b>Material No : </b>
+                                            {selectedDesign[Ip].material_no}
+                                          </GridItem>
+                                        </GridContainer>
+                                      </GridItem>
+                                    </CustomTableCell>
+                                  )}
                                 </CustomTableRow>
                                 {selectedDesign[Ip].allColors.map(
                                   (c, colorKey) => (
@@ -1433,7 +1953,8 @@ export default function AddEditSales(props) {
                                               pb: 0,
                                             }}
                                           >
-                                            <TextField
+                                            <CustomInput
+                                              noMargin
                                               defaultValue="Small"
                                               size="large"
                                               variant="standard"
@@ -1519,7 +2040,8 @@ export default function AddEditSales(props) {
                                               pb: 0,
                                             }}
                                           >
-                                            <TextField
+                                            <CustomInput
+                                              noMargin
                                               defaultValue="Small"
                                               size="small"
                                               variant="standard"
@@ -1605,13 +2127,13 @@ export default function AddEditSales(props) {
                                         </CustomTableCell>
                                         {isView ? null : (
                                           <CustomTableCell
-                                            align="left"
+                                            align="center"
                                             sx={{
                                               pt: 0,
                                               pb: 0,
                                             }}
                                           >
-                                            <GridItem xs={12} sm={12} md={2}>
+                                            <GridItem xs={12} sm={12} md={12}>
                                               <Tooltip
                                                 title={
                                                   c.isDeleted
@@ -1620,8 +2142,8 @@ export default function AddEditSales(props) {
                                                 }
                                               >
                                                 <FAB
-                                                  color="primary"
-                                                  align={"left"}
+                                                  color="danger"
+                                                  align={"center"}
                                                   size={"small"}
                                                   onClick={() => {
                                                     c.isDeleted
@@ -1679,7 +2201,7 @@ export default function AddEditSales(props) {
                       <CustomTableBody>
                         <CustomTableRow>
                           <CustomTableCell
-                            colSpan={isEdit ? 4 : 3}
+                            colSpan={isEdit ? 5 : 4}
                             align="right"
                           >
                             Total
@@ -1693,7 +2215,11 @@ export default function AddEditSales(props) {
                               true
                             )}
                           </CustomTableCell>
-                          <CustomTableCell></CustomTableCell>
+                          {isView ? null : (
+                            <>
+                              <CustomTableCell colSpan={2}></CustomTableCell>
+                            </>
+                          )}
                         </CustomTableRow>
                       </CustomTableBody>
                     </CustomMaterialUITable>
