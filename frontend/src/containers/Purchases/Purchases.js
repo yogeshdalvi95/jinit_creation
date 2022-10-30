@@ -54,27 +54,23 @@ export default function Purchases() {
   const columns = [
     { title: "Type of purchase", field: "type_of_bill" },
     {
+      title: "Purchase date",
+      field: "date",
+      render: (rowData) => plainDate(new Date(rowData.date)),
+    },
+    {
+      title: "Invoice / Bill Number",
+      field: "bill_no",
+    },
+    {
       title: "Purchased From",
       field: "seller",
       render: (rowData) => (rowData.seller ? rowData.seller.seller_name : ""),
     },
     {
-      title: "Invoice / Bill Number",
-      field: "invoice_number",
-      render: (rowData) =>
-        rowData.type_of_bill === "Pakka"
-          ? rowData.invoice_number
-          : rowData.bill_no,
-    },
-    {
       title: "Total Amount",
       field: "total_amt_with_tax",
       render: (rowData) => convertNumber(rowData.total_amt_with_tax, true),
-    },
-    {
-      title: "Purchase date",
-      field: "date",
-      render: (rowData) => plainDate(new Date(rowData.date)),
     },
   ];
 
@@ -265,7 +261,7 @@ export default function Purchases() {
                   xs={12}
                   sm={12}
                   md={2}
-                  style={{ marginTop: "2.2rem" }}
+                  style={{ marginTop: "2.3rem" }}
                 >
                   <RemoteAutoComplete
                     setSelectedData={setSeller}
@@ -279,19 +275,7 @@ export default function Purchases() {
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
-                    labelText="Invoice Number"
-                    value={filter.invoice_number_contains || ""}
-                    name="invoice_number_contains"
-                    id="invoice_number_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Bill Number"
+                    labelText="Bill/Invoice Number"
                     value={filter.bill_no_contains || ""}
                     name="bill_no_contains"
                     id="bill_no_contains"
@@ -311,7 +295,7 @@ export default function Purchases() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.7rem",
                       width: "100%",
                     }}
                   />
@@ -327,7 +311,7 @@ export default function Purchases() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.7rem",
                       width: "100%",
                     }}
                   />

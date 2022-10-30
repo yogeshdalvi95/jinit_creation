@@ -825,7 +825,7 @@ export default function AddOrder(props) {
                   }}
                   style={{
                     width: "100%",
-                    marginTop: "1.5rem",
+                    marginTop: "1.8rem",
                   }}
                 />
               </GridItem>

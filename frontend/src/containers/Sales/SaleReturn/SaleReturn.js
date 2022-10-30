@@ -133,7 +133,6 @@ export default function SaleReturn() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -354,7 +353,7 @@ export default function SaleReturn() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */
@@ -381,7 +380,7 @@ export default function SaleReturn() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */

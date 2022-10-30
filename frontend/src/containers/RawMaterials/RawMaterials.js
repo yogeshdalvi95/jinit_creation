@@ -143,6 +143,8 @@ export default function RawMaterials() {
     setInitialParams(true);
   }, []);
 
+  console.log("filter => ", filter);
+
   useEffect(() => {
     let url = `${frontendServerUrl}${RAWMATERIALSVIEW}`;
     let filterArr = Object.keys(filter);
@@ -517,7 +519,14 @@ export default function RawMaterials() {
                   <Button
                     color="primary"
                     onClick={() => {
-                      tableRef.current.onQueryChange();
+                      //tableRef.current.onQueryChange();
+                      tableRef.current.onQueryChange(
+                        {
+                          page: 1,
+                          pageSize: 5,
+                        },
+                        () => {}
+                      );
                     }}
                   >
                     Search
@@ -542,6 +551,7 @@ export default function RawMaterials() {
                 title="Raw Materials"
                 columns={columns}
                 data={async (query) => {
+                  console.log("query => ", query);
                   return await getRawMaterialsData(
                     query.page + 1,
                     query.pageSize

@@ -819,7 +819,7 @@ export default function AddPurchases(props) {
                         fullWidth: true,
                       }}
                       style={{
-                        marginTop: "1.5rem",
+                        marginTop: "1.8rem",
                         width: "100%",
                       }}
                     />

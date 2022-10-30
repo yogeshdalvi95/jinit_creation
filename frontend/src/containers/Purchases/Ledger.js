@@ -425,7 +425,7 @@ export default function Ledger() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */
@@ -453,7 +453,7 @@ export default function Ledger() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */
@@ -698,7 +698,8 @@ export default function Ledger() {
                                   }}
                                 >
                                   <b>
-                                    -{convertNumber(
+                                    -
+                                    {convertNumber(
                                       Math.abs(
                                         ledgerData[monthYear]?.closing_balance
                                           ?.finalClosing

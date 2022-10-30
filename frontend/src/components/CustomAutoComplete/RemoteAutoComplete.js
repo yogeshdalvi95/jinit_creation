@@ -1,5 +1,5 @@
 import { FormHelperText } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 import { providerForGet } from "../../api";
 import { backend_sellers, frontendServerUrl } from "../../constants";
@@ -17,7 +17,7 @@ const RemoteAutoComplete = (props) => {
     control: (base, state) => ({
       ...base,
       // state.isFocused can display different borderColor if you need it
-      borderBottom: `1px solid ${props.isError ? "red" : "#645a5a"}`,
+      borderBottom: `1px solid ${props.isError ? "red" : "#D2D2D2"}`,
       borderTop: "none",
       borderLeft: "none",
       borderRight: "none",
@@ -31,54 +31,73 @@ const RemoteAutoComplete = (props) => {
         borderBottom: `2px solid ${props.isError ? "red" : "#a56863"}`,
       },
     }),
+    input: (provided, state) => ({
+      ...provided,
+      fontSize: "0.9rem",
+    }),
     menu: (provided, state) => ({
       ...provided,
       zIndex: 100000000,
+      fontSize: "0.8rem",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      top: "64%",
+      fontSize: "0.9rem",
+      color: "#AAAAAA !important",
+    }),
+    singleValue: (provided, state) => ({
+      ...provided,
+      fontSize: "0.9rem",
+      top: "64%",
     }),
   };
 
-  const generateRawMaterialLabel = (d) => {
-    return `${d[props.searchString]}/ Category:- ${
-      d.category.name
-    }/ Department:- ${d.department.name}`;
-  };
+  const generateRawMaterialLabel = useCallback(
+    (d) => {
+      return `${d[props.searchString]}/ Category:- ${
+        d.category.name
+      }/ Department:- ${d.department.name}`;
+    },
+    [props.searchString]
+  );
 
   useEffect(() => {
+    const getData = async (id) => {
+      console.log("getData => ", id);
+      await providerForGet(props.apiName + "/" + id, {}, Auth.getToken())
+        .then((res) => {
+          setSelectedValue({
+            label: props.isRawMaterial
+              ? generateRawMaterialLabel(res.data)
+              : res.data[props.searchString],
+            value: res.data.id,
+            allData: res.data,
+          });
+        })
+        .catch((err) => {});
+    };
+
     let selectedData = props.selectedValue;
+    console.log("selectedData => ", selectedData);
     if (typeof selectedData === "number" || typeof selectedData === "string") {
       getData(selectedData);
     } else if (typeof selectedData === "object") {
       if (
         selectedData &&
         selectedData.value &&
-        (!selectedData.label || isEmptyString(selectedData.label)) &&
-        props.isSeller
+        (!selectedData.label || isEmptyString(selectedData.label))
       ) {
-        getData(selectedData);
+        getData(selectedData.value);
       } else {
         setSelectedValue(selectedData);
       }
     } else {
       setSelectedValue(selectedData);
     }
-  }, [props]);
-
-  const getData = async (id) => {
-    await providerForGet(props.apiName + "/" + id, {}, Auth.getToken())
-      .then((res) => {
-        setSelectedValue({
-          label: props.isRawMaterial
-            ? generateRawMaterialLabel(res.data)
-            : res.data[props.searchString],
-          value: res.data.id,
-          allData: res.data,
-        });
-      })
-      .catch((err) => {});
-  };
+  }, [props, generateRawMaterialLabel]);
 
   const filterData = (data) => {
-    console.log("data => ", data);
     return data.map((d) => {
       let label = "";
       if (props.isRawMaterial) {

@@ -245,7 +245,7 @@ const AllPayments = (props) => {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />
@@ -261,7 +261,7 @@ const AllPayments = (props) => {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />

@@ -1,4 +1,5 @@
 import moment from "moment";
+import { frontendServerUrl } from "../constants";
 import {
   DashboardAdminRoutes,
   DashboardStaffRoutes,
@@ -28,6 +29,76 @@ export function isSameDay(d1, d2) {
 export const isEmptyString = (val) => {
   let result = !val || /^\s*$/.test(val);
   return result;
+};
+
+export const removeAllQueryParams = (filter, prefix) => {
+  let obj = Object.keys(filter).map((d) => `${prefix}_${d}`);
+  console.log("obj => ", obj);
+  let params = removeParamFromUrl(obj);
+  window.history.pushState(
+    "",
+    "",
+    `${frontendServerUrl}${window.location.pathname}?${new URLSearchParams(
+      params
+    ).toString()}`
+  );
+};
+
+export const setAllSearchQueryParams = (filter, prefix) => {
+  const queryParams = new URLSearchParams(window.location.search);
+  let params = Object.fromEntries(queryParams);
+  Object.keys(filter).forEach((d) => {
+    params = {
+      ...params,
+      [`${prefix}_${d}`]: filter[d],
+    };
+  });
+  window.history.pushState(
+    "",
+    "",
+    `${frontendServerUrl}${window.location.pathname}?${new URLSearchParams(
+      params
+    ).toString()}`
+  );
+};
+
+export const removeParamFromUrl = (param) => {
+  const queryParams = new URLSearchParams(window.location.search);
+  if (
+    typeof param === "object" &&
+    Object.prototype.toString.call(param) === "[object Array]"
+  ) {
+    param.forEach((p) => {
+      if (queryParams.has(p)) {
+        queryParams.delete(p);
+      }
+    });
+    return queryParams;
+  } else if (typeof param === "string") {
+    if (queryParams.has(param)) {
+      queryParams.delete(param);
+      return queryParams;
+    }
+  } else {
+    return {};
+  }
+};
+
+export const addQueryParam = (param, value) => {
+  const queryParams = new URLSearchParams(window.location.search);
+  let params = Object.fromEntries(queryParams);
+  params = {
+    ...params,
+    [param]: value,
+  };
+
+  window.history.pushState(
+    "",
+    "",
+    `${frontendServerUrl}${window.location.pathname}?${new URLSearchParams(
+      params
+    ).toString()}`
+  );
 };
 
 export const getMonthName = (val) => {

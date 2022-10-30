@@ -774,7 +774,7 @@ export default function AddGoodReturn(props) {
                     </GridContainer>
                     {rawMaterialData && rawMaterialData.id ? (
                       <GridContainer>
-                        <GridItem>
+                        <GridItem xs={12} sm={12} md={12}>
                           <RawMaterialDetail raw_material={rawMaterialData} />
                         </GridItem>
                       </GridContainer>
@@ -848,7 +848,7 @@ export default function AddGoodReturn(props) {
                 sm={12}
                 md={12}
                 style={{
-                  marginTop: "1.5rem",
+                  marginTop: "1.8rem",
                   color: "#C8C8C8",
                 }}
               >
@@ -908,7 +908,7 @@ export default function AddGoodReturn(props) {
                         fullWidth: true,
                       }}
                       style={{
-                        marginTop: "1.5rem",
+                        marginTop: "1.8rem",
                         width: "100%",
                       }}
                     />

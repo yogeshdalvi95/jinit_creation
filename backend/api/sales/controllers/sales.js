@@ -45,15 +45,27 @@ module.exports = {
     const { id } = ctx.params;
     let sale_data = await strapi
       .query("sales")
-      .findOne({ id: id }, ["party", "sale_ready_material.ready_material"]);
+      .findOne({ id: id }, [
+        "party",
+        "sale_ready_material.design",
+        "sale_ready_material.color",
+      ]);
 
     let sale_ready_material = [];
     await utils.asyncForEach(sale_data.sale_ready_material, async (el) => {
-      let designColorPrice = await strapi
-        .query("design-color-price")
-        .findOne({ design: el.design.id, color: el.color.id });
-      el.color_price = designColorPrice;
-      sale_ready_material.push(el);
+      if (el) {
+        if (el.is_ready_material) {
+          if (el.design && el.design.id) {
+            let designColorPrice = await strapi
+              .query("design-color-price")
+              .findOne({ design: el.design.id, color: el.color.id });
+            el.color_price = designColorPrice;
+            sale_ready_material.push(el);
+          }
+        } else {
+          sale_ready_material.push(el);
+        }
+      }
     });
 
     sale_data.sale_ready_material = sale_ready_material;
@@ -182,7 +194,7 @@ module.exports = {
           party
         );
 
-        console.log('designAndColorData => ', designAndColorData)
+        console.log("designAndColorData => ", designAndColorData);
 
         saleData = await strapi.query("sales").update(
           { id: saleId },
@@ -405,6 +417,75 @@ module.exports = {
       throw err;
     }
   },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    let saleData = await strapi.query("sales").findOne(
+      {
+        id: id,
+      },
+      []
+    );
+
+    await bookshelf
+      .transaction(async (t) => {
+        if (
+          saleData.sale_ready_material &&
+          saleData.sale_ready_material.length
+        ) {
+          await utils.asyncForEach(saleData.sale_ready_material, async (d) => {
+            await deleteSaleData(d, t);
+          });
+        }
+
+        await strapi.query("sale-payment-transaction").delete(
+          { sale: id },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+
+        await strapi.query("sales").delete(
+          { id: id },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
+      });
+  },
+};
+
+const deleteSaleData = async (object, t) => {
+  if (object.is_ready_material) {
+    let design = object.design?.id ? object.design.id : null;
+    let color = object.color?.id ? object.color.id : null;
+    const previousCount = validateNumber(object.quantity);
+
+    let designColorData = await strapi
+      .query("design-color-price")
+      .findOne({ design: design, color: color });
+
+    /** get color stock */
+    let designColorQuantity = utils.validateNumber(designColorData.stock);
+
+    let newBalance = designColorQuantity + previousCount;
+    await strapi.query("design-color-price").update(
+      { id: designColorData.id },
+      {
+        stock: newBalance,
+      },
+      { patch: true, transacting: t }
+    );
+  }
 };
 
 const getReadyMaterialForSale = async (object, saleId, t, party) => {
@@ -471,6 +552,7 @@ const getReadyMaterialForSale = async (object, saleId, t, party) => {
           design: null,
           sale: saleId,
           color: null,
+          name: object[el].name,
           quantity: utils.validateNumber(object[el].quantity),
           total_price: utils.validateNumber(object[el].total_price),
           price_per_unit: utils.validateNumber(object[el].price_per_unit),

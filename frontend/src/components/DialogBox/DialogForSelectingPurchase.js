@@ -581,7 +581,7 @@ export default function DialogForSelectingPurchase(props) {
                           fullWidth: true,
                         }}
                         style={{
-                          marginTop: "1.5rem",
+                          marginTop: "1.8rem",
                           width: "100%",
                         }}
                       />
@@ -597,7 +597,7 @@ export default function DialogForSelectingPurchase(props) {
                           fullWidth: true,
                         }}
                         style={{
-                          marginTop: "1.5rem",
+                          marginTop: "1.8rem",
                           width: "100%",
                         }}
                       />

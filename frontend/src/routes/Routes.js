@@ -131,6 +131,7 @@ import ViewRoute from "./ViewRoute";
 import NotFoundRoute from "./NotFoundRoute";
 import RouteWithTabLayout from "./RouteWithTabLayout";
 import DailyUsage from "../containers/RawMaterials/DailyUsage/DailyUsage";
+import { EDITSALERETURNID, VIEWSALERETURNID } from "../paths/Paths";
 
 const Routes = () => {
   return (
@@ -675,7 +676,7 @@ const Routes = () => {
           header={"Add Sale"}
         />
 
-        <EditRoute
+        <PrivateRoute
           openSubMenu={true}
           path={EDITSALESID}
           exact
@@ -715,22 +716,26 @@ const Routes = () => {
           header={"Add Sale Return"}
         />
 
-        <EditRoute
+        <PrivateRoute
           openSubMenu={true}
-          path={EDITSALERETURN}
+          path={EDITSALERETURNID}
           exact
           component={AddEditSaleReturn}
-          header={"Edit Sale Return"}
-          defaultPathToPush={SALERETURN}
+          header={"Edit Sale GR"}
+          defaultPathToPush={SALES}
+          isDependent={true}
+          isEdit={true}
         />
 
-        <ViewRoute
+        <PrivateRoute
           openSubMenu={true}
-          path={VIEWSALERETURN}
+          path={VIEWSALERETURNID}
           exact
           component={AddEditSaleReturn}
-          header={"View Sale"}
-          defaultPathToPush={SALERETURN}
+          header={"View Sale GR"}
+          defaultPathToPush={SALES}
+          isDependent={true}
+          isView={true}
         />
 
         {/** Parties section */}

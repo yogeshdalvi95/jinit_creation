@@ -196,14 +196,14 @@ const AddEditViewPayments = (props) => {
     });
     let message = "";
     if (isEdit) {
-      message = `Are you sure you want to edit the payment made to ${
+      message = `Are you sure you want to edit the payment made by ${
         partyInfo?.allData?.party_name
       } of ${convertNumber(formState.amount, true)}?`;
     } else {
-      message = `Are you sure you want to make a payment of ${convertNumber(
+      message = `Are you sure you want to add payment of ${convertNumber(
         formState.amount,
         true
-      )} towards party ${partyInfo?.allData?.party_name} ?`;
+      )} by party ${partyInfo?.allData?.party_name} ?`;
     }
     setAlert(
       <SweetAlert
@@ -331,7 +331,7 @@ const AddEditViewPayments = (props) => {
                     }}
                     style={{
                       width: "100%",
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                     }}
                     /** For setting errors */
                     helperTextId={"helperText_payment_date"}

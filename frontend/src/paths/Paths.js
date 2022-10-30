@@ -94,10 +94,12 @@ export const VIEWSALEPAYEMENT = "/view-sale-payment";
 export const EDITSALEPAYEMENTID = `${EDITSALEPAYEMENT}/:id`;
 export const VIEWSALEPAYEMENTID = `${VIEWSALEPAYEMENT}/:id`;
 
-export const VIEWSALERETURN = "/view-sale-return";
+export const SALERETURN = "/sale-return";
 export const ADDSALERETURN = "/add-sale-return";
 export const EDITSALERETURN = "/edit-sale-return";
-export const SALERETURN = "/sale-return";
+export const VIEWSALERETURN = "/view-sale-return";
+export const EDITSALERETURNID = `${EDITSALERETURN}/:id`;
+export const VIEWSALERETURNID = `${VIEWSALERETURN}/:id`;
 
 export const VIEWDESIGN = "/view-design";
 export const EDITDESIGN = "/edit-design";

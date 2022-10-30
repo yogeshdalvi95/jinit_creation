@@ -176,7 +176,6 @@ export default function ViewOrders(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -419,7 +418,7 @@ export default function ViewOrders(props) {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />
@@ -435,7 +434,7 @@ export default function ViewOrders(props) {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />

@@ -153,7 +153,7 @@ export default function AddEditSales(props) {
         isError = true;
       });
     if (isError) {
-      history.push(NOTFOUNDPAGE);
+      // history.push(NOTFOUNDPAGE);
     }
   };
 
@@ -200,8 +200,8 @@ export default function AddEditSales(props) {
         design: designId,
         colorData: el.color,
         color: colorId,
-        quantity: el.quantity,
-        previousQuantity: el.quantity,
+        quantity: validateNumber(el.quantity),
+        previousQuantity: validateNumber(el.quantity),
         quantity_to_add_deduct: 0,
         price_per_unit: validateNumber(el.price_per_unit),
         total_price: validateNumber(el.total_price),
@@ -243,6 +243,26 @@ export default function AddEditSales(props) {
             },
           };
         }
+      } else {
+        saleReadyMaterial = {
+          ...saleReadyMaterial,
+          [["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]]: {
+            designId: null,
+            images: [],
+            colorsPresent: [],
+            allColors: [],
+            name: el.name,
+            quantity: validateNumber(el.quantity),
+            price_per_unit: validateNumber(el.price_per_unit),
+            total_price: validateNumber(el.total_price),
+            previousQuantity: validateNumber(el.quantity),
+            isNew: false,
+            isDeleted: false,
+            isCannotDelete: true,
+            is_ready_material: false,
+            are_ready_materials_clubbed: true,
+          },
+        };
       }
     });
 
@@ -402,7 +422,9 @@ export default function AddEditSales(props) {
         }));
       } else {
         delete currObject[designKey];
-        setSelectedDesign(currObject);
+        setSelectedDesign((selectedDesign) => ({
+          ...selectedDesign,
+        }));
       }
       setBackDrop(false);
     } else {
@@ -443,7 +465,7 @@ export default function AddEditSales(props) {
         } else {
           if (colorArray.length === 1) {
             delete selectedDesign[designKey];
-            setSelectedDesign((selectDesign) => ({
+            setSelectedDesign((selectedDesign) => ({
               ...selectedDesign,
             }));
           } else {
@@ -600,11 +622,43 @@ export default function AddEditSales(props) {
     }));
   };
 
+  const handleBillNumberChange = (event) => {
+    delete designError["bill_no"];
+    setDesignError((designError) => ({
+      ...designError,
+    }));
+    setFormState((formState) => ({
+      ...formState,
+      [event.target.name]: event.target.value,
+    }));
+    let obj = {
+      bill_no: event.target.value.trim(),
+    };
+
+    if (isEdit) {
+      obj = {
+        ...obj,
+        id_nin: [id],
+      };
+    }
+
+    providerForGet(backend_sales, obj, Auth.getToken()).then((res) => {
+      if (res.data?.totalCount) {
+        setDesignError((designError) => ({
+          ...designError,
+          bill_no: ["Bill number already used"],
+        }));
+      }
+    });
+  };
+
   const handleChange = (event) => {
+    /** Clear error for that field */
     delete designError[event.target.name];
     setDesignError((designError) => ({
       ...designError,
     }));
+    /** Check conditions */
     if (event.target.name === "type_of_bill") {
       setDesign([]);
       setDesignError({});
@@ -1217,7 +1271,7 @@ export default function AddEditSales(props) {
                         }}
                         style={{
                           width: "100%",
-                          marginTop: "1.5rem",
+                          marginTop: "1.8rem",
                         }}
                         /** For setting errors */
                         helperTextId={"helperText_bill_date"}
@@ -1234,7 +1288,7 @@ export default function AddEditSales(props) {
                     </GridItem>
                     <GridItem xs={12} sm={12} md={3}>
                       <CustomInput
-                        onChange={(event) => handleChange(event)}
+                        onChange={(event) => handleBillNumberChange(event)}
                         labelText="Bill/Invoice Number"
                         name="bill_no"
                         disabled={isView || isEdit}

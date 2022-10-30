@@ -1,9 +1,4 @@
-import {
-  Backdrop,
-  CircularProgress,
-  IconButton,
-  makeStyles,
-} from "@material-ui/core";
+import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { saveAs } from "file-saver";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -21,6 +16,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RemoteAutoComplete,
   SnackBarComponent,
   Table,
 } from "../../components";
@@ -38,9 +34,12 @@ import { backend_sales, frontendServerUrl } from "../../constants";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import moment from "moment";
-import ClearIcon from "@material-ui/icons/Clear";
-import { providerForGet } from "../../api";
-import { backend_sales_export_data } from "../../constants/UrlConstants";
+import { providerForDelete, providerForGet } from "../../api";
+import {
+  backend_parties,
+  backend_sales_export_data,
+} from "../../constants/UrlConstants";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const useStyles = makeStyles(styles);
 export default function Sales() {
@@ -51,12 +50,7 @@ export default function Sales() {
   });
   const classes = useStyles();
   const [openBackDrop, setBackDrop] = useState(false);
-  const [party, setParty] = useState({
-    id: null,
-    party_name: "",
-    gst_no: "",
-    address: "",
-  });
+  const [party, setParty] = useState(null);
 
   const [error, setError] = useState({});
 
@@ -70,20 +64,20 @@ export default function Sales() {
     useState(false);
 
   const columns = [
+    { title: "Type of sale", field: "type_of_bill" },
     {
-      title: "Bill Date",
+      title: "Sale date",
       field: "date",
       render: (rowData) => plainDate(new Date(rowData.date)),
     },
-    { title: "Bill No", field: "bill_no" },
     {
-      title: "Party Name",
-      field: "party.party_name",
+      title: "Invoice / Bill Number",
+      field: "bill_no",
     },
     {
-      title: "Is GST Bill?",
-      field: "party.party_name",
-      render: (rowData) => (rowData.is_gst_bill ? "Yes" : "No"),
+      title: "Sold To",
+      field: "party",
+      render: (rowData) => (rowData.party ? rowData.party.party_name : ""),
     },
     {
       title: "Total Price",
@@ -133,7 +127,6 @@ export default function Sales() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -308,6 +301,22 @@ export default function Sales() {
     return buf;
   }
 
+  const setPartyData = (party) => {
+    if (party && party.value) {
+      setFilter((filter) => ({
+        ...filter,
+        party: party.value,
+      }));
+      setParty(party);
+    } else {
+      delete filter["party"];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setParty(null);
+    }
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -344,6 +353,48 @@ export default function Sales() {
               </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={2}>
+                  <CustomDropDown
+                    id="type_of_bill"
+                    onChange={(event) => handleChange(event)}
+                    labelText="Type of Sale"
+                    name="type_of_bill"
+                    value={filter.type_of_bill || ""}
+                    nameValue={[
+                      { name: "Pakka", value: "Pakka" },
+                      { name: "Kachha", value: "Kachha" },
+                    ]}
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  style={{ marginTop: "2.3rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={setPartyData}
+                    searchString={"party_name"}
+                    apiName={backend_parties}
+                    placeholder="Select Party..."
+                    selectedValue={party}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={3}>
+                  <CustomInput
+                    onChange={(event) => handleChange(event)}
+                    labelText="Bill/Invoice Number"
+                    value={filter.bill_no_contains || ""}
+                    name="bill_no_contains"
+                    id="bill_no_contains"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={2}>
                   <DatePicker
                     onChange={(event) => handleStartDateChange(event)}
                     label="Sell date from"
@@ -354,7 +405,7 @@ export default function Sales() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */
@@ -381,7 +432,7 @@ export default function Sales() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                     /** For setting errors */
@@ -397,34 +448,7 @@ export default function Sales() {
                     error={hasError("date_lte", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Bill Number"
-                    value={filter.bill_no_contains || ""}
-                    name="bill_no_contains"
-                    id="bill_no_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomDropDown
-                    id="is_gst_bill"
-                    onChange={(event) => handleChange(event)}
-                    labelText="GST Bill?"
-                    name="is_gst_bill"
-                    value={filter.is_gst_bill || ""}
-                    nameValue={[
-                      { name: "Yes", value: "true" },
-                      { name: "No", value: "false" },
-                    ]}
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
+
                 <GridItem xs={12} sm={12} md={2}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
@@ -454,77 +478,6 @@ export default function Sales() {
                 <GridItem
                   xs={12}
                   sm={12}
-                  md={7}
-                  style={{
-                    margin: "27px 0px 0px",
-                  }}
-                >
-                  <GridContainer
-                    style={{
-                      border: "1px solid #C0C0C0",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={7}
-                      style={{
-                        margin: "5px 0px 0px 0px",
-                      }}
-                    >
-                      <GridContainer style={{ dispay: "flex" }}>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Name : </b> {party.party_name}
-                        </GridItem>
-                      </GridContainer>
-                      <GridContainer>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Gst No : </b>
-                          {party.gst_no}
-                        </GridItem>
-                      </GridContainer>
-                      {/* <GridContainer>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Address : </b>
-                          {party.address}
-                        </GridItem>
-                      </GridContainer> */}
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={3}>
-                      <Button
-                        color="primary"
-                        onClick={() => {
-                          setOpenDialogForSelectingParties(true);
-                        }}
-                      >
-                        {filter.party ? "Change Party" : "Select party"}
-                      </Button>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={2}>
-                      <IconButton
-                        onClick={() => {
-                          setParty((party) => ({
-                            ...party,
-                            gst_no: "",
-                            id: null,
-                            party_name: "",
-                            address: "",
-                          }));
-                          delete filter["party"];
-                          setFilter((filter) => ({
-                            ...filter,
-                          }));
-                        }}
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </GridItem>
-                  </GridContainer>
-                </GridItem>
-                <GridItem
-                  xs={12}
-                  sm={12}
                   md={4}
                   style={{
                     marginTop: "27px",
@@ -545,6 +498,7 @@ export default function Sales() {
                       setFilter({
                         _sort: "date:desc",
                       });
+                      setParty(null);
                       tableRef.current.onQueryChange();
                     }}
                   >
@@ -572,7 +526,7 @@ export default function Sales() {
                   (rowData) => ({
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
-                    disabled: true,
+                    disabled: false,
                     onClick: (event, rowData) => {
                       history.push(`${EDITSALES}/${rowData.id}`);
                     },
@@ -587,6 +541,46 @@ export default function Sales() {
                     },
                   }),
                 ]}
+                localization={{
+                  body: {
+                    editRow: {
+                      deleteText: `Are you sure you want to delete this Sale Info?`,
+                      saveTooltip: "Delete",
+                    },
+                  },
+                }}
+                icons={{
+                  Delete: () => <DeleteIcon style={{ color: "red" }} />,
+                }}
+                editable={{
+                  onRowDelete: (oldData) =>
+                    new Promise((resolve) => {
+                      setTimeout(async () => {
+                        await providerForDelete(
+                          backend_sales,
+                          oldData.id,
+                          Auth.getToken()
+                        )
+                          .then(async (res) => {
+                            setSnackBar((snackBar) => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "success",
+                              message: "Successfully deleted sale",
+                            }));
+                          })
+                          .catch((err) => {
+                            setSnackBar((snackBar) => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "error",
+                              message: "Error deleting sale",
+                            }));
+                          });
+                        resolve();
+                      }, 1000);
+                    }),
+                }}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,

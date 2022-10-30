@@ -81,6 +81,7 @@ import {
   VIEWSALEPAYEMENTID,
   SALELEDGER,
 } from "../paths";
+import { EDITSALERETURNID, VIEWSALERETURNID } from "../paths/Paths";
 
 /** Raw material and units */
 
@@ -205,6 +206,8 @@ const salesReturnPathList = [
   VIEWSALERETURN,
   ADDSALERETURN,
   EDITSALERETURN,
+  EDITSALERETURNID,
+  VIEWSALERETURNID,
 ];
 
 const salesAllPathList = [

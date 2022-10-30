@@ -173,7 +173,6 @@ export default function KachhaPurchaseDetails() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -597,7 +596,7 @@ export default function KachhaPurchaseDetails() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />
@@ -613,7 +612,7 @@ export default function KachhaPurchaseDetails() {
                       fullWidth: true,
                     }}
                     style={{
-                      marginTop: "1.5rem",
+                      marginTop: "1.8rem",
                       width: "100%",
                     }}
                   />

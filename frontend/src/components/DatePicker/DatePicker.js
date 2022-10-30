@@ -24,18 +24,24 @@ const theme = createMuiTheme({
       input: {
         ...defaultFont,
         fontWeight: "500",
-        fontSize: "14px",
+        color: grayColor[7] + " !important",
+        fontSize: "0.900rem",
         lineHeight: "1.42857",
         letterSpacing: "unset",
       },
       underline: {
         color: "#a56863 !important",
-      }
+      },
+    },
+    MuiInputLabel: {
+      root: {
+        color: grayColor[3] + " !important",
+      },
     },
     MuiFormLabel: {
       root: {
-        fontSize: '14px'
-      }
+        fontSize: "14px",
+      },
     },
     MuiPickersClock: {
       clock: {
@@ -64,8 +70,16 @@ const theme = createMuiTheme({
     },
     MuiInput: {
       underline: {
-        color: "#a56863 !important",
-      }
+        "&:before": {
+          borderBottom: `1px solid ${grayColor[4]}`,
+        },
+        "&:after": {
+          borderBottom: `2px solid ${primaryColor[0]}`,
+        },
+        "&:hover:not(.Mui-disabled):before": {
+          borderBottom: `2px solid ${primaryColor[0]}`,
+        },
+      },
     },
     MuiPickersMonth: {
       monthSelected: {
@@ -104,8 +118,10 @@ const DatePicker = (props) => {
     label.Mui-focused {
       color: #aaaaaa !important;
     }
-    .MuiInput-underline:after {
-      border-color: ${primaryColor[0]};
+    .MuiInput-underline {
+      &:after {
+        border-bottom: 1px solid ${primaryColor[0]} !important;
+      }
     }
     .MuiInput-underline:before {
       border-color: ${grayColor[4]} !important;
