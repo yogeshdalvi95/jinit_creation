@@ -2,69 +2,42 @@ import React from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import {
-  Auth,
   Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
-  CustomDropDown,
   CustomInput,
   DatePicker,
   DialogBox,
-  DialogBoxForSelectingRawMaterial,
-  DialogForSelectingPurchase,
   DialogForSelectingSale,
-  DialogForSelectingSeller,
   FAB,
   GridContainer,
   GridItem,
   PartyDetails,
-  RawMaterialDetail,
-  SellerDetails,
   SnackBarComponent,
 } from "../../../components";
 import moment from "moment";
 import SweetAlert from "react-bootstrap-sweetalert";
 
 // core components
-import EditOutlinedIcon from "@material-ui/icons/EditOutlined";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import {
-  GOODRETURNLIST,
-  SALERETURN,
-  SALES,
-  VIEWPURCHASES,
-  VIEWSALES,
-} from "../../../paths";
+import { SALERETURN, VIEWSALES } from "../../../paths";
 import { useEffect } from "react";
-import { providerForGet, providerForPost, providerForPut } from "../../../api";
 import { useState } from "react";
 import {
   Backdrop,
   CircularProgress,
   FormControlLabel,
   FormHelperText,
-  IconButton,
   Switch,
 } from "@material-ui/core";
-import {
-  checkEmpty,
-  hasError,
-  setErrors,
-  validateNumber,
-} from "../../../Utils";
+import { checkEmpty, hasError, validateNumber } from "../../../Utils";
 import buttonStyles from "../../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
-import {
-  backend_goods_return,
-  backend_raw_materials,
-  backend_sellers,
-  frontendServerUrl,
-} from "../../../constants";
-import auth from "../../../components/Auth";
+import { frontendServerUrl } from "../../../constants";
 import { addQueryParam, removeParamFromUrl } from "../../../Utils/CommonUtils";
 
 const buttonUseStyles = makeStyles(buttonStyles);
@@ -87,7 +60,7 @@ export default function AddEditSaleReturn(props) {
     message: "",
   });
 
-  const [openBackDrop, setBackDrop] = useState(false);
+  const [openBackDrop, setOpenBackDrop] = useState(false);
   const [formState, setFormState] = useState({
     quantity: 0,
     notes: "",
@@ -128,7 +101,7 @@ export default function AddEditSaleReturn(props) {
   /** Submit data */
   const submit = async (event) => {
     event.preventDefault();
-    setBackDrop(true);
+    setOpenBackDrop(true);
     let isValid = false;
     let error = {};
     /** This will set errors as per validations defined in form */
@@ -166,11 +139,11 @@ export default function AddEditSaleReturn(props) {
 
     /** If no errors then isValid is set true */
     if (checkEmpty(error)) {
-      setBackDrop(false);
+      setOpenBackDrop(false);
       setError({});
       isValid = true;
     } else {
-      setBackDrop(false);
+      setOpenBackDrop(false);
       setError(error);
     }
     if (isValid) {
@@ -246,10 +219,7 @@ export default function AddEditSaleReturn(props) {
       addQueryParam("osd", 1);
     } else {
       /** Close dialog */
-      let queryParams = removeParamFromUrl("osd");
-      history.replace({
-        search: queryParams.toString(),
-      });
+      removeParamFromUrl("osd");
     }
     setOpenDialogForSelectingSale(status);
   };
@@ -269,6 +239,10 @@ export default function AddEditSaleReturn(props) {
       ...formState,
       date: startDate,
     }));
+  };
+
+  const setBackDrop = (status) => {
+    setOpenBackDrop(status);
   };
 
   return (
@@ -306,6 +280,7 @@ export default function AddEditSaleReturn(props) {
         handleClose={() => handleOpenCloseDialogForSale(false)}
         handleAddSale={handleAddSale}
         open={openDialogForSelectingSale}
+        setBackDrop={() => setBackDrop()}
       />
       <GridItem xs={12} sm={12} md={10}>
         <Card>

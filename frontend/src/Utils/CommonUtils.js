@@ -32,33 +32,75 @@ export const isEmptyString = (val) => {
 };
 
 export const removeAllQueryParams = (filter, prefix) => {
-  let obj = Object.keys(filter).map((d) => `${prefix}_${d}`);
-  console.log("obj => ", obj);
-  let params = removeParamFromUrl(obj);
-  window.history.pushState(
-    "",
-    "",
-    `${frontendServerUrl}${window.location.pathname}?${new URLSearchParams(
-      params
-    ).toString()}`
-  );
+  let obj = Object.keys(filter).map((d) => `${prefix}${d}`);
+  removeParamFromUrl(obj);
 };
 
-export const setAllSearchQueryParams = (filter, prefix) => {
+export const setAllQueryParamsFromUrl = (filterObject, filterKeys, prefix) => {
   const queryParams = new URLSearchParams(window.location.search);
   let params = Object.fromEntries(queryParams);
+  filterKeys.forEach((fk) => {
+    let filterName = `${prefix}${fk.name}`;
+    let value = params[filterName];
+    if (queryParams.has(filterName)) {
+      if (fk.type === "string") {
+        filterObject = {
+          ...filterObject,
+          [fk.name]: value,
+        };
+      } else if (fk.type === "number") {
+        if (validateNumber(value)) {
+          filterObject = {
+            ...filterObject,
+            [fk.name]: value,
+          };
+        }
+      } else if (fk.type === "start_date") {
+        let sd = new Date(value);
+        if (value && !isEmptyString(value) && checkIFValidDateObject(sd)) {
+          filterObject = {
+            ...filterObject,
+            [fk.name]: sd.toISOString(),
+          };
+        }
+      } else if (fk.type === "end_date") {
+        let ed = new Date(value);
+        if (value && !isEmptyString(value) && checkIFValidDateObject(ed)) {
+          filterObject = {
+            ...filterObject,
+            [fk.name]: moment(ed.toISOString())
+              .endOf("day")
+              .format("YYYY-MM-DDT23:59:59.999Z"),
+          };
+        }
+      }
+      if (fk.isCallBack) {
+        fk.callBack(value);
+      }
+    }
+  });
+
+  return filterObject;
+};
+
+export const setAllQueryParamsForSearch = (filter, prefix) => {
+  const queryParams = new URLSearchParams(window.location.search);
+  /** First remove existing */
+  let params = Object.fromEntries(queryParams);
   Object.keys(filter).forEach((d) => {
+    delete params[`${prefix}${d}`];
     params = {
       ...params,
-      [`${prefix}_${d}`]: filter[d],
+      [`${prefix}${d}`]: filter[d],
     };
   });
+  let allParams = new URLSearchParams(params).toString();
   window.history.pushState(
     "",
     "",
-    `${frontendServerUrl}${window.location.pathname}?${new URLSearchParams(
-      params
-    ).toString()}`
+    `${frontendServerUrl}${window.location.pathname}${
+      isEmptyString(allParams) ? "" : `?${allParams}`
+    }`
   );
 };
 
@@ -73,15 +115,19 @@ export const removeParamFromUrl = (param) => {
         queryParams.delete(p);
       }
     });
-    return queryParams;
   } else if (typeof param === "string") {
     if (queryParams.has(param)) {
       queryParams.delete(param);
-      return queryParams;
     }
-  } else {
-    return {};
   }
+  let allParams = new URLSearchParams(queryParams).toString();
+  window.history.pushState(
+    "",
+    "",
+    `${frontendServerUrl}${window.location.pathname}${
+      isEmptyString(allParams) ? "" : `?${allParams}`
+    }`
+  );
 };
 
 export const addQueryParam = (param, value) => {
