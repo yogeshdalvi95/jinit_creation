@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/individual-sale-ready-materials",
+      "handler": "individual-sale-ready-material.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/individual-sale-ready-materials/count",
+      "handler": "individual-sale-ready-material.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/individual-sale-ready-materials/:id",
+      "handler": "individual-sale-ready-material.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/individual-sale-ready-materials",
+      "handler": "individual-sale-ready-material.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/individual-sale-ready-materials/:id",
+      "handler": "individual-sale-ready-material.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/individual-sale-ready-materials/:id",
+      "handler": "individual-sale-ready-material.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

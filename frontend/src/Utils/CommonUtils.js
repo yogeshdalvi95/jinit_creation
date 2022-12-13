@@ -83,18 +83,27 @@ export const setAllQueryParamsFromUrl = (filterObject, filterKeys, prefix) => {
   return filterObject;
 };
 
-export const setAllQueryParamsForSearch = (filter, prefix) => {
+export const setAllQueryParamsForSearch = (filter, prefix, filterKeys) => {
   const queryParams = new URLSearchParams(window.location.search);
   /** First remove existing */
+  let existingParams = Object.fromEntries(queryParams);
+  if (existingParams) {
+    filterKeys.forEach((p) => {
+      if (queryParams.has(`${prefix}${p.name}`)) {
+        queryParams.delete(`${prefix}${p.name}`);
+      }
+    });
+  }
+
   let params = Object.fromEntries(queryParams);
   Object.keys(filter).forEach((d) => {
-    delete params[`${prefix}${d}`];
     params = {
       ...params,
       [`${prefix}${d}`]: filter[d],
     };
   });
   let allParams = new URLSearchParams(params).toString();
+  console.log("params => ", params);
   window.history.pushState(
     "",
     "",

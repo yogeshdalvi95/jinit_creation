@@ -197,14 +197,18 @@ export default function AddEditSales(props) {
       let design = el.design;
       /** ----------------------------------------- */
       let colorData = {
+        id: el.id,
         design: designId,
         colorData: el.color,
         color: colorId,
         quantity: validateNumber(el.quantity),
+        returned_quantity: validateNumber(el.returned_quantity),
+        price_per_unit: validateNumber(el.price_per_unit),
+        return_price_per_unit: validateNumber(el.return_price_per_unit),
+        total_price: validateNumber(el.total_price),
+        return_total_price: validateNumber(el.return_total_price),
         previousQuantity: validateNumber(el.quantity),
         quantity_to_add_deduct: 0,
-        price_per_unit: validateNumber(el.price_per_unit),
-        total_price: validateNumber(el.total_price),
         availableQuantity: el.color_price?.stock ? el.color_price?.stock : 0,
         isDeleted: false,
         isCannotDelete: true,
@@ -247,14 +251,18 @@ export default function AddEditSales(props) {
         saleReadyMaterial = {
           ...saleReadyMaterial,
           [["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]]: {
+            id: el.id,
             designId: null,
             images: [],
             colorsPresent: [],
             allColors: [],
             name: el.name,
             quantity: validateNumber(el.quantity),
+            returned_quantity: validateNumber(el.returned_quantity),
             price_per_unit: validateNumber(el.price_per_unit),
+            return_price_per_unit: validateNumber(el.return_price_per_unit),
             total_price: validateNumber(el.total_price),
+            return_total_price: validateNumber(el.return_total_price),
             previousQuantity: validateNumber(el.quantity),
             isNew: false,
             isDeleted: false,
@@ -1051,8 +1059,6 @@ export default function AddEditSales(props) {
       party: party.id,
     };
     setBackDrop(true);
-    console.log("Object => ", obj);
-    console.log("error => ", designError);
     await providerForPost(backend_sales, obj, Auth.getToken())
       .then((res) => {
         history.push(SALES);
@@ -1568,7 +1574,7 @@ export default function AddEditSales(props) {
                 <GridContainer>
                   <TableContainer component={Paper}>
                     <CustomMaterialUITable
-                      sx={{ textAlignLast: "center", ml: "15px" }}
+                      sx={{ textAlignLast: "center" }}
                       aria-label="sale-table"
                       style={{
                         marginTop: 30,
@@ -1578,20 +1584,24 @@ export default function AddEditSales(props) {
                         <CustomTableRow>
                           <CustomTableCell>Is Ready Material?</CustomTableCell>
                           <CustomTableCell>Ratio Name</CustomTableCell>
+                          <CustomTableCell align="left">
+                            Curr. Stock
+                          </CustomTableCell>
                           {isEdit ? (
                             <CustomTableCell align="left">
                               Previous Quantity
                             </CustomTableCell>
                           ) : null}
                           <CustomTableCell align="left">
-                            Pcs to sell
+                            Pcs Sold
                           </CustomTableCell>
                           <CustomTableCell align="left">
-                            Price per piece
+                            Pcs Returned
                           </CustomTableCell>
                           <CustomTableCell align="left">
-                            Total Price
+                            Price Per Piece
                           </CustomTableCell>
+                          <CustomTableCell align="left">Total</CustomTableCell>
                           {!isView && <CustomTableCell>Remove</CustomTableCell>}
                         </CustomTableRow>
                       </CustomTableHead>
@@ -1672,6 +1682,17 @@ export default function AddEditSales(props) {
                                             designError
                                           )}
                                         />
+                                      </CustomTableCell>
+                                      <CustomTableCell
+                                        align="left"
+                                        sx={{
+                                          pt: 0,
+                                          pb: 0,
+                                          borderBottom:
+                                            "2px solid #6c6c6c !important",
+                                        }}
+                                      >
+                                        {selectedDesign[Ip].availableQuantity}
                                       </CustomTableCell>
                                       {isEdit ? (
                                         <CustomTableCell
@@ -1757,7 +1778,17 @@ export default function AddEditSales(props) {
                                           />
                                         </CustomTableCell>
                                       )}
-
+                                      <CustomTableCell
+                                        align="left"
+                                        sx={{
+                                          pt: 0,
+                                          pb: 0,
+                                          borderBottom:
+                                            "2px solid #6c6c6c !important",
+                                        }}
+                                      >
+                                        {selectedDesign[Ip].returned_quantity}
+                                      </CustomTableCell>
                                       {isView ? (
                                         <CustomTableCell
                                           align="right"
@@ -1889,7 +1920,7 @@ export default function AddEditSales(props) {
                                   ) : (
                                     <CustomTableCell
                                       align="center"
-                                      colSpan={isView ? 4 : isEdit ? 7 : 6}
+                                      colSpan={isView ? 6 : isEdit ? 9 : 8}
                                       sx={{
                                         borderTop: "1px solid black !important",
                                       }}
@@ -1980,6 +2011,17 @@ export default function AddEditSales(props) {
                                           }}
                                         >
                                           {c.colorData.name}
+                                        </CustomTableCell>
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {c.availableQuantity}
                                         </CustomTableCell>
                                         {isEdit ? (
                                           <CustomTableCell
@@ -2081,7 +2123,17 @@ export default function AddEditSales(props) {
                                             />
                                           </CustomTableCell>
                                         )}
-
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {c.returned_quantity}
+                                        </CustomTableCell>
                                         {isView ? (
                                           <CustomTableCell align="ri">
                                             {c.price_per_unit}
@@ -2255,7 +2307,7 @@ export default function AddEditSales(props) {
                       <CustomTableBody>
                         <CustomTableRow>
                           <CustomTableCell
-                            colSpan={isEdit ? 5 : 4}
+                            colSpan={isEdit ? 7 : 6}
                             align="right"
                           >
                             Total

@@ -21,6 +21,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RemoteAutoComplete,
   SnackBarComponent,
   Table,
 } from "../../../components";
@@ -46,7 +47,10 @@ import VisibilityIcon from "@material-ui/icons/Visibility";
 import moment from "moment";
 import ClearIcon from "@material-ui/icons/Clear";
 import { providerForGet } from "../../../api";
-import { backend_sales_export_data } from "../../../constants/UrlConstants";
+import {
+  backend_parties,
+  backend_sales_export_data,
+} from "../../../constants/UrlConstants";
 
 const useStyles = makeStyles(styles);
 export default function SaleReturn() {
@@ -57,13 +61,7 @@ export default function SaleReturn() {
   });
   const classes = useStyles();
   const [openBackDrop, setBackDrop] = useState(false);
-  const [party, setParty] = useState({
-    id: null,
-    party_name: "",
-    gst_no: "",
-    address: "",
-  });
-
+  const [party, setParty] = useState(null);
   const [error, setError] = useState({});
 
   const [snackBar, setSnackBar] = React.useState({
@@ -307,6 +305,22 @@ export default function SaleReturn() {
     return buf;
   }
 
+  const setPartyData = (party) => {
+    if (party && party.value) {
+      setFilter((filter) => ({
+        ...filter,
+        party: party.value,
+      }));
+      setParty(party);
+    } else {
+      delete filter["party"];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setParty(null);
+    }
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -396,107 +410,21 @@ export default function SaleReturn() {
                     error={hasError("date_lte", error)}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Total amount from"
-                    value={filter.total_price_gte || ""}
-                    name="total_price_gte"
-                    id="total_price_gte"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={3}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Total amount to"
-                    value={filter.total_price_lte || ""}
-                    name="total_price_lte"
-                    id="total_price_lte"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-              <GridContainer>
                 <GridItem
                   xs={12}
                   sm={12}
-                  md={7}
-                  style={{
-                    margin: "27px 0px 0px",
-                  }}
+                  md={3}
+                  style={{ marginTop: "2.3rem" }}
                 >
-                  <GridContainer
-                    style={{
-                      border: "1px solid #C0C0C0",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={7}
-                      style={{
-                        margin: "5px 0px 0px 0px",
-                      }}
-                    >
-                      <GridContainer style={{ dispay: "flex" }}>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Name : </b> {party.party_name}
-                        </GridItem>
-                      </GridContainer>
-                      <GridContainer>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Gst No : </b>
-                          {party.gst_no}
-                        </GridItem>
-                      </GridContainer>
-                      {/* <GridContainer>
-                        <GridItem xs={12} sm={12} md={8}>
-                          <b>Party Address : </b>
-                          {party.address}
-                        </GridItem>
-                      </GridContainer> */}
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={3}>
-                      <Button
-                        color="primary"
-                        onClick={() => {
-                          setOpenDialogForSelectingParties(true);
-                        }}
-                      >
-                        {filter.party ? "Change Party" : "Select party"}
-                      </Button>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={2}>
-                      <IconButton
-                        onClick={() => {
-                          setParty((party) => ({
-                            ...party,
-                            gst_no: "",
-                            id: null,
-                            party_name: "",
-                            address: "",
-                          }));
-                          delete filter["party"];
-                          setFilter((filter) => ({
-                            ...filter,
-                          }));
-                        }}
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </GridItem>
-                  </GridContainer>
+                  <RemoteAutoComplete
+                    setSelectedData={setPartyData}
+                    searchString={"party_name"}
+                    apiName={backend_parties}
+                    placeholder="Select Party..."
+                    selectedValue={party}
+                  />
                 </GridItem>
                 <GridItem
-                  xs={12}
-                  sm={12}
-                  md={4}
                   style={{
                     marginTop: "27px",
                   }}
@@ -516,21 +444,15 @@ export default function SaleReturn() {
                       setFilter({
                         _sort: "date:desc",
                       });
+                      setParty(null);
                       tableRef.current.onQueryChange();
                     }}
                   >
                     Cancel
                   </Button>
-                  <Button
-                    color="primary"
-                    onClick={() => {
-                      downloadExcelData();
-                    }}
-                  >
-                    Export
-                  </Button>
                 </GridItem>
               </GridContainer>
+              <GridContainer></GridContainer>
               <br />
               <Table
                 tableRef={tableRef}

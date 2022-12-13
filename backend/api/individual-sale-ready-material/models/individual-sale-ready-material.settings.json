@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "individual_sale_ready_materials",
+  "info": {
+    "name": "Individual_sale_ready_material",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "design": {
+      "model": "designs"
+    },
+    "sale": {
+      "model": "sales"
+    },
+    "color": {
+      "model": "color"
+    },
+    "name": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "float",
+      "default": 0.0
+    },
+    "returned_quantity": {
+      "type": "float",
+      "default": 0.0
+    },
+    "price_per_unit": {
+      "type": "float",
+      "default": 0.0
+    },
+    "return_price_per_unit": {
+      "type": "float",
+      "default": 0.0
+    },
+    "total_price": {
+      "type": "float",
+      "default": 0.0
+    },
+    "return_total_price": {
+      "type": "float",
+      "default": 0.0
+    },
+    "party": {
+      "model": "party"
+    },
+    "are_ready_materials_clubbed": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_ready_material": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

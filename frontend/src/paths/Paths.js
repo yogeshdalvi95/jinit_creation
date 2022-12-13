@@ -15,8 +15,11 @@ export const USERS = "/users";
 export const PROFILE = "/profile";
 
 export const PARTIES = "/parties";
-export const ADDPARTIES = "/add-party";
-export const EDITPARTIES = "/edit-party";
+export const ADDPARTY = "/add-party";
+export const EDITPARTY = "/edit-party";
+export const VIEWPARTY = "/view-party";
+export const EDITPARTYID = `${EDITPARTY}/:id`;
+export const VIEWPARTYID = `${VIEWPARTY}/:id`;
 
 /** Purchases */
 export const ADDPURCHASES = "/add-purchases";

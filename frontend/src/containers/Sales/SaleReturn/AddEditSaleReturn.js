@@ -2,12 +2,19 @@ import React from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import {
+  Auth,
   Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
+  CustomCheckBox,
   CustomInput,
+  CustomMaterialUITable,
+  CustomTableBody,
+  CustomTableCell,
+  CustomTableHead,
+  CustomTableRow,
   DatePicker,
   DialogBox,
   DialogForSelectingSale,
@@ -19,12 +26,13 @@ import {
 } from "../../../components";
 import moment from "moment";
 import SweetAlert from "react-bootstrap-sweetalert";
+import no_image_icon from "../../../assets/img/no_image_icon.png";
 
 // core components
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { SALERETURN, VIEWSALES } from "../../../paths";
+import { SALERETURN, VIEWPARTY, VIEWSALES } from "../../../paths";
 import { useEffect } from "react";
 import { useState } from "react";
 import {
@@ -33,12 +41,24 @@ import {
   FormControlLabel,
   FormHelperText,
   Switch,
+  Link,
 } from "@material-ui/core";
 import { checkEmpty, hasError, validateNumber } from "../../../Utils";
 import buttonStyles from "../../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
-import { frontendServerUrl } from "../../../constants";
-import { addQueryParam, removeParamFromUrl } from "../../../Utils/CommonUtils";
+import {
+  apiUrl,
+  backend_sale_return,
+  frontendServerUrl,
+} from "../../../constants";
+import {
+  addQueryParam,
+  convertNumber,
+  formatDate,
+  removeParamFromUrl,
+} from "../../../Utils/CommonUtils";
+import { Paper, TableContainer } from "@mui/material";
+import { providerForPost } from "../../../api";
 
 const buttonUseStyles = makeStyles(buttonStyles);
 
@@ -62,22 +82,18 @@ export default function AddEditSaleReturn(props) {
 
   const [openBackDrop, setOpenBackDrop] = useState(false);
   const [formState, setFormState] = useState({
-    quantity: 0,
-    notes: "",
     date: new Date(),
+    notes: "",
     total_price: 0,
-    price_per_piece: 0,
     kachha_ledger: true,
     pakka_ledger: false,
-    selected: "sale",
+    sale_return_no: "----",
   });
 
-  const [design, setDesign] = useState(null);
-  const [color, setColor] = useState(null);
-  const [seller, setSeller] = useState(null);
-  const [party, setParty] = useState(null);
-  const [purchase, setPurchase] = useState(null);
   const [sale, setSale] = useState(null);
+  const [designError, setDesignError] = useState({});
+  const [selectedparty, setSelectedParty] = React.useState(null);
+  const [designDetail, setDesignDetail] = React.useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDialogForSelectingSale, setOpenDialogForSelectingSale] =
     useState(false);
@@ -97,59 +113,6 @@ export default function AddEditSaleReturn(props) {
 
     //let colorId = urlParams.get("color");
   }, []);
-
-  /** Submit data */
-  const submit = async (event) => {
-    event.preventDefault();
-    setOpenBackDrop(true);
-    let isValid = false;
-    let error = {};
-    /** This will set errors as per validations defined in form */
-
-    // if (!rawMaterialData) {
-    //   error = {
-    //     ...error,
-    //     raw_material: ["Raw Material is required"],
-    //   };
-    // }
-    // if (!seller) {
-    //   error = {
-    //     ...error,
-    //     seller: ["Seller is required"],
-    //   };
-    // }
-    if (formState.selected === "purchase" && !purchase) {
-      error = {
-        ...error,
-        purchase: ["Purchase is required"],
-      };
-    }
-    if (!formState.quantity) {
-      error = {
-        ...error,
-        quantity: ["Quantity is required"],
-      };
-    }
-    if (!formState.price_per_piece) {
-      error = {
-        ...error,
-        price_per_piece: ["Price per piece is required"],
-      };
-    }
-
-    /** If no errors then isValid is set true */
-    if (checkEmpty(error)) {
-      setOpenBackDrop(false);
-      setError({});
-      isValid = true;
-    } else {
-      setOpenBackDrop(false);
-      setError(error);
-    }
-    if (isValid) {
-      handleAddEdit();
-    }
-  };
 
   const handleAddEdit = () => {
     if (isEdit) {
@@ -245,6 +208,168 @@ export default function AddEditSaleReturn(props) {
     setOpenBackDrop(status);
   };
 
+  const setPartyAndSaleData = (party, designDetail, saleData) => {
+    console.log(party, designDetail, saleData);
+    setDesignDetail(designDetail);
+    setSelectedParty(party);
+    setSale(saleData);
+  };
+
+  const onSelectCheckBox = (event, colorKey, designKey) => {
+    let currObject = designDetail[designKey];
+    if (colorKey !== null && colorKey !== undefined && colorKey >= 0) {
+      let colorObj = currObject.allColors[colorKey];
+      colorObj = {
+        ...colorObj,
+        selected: event.target.checked,
+      };
+      setDesignDetail((designDetail) => ({
+        ...designDetail,
+        [designKey]: {
+          ...designDetail[designKey],
+          allColors: [
+            ...designDetail[designKey].allColors.slice(0, colorKey),
+            colorObj,
+            ...designDetail[designKey].allColors.slice(colorKey + 1),
+          ],
+        },
+      }));
+    }
+  };
+
+  const handleChangeForRepetableComponent = (event, colorKey, designKey) => {
+    let currObject = designDetail[designKey];
+    let name = event.target.name;
+    let total_price_per_piece = 0;
+    let total_previous_price = 0;
+    let isValid = false;
+    let error = "";
+    if (colorKey !== null && colorKey !== undefined && colorKey >= 0) {
+      let colorObj = currObject.allColors[colorKey];
+      total_previous_price = colorObj.return_total_price;
+      let keyName = name + "color" + colorKey + "design" + designKey;
+      let quantity_to_add_deduct = 0;
+      let previousQuantity = validateNumber(colorObj.previousQuantity);
+      let soldQuantity = validateNumber(colorObj.quantity);
+
+      /** Calculations */
+      if (name === "returned_quantity") {
+        let returned_quantity = 0;
+        let price_per_piece = validateNumber(colorObj.return_price_per_unit);
+        if (event.target.value && !isNaN(event.target.value)) {
+          returned_quantity = validateNumber(event.target.value);
+        }
+        total_price_per_piece = returned_quantity * price_per_piece;
+
+        /** Set Error */
+        console.log("returned_quantity => ", returned_quantity);
+        console.log("soldQuantity => ", soldQuantity);
+        if (returned_quantity > soldQuantity) {
+          isValid = false;
+          error = "Quantity cannot be greater than the sold quantity";
+        } else if (returned_quantity < 0) {
+          isValid = false;
+          error = "Quantity cannot be negative";
+        } else {
+          isValid = true;
+          quantity_to_add_deduct = returned_quantity - previousQuantity;
+        }
+      } else {
+        let returned_quantity = validateNumber(colorObj.returned_quantity);
+        let price_per_piece = 0;
+        if (event.target.value && !isNaN(event.target.value)) {
+          price_per_piece = validateNumber(event.target.value);
+        }
+        total_price_per_piece = returned_quantity * price_per_piece;
+        if (price_per_piece < 0) {
+          isValid = false;
+          error = "Price per piece cannot be negative";
+        } else {
+          isValid = true;
+          quantity_to_add_deduct = returned_quantity - previousQuantity;
+        }
+      }
+      if (isValid) {
+        delete designError[keyName];
+        setDesignError((designError) => ({
+          ...designError,
+        }));
+      } else {
+        setDesignError((designError) => ({
+          ...designError,
+          [keyName]: [error],
+        }));
+      }
+
+      colorObj = {
+        ...colorObj,
+        quantity_to_add_deduct: quantity_to_add_deduct,
+        [name]: event.target.value,
+        return_total_price: total_price_per_piece,
+        message: ``,
+      };
+
+      setDesignDetail((designDetail) => ({
+        ...designDetail,
+        [designKey]: {
+          ...designDetail[designKey],
+          allColors: [
+            ...designDetail[designKey].allColors.slice(0, colorKey),
+            colorObj,
+            ...designDetail[designKey].allColors.slice(colorKey + 1),
+          ],
+        },
+      }));
+    }
+    /** New Price Calculation */
+    let total_price_after_deducted_old_value =
+      validateNumber(formState.total_price) -
+      validateNumber(total_previous_price);
+    let total_price_after_adding_new_value =
+      total_price_after_deducted_old_value + total_price_per_piece;
+
+    /** Set new price */
+    setFormState((formState) => ({
+      ...formState,
+      total_price: total_price_after_adding_new_value,
+    }));
+  };
+
+  console.log("designDetail => ", designDetail);
+  console.log("designError => ", designError);
+  console.log("formState => ", formState);
+
+  const addEditData = async (e) => {
+    e.preventDefault();
+    let obj = {};
+    obj = {
+      id: id,
+      state: {
+        ...formState,
+        sale: sale.id,
+        saleDate: sale.date,
+        saleBillNo: sale.bill_no,
+        party: selectedparty.id,
+      },
+      designAndColor: designDetail,
+    };
+    setBackDrop(true);
+    await providerForPost(backend_sale_return, obj, Auth.getToken())
+      .then((res) => {
+        history.push(SALERETURN);
+        setBackDrop(false);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error Adding/Editing Sale Data",
+        }));
+      });
+  };
+
   return (
     <GridContainer>
       <GridItem xs={12} sm={12} md={12}>
@@ -281,14 +406,193 @@ export default function AddEditSaleReturn(props) {
         handleAddSale={handleAddSale}
         open={openDialogForSelectingSale}
         setBackDrop={() => setBackDrop()}
+        setPartyAndSaleData={setPartyAndSaleData}
       />
-      <GridItem xs={12} sm={12} md={10}>
+      <GridItem xs={12} sm={12} md={12}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
             <h4 className={classes.cardTitleWhite}>{props.header}</h4>
             <p className={classes.cardCategoryWhite}></p>
           </CardHeader>
           <CardBody>
+            <>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={3}>
+                  <DatePicker
+                    onChange={(event) => handleStartDateChange(event)}
+                    label="Sale Return Date"
+                    name="date"
+                    disabled={isView}
+                    value={formState.date || new Date()}
+                    id="date"
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    style={{
+                      marginTop: "1.8rem",
+                      width: "100%",
+                    }}
+                  />
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  className={classes.switchBoxInFilter}
+                >
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formState.kachha_ledger}
+                          disabled={isView}
+                          onChange={(event) => {
+                            setFormState((formState) => ({
+                              ...formState,
+                              kachha_ledger: event.target.checked,
+                            }));
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar,
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label,
+                      }}
+                      label="Add in Kachha Ledger?"
+                    />
+                  </div>
+                </GridItem>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={3}
+                  className={classes.switchBoxInFilter}
+                >
+                  <div className={classes.block}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={formState.pakka_ledger}
+                          disabled={isView}
+                          onChange={(event) => {
+                            setFormState((formState) => ({
+                              ...formState,
+                              pakka_ledger: event.target.checked,
+                            }));
+                          }}
+                          classes={{
+                            switchBase: classes.switchBase,
+                            checked: classes.switchChecked,
+                            thumb: classes.switchIcon,
+                            track: classes.switchBar,
+                          }}
+                        />
+                      }
+                      classes={{
+                        label: classes.label,
+                      }}
+                      label="Add in Pakka Ledger?"
+                    />
+                  </div>
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <CustomInput
+                    labelText="Notes"
+                    id="notes"
+                    name="notes"
+                    disabled={isView}
+                    onChange={(event) => handleChange(event)}
+                    value={formState.notes}
+                    formControlProps={{
+                      fullWidth: true,
+                    }}
+                    inputProps={{
+                      multiline: true,
+                      rows: 1,
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+            </>
+            <br />
+            <br />
+            <br />
+            {sale && sale.id && (
+              <GridContainer>
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={6}
+                  className={classes.rootLabelButtonGridBorderRight}
+                >
+                  <GridContainer>
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={12}
+                      className={classes.labelStylesForAddForm}
+                    >
+                      Sale
+                    </GridItem>
+
+                    <GridItem xs={12} sm={12} md={12}>
+                      <b>Sale Details :-</b>
+                      <GridContainer>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <Link
+                            href={`${frontendServerUrl}${VIEWSALES}/${sale.id}`}
+                            underline="always"
+                            target="_blank"
+                          >
+                            Check sale data here
+                          </Link>
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Bill No : </b>
+                          {sale.bill_no}
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={12}></GridItem>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Date : </b> {formatDate(sale.date)}
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Type : </b> {sale.type_of_bill}
+                        </GridItem>
+                        <GridItem xs={12} sm={12} md={12}>
+                          <b>Total Price : </b>{" "}
+                          {convertNumber(sale.total_price, true)}
+                        </GridItem>
+                      </GridContainer>
+                    </GridItem>
+                  </GridContainer>
+                </GridItem>
+                {/** Sell to */}
+                <GridItem xs={12} sm={12} md={6}>
+                  <GridContainer>
+                    <GridItem
+                      xs={12}
+                      sm={12}
+                      md={12}
+                      className={classes.labelStylesForAddForm}
+                    >
+                      Sold to
+                    </GridItem>
+                    {selectedparty && selectedparty.id && (
+                      <GridItem xs={12} sm={12} md={12}>
+                        <PartyDetails party={selectedparty} viewParty={true} />
+                      </GridItem>
+                    )}
+                  </GridContainer>
+                </GridItem>
+              </GridContainer>
+            )}
             <GridContainer>
               <>
                 <GridItem
@@ -305,20 +609,6 @@ export default function AddEditSaleReturn(props) {
                       }}
                     >
                       {sale ? "Change Sale" : "Select Sale"}
-                    </Button>
-                  )}
-
-                  {sale && (
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        window.open(
-                          `${frontendServerUrl}${VIEWSALES}/${sale}?highlight=true&design=${design.id}&color=${color.id}`,
-                          "_blank"
-                        );
-                      }}
-                    >
-                      View Sale
                     </Button>
                   )}
                 </GridItem>
@@ -338,231 +628,435 @@ export default function AddEditSaleReturn(props) {
                 ) : null}
               </>
             </GridContainer>
-            <GridContainer>
-              <GridItem
-                xs={12}
-                sm={12}
-                md={6}
-                className={classes.rootLabelButtonGridBorderRight}
-              >
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    className={classes.labelStylesForAddForm}
-                  >
-                    Sale
-                  </GridItem>
-                </GridContainer>
-                {/* {rawMaterialData && rawMaterialData.id ? (
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={12}>
-                      <RawMaterialDetail raw_material={rawMaterialData} />
-                    </GridItem>
-                  </GridContainer>
-                ) : null} */}
-              </GridItem>
-              {/** Sell to */}
-              <GridItem xs={12} sm={12} md={6}>
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    className={classes.labelStylesForAddForm}
-                  >
-                    Sold to
-                  </GridItem>
-                </GridContainer>
 
-                {party && party.id ? (
-                  <GridContainer>
-                    <GridItem>
-                      <PartyDetails party={party} />
-                    </GridItem>
-                  </GridContainer>
-                ) : null}
-              </GridItem>
-            </GridContainer>
-            {formState.selected ? (
-              <>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <DatePicker
-                      onChange={(event) => handleStartDateChange(event)}
-                      label="Selling Date"
-                      name="date"
-                      disabled={isView}
-                      value={formState.date || new Date()}
-                      id="date"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      style={{
-                        marginTop: "1.8rem",
-                        width: "100%",
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      onChange={(event) => handleChange(event)}
-                      type="number"
-                      disabled={isView}
-                      labelText="Quantity"
-                      name="quantity"
-                      value={formState.quantity}
-                      id="purchase_quantity"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      /** For setting errors */
-                      helperTextId={"helperText_quantity"}
-                      isHelperText={hasError("quantity", error)}
-                      helperText={
-                        hasError("quantity", error)
-                          ? error["quantity"].map((error) => {
-                              return error + " ";
-                            })
-                          : null
-                      }
-                      error={hasError("quantity", error)}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      onChange={(event) => handleChange(event)}
-                      type="number"
-                      disabled={isView}
-                      labelText="Price Per Piece"
-                      name="price_per_piece"
-                      value={formState.price_per_piece}
-                      id="price_per_piece"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      /** For setting errors */
-                      helperTextId={"helperText_price_per_piece"}
-                      isHelperText={hasError("price_per_piece", error)}
-                      helperText={
-                        hasError("price_per_piece", error)
-                          ? error["price_per_piece"].map((error) => {
-                              return error + " ";
-                            })
-                          : null
-                      }
-                      error={hasError("price_per_piece", error)}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      onChange={(event) => handleChange(event)}
-                      type="number"
-                      disabled={true}
-                      labelText="Total Price"
-                      name="total_price"
-                      value={formState.total_price.toFixed(2)}
-                      id="total_price"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Notes"
-                      id="notes"
-                      name="notes"
-                      disabled={isView}
-                      onChange={(event) => handleChange(event)}
-                      value={formState.notes}
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                      inputProps={{
-                        multiline: true,
-                        rows: 3,
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={3}
-                    className={classes.switchBoxInFilter}
+            {designDetail && sale && (
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      marginTop: 3,
+                    }}
                   >
-                    <div className={classes.block}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={formState.kachha_ledger}
-                            disabled={isView}
-                            onChange={(event) => {
-                              setFormState((formState) => ({
-                                ...formState,
-                                kachha_ledger: event.target.checked,
-                              }));
-                            }}
-                            classes={{
-                              switchBase: classes.switchBase,
-                              checked: classes.switchChecked,
-                              thumb: classes.switchIcon,
-                              track: classes.switchBar,
-                            }}
-                          />
-                        }
-                        classes={{
-                          label: classes.label,
-                        }}
-                        label="Add in Kachha Ledger?"
-                      />
-                    </div>
-                  </GridItem>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={3}
-                    className={classes.switchBoxInFilter}
-                  >
-                    <div className={classes.block}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={formState.pakka_ledger}
-                            disabled={isView}
-                            onChange={(event) => {
-                              setFormState((formState) => ({
-                                ...formState,
-                                pakka_ledger: event.target.checked,
-                              }));
-                            }}
-                            classes={{
-                              switchBase: classes.switchBase,
-                              checked: classes.switchChecked,
-                              thumb: classes.switchIcon,
-                              track: classes.switchBar,
-                            }}
-                          />
-                        }
-                        classes={{
-                          label: classes.label,
-                        }}
-                        label="Add in Pakka Ledger?"
-                      />
-                    </div>
-                  </GridItem>
-                </GridContainer>
-              </>
-            ) : null}
+                    <CustomMaterialUITable
+                      sx={{ textAlignLast: "center" }}
+                      aria-label="sale-table"
+                    >
+                      <CustomTableHead>
+                        <CustomTableRow>
+                          <CustomTableCell>Is Ready Material?</CustomTableCell>
+                          <CustomTableCell>Select</CustomTableCell>
+                          <CustomTableCell>Ratio Name</CustomTableCell>
+                          <CustomTableCell align="left">
+                            Curr. Stock
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Pcs Sold
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Pcs Returned
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Selling Price Per Piece
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Returning Price Per Piece
+                          </CustomTableCell>
+                          <CustomTableCell align="left">
+                            Total Returning Price
+                          </CustomTableCell>
+                        </CustomTableRow>
+                      </CustomTableHead>
+                      <CustomTableBody>
+                        {Object.keys(designDetail).map((Ip, designKey) => {
+                          let isNoDesign = Ip.includes("NoDesign");
+                          return (
+                            <>
+                              <CustomTableRow key={Ip} height={20}>
+                                <CustomTableCell
+                                  align="center"
+                                  rowSpan={
+                                    (isNoDesign &&
+                                      designDetail[Ip].is_ready_material) ||
+                                    designDetail[Ip].are_ready_materials_clubbed
+                                      ? 1
+                                      : 1 + designDetail[Ip].allColors.length
+                                  }
+                                >
+                                  {designDetail[Ip].is_ready_material
+                                    ? "Yes"
+                                    : "No"}
+                                </CustomTableCell>
+                                {(isNoDesign &&
+                                  designDetail[Ip].is_ready_material) ||
+                                designDetail[Ip].are_ready_materials_clubbed ? (
+                                  <>
+                                    <CustomTableCell align="left">
+                                      {" "}
+                                      ----
+                                    </CustomTableCell>
+                                    <CustomTableCell align="left">
+                                      {designDetail[Ip].name}
+                                    </CustomTableCell>
+                                    <CustomTableCell align="left">
+                                      {designDetail[Ip].availableQuantity}
+                                    </CustomTableCell>
+                                    <CustomTableCell align="left">
+                                      {designDetail[Ip].quantity}
+                                    </CustomTableCell>
+                                    <CustomTableCell align="left">
+                                      ----
+                                    </CustomTableCell>
+                                    <CustomTableCell align="right">
+                                      {designDetail[Ip].price_per_unit}
+                                    </CustomTableCell>
+                                    <CustomTableCell align="right">
+                                      ----
+                                    </CustomTableCell>
+                                    <CustomTableCell align="right">
+                                      ----
+                                    </CustomTableCell>
+                                  </>
+                                ) : (
+                                  <CustomTableCell align="center" colSpan={8}>
+                                    <GridItem xs={12} sm={12} md={12}>
+                                      <GridContainer
+                                        style={{
+                                          dispay: "flex",
+                                        }}
+                                      >
+                                        <GridItem xs={12} sm={12} md={12}>
+                                          <div
+                                            className={classes.imageDivInTable}
+                                          >
+                                            {designDetail[Ip].images &&
+                                            designDetail[Ip].images.length &&
+                                            designDetail[Ip].images[0].url ? (
+                                              <img
+                                                alt="ready_material_photo"
+                                                src={
+                                                  apiUrl +
+                                                  designDetail[Ip].images[0].url
+                                                }
+                                                loader={<CircularProgress />}
+                                                style={{
+                                                  height: "5rem",
+                                                  width: "10rem",
+                                                }}
+                                                className={classes.UploadImage}
+                                              />
+                                            ) : (
+                                              <img
+                                                src={no_image_icon}
+                                                alt="ready_material_photo"
+                                                style={{
+                                                  height: "5rem",
+                                                  width: "10rem",
+                                                }}
+                                                loader={<CircularProgress />}
+                                                className={
+                                                  classes.DefaultNoImage
+                                                }
+                                              />
+                                            )}
+                                          </div>
+                                        </GridItem>
+                                      </GridContainer>
+                                      <GridContainer>
+                                        <GridItem xs={12} sm={12} md={12}>
+                                          <b>Material No : </b>
+                                          {designDetail[Ip].material_no}
+                                        </GridItem>
+                                      </GridContainer>
+                                    </GridItem>
+                                  </CustomTableCell>
+                                )}
+                              </CustomTableRow>
+                              {designDetail[Ip].allColors &&
+                                designDetail[Ip].allColors.map(
+                                  (c, colorKey) => (
+                                    <>
+                                      <CustomTableRow
+                                        key={Ip + "-" + c.color}
+                                        sx={{
+                                          "&:last-child td, &:last-child th": {
+                                            border: 0,
+                                          },
+                                          backgroundColor: c.isDeleted
+                                            ? "#e7e7e7"
+                                            : "transparent",
+                                          textDecoration: c.isDeleted
+                                            ? "line-through"
+                                            : "none",
+                                        }}
+                                      >
+                                        <CustomTableCell
+                                          align="left"
+                                          sx={{
+                                            p: 0,
+                                          }}
+                                        >
+                                          <CustomCheckBox
+                                            onChange={(event) => {
+                                              onSelectCheckBox(
+                                                event,
+                                                colorKey,
+                                                Ip
+                                              );
+                                            }}
+                                            noMargin
+                                            labelText=""
+                                            name="select_ready_material"
+                                            checked={c.selected}
+                                            id="select_ready_material"
+                                          />
+                                        </CustomTableCell>
+                                        <CustomTableCell align="left">
+                                          {c.colorData.name}
+                                        </CustomTableCell>
+                                        <CustomTableCell align="left">
+                                          {c.availableQuantity}
+                                        </CustomTableCell>
+                                        <CustomTableCell align="left">
+                                          {c.quantity}
+                                        </CustomTableCell>
+                                        {isView ? (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                              borderBottom:
+                                                "2px solid #6c6c6c !important",
+                                            }}
+                                          >
+                                            {c.returned_quantity}
+                                          </CustomTableCell>
+                                        ) : (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                              borderBottom:
+                                                "2px solid #6c6c6c !important",
+                                            }}
+                                          >
+                                            <CustomInput
+                                              noMargin
+                                              defaultValue="Small"
+                                              size="large"
+                                              variant="standard"
+                                              color="secondary"
+                                              onChange={(event) =>
+                                                handleChangeForRepetableComponent(
+                                                  event,
+                                                  colorKey,
+                                                  Ip
+                                                )
+                                              }
+                                              type="number"
+                                              disabled={isView || !c.selected}
+                                              name="returned_quantity"
+                                              value={c.returned_quantity}
+                                              id={
+                                                "returned_quantity" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              formControlProps={{
+                                                fullWidth: false,
+                                              }}
+                                              /** For setting errors */
+                                              helperTextId={
+                                                "returned_quantitycolor" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              isHelperText={hasError(
+                                                "returned_quantitycolor" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                              helperText={
+                                                hasError(
+                                                  "returned_quantitycolor" +
+                                                    colorKey +
+                                                    "design" +
+                                                    Ip,
+                                                  designError
+                                                )
+                                                  ? designError[
+                                                      "returned_quantitycolor" +
+                                                        colorKey +
+                                                        "design" +
+                                                        Ip
+                                                    ].map((error) => {
+                                                      return error + " ";
+                                                    })
+                                                  : null
+                                              }
+                                              error={hasError(
+                                                "returned_quantitycolor" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                            />
+                                          </CustomTableCell>
+                                        )}
+                                        <CustomTableCell align="left">
+                                          {c.price_per_unit}
+                                        </CustomTableCell>
+                                        {isView ? (
+                                          <CustomTableCell
+                                            align="right"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                              borderBottom:
+                                                "2px solid #6c6c6c !important",
+                                            }}
+                                          >
+                                            {c.return_price_per_unit}
+                                          </CustomTableCell>
+                                        ) : (
+                                          <CustomTableCell
+                                            align="right"
+                                            sx={{
+                                              pt: 0,
+                                              pb: 0,
+                                              borderBottom:
+                                                "2px solid #6c6c6c !important",
+                                            }}
+                                          >
+                                            <CustomInput
+                                              noMargin
+                                              defaultValue="Small"
+                                              size="small"
+                                              variant="standard"
+                                              color="secondary"
+                                              onChange={(event) =>
+                                                handleChangeForRepetableComponent(
+                                                  event,
+                                                  colorKey,
+                                                  Ip
+                                                )
+                                              }
+                                              type="number"
+                                              disabled={isView || !c.selected}
+                                              name="return_price_per_unit"
+                                              value={c.return_price_per_unit}
+                                              id={
+                                                "return_price_per_unitcolor" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              formControlProps={{
+                                                fullWidth: false,
+                                              }}
+                                              /** For setting errors */
+                                              helperTextId={
+                                                "return_price_per_unitcolor" +
+                                                colorKey +
+                                                "design" +
+                                                Ip
+                                              }
+                                              isHelperText={hasError(
+                                                "return_price_per_unitcolor" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                              helperText={
+                                                hasError(
+                                                  "return_price_per_unitcolor" +
+                                                    colorKey +
+                                                    "design" +
+                                                    Ip,
+                                                  designError
+                                                )
+                                                  ? designError[
+                                                      "return_price_per_unitcolor" +
+                                                        colorKey +
+                                                        "design" +
+                                                        Ip
+                                                    ].map((error) => {
+                                                      return error + " ";
+                                                    })
+                                                  : null
+                                              }
+                                              error={hasError(
+                                                "return_price_per_unitcolor" +
+                                                  colorKey +
+                                                  "design" +
+                                                  Ip,
+                                                designError
+                                              )}
+                                            />
+                                          </CustomTableCell>
+                                        )}
+                                        <CustomTableCell
+                                          align="right"
+                                          sx={{
+                                            pt: 0,
+                                            pb: 0,
+                                            borderBottom:
+                                              "2px solid #6c6c6c !important",
+                                          }}
+                                        >
+                                          {c.return_total_price}
+                                        </CustomTableCell>
+                                      </CustomTableRow>
+                                    </>
+                                  )
+                                )}
+                            </>
+                          );
+                        })}
+                      </CustomTableBody>
+                      <CustomTableBody>
+                        <CustomTableRow>
+                          <CustomTableCell
+                            colSpan={isEdit ? 9 : 8}
+                            align="right"
+                          >
+                            Total
+                          </CustomTableCell>
+
+                          <CustomTableCell>
+                            {convertNumber(
+                              parseFloat(formState.total_price).toFixed(2),
+                              true
+                            )}
+                          </CustomTableCell>
+                          {isView ? null : (
+                            <>
+                              <CustomTableCell colSpan={2}></CustomTableCell>
+                            </>
+                          )}
+                        </CustomTableRow>
+                      </CustomTableBody>
+                    </CustomMaterialUITable>
+                  </TableContainer>
+                </GridItem>
+              </GridContainer>
+            )}
           </CardBody>
-          {isView || !formState.selected ? null : (
+          {isView ? null : (
             <CardFooter>
-              <Button color="primary" onClick={(e) => submit(e)}>
+              <Button
+                color="primary"
+                disabled={Object.keys(designError).length}
+                onClick={(e) => addEditData(e)}
+              >
                 Save
               </Button>
             </CardFooter>

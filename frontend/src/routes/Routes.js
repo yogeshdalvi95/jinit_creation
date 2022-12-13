@@ -28,8 +28,8 @@ import {
   EDITREADYMATERIAL,
   VIEWREADYMATERIAL,
   PARTIES,
-  ADDPARTIES,
-  EDITPARTIES,
+  ADDPARTY,
+  EDITPARTY,
   ADDORDER,
   ORDERS,
   ADDCOLOR,
@@ -749,7 +749,7 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={ADDPARTIES}
+          path={ADDPARTY}
           exact
           component={AddParties}
           header={"Add Party"}
@@ -757,7 +757,7 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={EDITPARTIES}
+          path={EDITPARTY}
           exact
           component={AddParties}
           header={"Edit Party"}

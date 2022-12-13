@@ -27,8 +27,8 @@ import {
   ADDORDER,
   EDITORDER,
   PARTIES,
-  ADDPARTIES,
-  EDITPARTIES,
+  ADDPARTY,
+  EDITPARTY,
   VIEWSALES,
   ADDSALES,
   EDITSALES,
@@ -191,7 +191,7 @@ const orderPathsList = [
 const departmentSheetPaths = [VIEWDEPARTMENTSHEETID, EDITDEPARTMENTSHEETID];
 const orderPaths = [...orderPathsList, ...departmentSheetPaths];
 
-const partiesPathList = [PARTIES, ADDPARTIES, EDITPARTIES];
+const partiesPathList = [PARTIES, ADDPARTY, EDITPARTY];
 const salesPathList = [
   SALES,
   VIEWSALES,

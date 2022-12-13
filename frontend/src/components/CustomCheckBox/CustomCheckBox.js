@@ -11,7 +11,7 @@ export default function CustomCheckBox(props) {
   const color = classNames({
     [classes.primaryColor]: !props.error,
     [classes.errorColor]: props.error,
-    [classes.disabledColor]: props.disabled
+    [classes.disabledColor]: props.disabled,
   });
   return (
     <>
@@ -21,7 +21,7 @@ export default function CustomCheckBox(props) {
             classes={{
               disabled: classes.disabled,
               input: classes.input,
-              colorPrimary: color
+              colorPrimary: color,
             }}
             checked={props.checked}
             onChange={props.onChange}
@@ -30,9 +30,17 @@ export default function CustomCheckBox(props) {
             {...props}
           />
         }
-        style={{
-          margin: "40px 0 0 0"
-        }}
+        style={
+          props.noMargin
+            ? {
+                margin: "0px",
+                marginLeft: "0px",
+                marginRight: "0px",
+              }
+            : {
+                margin: "40px 0 0 0",
+              }
+        }
         label={props.labelText}
       />
       {props.isHelperText ? (

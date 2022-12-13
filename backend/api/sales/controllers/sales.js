@@ -43,30 +43,39 @@ module.exports = {
 
   async findOne(ctx) {
     const { id } = ctx.params;
-    let sale_data = await strapi
-      .query("sales")
-      .findOne({ id: id }, [
-        "party",
-        "sale_ready_material.design",
-        "sale_ready_material.color",
-      ]);
+    let sale_data = await strapi.query("sales").findOne({ id: id }, ["party"]);
+
+    let individual_sale_ready_material = await strapi
+      .query("individual-sale-ready-material")
+      .find({
+        sale: id,
+      });
 
     let sale_ready_material = [];
-    await utils.asyncForEach(sale_data.sale_ready_material, async (el) => {
-      if (el) {
-        if (el.is_ready_material) {
-          if (el.design && el.design.id) {
-            let designColorPrice = await strapi
-              .query("design-color-price")
-              .findOne({ design: el.design.id, color: el.color.id });
-            el.color_price = designColorPrice;
+    if (
+      individual_sale_ready_material &&
+      individual_sale_ready_material.length
+    ) {
+      await utils.asyncForEach(individual_sale_ready_material, async (el) => {
+        console.log("el => ", el);
+        if (el) {
+          if (el.is_ready_material) {
+            if (el.design && el.design.id) {
+              let design = await strapi.query("designs").findOne({
+                id: el.design.id,
+              });
+              let designColorPrice = await strapi
+                .query("design-color-price")
+                .findOne({ design: el.design.id, color: el.color.id });
+              el.color_price = designColorPrice;
+              sale_ready_material.push(el);
+            }
+          } else {
             sale_ready_material.push(el);
           }
-        } else {
-          sale_ready_material.push(el);
         }
-      }
-    });
+      });
+    }
 
     sale_data.sale_ready_material = sale_ready_material;
 
@@ -103,7 +112,6 @@ module.exports = {
       cgst: cgst,
       igst: igst,
       party: party,
-      // sale_ready_material: getReadyMaterialForSale(designAndColor),
     };
 
     await bookshelf
@@ -187,22 +195,7 @@ module.exports = {
         }
 
         /** Done adding entries in the sale payment transaction */
-        let designAndColorData = await getReadyMaterialForSale(
-          designAndColor,
-          saleId,
-          t,
-          party
-        );
-
-        console.log("designAndColorData => ", designAndColorData);
-
-        saleData = await strapi.query("sales").update(
-          { id: saleId },
-          {
-            sale_ready_material: designAndColorData,
-          },
-          { patch: true, transacting: t }
-        );
+        await getReadyMaterialForSale(designAndColor, saleId, t, party);
       })
       .then((res) => {
         ctx.send(200);
@@ -427,16 +420,33 @@ module.exports = {
       []
     );
 
+    let individual_sale_ready_material = await strapi
+      .query("individual-sale-ready-material")
+      .find({
+        sale: id,
+      });
+
     await bookshelf
       .transaction(async (t) => {
         if (
-          saleData.sale_ready_material &&
-          saleData.sale_ready_material.length
+          individual_sale_ready_material &&
+          individual_sale_ready_material.length
         ) {
-          await utils.asyncForEach(saleData.sale_ready_material, async (d) => {
-            await deleteSaleData(d, t);
-          });
+          await utils.asyncForEach(
+            individual_sale_ready_material,
+            async (d) => {
+              await deleteSaleData(d, t);
+            }
+          );
         }
+
+        await strapi.query("individual-sale-ready-material").delete(
+          { sale: id },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
 
         await strapi.query("sale-payment-transaction").delete(
           { sale: id },
@@ -534,12 +544,19 @@ const getReadyMaterialForSale = async (object, saleId, t, party) => {
 
             /** final data */
             dataToSend.push({
+              id: el1.id ? el1.id : null,
               design: el1.design,
               sale: saleId,
               color: el1.color,
+              name: "",
               quantity: utils.validateNumber(el1.quantity),
               total_price: utils.validateNumber(el1.total_price),
               price_per_unit: utils.validateNumber(el1.price_per_unit),
+              returned_quantity: utils.validateNumber(el1.returned_quantity),
+              return_total_price: utils.validateNumber(el1.return_total_price),
+              return_price_per_unit: utils.validateNumber(
+                el1.return_price_per_unit
+              ),
               party: party,
               is_ready_material: true,
               are_ready_materials_clubbed: false,
@@ -549,6 +566,7 @@ const getReadyMaterialForSale = async (object, saleId, t, party) => {
       } else {
         /** final data */
         dataToSend.push({
+          id: object[el].id ? object[el].id : null,
           design: null,
           sale: saleId,
           color: null,
@@ -556,15 +574,40 @@ const getReadyMaterialForSale = async (object, saleId, t, party) => {
           quantity: utils.validateNumber(object[el].quantity),
           total_price: utils.validateNumber(object[el].total_price),
           price_per_unit: utils.validateNumber(object[el].price_per_unit),
+          returned_quantity: utils.validateNumber(object[el].returned_quantity),
+          return_total_price: utils.validateNumber(
+            object[el].return_total_price
+          ),
+          return_price_per_unit: utils.validateNumber(
+            object[el].return_price_per_unit
+          ),
           party: party,
           is_ready_material: false,
           are_ready_materials_clubbed: true,
         });
       }
     });
-    return dataToSend;
-  } else {
-    return [];
+    await utils.asyncForEach(dataToSend, async (d) => {
+      if (d.id) {
+        await strapi
+          .query("individual-sale-ready-material")
+          .update({ id: d.id }, d, { patch: true, transacting: t });
+      } else {
+        delete d.id;
+        d = {
+          ...d,
+          return_price_per_unit: d.price_per_unit,
+        };
+        await strapi
+          .query("individual-sale-ready-material")
+          .create(d, { transacting: t })
+          .then((model) => model)
+          .catch((err) => {
+            console.log(err);
+            throw 500;
+          });
+      }
+    });
   }
 };
 

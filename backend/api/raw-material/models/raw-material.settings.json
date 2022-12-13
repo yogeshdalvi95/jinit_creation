@@ -20,16 +20,12 @@
     },
     "balance": {
       "type": "float",
-      "default": 0
+      "default": 0.0
     },
     "image": {
       "collection": "file",
       "via": "related",
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos"
-      ],
+      "allowedTypes": ["images", "files", "videos"],
       "plugin": "upload",
       "required": false,
       "pluginOptions": {}

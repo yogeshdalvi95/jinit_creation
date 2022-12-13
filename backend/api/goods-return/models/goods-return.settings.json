@@ -29,7 +29,7 @@
     },
     "total_price": {
       "type": "float",
-      "default": 0
+      "default": 0.0
     },
     "kachha_ledger": {
       "type": "boolean",

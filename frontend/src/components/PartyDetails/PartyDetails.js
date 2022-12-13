@@ -1,4 +1,7 @@
+import { Link } from "@mui/material";
 import React from "react";
+import { frontendServerUrl } from "../../constants";
+import { VIEWPARTY } from "../../paths";
 import { GridContainer, GridItem } from "../Grid";
 
 export default function PartyDetails(props) {
@@ -10,6 +13,19 @@ export default function PartyDetails(props) {
             <b>Party Details</b>
           </GridItem>
         </GridContainer>
+        {props && props.viewParty && (
+          <GridContainer>
+            <GridItem xs={12} sm={12} md={8}>
+              <Link
+                href={`${frontendServerUrl}${VIEWPARTY}/${props.party.id}`}
+                underline="always"
+                target="_blank"
+              >
+                Check party data here
+              </Link>
+            </GridItem>
+          </GridContainer>
+        )}
         <GridContainer style={{ dispay: "flex" }}>
           <GridItem xs={12} sm={12} md={8}>
             <b>Name : </b> {props.party?.party_name}

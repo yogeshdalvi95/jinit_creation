@@ -12,18 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "design": {
-      "model": "designs"
-    },
-    "color": {
-      "model": "color"
-    },
-    "quantity": {
-      "type": "biginteger"
-    },
-    "party": {
-      "model": "party"
-    },
     "date": {
       "type": "date"
     },
@@ -42,15 +30,14 @@
       "type": "boolean",
       "default": false
     },
-    "isSalePresent": {
-      "type": "boolean",
-      "default": false
-    },
     "sale": {
       "model": "sales"
     },
-    "price_per_piece": {
-      "type": "float"
+    "sale_return_no": {
+      "type": "string"
+    },
+    "party": {
+      "model": "party"
     }
   }
 }
