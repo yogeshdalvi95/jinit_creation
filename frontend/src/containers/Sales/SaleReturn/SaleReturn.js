@@ -1,9 +1,4 @@
-import {
-  Backdrop,
-  CircularProgress,
-  IconButton,
-  makeStyles,
-} from "@material-ui/core";
+import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { saveAs } from "file-saver";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -14,8 +9,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomDropDown,
-  CustomInput,
   DatePicker,
   DialogForSelectingParties,
   FAB,
@@ -29,7 +22,7 @@ import ListAltIcon from "@material-ui/icons/ListAlt";
 import {
   ADDSALERETURN,
   EDITSALERETURN,
-  EDITSALES,
+  VIEWPARTY,
   VIEWSALERETURN,
   VIEWSALES,
 } from "../../../paths";
@@ -45,12 +38,13 @@ import { backend_sale_return, frontendServerUrl } from "../../../constants";
 import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import moment from "moment";
-import ClearIcon from "@material-ui/icons/Clear";
-import { providerForGet } from "../../../api";
+import { providerForDelete, providerForGet } from "../../../api";
 import {
   backend_parties,
   backend_sales_export_data,
 } from "../../../constants/UrlConstants";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Link } from "@mui/material";
 
 const useStyles = makeStyles(styles);
 export default function SaleReturn() {
@@ -75,16 +69,44 @@ export default function SaleReturn() {
 
   const columns = [
     {
-      title: "Return date",
+      title: "Return Date",
       field: "date",
       render: (rowData) => plainDate(new Date(rowData.date)),
     },
     {
-      title: "Party name",
+      title: "Party Name",
       field: "party.party_name",
+      render: (rowData) =>
+        rowData?.party?.id ? (
+          <Link
+            href={`${frontendServerUrl}${VIEWPARTY}/${rowData.party.id}`}
+            underline="always"
+            target="_blank"
+          >
+            {rowData.party.party_name}
+          </Link>
+        ) : (
+          "----"
+        ),
     },
     {
-      title: "Total amount to return",
+      title: "Sale",
+      field: "sale.bill_no",
+      render: (rowData) =>
+        rowData?.sale?.id ? (
+          <Link
+            href={`${frontendServerUrl}${VIEWSALES}/${rowData.sale.id}`}
+            underline="always"
+            target="_blank"
+          >
+            {rowData.sale.bill_no}
+          </Link>
+        ) : (
+          "----"
+        ),
+    },
+    {
+      title: "Total Returned Amount",
       field: "total_price",
       render: (rowData) => convertNumber(rowData.total_price, true),
     },
@@ -466,7 +488,7 @@ export default function SaleReturn() {
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      history.push(`${EDITSALERETURN}?id=${rowData.id}`);
+                      history.push(`${EDITSALERETURN}/${rowData.id}`);
                     },
                   }),
                   (rowData) => ({
@@ -475,10 +497,42 @@ export default function SaleReturn() {
                     ),
                     tooltip: "View",
                     onClick: (event, rowData) => {
-                      history.push(`${VIEWSALERETURN}?id=${rowData.id}`);
+                      history.push(`${VIEWSALERETURN}/${rowData.id}`);
                     },
                   }),
                 ]}
+                icons={{
+                  Delete: () => <DeleteIcon style={{ color: "red" }} />,
+                }}
+                editable={{
+                  onRowDelete: (oldData) =>
+                    new Promise((resolve) => {
+                      setTimeout(async () => {
+                        await providerForDelete(
+                          backend_sale_return,
+                          oldData.id,
+                          Auth.getToken()
+                        )
+                          .then(async (res) => {
+                            setSnackBar((snackBar) => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "success",
+                              message: "Successfully deleted payment",
+                            }));
+                          })
+                          .catch((err) => {
+                            setSnackBar((snackBar) => ({
+                              ...snackBar,
+                              show: true,
+                              severity: "error",
+                              message: "Error deleting payment info",
+                            }));
+                          });
+                        resolve();
+                      }, 1000);
+                    }),
+                }}
                 options={{
                   pageSize: 10,
                   actionsColumnIndex: -1,

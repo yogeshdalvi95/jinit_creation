@@ -35,7 +35,43 @@ module.exports = {
     const { id } = ctx.params;
     let sale_data = await strapi
       .query("sale-return")
-      .findOne({ id: id }, ["party", "sale_return_component.ready_material"]);
+      .findOne({ id: id }, ["party", "sale"]);
+
+    if (sale_data.sale) {
+      let individual_sale_ready_material = await strapi
+        .query("individual-sale-ready-material")
+        .find({
+          sale: sale_data.sale.id,
+        });
+
+      let sale_ready_material = [];
+      if (
+        individual_sale_ready_material &&
+        individual_sale_ready_material.length
+      ) {
+        await utils.asyncForEach(individual_sale_ready_material, async (el) => {
+          console.log("el => ", el);
+          if (el) {
+            if (el.is_ready_material) {
+              if (el.design && el.design.id) {
+                let design = await strapi.query("designs").findOne({
+                  id: el.design.id,
+                });
+                let designColorPrice = await strapi
+                  .query("design-color-price")
+                  .findOne({ design: el.design.id, color: el.color.id });
+                el.color_price = designColorPrice;
+                sale_ready_material.push(el);
+              }
+            } else {
+              sale_ready_material.push(el);
+            }
+          }
+        });
+      }
+
+      sale_data.sale_ready_material = sale_ready_material;
+    }
 
     ctx.send(sale_data);
   },

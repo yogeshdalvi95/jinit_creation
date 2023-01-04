@@ -6,7 +6,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CustomAutoComplete,
   CustomCheckBox,
   CustomInput,
   FAB,

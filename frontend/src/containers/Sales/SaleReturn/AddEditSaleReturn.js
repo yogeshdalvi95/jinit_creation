@@ -58,7 +58,7 @@ import {
   removeParamFromUrl,
 } from "../../../Utils/CommonUtils";
 import { Paper, TableContainer } from "@mui/material";
-import { providerForPost } from "../../../api";
+import { providerForGet, providerForPost } from "../../../api";
 
 const buttonUseStyles = makeStyles(buttonStyles);
 
@@ -101,7 +101,7 @@ export default function AddEditSaleReturn(props) {
   /** useEffect */
   useEffect(() => {
     if ((isEdit || isView) && id) {
-      // getEditViewData(id);
+      getEditViewData(id);
     }
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.has("osd")) {
@@ -113,6 +113,140 @@ export default function AddEditSaleReturn(props) {
 
     //let colorId = urlParams.get("color");
   }, []);
+
+  const getEditViewData = async (id) => {
+    setOpenBackDrop(true);
+    let isError = false;
+    await providerForGet(backend_sale_return + "/" + id, {}, Auth.getToken())
+      .then((res) => {
+        if (res.status === 200) {
+          convertData(res.data);
+        } else {
+          isError = true;
+        }
+      })
+      .catch((err) => {
+        setOpenBackDrop(false);
+        isError = true;
+      });
+    if (isError) {
+      setSnackBar((snackBar) => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: "Error fetching sale return data",
+      }));
+    }
+  };
+
+  const convertData = (data) => {
+    setOpenBackDrop(true);
+
+    setFormState({
+      date: new Date(data.date),
+      notes: data.notes,
+      total_price: validateNumber(data.total_price),
+      kachha_ledger: data.kachha_ledger,
+      pakka_ledger: data.pakka_ledger,
+      sale_return_no: data.sale_return_no,
+    });
+
+    if (data.sale) {
+      let saleData = data.sale;
+      setSale({
+        id: saleData.id,
+        bill_no: saleData.bill_no,
+        date: new Date(saleData.date),
+        type_of_bill: data.type_of_bill,
+        total_price: validateNumber(saleData.total_price),
+        total_price_of_all_design: validateNumber(
+          saleData.total_price_of_all_design
+        ),
+      });
+    }
+
+    setSelectedParty({
+      gst_no: data.party.gst_no,
+      id: data.party.id,
+      party_name: data.party.party_name,
+      party_address: data.party.party_address,
+    });
+
+    let saleReadyMaterial = {};
+    data.sale_ready_material.forEach((el) => {
+      let designId = el.design?.id;
+      let colorId = el.color?.id;
+      let design = el.design;
+      /** ----------------------------------------- */
+      let colorData = {
+        id: el.id,
+        design: designId,
+        colorData: el.color,
+        color: colorId,
+        quantity: validateNumber(el.quantity),
+        returned_quantity: validateNumber(el.returned_quantity),
+        price_per_unit: validateNumber(el.price_per_unit),
+        return_price_per_unit: validateNumber(el.return_price_per_unit),
+        total_price: validateNumber(el.total_price),
+        return_total_price: validateNumber(el.return_total_price),
+        previousQuantity: validateNumber(el.returned_quantity),
+        quantity_to_add_deduct: 0,
+        availableQuantity: el.color_price?.stock ? el.color_price?.stock : 0,
+        selected: false,
+      };
+
+      if (designId) {
+        if (saleReadyMaterial[designId]) {
+          let allColors = saleReadyMaterial[designId].allColors;
+          allColors.push(colorData);
+          saleReadyMaterial = {
+            ...saleReadyMaterial,
+            [designId]: {
+              ...saleReadyMaterial[designId],
+              allColors: allColors,
+            },
+          };
+        } else {
+          saleReadyMaterial = {
+            ...saleReadyMaterial,
+            [designId]: {
+              material_no: design.material_no,
+              material_price: design.material_price,
+              add_price: validateNumber(design.add_price),
+              images: design.images,
+              allColors: [colorData],
+              is_ready_material: true,
+              are_ready_materials_clubbed: false,
+            },
+          };
+        }
+      } else {
+        saleReadyMaterial = {
+          ...saleReadyMaterial,
+          [["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]]: {
+            id: el.id,
+            designId: null,
+            images: [],
+            colorsPresent: [],
+            allColors: [],
+            name: el.name,
+            quantity: validateNumber(el.quantity),
+            returned_quantity: validateNumber(el.returned_quantity),
+            price_per_unit: validateNumber(el.price_per_unit),
+            return_price_per_unit: validateNumber(el.return_price_per_unit),
+            total_price: validateNumber(el.total_price),
+            return_total_price: validateNumber(el.return_total_price),
+            previousQuantity: validateNumber(el.returned_quantity),
+            is_ready_material: false,
+            are_ready_materials_clubbed: true,
+          },
+        };
+      }
+    });
+
+    setDesignDetail(saleReadyMaterial);
+    setOpenBackDrop(false);
+  };
 
   const handleAddEdit = () => {
     if (isEdit) {
