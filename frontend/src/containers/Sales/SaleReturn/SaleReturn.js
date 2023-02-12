@@ -485,13 +485,6 @@ export default function SaleReturn() {
                 }}
                 actions={[
                   (rowData) => ({
-                    icon: () => <EditIcon fontSize="small" />,
-                    tooltip: "Edit",
-                    onClick: (event, rowData) => {
-                      history.push(`${EDITSALERETURN}/${rowData.id}`);
-                    },
-                  }),
-                  (rowData) => ({
                     icon: () => (
                       <VisibilityIcon fontSize="small" color="primary" />
                     ),

@@ -2,7 +2,7 @@ import { FormHelperText } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 import { providerForGet } from "../../api";
-import { backend_sellers, frontendServerUrl } from "../../constants";
+import { frontendServerUrl } from "../../constants";
 import { isEmptyString } from "../../Utils";
 import Auth from "../Auth";
 

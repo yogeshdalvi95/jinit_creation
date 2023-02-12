@@ -95,14 +95,6 @@ const theme = createMuiTheme({
 });
 const DatePicker = (props) => {
   const classes = useStyles();
-  const {
-    formControlProps,
-    error,
-    helperTextId,
-    isHelperText,
-    helperText,
-    ...rest
-  } = props;
   const marginTop = classNames({
     [classes.marginTop]: props.noMargin ? false : true,
     [classes.noMargin]: props.noMargin ? true : false,

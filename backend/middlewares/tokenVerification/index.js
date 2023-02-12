@@ -13,16 +13,24 @@ module.exports = (strapi) => {
                 7,
                 ctx.request.header.authorization.length
               );
+              let newId = null;
+              try {
+                const { id } = await strapi.plugins[
+                  "users-permissions"
+                ].services.jwt.getToken(ctx);
+                newId = id;
+              } catch (e) {
+                return ctx.response.unauthorized(
+                  ["Forbidden"],
+                  ["No login details present, logging out"]
+                );
+              }
 
-              const { id } = await strapi.plugins[
-                "users-permissions"
-              ].services.jwt.getToken(ctx);
-
-              console.log("id => ", id);
+              console.log("id => ", newId);
               const checkIfDataExists = await strapi
                 .query("active-users")
                 .findOne({
-                  user: id,
+                  user: newId,
                   token: token,
                 });
               if (checkIfDataExists) {
@@ -30,7 +38,7 @@ module.exports = (strapi) => {
                 await next();
               } else {
                 await strapi.query("active-users").delete({
-                  user: id,
+                  user: newId,
                 });
                 // ctx.response.unauthorized([message], [scheme], [attributes])
                 return ctx.response.unauthorized(

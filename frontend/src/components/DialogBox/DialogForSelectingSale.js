@@ -40,12 +40,11 @@ import {
 } from "../../constants";
 import {
   convertNumber,
-  hasError,
   isEmptyString,
   plainDate,
   validateNumber,
 } from "../../Utils";
-import { useHistory } from "react-router-dom";
+import classNames from "classnames";
 import moment from "moment";
 import { SnackBarComponent } from "../Snackbar";
 import {
@@ -57,18 +56,23 @@ import {
   setAllQueryParamsFromUrl,
 } from "../../Utils/CommonUtils";
 import IconButton from "@mui/material/IconButton";
+import SweetAlert from "react-bootstrap-sweetalert";
 import CloseIcon from "@mui/icons-material/Close";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { Link, Paper, TableContainer } from "@mui/material";
-import { VIEWPARTY, VIEWSALES } from "../../paths";
+import { VIEWPARTY, VIEWSALERETURN, VIEWSALES } from "../../paths";
 import { providerForGet } from "../../api";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import no_image_icon from "../../assets/img/no_image_icon.png";
+import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 
 const useStyles = makeStyles(styles);
+const buttonUseStyles = makeStyles(buttonStyles);
 
 export default function DialogForSelectingSale(props) {
   const classes = useStyles();
+  const buttonClasses = buttonUseStyles();
+  const [alert, setAlert] = useState(null);
   const [openBackDrop, setOpenBackDrop] = useState(false);
   const [selectedparty, setSelectedParty] = React.useState(null);
   const [selectedDesign, setSelectedDesign] = React.useState(null);
@@ -326,7 +330,11 @@ export default function DialogForSelectingSale(props) {
   const selectedSale = async (id) => {
     setOpenBackDrop(true);
     let isError = false;
-    await providerForGet(backend_sales + "/" + id, {}, Auth.getToken())
+    await providerForGet(
+      backend_sales + "/" + id + "?check=true",
+      {},
+      Auth.getToken()
+    )
       .then((res) => {
         if (res.status === 200) {
           convertData(res.data);
@@ -336,7 +344,17 @@ export default function DialogForSelectingSale(props) {
       })
       .catch((err) => {
         setOpenBackDrop(false);
-        isError = true;
+        console.log("err.response.data => ", err.response.data);
+        if (
+          err.response.data &&
+          err.response.data.message &&
+          err.response.data.message.reason &&
+          err.response.data.message.reason === -1
+        ) {
+          handleShowAlert(err.response.data.message.saleReturnData);
+        } else {
+          isError = true;
+        }
       });
     if (isError) {
       // history.push(NOTFOUNDPAGE);
@@ -347,6 +365,47 @@ export default function DialogForSelectingSale(props) {
         message: "Error fetching sale data",
       }));
     }
+  };
+
+  const handleShowAlert = (saleReturnData) => {
+    const confirmBtnClasses = classNames({
+      [buttonClasses.button]: true,
+      [buttonClasses["success"]]: true,
+    });
+
+    const cancelBtnClasses = classNames({
+      [buttonClasses.button]: true,
+      [buttonClasses["danger"]]: true,
+    });
+
+    setAlert(
+      <SweetAlert
+        warning
+        confirmBtnText="OK"
+        confirmBtnCssClass={confirmBtnClasses}
+        confirmBtnBsStyle="outline-{variant}"
+        title="Heads up!"
+        onConfirm={() => {
+          setAlert(null);
+        }}
+        focusCancelBtn
+      >
+        Sale Return for this sale is already present! <br></br>Click{" "}
+        {
+          <b>
+            <Link
+              href={`${frontendServerUrl}${VIEWSALERETURN}/${saleReturnData.id}`}
+              underline="always"
+              target="_blank"
+            >
+              {"here"}
+            </Link>
+          </b>
+        }{" "}
+        to check the data
+      </SweetAlert>
+    );
+    //setOpenDialog(true);
   };
 
   const convertData = (data) => {
@@ -379,12 +438,12 @@ export default function DialogForSelectingSale(props) {
         colorData: el.color,
         color: colorId,
         quantity: validateNumber(el.quantity),
-        returned_quantity: validateNumber(el.returned_quantity),
+        returned_quantity: 0,
         price_per_unit: validateNumber(el.price_per_unit),
         return_price_per_unit: validateNumber(el.return_price_per_unit),
         total_price: validateNumber(el.total_price),
-        return_total_price: validateNumber(el.return_total_price),
-        previousQuantity: validateNumber(el.returned_quantity),
+        return_total_price: 0,
+        previousQuantity: 0,
         quantity_to_add_deduct: 0,
         availableQuantity: el.color_price?.stock ? el.color_price?.stock : 0,
         selected: false,
@@ -426,12 +485,12 @@ export default function DialogForSelectingSale(props) {
             allColors: [],
             name: el.name,
             quantity: validateNumber(el.quantity),
-            returned_quantity: validateNumber(el.returned_quantity),
+            returned_quantity: 0,
             price_per_unit: validateNumber(el.price_per_unit),
             return_price_per_unit: validateNumber(el.return_price_per_unit),
             total_price: validateNumber(el.total_price),
-            return_total_price: validateNumber(el.return_total_price),
-            previousQuantity: validateNumber(el.returned_quantity),
+            return_total_price: 0,
+            previousQuantity: 0,
             is_ready_material: false,
             are_ready_materials_clubbed: true,
           },
@@ -480,6 +539,7 @@ export default function DialogForSelectingSale(props) {
 
   return (
     <>
+      {alert}
       <SnackBarComponent
         open={snackBar.show}
         severity={snackBar.severity}

@@ -351,14 +351,31 @@ module.exports = {
               <th class="th leftAlignText">Opening Balance</th>
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.debit,
-                true
-              )}</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.credit,
-                true
-              )}</th>
+              ${
+                data[monthYear]?.opening_balance?.finalOpeningBalance > 0
+                  ? `
+                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                      Math.abs(
+                        data[monthYear]?.opening_balance?.finalOpeningBalance
+                      ),
+                      true
+                    )}</th>  
+                    <th class="th leftAlignText">---</th>  
+                  `
+                  : data[monthYear]?.opening_balance?.finalOpeningBalance < 0
+                  ? ` 
+                      <th class="th leftAlignText">---</th>
+                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                        Math.abs(
+                          data[monthYear]?.opening_balance?.finalOpeningBalance
+                        ),
+                        true
+                      )}</th>
+                    `
+                  : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
+                    <th class="th leftAlignText">${convertNumber(0, true)}</th>
+                        `
+              }
             </tr> `;
 
         if (
@@ -754,6 +771,7 @@ async function generateLedger(params) {
         opening_balance: {
           credit: creditOpeningBalance,
           debit: debitOpeningBalance,
+          finalOpeningBalance: debitOpeningBalance - creditOpeningBalance,
         },
         closing_balance: {
           credit: totalCredit,

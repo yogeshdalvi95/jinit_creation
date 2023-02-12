@@ -1,6 +1,7 @@
 "use strict";
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
+const { validateNumber } = require("../../../config/utils");
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-controllers)
  * to customize this controller
@@ -191,46 +192,50 @@ module.exports = {
                 colorArray.length
               ) {
                 await utils.asyncForEach(colorArray, async (el1) => {
-                  let { design, color, quantity_to_add_deduct, id } = el1;
-                  /** get design color data */
-                  let designColorData = await strapi
-                    .query("design-color-price")
-                    .findOne({ design: design, color: color });
+                  let { design, color, quantity_to_add_deduct, id, selected } =
+                    el1;
+                  if (selected && quantity_to_add_deduct) {
+                    /** get design color data */
+                    let designColorData = await strapi
+                      .query("design-color-price")
+                      .findOne({ design: design, color: color });
 
-                  /** get color stock */
-                  let designColorQuantity = utils.validateNumber(
-                    designColorData.stock
-                  );
-                  let quantityToDeduct = 0;
-                  quantityToDeduct = utils.validateNumber(
-                    quantity_to_add_deduct
-                  );
-                  /** Final quantity */
-                  let final_quantity = designColorQuantity + quantityToDeduct;
-                  /** Update quantity */
-                  await strapi.query("design-color-price").update(
-                    { id: designColorData.id },
-                    {
-                      stock: final_quantity,
-                    },
-                    { patch: true, transacting: t }
-                  );
+                    /** get color stock */
+                    let designColorQuantity = utils.validateNumber(
+                      designColorData.stock
+                    );
+                    let quantityToAddBack = 0;
+                    quantityToAddBack = utils.validateNumber(
+                      quantity_to_add_deduct
+                    );
+                    /** Final quantity */
+                    let final_quantity =
+                      designColorQuantity + quantityToAddBack;
+                    /** Update quantity */
+                    await strapi.query("design-color-price").update(
+                      { id: designColorData.id },
+                      {
+                        stock: final_quantity,
+                      },
+                      { patch: true, transacting: t }
+                    );
 
-                  await strapi.query("individual-sale-ready-material").update(
-                    { id: id },
-                    {
-                      returned_quantity: utils.validateNumber(
-                        el1.returned_quantity
-                      ),
-                      return_total_price: utils.validateNumber(
-                        el1.return_total_price
-                      ),
-                      return_price_per_unit: utils.validateNumber(
-                        el1.return_price_per_unit
-                      ),
-                    },
-                    { patch: true, transacting: t }
-                  );
+                    await strapi.query("individual-sale-ready-material").update(
+                      { id: id },
+                      {
+                        returned_quantity: utils.validateNumber(
+                          el1.returned_quantity
+                        ),
+                        return_total_price: utils.validateNumber(
+                          el1.return_total_price
+                        ),
+                        return_price_per_unit: utils.validateNumber(
+                          el1.return_price_per_unit
+                        ),
+                      },
+                      { patch: true, transacting: t }
+                    );
+                  }
                 });
               }
             }
@@ -243,6 +248,60 @@ module.exports = {
       .catch((err) => {
         console.log("err ", err);
         return ctx.badRequest(null, "Error");
+      });
+  },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    let saleReturnData = await strapi.query("sale-return").findOne(
+      {
+        id: id,
+      },
+      []
+    );
+
+    let individual_sale_ready_material = await strapi
+      .query("individual-sale-ready-material")
+      .find({
+        sale: saleReturnData.sale,
+      });
+
+    await bookshelf
+      .transaction(async (t) => {
+        if (
+          individual_sale_ready_material &&
+          individual_sale_ready_material.length
+        ) {
+          await utils.asyncForEach(
+            individual_sale_ready_material,
+            async (d) => {
+              await deleteSaleData(d, t);
+            }
+          );
+        }
+
+        await strapi.query("sale-payment-transaction").delete(
+          { sale_return: id, is_sale_return: true },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+
+        await strapi.query("sale-return").delete(
+          { id: id },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+      })
+      .then((res) => {
+        ctx.send(200);
+      })
+      .catch((err) => {
+        console.log(err);
+        ctx.throw(500);
       });
   },
 };
@@ -269,4 +328,28 @@ const getReadyMaterialForSale = (arr) => {
     }
   }
   return finalArr;
+};
+
+const deleteSaleData = async (object, t) => {
+  if (object.is_ready_material) {
+    let design = object.design?.id ? object.design.id : null;
+    let color = object.color?.id ? object.color.id : null;
+    const returned_quantity = validateNumber(object.returned_quantity);
+
+    let designColorData = await strapi
+      .query("design-color-price")
+      .findOne({ design: design, color: color });
+
+    /** get color stock */
+    let designColorQuantity = utils.validateNumber(designColorData.stock);
+
+    let newBalance = designColorQuantity - returned_quantity;
+    await strapi.query("design-color-price").update(
+      { id: designColorData.id },
+      {
+        stock: newBalance,
+      },
+      { patch: true, transacting: t }
+    );
+  }
 };

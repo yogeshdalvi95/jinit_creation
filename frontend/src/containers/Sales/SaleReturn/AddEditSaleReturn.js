@@ -32,7 +32,7 @@ import no_image_icon from "../../../assets/img/no_image_icon.png";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { SALERETURN, VIEWPARTY, VIEWSALES } from "../../../paths";
+import { SALERETURN, VIEWSALES } from "../../../paths";
 import { useEffect } from "react";
 import { useState } from "react";
 import {
@@ -43,7 +43,7 @@ import {
   Switch,
   Link,
 } from "@material-ui/core";
-import { checkEmpty, hasError, validateNumber } from "../../../Utils";
+import { hasError, validateNumber } from "../../../Utils";
 import buttonStyles from "../../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import classNames from "classnames";
 import {
@@ -58,7 +58,11 @@ import {
   removeParamFromUrl,
 } from "../../../Utils/CommonUtils";
 import { Paper, TableContainer } from "@mui/material";
-import { providerForGet, providerForPost } from "../../../api";
+import {
+  providerForDelete,
+  providerForGet,
+  providerForPost,
+} from "../../../api";
 
 const buttonUseStyles = makeStyles(buttonStyles);
 
@@ -68,7 +72,7 @@ export default function AddEditSaleReturn(props) {
   const classes = useStyles();
   const buttonClasses = buttonUseStyles();
   const history = useHistory();
-  const [error, setError] = React.useState({});
+  const [error] = React.useState({});
   const [alert, setAlert] = useState(null);
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
@@ -248,7 +252,7 @@ export default function AddEditSaleReturn(props) {
     setOpenBackDrop(false);
   };
 
-  const handleAddEdit = () => {
+  const handleShowAlert = (saleReturnData) => {
     if (isEdit) {
       // addEditData();
     } else {
@@ -270,8 +274,12 @@ export default function AddEditSaleReturn(props) {
           confirmBtnCssClass={confirmBtnClasses}
           confirmBtnBsStyle="outline-{variant}"
           title="Heads up?"
-          onConfirm={handleAcceptDialog}
-          onCancel={handleCloseDialog}
+          onConfirm={() => {
+            setAlert(null);
+          }}
+          onCancel={() => {
+            setAlert(null);
+          }}
           cancelBtnCssClass={cancelBtnClasses}
           focusCancelBtn
         >
@@ -469,9 +477,30 @@ export default function AddEditSaleReturn(props) {
     }));
   };
 
-  console.log("designDetail => ", designDetail);
-  console.log("designError => ", designError);
-  console.log("formState => ", formState);
+  const deleteData = async (e) => {
+    e.preventDefault();
+    setOpenBackDrop(true);
+    await providerForDelete(backend_sale_return, id, Auth.getToken())
+      .then(async (res) => {
+        setOpenBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "success",
+          message: "Successfully deleted sale return data",
+        }));
+        history.push(SALERETURN);
+      })
+      .catch((err) => {
+        setOpenBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error deleting sale return data",
+        }));
+      });
+  };
 
   const addEditData = async (e) => {
     e.preventDefault();
@@ -779,7 +808,7 @@ export default function AddEditSaleReturn(props) {
                       <CustomTableHead>
                         <CustomTableRow>
                           <CustomTableCell>Is Ready Material?</CustomTableCell>
-                          <CustomTableCell>Select</CustomTableCell>
+                          {!isView && <CustomTableCell>Select</CustomTableCell>}
                           <CustomTableCell>Ratio Name</CustomTableCell>
                           <CustomTableCell align="left">
                             Curr. Stock
@@ -924,27 +953,29 @@ export default function AddEditSaleReturn(props) {
                                             : "none",
                                         }}
                                       >
-                                        <CustomTableCell
-                                          align="left"
-                                          sx={{
-                                            p: 0,
-                                          }}
-                                        >
-                                          <CustomCheckBox
-                                            onChange={(event) => {
-                                              onSelectCheckBox(
-                                                event,
-                                                colorKey,
-                                                Ip
-                                              );
+                                        {!isView && (
+                                          <CustomTableCell
+                                            align="left"
+                                            sx={{
+                                              p: 0,
                                             }}
-                                            noMargin
-                                            labelText=""
-                                            name="select_ready_material"
-                                            checked={c.selected}
-                                            id="select_ready_material"
-                                          />
-                                        </CustomTableCell>
+                                          >
+                                            <CustomCheckBox
+                                              onChange={(event) => {
+                                                onSelectCheckBox(
+                                                  event,
+                                                  colorKey,
+                                                  Ip
+                                                );
+                                              }}
+                                              noMargin
+                                              labelText=""
+                                              name="select_ready_material"
+                                              checked={c.selected}
+                                              id="select_ready_material"
+                                            />
+                                          </CustomTableCell>
+                                        )}
                                         <CustomTableCell align="left">
                                           {c.colorData.name}
                                         </CustomTableCell>
@@ -1159,7 +1190,7 @@ export default function AddEditSaleReturn(props) {
                       <CustomTableBody>
                         <CustomTableRow>
                           <CustomTableCell
-                            colSpan={isEdit ? 9 : 8}
+                            colSpan={isView ? 7 : 8}
                             align="right"
                           >
                             Total
@@ -1184,7 +1215,17 @@ export default function AddEditSaleReturn(props) {
               </GridContainer>
             )}
           </CardBody>
-          {isView ? null : (
+          {isView ? (
+            <CardFooter>
+              <Button
+                color="danger"
+                disabled={Object.keys(designError).length}
+                onClick={(e) => deleteData(e)}
+              >
+                Delete
+              </Button>
+            </CardFooter>
+          ) : (
             <CardFooter>
               <Button
                 color="primary"

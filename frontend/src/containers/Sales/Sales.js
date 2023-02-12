@@ -21,7 +21,7 @@ import {
   Table,
 } from "../../components";
 import ListAltIcon from "@material-ui/icons/ListAlt";
-import { ADDSALES, EDITSALES, VIEWSALES } from "../../paths";
+import { ADDSALES, EDITSALES, VIEWSALERETURN, VIEWSALES } from "../../paths";
 import AddIcon from "@material-ui/icons/Add";
 import {
   convertNumber,
@@ -40,18 +40,24 @@ import {
   backend_sales_export_data,
 } from "../../constants/UrlConstants";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SweetAlert from "react-bootstrap-sweetalert";
+import classNames from "classnames";
+import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
+import { Link } from "@mui/material";
 
 const useStyles = makeStyles(styles);
+const buttonUseStyles = makeStyles(buttonStyles);
 export default function Sales() {
   const tableRef = React.createRef();
   const history = useHistory();
+  const buttonClasses = buttonUseStyles();
   const [filter, setFilter] = useState({
     _sort: "date:desc",
   });
   const classes = useStyles();
   const [openBackDrop, setBackDrop] = useState(false);
   const [party, setParty] = useState(null);
-
+  const [alert, setAlert] = useState(null);
   const [error, setError] = useState({});
 
   const [snackBar, setSnackBar] = React.useState({
@@ -317,6 +323,43 @@ export default function Sales() {
     }
   };
 
+  const handleCloseDialog = () => {
+    setAlert(null);
+    //addEditData();
+  };
+
+  const alertBox = (saleReturnId) => {
+    const confirmBtnClasses = classNames({
+      [buttonClasses.button]: true,
+      [buttonClasses["danger"]]: true,
+    });
+
+    setAlert(
+      <SweetAlert
+        error
+        confirmBtnText="Cancel"
+        confirmBtnCssClass={confirmBtnClasses}
+        title="Heads up"
+        onConfirm={handleCloseDialog}
+        focusCancelBtn
+      >
+        The Sale cannot be deleted since there is already sale return data
+        present! Check{" "}
+        {
+          <>
+            <Link
+              href={`${frontendServerUrl}${VIEWSALERETURN}/${saleReturnId}`}
+              underline="always"
+              target="_blank"
+            >
+              {"here"}
+            </Link>
+          </>
+        }
+      </SweetAlert>
+    );
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -331,6 +374,7 @@ export default function Sales() {
         handleAddParties={handleAddParties}
         open={openDialogForSelectingParties}
       />
+      {alert}
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
           <Card>
@@ -527,9 +571,43 @@ export default function Sales() {
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     disabled: false,
-                    onClick: (event, rowData) => {
-                      history.push(`${EDITSALES}/${rowData.id}`);
-                    },
+                    onClick: (event, rowData) => 
+                    new Promise((resolve) => {
+                      setTimeout(async () => {
+                        setBackDrop(true)
+                        await providerForDelete(
+                          backend_sales,
+                          rowData.id,
+                          Auth.getToken()
+                        )
+                          .then(async (res) => {
+                            setBackDrop(false)
+                            history.push(`${EDITSALES}/${rowData.id}`);
+                          })
+                          .catch((err) => {
+                            console.log("Error => ", err.response);
+                            if (
+                              err &&
+                              err.response &&
+                              err.response.data &&
+                              err.response.data.message
+                            ) {
+                              let status = err.response.data.message.status;
+                              if (status === -1) {
+                                alertBox(err.response.data.message.data.id);
+                              }
+                            } else {
+                              setSnackBar((snackBar) => ({
+                                ...snackBar,
+                                show: true,
+                                severity: "error",
+                                message: "Error deleting sale",
+                              }));
+                            }
+                          });
+                        resolve();
+                      }, 1000);
+                    }),
                   }),
                   (rowData) => ({
                     icon: () => (
@@ -570,12 +648,25 @@ export default function Sales() {
                             }));
                           })
                           .catch((err) => {
-                            setSnackBar((snackBar) => ({
-                              ...snackBar,
-                              show: true,
-                              severity: "error",
-                              message: "Error deleting sale",
-                            }));
+                            console.log("Error => ", err.response);
+                            if (
+                              err &&
+                              err.response &&
+                              err.response.data &&
+                              err.response.data.message
+                            ) {
+                              let status = err.response.data.message.status;
+                              if (status === -1) {
+                                alertBox(err.response.data.message.data.id);
+                              }
+                            } else {
+                              setSnackBar((snackBar) => ({
+                                ...snackBar,
+                                show: true,
+                                severity: "error",
+                                message: "Error deleting sale",
+                              }));
+                            }
                           });
                         resolve();
                       }, 1000);

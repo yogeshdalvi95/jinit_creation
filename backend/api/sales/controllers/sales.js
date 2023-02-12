@@ -43,8 +43,20 @@ module.exports = {
 
   async findOne(ctx) {
     const { id } = ctx.params;
+    console.log("Data => ", ctx.request.query);
+    const { check } = ctx.request.query;
+    if (check) {
+      let is_sale_return_data_present = await strapi
+        .query("sale-return")
+        .findOne({ sale: id }, []);
+      if (is_sale_return_data_present) {
+        return ctx.badRequest(null, {
+          reason: -1,
+          saleReturnData: is_sale_return_data_present,
+        });
+      }
+    }
     let sale_data = await strapi.query("sales").findOne({ id: id }, ["party"]);
-
     let individual_sale_ready_material = await strapi
       .query("individual-sale-ready-material")
       .find({
@@ -57,7 +69,6 @@ module.exports = {
       individual_sale_ready_material.length
     ) {
       await utils.asyncForEach(individual_sale_ready_material, async (el) => {
-        console.log("el => ", el);
         if (el) {
           if (el.is_ready_material) {
             if (el.design && el.design.id) {
@@ -319,14 +330,31 @@ module.exports = {
               <th class="th leftAlignText">Opening Balance</th>
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.debit,
-                true
-              )}</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.opening_balance?.credit,
-                true
-              )}</th>
+              ${
+                data[monthYear]?.opening_balance?.finalOpeningBalance < 0
+                  ? `
+                  <th class="th leftAlignText">---</th>  
+                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                      Math.abs(
+                        data[monthYear]?.opening_balance?.finalOpeningBalance
+                      ),
+                      true
+                    )}</th>  
+                  `
+                  : data[monthYear]?.opening_balance?.finalOpeningBalance > 0
+                  ? ` 
+                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                        Math.abs(
+                          data[monthYear]?.opening_balance?.finalOpeningBalance
+                        ),
+                        true
+                      )}</th>
+                      <th class="th leftAlignText">---</th>
+                    `
+                  : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
+                    <th class="th leftAlignText">${convertNumber(0, true)}</th>
+                        `
+              }
             </tr> `;
 
         if (
@@ -369,23 +397,23 @@ module.exports = {
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
               ${
-                data[monthYear]?.closing_balance?.finalClosing > 0
+                data[monthYear]?.closing_balance?.finalClosing < 0
                   ? `
-                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
-                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
-                      true
-                    )}</th>  
-                    <th class="th leftAlignText">---</th>  
+                  <th class="th leftAlignText">---</th>    
+                  <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                    Math.abs(data[monthYear]?.closing_balance?.finalClosing),
+                    true
+                  )}</th>    
                   `
-                  : data[monthYear]?.closing_balance?.finalClosing < 0
+                  : data[monthYear]?.closing_balance?.finalClosing > 0
                   ? ` 
-                      <th class="th leftAlignText">---</th>
                       <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
                         Math.abs(
                           data[monthYear]?.closing_balance?.finalClosing
                         ),
                         true
                       )}</th>
+                      <th class="th leftAlignText">---</th>
                     `
                   : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
                     <th class="th leftAlignText">${convertNumber(0, true)}</th>
@@ -413,64 +441,71 @@ module.exports = {
 
   async delete(ctx) {
     const { id } = ctx.params;
-    let saleData = await strapi.query("sales").findOne(
+    let saleReturnData = await strapi.query("sale-return").findOne(
       {
-        id: id,
+        sale: id,
       },
       []
     );
 
-    let individual_sale_ready_material = await strapi
-      .query("individual-sale-ready-material")
-      .find({
-        sale: id,
+    if (saleReturnData) {
+      return ctx.badRequest(null, {
+        status: -1,
+        data: saleReturnData,
       });
+    } else {
+      let individual_sale_ready_material = await strapi
+        .query("individual-sale-ready-material")
+        .find({
+          sale: id,
+        });
 
-    await bookshelf
-      .transaction(async (t) => {
-        if (
-          individual_sale_ready_material &&
-          individual_sale_ready_material.length
-        ) {
-          await utils.asyncForEach(
-            individual_sale_ready_material,
-            async (d) => {
-              await deleteSaleData(d, t);
+      await bookshelf
+        .transaction(async (t) => {
+          if (
+            individual_sale_ready_material &&
+            individual_sale_ready_material.length
+          ) {
+            await utils.asyncForEach(
+              individual_sale_ready_material,
+              async (d) => {
+                await deleteSaleData(d, t);
+              }
+            );
+          }
+
+          await strapi.query("individual-sale-ready-material").delete(
+            { sale: id },
+            {
+              patch: true,
+              transacting: t,
             }
           );
-        }
 
-        await strapi.query("individual-sale-ready-material").delete(
-          { sale: id },
-          {
-            patch: true,
-            transacting: t,
-          }
-        );
+          await strapi.query("sale-payment-transaction").delete(
+            { sale: id },
+            {
+              patch: true,
+              transacting: t,
+            }
+          );
 
-        await strapi.query("sale-payment-transaction").delete(
-          { sale: id },
-          {
-            patch: true,
-            transacting: t,
-          }
-        );
-
-        await strapi.query("sales").delete(
-          { id: id },
-          {
-            patch: true,
-            transacting: t,
-          }
-        );
-      })
-      .then((res) => {
-        ctx.send(200);
-      })
-      .catch((err) => {
-        console.log(err);
-        ctx.throw(500);
-      });
+          await strapi.query("sales").delete(
+            { id: id },
+            {
+              patch: true,
+              transacting: t,
+            }
+          );
+        })
+        .then((res) => {
+          ctx.send(200);
+        })
+        .catch((err) => {
+          console.log(err);
+          ctx.throw(500);
+        });
+    }
   },
 };
 
@@ -712,6 +747,7 @@ async function generateLedger(params) {
         opening_balance: {
           credit: creditOpeningBalance,
           debit: debitOpeningBalance,
+          finalOpeningBalance: debitOpeningBalance - creditOpeningBalance,
         },
         closing_balance: {
           credit: totalCredit,

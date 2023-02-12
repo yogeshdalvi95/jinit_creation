@@ -492,7 +492,7 @@ const AddEditViewPayments = (props) => {
                     }}
                     type="number"
                     disabled={isView}
-                    labelText="Purchase Cost"
+                    labelText="Amount"
                     name="amount"
                     value={formState.amount}
                     id="amount"

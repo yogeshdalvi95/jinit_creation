@@ -186,7 +186,7 @@ export const isNumeric = (str) => {
 export function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
-      v = c == "x" ? r : (r & 0x3) | 0x8;
+      v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -207,7 +207,7 @@ export const dateToDDMMYYYY = (data) => {
 
 export const getValidDate = (date) => {
   if (date) {
-    if (new Date(date) == new Date(1970, 1, 1)) {
+    if (new Date(date) === new Date(1970, 1, 1)) {
       return null;
     } else {
       return date;

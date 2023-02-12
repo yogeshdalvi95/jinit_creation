@@ -692,7 +692,7 @@ export default function AddOrder(props) {
       .then((res) => {
         saveAs(
           new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
-          `raw_material_availibility for order ${formState.order_id}`
+          `raw_material_availibility for order ${formState.order_id}.xlsx`
         );
         setBackDrop(false);
       })

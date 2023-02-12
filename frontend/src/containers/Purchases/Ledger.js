@@ -18,6 +18,8 @@ import {
   RemoteAutoComplete,
   SnackBarComponent,
 } from "../../components";
+import Paper from "@mui/material/Paper";
+import TableContainer from "@mui/material/TableContainer";
 // core components
 import {
   backend_download_purchase_ledger,
@@ -85,6 +87,10 @@ export default function Ledger() {
     } else {
       let date = new Date();
       let year = date.getFullYear();
+      let month = date.getMonth();
+      if (month < 3) {
+        year = year - 1;
+      }
       startDate = new Date(year, 2, 1);
     }
 
@@ -518,231 +524,288 @@ export default function Ledger() {
                 </GridItem>
               ) : null}
               <GridItem xs={12} sm={12} md={12}>
-                <CustomMaterialUITable
-                  sx={{ minWidth: 650 }}
-                  aria-label="simple table"
-                >
-                  <CustomTableHead>
-                    <CustomTableRow>
-                      <CustomTableCell>Date</CustomTableCell>
-                      <CustomTableCell>Particulars</CustomTableCell>
-                      <CustomTableCell>Type</CustomTableCell>
-                      <CustomTableCell>Bill/Invoice No</CustomTableCell>
-                      <CustomTableCell>Debit</CustomTableCell>
-                      <CustomTableCell>Credit</CustomTableCell>
-                      <CustomTableCell>Edit</CustomTableCell>
-                      <CustomTableCell>View</CustomTableCell>
-                      <CustomTableCell>Delete</CustomTableCell>
-                    </CustomTableRow>
-                  </CustomTableHead>
-                  <CustomTableBody>
-                    {monthYearObject && monthYearObject.length ? (
-                      monthYearObject.map((monthYear) => (
-                        <>
-                          <CustomTableRow>
-                            <CustomTableCell
-                              colSpan={9}
-                              sx={{
-                                textAlign: "center",
-                                backgroundColor: "#dfdfdf !important",
-                              }}
-                            >
-                              <b>{monthYear}</b>
-                            </CustomTableCell>
-                          </CustomTableRow>
-                          {/** -------- */}
-                          <CustomTableRow>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>
-                              <b>Opening Balance</b>
-                            </CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>
-                              <b>
-                                {convertNumber(
-                                  ledgerData[monthYear]?.opening_balance?.debit,
-                                  true
-                                )}
-                              </b>
-                            </CustomTableCell>
-                            <CustomTableCell>
-                              <b>
-                                {convertNumber(
-                                  ledgerData[monthYear]?.opening_balance
-                                    ?.credit,
-                                  true
-                                )}
-                              </b>
-                            </CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                          </CustomTableRow>
-                          {ledgerData[monthYear]?.data &&
-                          ledgerData[monthYear].data.length
-                            ? ledgerData[monthYear].data.map((l) => (
-                                <CustomTableRow>
-                                  <CustomTableCell>{l.date}</CustomTableCell>
-                                  <CustomTableCell>
-                                    {l.particulars}
-                                  </CustomTableCell>
-                                  <CustomTableCell>{l.type}</CustomTableCell>
-                                  <CustomTableCell>
-                                    {l.bill_invoice_no}
-                                  </CustomTableCell>
-                                  <CustomTableCell>{l.debit}</CustomTableCell>
-                                  <CustomTableCell>{l.credit}</CustomTableCell>
-                                  <CustomTableCell>
-                                    <IconButton
-                                      aria-label="edit"
-                                      onClick={() => editTxn(l.id, l.type)}
-                                    >
-                                      <EditIcon fontSize="small" />
-                                    </IconButton>
-                                  </CustomTableCell>
-                                  <CustomTableCell>
-                                    <IconButton
-                                      aria-label="view"
-                                      onClick={() => viewTxn(l.id, l.type)}
-                                    >
-                                      <VisibilityIcon
-                                        fontSize="small"
-                                        color="primary"
-                                      />
-                                    </IconButton>
-                                  </CustomTableCell>
-                                  <CustomTableCell>
-                                    <IconButton
-                                      color="error"
-                                      aria-label="delete"
-                                      onClick={() => deleteTxn(l.id, l.type)}
-                                    >
-                                      <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                  </CustomTableCell>
-                                </CustomTableRow>
-                              ))
-                            : null}
-
-                          {/** Total Row */}
-                          <CustomTableRow>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>
-                              <b>Total</b>
-                            </CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>
-                              <b>
-                                {" "}
-                                {convertNumber(
-                                  ledgerData[monthYear]?.closing_balance?.debit,
-                                  true
-                                )}
-                              </b>
-                            </CustomTableCell>
-                            <CustomTableCell>
-                              <b>
-                                {convertNumber(
-                                  ledgerData[monthYear]?.closing_balance
-                                    ?.credit,
-                                  true
-                                )}
-                              </b>
-                            </CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                          </CustomTableRow>
-
-                          <CustomTableRow>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>
-                              <b>Closing Balance</b>
-                            </CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            <CustomTableCell>-----</CustomTableCell>
-                            {ledgerData[monthYear]?.closing_balance
-                              ?.finalClosing > 0 ? (
-                              <>
+                <Paper sx={{ width: "100%", overflow: "hidden" }}>
+                  <TableContainer sx={{ maxHeight: 600 }}>
+                    <CustomMaterialUITable
+                      sx={{ minWidth: 650 }}
+                      aria-label="simple table"
+                      stickyHeader
+                    >
+                      <CustomTableHead>
+                        <CustomTableRow>
+                          <CustomTableCell>Date</CustomTableCell>
+                          <CustomTableCell>Particulars</CustomTableCell>
+                          <CustomTableCell>Type</CustomTableCell>
+                          <CustomTableCell>Bill/Invoice No</CustomTableCell>
+                          <CustomTableCell>Debit</CustomTableCell>
+                          <CustomTableCell>Credit</CustomTableCell>
+                          <CustomTableCell>Edit</CustomTableCell>
+                          <CustomTableCell>View</CustomTableCell>
+                          <CustomTableCell>Delete</CustomTableCell>
+                        </CustomTableRow>
+                      </CustomTableHead>
+                      <CustomTableBody>
+                        {monthYearObject && monthYearObject.length ? (
+                          monthYearObject.map((monthYear) => (
+                            <>
+                              <CustomTableRow>
                                 <CustomTableCell
+                                  colSpan={9}
                                   sx={{
-                                    backgroundColor: "yellow",
+                                    textAlign: "center",
+                                    backgroundColor: "#dfdfdf !important",
                                   }}
                                 >
+                                  <b>{monthYear}</b>
+                                </CustomTableCell>
+                              </CustomTableRow>
+                              {/** -------- */}
+                              <CustomTableRow>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>
+                                  <b>Opening Balance</b>
+                                </CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                {ledgerData[monthYear]?.opening_balance
+                                  ?.finalOpeningBalance > 0 ? (
+                                  <>
+                                    <CustomTableCell
+                                      sx={{
+                                        backgroundColor: "yellow",
+                                      }}
+                                    >
+                                      <b>
+                                        {" "}
+                                        {convertNumber(
+                                          Math.abs(
+                                            ledgerData[monthYear]
+                                              ?.opening_balance
+                                              ?.finalOpeningBalance
+                                          ),
+                                          true
+                                        )}
+                                      </b>
+                                    </CustomTableCell>
+                                    <CustomTableCell>
+                                      <b>----</b>
+                                    </CustomTableCell>
+                                  </>
+                                ) : ledgerData[monthYear]?.opening_balance
+                                    ?.finalOpeningBalance < 0 ? (
+                                  <>
+                                    <CustomTableCell>
+                                      <b>----</b>
+                                    </CustomTableCell>
+                                    <CustomTableCell
+                                      sx={{
+                                        backgroundColor: "yellow",
+                                      }}
+                                    >
+                                      <b>
+                                        -
+                                        {convertNumber(
+                                          Math.abs(
+                                            ledgerData[monthYear]
+                                              ?.opening_balance
+                                              ?.finalOpeningBalance
+                                          ),
+                                          true
+                                        )}
+                                      </b>
+                                    </CustomTableCell>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CustomTableCell>
+                                      <b>{convertNumber(0, true)}</b>
+                                    </CustomTableCell>
+                                    <CustomTableCell>
+                                      <b>{convertNumber(0, true)}</b>
+                                    </CustomTableCell>
+                                  </>
+                                )}
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                              </CustomTableRow>
+                              {ledgerData[monthYear]?.data &&
+                              ledgerData[monthYear].data.length
+                                ? ledgerData[monthYear].data.map((l) => (
+                                    <CustomTableRow>
+                                      <CustomTableCell>
+                                        {l.date}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        {l.particulars}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        {l.type}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        {l.bill_invoice_no}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        {l.debit}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        {l.credit}
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        <IconButton
+                                          aria-label="edit"
+                                          onClick={() => editTxn(l.id, l.type)}
+                                        >
+                                          <EditIcon fontSize="small" />
+                                        </IconButton>
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        <IconButton
+                                          aria-label="view"
+                                          onClick={() => viewTxn(l.id, l.type)}
+                                        >
+                                          <VisibilityIcon
+                                            fontSize="small"
+                                            color="primary"
+                                          />
+                                        </IconButton>
+                                      </CustomTableCell>
+                                      <CustomTableCell>
+                                        <IconButton
+                                          color="error"
+                                          aria-label="delete"
+                                          onClick={() =>
+                                            deleteTxn(l.id, l.type)
+                                          }
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </CustomTableCell>
+                                    </CustomTableRow>
+                                  ))
+                                : null}
+
+                              {/** Total Row */}
+                              <CustomTableRow>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>
+                                  <b>Total</b>
+                                </CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>
                                   <b>
                                     {" "}
                                     {convertNumber(
-                                      Math.abs(
-                                        ledgerData[monthYear]?.closing_balance
-                                          ?.finalClosing
-                                      ),
+                                      ledgerData[monthYear]?.closing_balance
+                                        ?.debit,
                                       true
                                     )}
                                   </b>
                                 </CustomTableCell>
                                 <CustomTableCell>
-                                  <b>----</b>
-                                </CustomTableCell>
-                              </>
-                            ) : ledgerData[monthYear]?.closing_balance
-                                ?.finalClosing < 0 ? (
-                              <>
-                                <CustomTableCell>
-                                  <b>----</b>
-                                </CustomTableCell>
-                                <CustomTableCell
-                                  sx={{
-                                    backgroundColor: "yellow",
-                                  }}
-                                >
                                   <b>
-                                    -
                                     {convertNumber(
-                                      Math.abs(
-                                        ledgerData[monthYear]?.closing_balance
-                                          ?.finalClosing
-                                      ),
+                                      ledgerData[monthYear]?.closing_balance
+                                        ?.credit,
                                       true
                                     )}
                                   </b>
                                 </CustomTableCell>
-                              </>
-                            ) : (
-                              <>
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                              </CustomTableRow>
+
+                              <CustomTableRow>
+                                <CustomTableCell>-----</CustomTableCell>
                                 <CustomTableCell>
-                                  <b>{convertNumber(0, true)}</b>
+                                  <b>Closing Balance</b>
                                 </CustomTableCell>
-                                <CustomTableCell>
-                                  <b>{convertNumber(0, true)}</b>
-                                </CustomTableCell>
-                              </>
-                            )}
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                            <CustomTableCell>---</CustomTableCell>
-                          </CustomTableRow>
-                        </>
-                      ))
-                    ) : (
-                      <>
-                        <CustomTableRow>
-                          <CustomTableCell
-                            colSpan={9}
-                            rowSpan={5}
-                            sx={{
-                              border: "none !Important",
-                              textAlign: "center",
-                            }}
-                          >
-                            No Data to show
-                          </CustomTableCell>
-                        </CustomTableRow>
-                      </>
-                    )}
-                  </CustomTableBody>
-                </CustomMaterialUITable>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                {ledgerData[monthYear]?.closing_balance
+                                  ?.finalClosing > 0 ? (
+                                  <>
+                                    <CustomTableCell
+                                      sx={{
+                                        backgroundColor: "yellow",
+                                      }}
+                                    >
+                                      <b>
+                                        {" "}
+                                        {convertNumber(
+                                          Math.abs(
+                                            ledgerData[monthYear]
+                                              ?.closing_balance?.finalClosing
+                                          ),
+                                          true
+                                        )}
+                                      </b>
+                                    </CustomTableCell>
+                                    <CustomTableCell>
+                                      <b>----</b>
+                                    </CustomTableCell>
+                                  </>
+                                ) : ledgerData[monthYear]?.closing_balance
+                                    ?.finalClosing < 0 ? (
+                                  <>
+                                    <CustomTableCell>
+                                      <b>----</b>
+                                    </CustomTableCell>
+                                    <CustomTableCell
+                                      sx={{
+                                        backgroundColor: "yellow",
+                                      }}
+                                    >
+                                      <b>
+                                        -
+                                        {convertNumber(
+                                          Math.abs(
+                                            ledgerData[monthYear]
+                                              ?.closing_balance?.finalClosing
+                                          ),
+                                          true
+                                        )}
+                                      </b>
+                                    </CustomTableCell>
+                                  </>
+                                ) : (
+                                  <>
+                                    <CustomTableCell>
+                                      <b>{convertNumber(0, true)}</b>
+                                    </CustomTableCell>
+                                    <CustomTableCell>
+                                      <b>{convertNumber(0, true)}</b>
+                                    </CustomTableCell>
+                                  </>
+                                )}
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                              </CustomTableRow>
+                            </>
+                          ))
+                        ) : (
+                          <>
+                            <CustomTableRow>
+                              <CustomTableCell
+                                colSpan={9}
+                                rowSpan={5}
+                                sx={{
+                                  border: "none !Important",
+                                  textAlign: "center",
+                                }}
+                              >
+                                No Data to show
+                              </CustomTableCell>
+                            </CustomTableRow>
+                          </>
+                        )}
+                      </CustomTableBody>
+                    </CustomMaterialUITable>
+                  </TableContainer>
+                </Paper>
               </GridItem>
             </CardBody>
           </Card>

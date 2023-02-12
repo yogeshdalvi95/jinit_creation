@@ -260,6 +260,9 @@ export default function AddEditDesign(props) {
         .then((res) => {
           setId(res.data.id);
           getEditViewData(res.data.id);
+          history.push({
+            pathname: `${EDITDESIGN}/${res.data.id}`,
+          });
           setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,

@@ -3,15 +3,13 @@ import styles from "../../assets/jss/material-dashboard-react/controllers/common
 import {
   Backdrop,
   CircularProgress,
-  FormControlLabel,
   makeStyles,
-  Switch,
   Tooltip,
 } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 import { useEffect } from "react";
-import { NOTFOUNDPAGE, SALES } from "../../paths";
+import { SALES } from "../../paths";
 import {
   Auth,
   Button,
@@ -49,7 +47,7 @@ import no_image_icon from "../../assets/img/no_image_icon.png";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
-import { Paper, TableContainer, TextField, Typography } from "@mui/material";
+import { Paper, TableContainer, Typography } from "@mui/material";
 import SweetAlert from "react-bootstrap-sweetalert";
 import { providerForGet, providerForPost } from "../../api";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
@@ -69,21 +67,6 @@ export default function AddEditSales(props) {
   const [rawMaterialIdTohighLight, setRawMaterialToHighLight] =
     React.useState(null);
   const [selectedparty, setSelectedParty] = React.useState(null);
-  let sampleDesignData = {
-    ["NoDesign-" + Math.floor(new Date().valueOf() * Math.random())]: {
-      material_no: null,
-      material_price: 0,
-      add_price: 0,
-      designId: null,
-      images: null,
-      stock: 0,
-      colorsPresent: [],
-      allColors: [],
-      isNew: true,
-      is_ready_material: true,
-      are_ready_materials_clubbed: false,
-    },
-  };
   const [selectedDesign, setSelectedDesign] = React.useState({});
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);

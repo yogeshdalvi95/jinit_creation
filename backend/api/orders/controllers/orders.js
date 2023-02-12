@@ -554,6 +554,7 @@ module.exports = {
     });
 
     let arrOfMaterialKeys = Object.keys(finalRawMaterialJson);
+    console.log("arrOfMaterialKeys => ", arrOfMaterialKeys);
     let jsonArray = [];
     let jsonArray2 = [];
     arrOfMaterialKeys.forEach((d) => {
@@ -953,7 +954,12 @@ const getRawMaterialAvailibilityPerOrder = async (
   ratio,
   ctx
 ) => {
+  console.log("ratio => ", ratio);
   await utils.asyncForEach(ratio, async (or) => {
+    console.log(
+      "------------------------------------------------------------------------------------------"
+    );
+    console.log("Color => ", or.color);
     let totalQuantity = utils.validateNumber(or.quantity);
     let quantityCompleted = utils.validateNumber(or.quantity_completed);
     let remainingQuantity = totalQuantity - quantityCompleted;
@@ -974,9 +980,30 @@ const getRawMaterialAvailibilityPerOrder = async (
       ]
     );
 
-    if (designMaterial.length) {
-      designMaterial.forEach((dM) => {
+    const designMaterialWithoutColor = await strapi
+      .query("designs-and-materials")
+      .find(
+        {
+          design: or.design,
+          isRawMaterial: true,
+          isColor: false,
+        },
+        [
+          "raw_material",
+          "raw_material.category",
+          "raw_material.department",
+          "raw_material.unit",
+          "ready_material",
+        ]
+      );
+
+    const concatedArray = designMaterial.concat(designMaterialWithoutColor);
+
+    if (concatedArray.length) {
+      concatedArray.forEach((dM) => {
+        console.log("Raw Material => ", dM.raw_material.name);
         let rawMaterialId = dM?.raw_material?.id;
+        console.log("Raw Material ID => ", dM.raw_material.id, rawMaterialId);
         if (rawMaterialId) {
           /** Quantity requires for making single piece of design */
           let quantityRequiredPerPieceOfDesign = utils.validateNumber(
@@ -1024,10 +1051,23 @@ const getRawMaterialAvailibilityPerOrder = async (
               costofRawMaterialUsedForCompletedQuantity,
           };
 
-          if (
-            finalRawMaterialJson.hasOwnProperty(rawMaterialId) &&
-            finalRawMaterialJson.rawMaterialId
-          ) {
+          if (finalRawMaterialJson.hasOwnProperty(rawMaterialId)) {
+            console.log(
+              "------------------------------------------------------------------------------------------"
+            );
+            console.log(
+              "finalRawMaterialJson[rawMaterialId]=> ",
+              finalRawMaterialJson[rawMaterialId]
+            );
+            // console.log("finalRawMaterialJson => ", finalRawMaterialJson);
+            console.log(
+              "totalMaterialsRequiredForRemainingQuantity => ",
+              totalMaterialsRequiredForRemainingQuantity
+            );
+            console.log(
+              "totalMaterialsUsedForCompletedQuantity => ",
+              totalMaterialsUsedForCompletedQuantity
+            );
             let temp1 = finalRawMaterialJson[rawMaterialId]["Total Required"];
             let temp2 = finalRawMaterialJson[rawMaterialId]["Total Used"];
             let temp3 =
@@ -1039,6 +1079,9 @@ const getRawMaterialAvailibilityPerOrder = async (
                 "Cost incurred for completed orders (Rs:-)"
               ];
             let temp5 = finalRawMaterialJson[rawMaterialId]["Difference"];
+            console.log(
+              "------------------------------------------------------------------------------------------"
+            );
 
             finalRawMaterialJson = {
               ...finalRawMaterialJson,
