@@ -90,7 +90,7 @@ export default function Ledger() {
       if (month < 3) {
         year = year - 1;
       }
-      startDate = new Date(year, 2, 1);
+      startDate = new Date(year, 3, 1);
     }
 
     if (endDate && !isEmptyString(endDate) && checkIFValidDateObject(ed)) {

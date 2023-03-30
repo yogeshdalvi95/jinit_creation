@@ -91,7 +91,7 @@ export default function Ledger() {
       if (month < 3) {
         year = year - 1;
       }
-      startDate = new Date(year, 2, 1);
+      startDate = new Date(year, 3, 1);
     }
 
     if (endDate && !isEmptyString(endDate) && checkIFValidDateObject(ed)) {
@@ -603,7 +603,6 @@ export default function Ledger() {
                                       }}
                                     >
                                       <b>
-                                        -
                                         {convertNumber(
                                           Math.abs(
                                             ledgerData[monthYear]
@@ -685,38 +684,6 @@ export default function Ledger() {
                                   ))
                                 : null}
 
-                              {/** Total Row */}
-                              <CustomTableRow>
-                                <CustomTableCell>-----</CustomTableCell>
-                                <CustomTableCell>
-                                  <b>Total</b>
-                                </CustomTableCell>
-                                <CustomTableCell>-----</CustomTableCell>
-                                <CustomTableCell>-----</CustomTableCell>
-                                <CustomTableCell>
-                                  <b>
-                                    {" "}
-                                    {convertNumber(
-                                      ledgerData[monthYear]?.closing_balance
-                                        ?.debit,
-                                      true
-                                    )}
-                                  </b>
-                                </CustomTableCell>
-                                <CustomTableCell>
-                                  <b>
-                                    {convertNumber(
-                                      ledgerData[monthYear]?.closing_balance
-                                        ?.credit,
-                                      true
-                                    )}
-                                  </b>
-                                </CustomTableCell>
-                                <CustomTableCell>---</CustomTableCell>
-                                <CustomTableCell>---</CustomTableCell>
-                                <CustomTableCell>---</CustomTableCell>
-                              </CustomTableRow>
-
                               <CustomTableRow>
                                 <CustomTableCell>-----</CustomTableCell>
                                 <CustomTableCell>
@@ -727,6 +694,9 @@ export default function Ledger() {
                                 {ledgerData[monthYear]?.closing_balance
                                   ?.finalClosing > 0 ? (
                                   <>
+                                    <CustomTableCell>
+                                      <b>----</b>
+                                    </CustomTableCell>
                                     <CustomTableCell
                                       sx={{
                                         backgroundColor: "yellow",
@@ -743,23 +713,16 @@ export default function Ledger() {
                                         )}
                                       </b>
                                     </CustomTableCell>
-                                    <CustomTableCell>
-                                      <b>----</b>
-                                    </CustomTableCell>
                                   </>
                                 ) : ledgerData[monthYear]?.closing_balance
                                     ?.finalClosing < 0 ? (
                                   <>
-                                    <CustomTableCell>
-                                      <b>----</b>
-                                    </CustomTableCell>
                                     <CustomTableCell
                                       sx={{
                                         backgroundColor: "yellow",
                                       }}
                                     >
                                       <b>
-                                        -
                                         {convertNumber(
                                           Math.abs(
                                             ledgerData[monthYear]
@@ -768,6 +731,9 @@ export default function Ledger() {
                                           true
                                         )}
                                       </b>
+                                    </CustomTableCell>
+                                    <CustomTableCell>
+                                      <b>----</b>
                                     </CustomTableCell>
                                   </>
                                 ) : (
@@ -780,6 +746,35 @@ export default function Ledger() {
                                     </CustomTableCell>
                                   </>
                                 )}
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                                <CustomTableCell>---</CustomTableCell>
+                              </CustomTableRow>
+                              {/** Total Row */}
+                              <CustomTableRow>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>
+                                  <b>Total</b>
+                                </CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>-----</CustomTableCell>
+                                <CustomTableCell>
+                                  <b>
+                                    {" "}
+                                    {convertNumber(
+                                      ledgerData[monthYear]?.totalDebit,
+                                      true
+                                    )}
+                                  </b>
+                                </CustomTableCell>
+                                <CustomTableCell>
+                                  <b>
+                                    {convertNumber(
+                                      ledgerData[monthYear]?.totalCredit,
+                                      true
+                                    )}
+                                  </b>
+                                </CustomTableCell>
                                 <CustomTableCell>---</CustomTableCell>
                                 <CustomTableCell>---</CustomTableCell>
                                 <CustomTableCell>---</CustomTableCell>

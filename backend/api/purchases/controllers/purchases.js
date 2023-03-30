@@ -365,7 +365,7 @@ module.exports = {
                   : data[monthYear]?.opening_balance?.finalOpeningBalance < 0
                   ? ` 
                       <th class="th leftAlignText">---</th>
-                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                      <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
                         Math.abs(
                           data[monthYear]?.opening_balance?.finalOpeningBalance
                         ),
@@ -400,47 +400,47 @@ module.exports = {
           html +
           ` <tr>
               <th class="th leftAlignText">----</th>
-              <th class="th leftAlignText">Total</th>
-              <th class="th leftAlignText">----</th>
-              <th class="th leftAlignText">----</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.closing_balance?.debit,
-                true
-              )}</th>
-              <th class="th leftAlignText noWrap">${convertNumber(
-                data[monthYear]?.closing_balance?.credit,
-                true
-              )}</th>
-            </tr>
-            <tr>
-              <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">Closing Balance</th>
               <th class="th leftAlignText">----</th>
               <th class="th leftAlignText">----</th>
               ${
                 data[monthYear]?.closing_balance?.finalClosing > 0
                   ? `
-                    <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
-                      Math.abs(data[monthYear]?.closing_balance?.finalClosing),
-                      true
-                    )}</th>  
-                    <th class="th leftAlignText">---</th>  
+                  <th class="th leftAlignText">---</th>    
+                  <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
+                    Math.abs(data[monthYear]?.closing_balance?.finalClosing),
+                    true
+                  )}</th>  
+                    
                   `
                   : data[monthYear]?.closing_balance?.finalClosing < 0
                   ? ` 
-                      <th class="th leftAlignText">---</th>
-                      <th class="th leftAlignText noWrap withYellowColor">-${convertNumber(
+                      <th class="th leftAlignText noWrap withYellowColor">${convertNumber(
                         Math.abs(
                           data[monthYear]?.closing_balance?.finalClosing
                         ),
                         true
                       )}</th>
+                      <th class="th leftAlignText">---</th>
                     `
                   : `<th class="th leftAlignText">${convertNumber(0, true)}</th>
                     <th class="th leftAlignText">${convertNumber(0, true)}</th>
                         `
               }
-              
+            </tr>
+            <tr>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">Total</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText">----</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.totalDebit,
+                true
+              )}</th>
+              <th class="th leftAlignText noWrap">${convertNumber(
+                data[monthYear]?.totalCredit,
+                true
+              )}</th>
             </tr>`;
       });
     } else {
@@ -765,6 +765,13 @@ async function generateLedger(params) {
         });
       }
     });
+    let netTotalCredit = totalCredit;
+    let netTotalDebit = totalDebit;
+    if (totalDebit - totalCredit > 0) {
+      netTotalCredit = totalCredit + Math.abs(totalDebit - totalCredit);
+    } else {
+      netTotalDebit = totalDebit + Math.abs(totalDebit - totalCredit);
+    }
     data = {
       ...data,
       [`${monthName}, ${correspondingYear}`]: {
@@ -778,8 +785,8 @@ async function generateLedger(params) {
           debit: totalDebit,
           finalClosing: totalDebit - totalCredit,
         },
-        totalCredit: totalCredit,
-        totalDebit: totalDebit,
+        totalCredit: netTotalCredit,
+        totalDebit: netTotalDebit,
         data: [...txnData],
       },
     };
