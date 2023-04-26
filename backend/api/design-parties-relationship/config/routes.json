@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/design-parties-relationships",
+      "handler": "design-parties-relationship.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/design-parties-relationships/count",
+      "handler": "design-parties-relationship.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/design-parties-relationships/:id",
+      "handler": "design-parties-relationship.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/design-parties-relationships",
+      "handler": "design-parties-relationship.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/design-parties-relationships/:id",
+      "handler": "design-parties-relationship.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/design-parties-relationships/:id",
+      "handler": "design-parties-relationship.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

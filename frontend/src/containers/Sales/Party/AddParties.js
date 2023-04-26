@@ -42,11 +42,9 @@ export default function AddParties(props) {
   const history = useHistory();
   const [loading, setLoading] = useState(false);
   const [error, setError] = React.useState({});
-
-  /** VIMP to check if the data is used for editing */
-  const [isEdit] = useState(
-    props.location.state ? props.location.state.edit : false
-  );
+  const [isEdit] = useState(props.isEdit ? props.isEdit : null);
+  const [isView] = useState(props.isView ? props.isView : null);
+  const [id] = useState(props.id ? props.id : null);
 
   /** This is a snack bar to display error is api call returned an error */
   const [snackBar, setSnackBar] = React.useState({

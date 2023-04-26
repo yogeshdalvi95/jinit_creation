@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 // @material-ui/core components
-import { Auth, Button, CustomInput, GridContainer, GridItem, Table } from "..";
-// core components
 import {
-  apiUrl,
-  backend_designs,
-  backend_designs_for_parties,
-  frontendServerUrl,
-} from "../../constants";
+  Auth,
+  Button,
+  CustomInput,
+  GridContainer,
+  GridItem,
+  Table,
+  RemoteAutoComplete,
+} from "..";
+// core components
+import { apiUrl, backend_designs, frontendServerUrl } from "../../constants";
 import {
   Backdrop,
   CircularProgress,
@@ -21,13 +24,15 @@ import styles from "../../assets/jss/material-dashboard-react/controllers/common
 import no_image_icon from "../../assets/img/no_image_icon.png";
 import { isEmptyString } from "../../Utils";
 import { useEffect } from "react";
-import { StockData } from "../DesignData";
-import { Grid, Typography } from "@mui/material";
+import { PartyData, StockData } from "../DesignData";
+import { Grid, Link, Typography } from "@mui/material";
+import { VIEWDESIGN } from "../../paths";
 const useStyles = makeStyles(styles);
 
 export default function DialogBoxForSelectingDesign(props) {
   const tableRef = React.createRef();
   const [openBackDrop, setBackDrop] = useState(false);
+  const [design, setDesign] = useState(null);
   const classes = useStyles();
   const [filter, setFilter] = useState({
     _sort: "id:desc",
@@ -44,6 +49,18 @@ export default function DialogBoxForSelectingDesign(props) {
       field: "material_no",
       sorting: false,
       align: "center",
+      render: (rowData) =>
+        rowData?.material_no ? (
+          <Link
+            href={`${frontendServerUrl}${VIEWDESIGN}/${rowData.id}`}
+            underline="always"
+            target="_blank"
+          >
+            {rowData.material_no}
+          </Link>
+        ) : (
+          "----"
+        ),
     },
     {
       title: "Image",
@@ -99,6 +116,20 @@ export default function DialogBoxForSelectingDesign(props) {
         return output;
       },
     },
+    {
+      title: "Order placed for party",
+      cellStyle: {
+        width: 300,
+        minWidth: 300,
+      },
+      render: (rowData) => {
+        if (rowData.partyDetails && rowData.partyDetails.length) {
+          return <PartyData data={rowData.partyDetails} />;
+        } else {
+          return "";
+        }
+      },
+    },
   ];
 
   const getDesignData = async (page, pageSize) => {
@@ -114,18 +145,13 @@ export default function DialogBoxForSelectingDesign(props) {
     });
 
     return new Promise((resolve, reject) => {
-      fetch(
-        props.partyId
-          ? backend_designs_for_parties
-          : backend_designs + "?" + new URLSearchParams(params),
-        {
-          method: "GET",
-          headers: {
-            "content-type": "application/json",
-            Authorization: "Bearer " + Auth.getToken(),
-          },
-        }
-      )
+      fetch(backend_designs + "?" + new URLSearchParams(params), {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+          Authorization: "Bearer " + Auth.getToken(),
+        },
+      })
         .then((response) => {
           if (response.ok) {
             return response.json();
@@ -134,7 +160,6 @@ export default function DialogBoxForSelectingDesign(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -149,6 +174,23 @@ export default function DialogBoxForSelectingDesign(props) {
           throw error;
         });
     });
+  };
+
+  const setDesignData = (design) => {
+    console.log("design => ", design);
+    if (design && design.value) {
+      setFilter((filter) => ({
+        ...filter,
+        id: design.value,
+      }));
+      setDesign(design);
+    } else {
+      delete filter["id"];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setDesign(null);
+    }
   };
 
   const orderFunc = (columnId, direction) => {
@@ -232,7 +274,7 @@ export default function DialogBoxForSelectingDesign(props) {
             <GridContainer>
               <GridItem xs={12} sm={12} md={12}>
                 <GridContainer>
-                  <GridItem xs={12} sm={3} md={6}>
+                  <GridItem xs={12} sm={12} md={4}>
                     <CustomInput
                       onChange={(e) => {
                         if (isEmptyString(e.target.value)) {
@@ -248,7 +290,7 @@ export default function DialogBoxForSelectingDesign(props) {
                         }
                       }}
                       type="text"
-                      labelText="Material Number"
+                      labelText="Type Ready Materal..."
                       name="material_no_contains"
                       noMargin
                       value={filter["material_no_contains"] || ""}
@@ -256,6 +298,33 @@ export default function DialogBoxForSelectingDesign(props) {
                       formControlProps={{
                         fullWidth: true,
                       }}
+                    />
+                  </GridItem>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={1}
+                    style={{
+                      marginTop: "auto",
+                      marginBottom: "auto",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    OR
+                  </GridItem>
+                  <GridItem
+                    xs={12}
+                    sm={12}
+                    md={4}
+                    style={{ marginTop: "auto", marginBottom: "auto" }}
+                  >
+                    <RemoteAutoComplete
+                      setSelectedData={setDesignData}
+                      searchString={"material_no"}
+                      apiName={backend_designs}
+                      placeholder="Select Ready Material..."
+                      selectedValue={design}
                     />
                   </GridItem>
 
@@ -271,10 +340,10 @@ export default function DialogBoxForSelectingDesign(props) {
                     <Button
                       color="primary"
                       onClick={() => {
-                        delete filter["material_no_contains"];
                         setFilter((filter) => ({
-                          ...filter,
+                          _sort: "id:desc",
                         }));
+                        setDesign(null);
                         tableRef.current.onQueryChange();
                       }}
                     >
@@ -302,10 +371,10 @@ export default function DialogBoxForSelectingDesign(props) {
                         },
                       },
                     }}
-                    detailPanel={(rowData) => {
-                      let output = generateSelectColorComponent(rowData);
-                      return output;
-                    }}
+                    // detailPanel={(rowData) => {
+                    //   let output = generateSelectColorComponent(rowData);
+                    //   return output;
+                    // }}
                     options={{
                       pageSize: 10,
                       search: false,

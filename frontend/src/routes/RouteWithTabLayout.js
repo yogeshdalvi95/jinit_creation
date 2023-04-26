@@ -251,6 +251,11 @@ const RouteWithTabLayout = ({
   };
 
   const calculateTotalPrice = () => {
+    console.log(
+      "formState?.designData?.colors",
+      formState?.designData,
+      selectedColor
+    );
     if (formState?.designData?.colors?.length) {
       let color = selectedColor.selectedColor;
       let colorPrice = selectedColor.selectedColorPrice;
@@ -329,6 +334,9 @@ const RouteWithTabLayout = ({
                       ).toFixed(2),
                       true
                     )}
+              </GridItem>
+              <GridItem xs={12}>
+                <b>Stock Available:</b> {colorPrice.stock}
               </GridItem>
             </>
           ) : null}

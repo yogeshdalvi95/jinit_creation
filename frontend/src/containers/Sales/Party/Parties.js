@@ -20,10 +20,11 @@ import styles from "../../../assets/jss/material-dashboard-react/controllers/com
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
 import { providerForGet } from "../../../api";
-import { ADDPARTY, ADDSELLER, EDITPARTY, EDITSELLER } from "../../../paths";
+import { ADDPARTY, EDITPARTY, VIEWPARTY } from "../../../paths";
 import { isEmptyString } from "../../../Utils";
 import ListAltIcon from "@material-ui/icons/ListAlt";
 import AddIcon from "@material-ui/icons/Add";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 
 const useStyles = makeStyles(styles);
 export default function Parties() {
@@ -236,6 +237,15 @@ export default function Parties() {
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
                       handleEdit(rowData);
+                    },
+                  }),
+                  (rowData) => ({
+                    icon: () => (
+                      <VisibilityIcon fontSize="small" color="primary" />
+                    ),
+                    tooltip: "View",
+                    onClick: (event, rowData) => {
+                      history.push(VIEWPARTY + "/" + rowData.id);
                     },
                   }),
                 ]}

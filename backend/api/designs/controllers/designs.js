@@ -44,7 +44,14 @@ module.exports = {
           },
           ["color"]
         );
+        const partyDetails = await strapi.query("design-parties-relationship").find(
+          {
+            design: d.id,
+          },
+          ["party"]
+        );
         newJson.color_price = designColorPrice;
+        newJson.partyDetails = partyDetails;
         newData.push(newJson);
       } else {
         newData.push(newJson);

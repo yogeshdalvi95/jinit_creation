@@ -24,7 +24,7 @@ import Typography from "@mui/material/Typography";
 import { useTheme } from "@material-ui/core/styles";
 import { useMediaQuery } from "@material-ui/core";
 // core components
-import { DESIGNS, NOTFOUNDPAGE, VIEWDESIGN } from "../../paths";
+import { DESIGNS, EDITDESIGN, NOTFOUNDPAGE, VIEWDESIGN } from "../../paths";
 import { providerForDownload, providerForGet } from "../../api";
 import { backend_view_designs, frontendServerUrl } from "../../constants";
 import { useState } from "react";
@@ -305,6 +305,24 @@ const ViewDesign = (props) => {
                       }}
                     >
                       Download All
+                    </Button>
+                  </GridItem>
+                  <GridItem
+                    style={{
+                      marginTop: isGreaterThanSmallScreen ? "1.8rem" : "",
+                    }}
+                  >
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        return window.open(
+                          `${frontendServerUrl}${EDITDESIGN}/${id}`,
+                          "_blank",
+                          "noreferrer"
+                        );
+                      }}
+                    >
+                      Edit
                     </Button>
                   </GridItem>
                 </GridContainer>

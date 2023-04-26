@@ -144,6 +144,10 @@ const ROLES = {
         action: [],
       },
       {
+        name: "design-parties-relationship",
+        action: [],
+      },
+      {
         name: "auth",
         type: "users-permissions",
         action: ["getalladmins", "getallstaff"],

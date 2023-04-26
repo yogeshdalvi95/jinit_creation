@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sale_party_relationships",
+  "info": {
+    "name": "Sale Party Relationship"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "sale": {
+      "model": "sales"
+    },
+    "party": {
+      "model": "party"
+    },
+    "design": {
+      "model": "designs"
+    }
+  }
+}

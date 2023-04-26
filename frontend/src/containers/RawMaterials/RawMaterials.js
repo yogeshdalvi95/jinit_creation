@@ -518,14 +518,7 @@ export default function RawMaterials() {
                   <Button
                     color="primary"
                     onClick={() => {
-                      //tableRef.current.onQueryChange();
-                      tableRef.current.onQueryChange(
-                        {
-                          page: 1,
-                          pageSize: 5,
-                        },
-                        () => {}
-                      );
+                      tableRef.current.onQueryChange();
                     }}
                   >
                     Search

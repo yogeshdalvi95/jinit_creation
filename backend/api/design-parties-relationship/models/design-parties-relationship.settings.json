@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "design_parties_relationships",
+  "info": {
+    "name": "design-parties-relationship"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "design": {
+      "model": "designs"
+    },
+    "party": {
+      "model": "party"
+    }
+  }
+}

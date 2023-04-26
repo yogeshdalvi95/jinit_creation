@@ -741,6 +741,13 @@ async function generateLedger(params) {
         });
       }
     });
+    let netTotalCredit = totalCredit;
+    let netTotalDebit = totalDebit;
+    if (totalDebit - totalCredit < 0) {
+      netTotalDebit = totalDebit + Math.abs(totalDebit - totalCredit);
+    } else {
+      netTotalCredit = totalCredit + Math.abs(totalDebit - totalCredit);
+    }
     data = {
       ...data,
       [`${monthName}, ${correspondingYear}`]: {
@@ -754,8 +761,8 @@ async function generateLedger(params) {
           debit: totalDebit,
           finalClosing: totalDebit - totalCredit,
         },
-        totalCredit: totalCredit,
-        totalDebit: totalDebit,
+        totalCredit: netTotalCredit,
+        totalDebit: netTotalDebit,
         data: [...txnData],
       },
     };

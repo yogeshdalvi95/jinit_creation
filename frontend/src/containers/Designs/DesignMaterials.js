@@ -12,6 +12,7 @@ import {
 import AddIcon from "@material-ui/icons/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useHistory } from "react-router-dom";
+import { Link } from "@mui/material";
 import ClearIcon from "@material-ui/icons/Clear";
 import EditIcon from "@material-ui/icons/Edit";
 
@@ -44,7 +45,7 @@ import {
   providerForPost,
   providerForPut,
 } from "../../api";
-import { EDITDESIGN } from "../../paths";
+import { EDITDESIGN, VIEWRAWMATERIALS } from "../../paths";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 
 export default function DesignMaterials(props) {
@@ -113,11 +114,19 @@ export default function DesignMaterials(props) {
       sorting: false,
       align: "center",
       render: (rowData) =>
-        rowData?.totalRow
-          ? ""
-          : rowData?.raw_material?.name
-          ? rowData?.raw_material?.name
-          : "---",
+        rowData?.totalRow ? (
+          ""
+        ) : rowData?.raw_material?.id ? (
+          <Link
+            href={`${frontendServerUrl}${VIEWRAWMATERIALS}/${rowData.raw_material.id}`}
+            underline="always"
+            target="_blank"
+          >
+            {rowData.raw_material.name}
+          </Link>
+        ) : (
+          "---"
+        ),
     },
     {
       title: `Price Per Piece`,
@@ -289,7 +298,6 @@ export default function DesignMaterials(props) {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })

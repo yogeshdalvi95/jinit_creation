@@ -20,7 +20,12 @@ import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { apiUrl, backend_designs, frontendServerUrl } from "../../constants";
-import { ADDDESIGN, EDITDESIGN, VIEWDESIGN } from "../../paths";
+import {
+  ADDDESIGN,
+  EDITDESIGN,
+  SELECTRAWMATERIALSWOHASH,
+  VIEWDESIGN,
+} from "../../paths";
 import { useHistory } from "react-router-dom";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { Backdrop, CircularProgress, makeStyles } from "@material-ui/core";
@@ -344,7 +349,9 @@ export default function Designs() {
                     icon: () => <EditIcon fontSize="small" />,
                     tooltip: "Edit",
                     onClick: (event, rowData) => {
-                      history.push(`${EDITDESIGN}/${rowData.id}`);
+                      history.push(
+                        `${EDITDESIGN}/${SELECTRAWMATERIALSWOHASH}/${rowData.id}`
+                      );
                     },
                   }),
                   (rowData) => ({

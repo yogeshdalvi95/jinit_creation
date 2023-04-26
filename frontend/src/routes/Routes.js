@@ -131,7 +131,12 @@ import ViewRoute from "./ViewRoute";
 import NotFoundRoute from "./NotFoundRoute";
 import RouteWithTabLayout from "./RouteWithTabLayout";
 import DailyUsage from "../containers/RawMaterials/DailyUsage/DailyUsage";
-import { EDITSALERETURNID, VIEWSALERETURNID } from "../paths/Paths";
+import {
+  EDITPARTYID,
+  EDITSALERETURNID,
+  VIEWPARTYID,
+  VIEWSALERETURNID,
+} from "../paths/Paths";
 
 const Routes = () => {
   return (
@@ -757,10 +762,24 @@ const Routes = () => {
 
         <PrivateRoute
           openSubMenu={true}
-          path={EDITPARTY}
+          path={EDITPARTYID}
           exact
           component={AddParties}
           header={"Edit Party"}
+          defaultPathToPush={PARTIES}
+          isDependent={true}
+          isEdit={true}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={VIEWPARTYID}
+          exact
+          component={AddParties}
+          header={"View Party"}
+          defaultPathToPush={PARTIES}
+          isDependent={true}
+          isView={true}
         />
 
         <NotFoundRoute

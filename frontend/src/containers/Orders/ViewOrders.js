@@ -18,6 +18,8 @@ import {
   backend_order_check_raw_material_availibility_for_all_order,
   backend_download_orders_sheet,
   frontendServerUrl,
+  backend_parties,
+  backend_designs,
 } from "../../constants";
 import {
   Auth,
@@ -30,6 +32,7 @@ import {
   FAB,
   GridContainer,
   GridItem,
+  RemoteAutoComplete,
   SnackBarComponent,
   Table,
 } from "../../components";
@@ -45,7 +48,11 @@ import EditIcon from "@material-ui/icons/Edit";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import moment from "moment";
 import { validateNumber } from "../../Utils";
-import { providerForDownload, providerForGet } from "../../api";
+import {
+  providerForDelete,
+  providerForDownload,
+  providerForGet,
+} from "../../api";
 import DownloadIcon from "@mui/icons-material/Download";
 
 const useStyles = makeStyles(styles);
@@ -54,6 +61,8 @@ export default function ViewOrders(props) {
   const classes = useStyles();
   const tableRef = React.createRef();
   const history = useHistory();
+  const [party, setParty] = useState(null);
+  const [design, setDesign] = useState(null);
   const [openBackDrop, setBackDrop] = useState(false);
 
   const [filter, setFilter] = useState({
@@ -366,6 +375,64 @@ export default function ViewOrders(props) {
       });
   };
 
+  const setPartyData = (party) => {
+    if (party && party.value) {
+      setFilter((filter) => ({
+        ...filter,
+        party: party.value,
+      }));
+      setParty(party);
+    } else {
+      delete filter["party"];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setParty(null);
+    }
+  };
+
+  const setDesignData = (design) => {
+    console.log("design => ", design);
+    if (design && design.value) {
+      setFilter((filter) => ({
+        ...filter,
+        design: design.value,
+      }));
+      setDesign(design);
+    } else {
+      delete filter["design"];
+      setFilter((filter) => ({
+        ...filter,
+      }));
+      setDesign(null);
+    }
+  };
+
+  const onRowDelete = async (data) => {
+    let setRef = tableRef.current;
+    await providerForDelete(backend_designs, data.id, Auth.getToken())
+      .then((res) => {
+        if (setRef) {
+          setRef.onQueryChange();
+        }
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "success",
+          message: "Successfully deleted design " + data?.material_no,
+        }));
+      })
+      .catch((err) => {
+        console.log("err ", err);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error deleting design " + data?.material_no,
+        }));
+      });
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -439,28 +506,32 @@ export default function ViewOrders(props) {
                     }}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Design Number"
-                    value={filter["design.material_no_contains"] || ""}
-                    name="design.material_no_contains"
-                    id="design.material_no_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={2}
+                  style={{ marginTop: "2.2rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={setDesignData}
+                    searchString={"material_no"}
+                    apiName={backend_designs}
+                    placeholder="Select Design..."
+                    selectedValue={design}
                   />
                 </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <CustomInput
-                    onChange={(event) => handleChange(event)}
-                    labelText="Party Name"
-                    value={filter["party.party_name_contains"] || ""}
-                    name="party.party_name_contains"
-                    id="party.party_name_contains"
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
+                <GridItem
+                  xs={12}
+                  sm={12}
+                  md={2}
+                  style={{ marginTop: "2.2rem" }}
+                >
+                  <RemoteAutoComplete
+                    setSelectedData={setPartyData}
+                    searchString={"party_name"}
+                    apiName={backend_parties}
+                    placeholder="Select Party..."
+                    selectedValue={party}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
@@ -618,6 +689,8 @@ export default function ViewOrders(props) {
                       setFilter({
                         _sort: "date:desc",
                       });
+                      setParty(null);
+                      setDesign(null);
                       tableRef.current.onQueryChange();
                     }}
                   >
@@ -680,6 +753,15 @@ export default function ViewOrders(props) {
                         },
                       }),
                     ]}
+                    editable={{
+                      onRowDelete: (oldData) =>
+                        new Promise((resolve) => {
+                          setTimeout(async () => {
+                            onRowDelete(oldData);
+                            resolve();
+                          }, 1000);
+                        }),
+                    }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,

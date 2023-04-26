@@ -236,6 +236,31 @@ export default function AddEditDesign(props) {
             severity: "success",
             message: "Design Edited Successfully",
           }));
+          if (
+            res.data &&
+            res.data.cannotBeRemoved &&
+            res.data.cannotBeRemoved.length > 0
+          ) {
+            let colors =
+              res.data && res.data.data && res.data.data.colors
+                ? res.data.data.colors
+                : [];
+            let value = "Color";
+            colors.forEach((r) => {
+              if (res.data.cannotBeRemoved.includes(r.id)) {
+                value = value + ` ${r.name},`;
+              }
+            });
+            value =
+              value + ` cannot be removed since their order is already present`;
+
+            setError((error) => ({
+              ...error,
+              colors: [value],
+            }));
+          } else {
+            setError({});
+          }
           setId(id);
           getEditViewData(id);
           setBackDrop(false);

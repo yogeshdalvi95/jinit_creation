@@ -11,41 +11,32 @@ import {
   CustomAutoComplete,
   CustomCheckBox,
   CustomInput,
-  DialogForSelectingCategory,
-  DialogForSelectingColor,
   FAB,
   GridContainer,
   GridItem,
   RawMaterialList,
+  RemoteAutoComplete,
   SnackBarComponent,
 } from "../../components";
 // core components
-import AsyncCreatableSelect from "react-select/async-creatable";
-import ClearIcon from "@material-ui/icons/Clear";
-import EditIcon from "@material-ui/icons/Edit";
 import KeyboardArrowLeftIcon from "@material-ui/icons/KeyboardArrowLeft";
 import styles from "../../assets/jss/material-dashboard-react/controllers/commonLayout";
 import { useHistory } from "react-router-dom";
-import { RAWMATERIALSVIEW } from "../../paths";
+import { EDITRAWMATERIALS, RAWMATERIALSVIEW } from "../../paths";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { useEffect } from "react";
 import { providerForGet, providerForPost, providerForPut } from "../../api";
 import {
+  backend_category,
+  backend_color,
   backend_departments,
   backend_raw_materials,
   backend_units,
   frontendServerUrl,
 } from "../../constants";
 import { useState } from "react";
-import {
-  Backdrop,
-  CircularProgress,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  Tooltip,
-} from "@material-ui/core";
+import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
 import { checkEmpty, hasError, isEmptyString, setErrors } from "../../Utils";
 import SweetAlert from "react-bootstrap-sweetalert";
 import classNames from "classnames";
@@ -73,7 +64,7 @@ export default function AddEditRawMaterial(props) {
   const classes = useStyles();
   const [alert, setAlert] = useState(null);
   const history = useHistory();
-  const [departments, setDepartments] = useState([]);
+  const [autoCompleteObject, setAutoCompleteObject] = React.useState({});
   /** RXJS */
   const [state, setState] = useState({
     data: {
@@ -91,8 +82,6 @@ export default function AddEditRawMaterial(props) {
     name: "",
     color: null,
     category: null,
-    colorName: "",
-    categoryName: "",
     size: "",
     balance: 0,
     costing: 0,
@@ -111,11 +100,6 @@ export default function AddEditRawMaterial(props) {
 
   const buttonClasses = buttonUseStyles();
   const [error, setError] = React.useState({});
-  const [openDialogForSelectingCategory, setOpenDialogForSelectingCategory] =
-    useState(false);
-  const [openDialogForSelectingColor, setOpenDialogForSelectingColor] =
-    useState(false);
-
   const [isEdit] = useState(props.isEdit ? props.isEdit : null);
   const [isView] = useState(props.isView ? props.isView : null);
   const [id] = useState(props.id ? props.id : null);
@@ -188,7 +172,6 @@ export default function AddEditRawMaterial(props) {
   }, [subject]);
 
   useEffect(() => {
-    getDepartmentData();
     getUnits();
   }, []);
 
@@ -217,8 +200,6 @@ export default function AddEditRawMaterial(props) {
       name: data.name,
       color: data.color ? data.color.id : null,
       category: data.category ? data.category.id : null,
-      colorName: data.color ? data.color.name : "",
-      categoryName: data.category ? data.category.name : "",
       size: data.size,
       balance: data.balance,
       costing: data.costing,
@@ -241,22 +222,6 @@ export default function AddEditRawMaterial(props) {
     )
       .then((res) => {
         setUnits(res.data.data);
-        setBackDrop(false);
-      })
-      .catch((err) => {});
-  };
-
-  const getDepartmentData = async () => {
-    setBackDrop(true);
-    await providerForGet(
-      backend_departments,
-      {
-        pageSize: -1,
-      },
-      Auth.getToken()
-    )
-      .then((res) => {
-        setDepartments(res.data.data);
         setBackDrop(false);
       })
       .catch((err) => {});
@@ -318,18 +283,20 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       [event.target.name]: event.target.value,
     }));
-    if (isEmptyString(event.target.value)) {
-      setState({
-        data: {
-          data: [],
-        },
-        loading: false,
-        errorMessage: "",
-        noResults: false,
-      });
-    } else {
-      if (subject) {
-        return subject.next(event.target.value);
+    if (event.target.name === "name") {
+      if (isEmptyString(event.target.value)) {
+        setState({
+          data: {
+            data: [],
+          },
+          loading: false,
+          errorMessage: "",
+          noResults: false,
+        });
+      } else {
+        if (subject) {
+          return subject.next(event.target.value);
+        }
       }
     }
   };
@@ -535,36 +502,6 @@ export default function AddEditRawMaterial(props) {
     }
   };
 
-  const handleCloseDialogForCategory = () => {
-    setOpenDialogForSelectingCategory(false);
-  };
-
-  const handleCloseDialogForColor = () => {
-    setOpenDialogForSelectingColor(false);
-  };
-
-  const handleAddColor = (row) => {
-    handleCloseDialogForColor();
-    setFormState((formState) => ({
-      ...formState,
-      color: row.id,
-      colorName: row.name,
-    }));
-  };
-
-  const handleAddCategory = (row) => {
-    delete error["category"];
-    setError((error) => ({
-      ...error,
-    }));
-    handleCloseDialogForCategory();
-    setFormState((formState) => ({
-      ...formState,
-      category: row.id,
-      categoryName: row.name,
-    }));
-  };
-
   const snackBarHandleClose = () => {
     setSnackBar((snackBar) => ({
       ...snackBar,
@@ -587,10 +524,6 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       color: rawMaterial?.color?.id ? rawMaterial.color.id : null,
       category: rawMaterial?.category?.id ? rawMaterial.category.id : null,
-      colorName: rawMaterial?.color?.name ? rawMaterial.color.name : "",
-      categoryName: rawMaterial?.category?.name
-        ? rawMaterial.category.name
-        : null,
       size: rawMaterial?.size ? rawMaterial.size : "--",
       balance: 0,
       costing: rawMaterial?.costing ? rawMaterial.costing : 0,
@@ -598,85 +531,39 @@ export default function AddEditRawMaterial(props) {
         ? rawMaterial.department.id
         : null,
       unit: rawMaterial?.unit?.id ? rawMaterial.unit.id : null,
-      unit_name: "",
       is_die: rawMaterial?.is_die ? true : false,
       name_value: rawMaterial?.name_value ? rawMaterial.name_value : [],
     }));
   };
 
-  const filterData = (data) => {
-    return data.map((d) => ({
-      label: d.name,
-      value: d.id,
+  const setAutoCompleteData = (data, key) => {
+    delete error[key];
+    setError((error) => ({
+      ...error,
     }));
-  };
-
-  const getRawMaterialsData = (inputValue) => {
-    let params = {
-      page: 1,
-      pageSize: 20,
-      name_contains: inputValue,
-    };
-
-    return new Promise((resolve, reject) => {
-      fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
-        method: "GET",
-        headers: {
-          "content-type": "application/json",
-          Authorization: "Bearer " + Auth.getToken(),
-        },
-      })
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            if (response.status === 401) {
-              Auth.clearAppStorage();
-              window.location.href = `${frontendServerUrl}/login`;
-            } else {
-            }
-          }
-        })
-        .then((result) => {
-          resolve(filterData(result.data));
-        })
-        .catch((error) => {
-          throw error;
-        });
-    });
-  };
-
-  const handleChange1 = (newValue, actionMeta) => {
-    console.group("Value Changed");
-    console.log(newValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-  };
-  const handleInputChange = (inputValue, actionMeta) => {
-    console.group("Input Changed");
-    console.log(inputValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-    setFormState((formState) => ({
-      ...formState,
-      name: inputValue,
-    }));
+    if (data && data.value) {
+      setFormState((formState) => ({
+        ...formState,
+        [key]: data.value,
+      }));
+      // setAutoCompleteObject((autoCompleteObject) => ({
+      //   ...autoCompleteObject,
+      //   [key]: data,
+      // }));
+    } else {
+      delete formState[key];
+      delete autoCompleteObject[key];
+      setFormState((formState) => ({
+        ...formState,
+      }));
+      // setAutoCompleteObject((autoCompleteObject) => ({
+      //   ...autoCompleteObject,
+      // }));
+    }
   };
 
   return (
     <>
-      <DialogForSelectingCategory
-        handleCancel={handleCloseDialogForCategory}
-        handleClose={handleCloseDialogForCategory}
-        handleAddCategory={handleAddCategory}
-        open={openDialogForSelectingCategory}
-      />
-      <DialogForSelectingColor
-        handleCancel={handleCloseDialogForColor}
-        handleClose={handleCloseDialogForColor}
-        handleAddColor={handleAddColor}
-        open={openDialogForSelectingColor}
-      />
       {alert}
       <SnackBarComponent
         open={snackBar.show}
@@ -697,24 +584,6 @@ export default function AddEditRawMaterial(props) {
               <p className={classes.cardCategoryWhite}></p>
             </CardHeader>
             <CardBody>
-              {/* <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <AsyncCreatableSelect
-                    cacheOptions
-                    loadOptions={getRawMaterialsData}
-                    onChange={handleChange1}
-                    onInputChange={handleInputChange}
-                    // onChange={this.handleChange}
-                    // onInputChange={(event) =>  setFormState((formState) => ({
-                    //   ...formState,
-                    //   name: event
-                    // }))}
-                    inputValue={formState.name}
-                    value={formState.name}
-                  />
-                </GridItem>
-              </GridContainer> */}
-
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
@@ -759,6 +628,68 @@ export default function AddEditRawMaterial(props) {
                 </GridContainer>
               )}
               <GridContainer>
+                <GridItem xs={12} sm={12} md={4}>
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "category")
+                    }
+                    disabled={isView}
+                    searchString={"name"}
+                    apiName={backend_category}
+                    placeholder="Select Category"
+                    selectedValue={formState["category"]}
+                    isError={hasError("category", error)}
+                    errorText={
+                      hasError("category", error)
+                        ? error["category"].map((error) => {
+                            return error + " ";
+                          })
+                        : ""
+                    }
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={4}>
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "department")
+                    }
+                    disabled={isView}
+                    searchString={"name"}
+                    apiName={backend_departments}
+                    placeholder="Select Department"
+                    selectedValue={formState["department"]}
+                    isError={hasError("department", error)}
+                    errorText={
+                      hasError("department", error)
+                        ? error["department"].map((error) => {
+                            return error + " ";
+                          })
+                        : ""
+                    }
+                  />
+                </GridItem>
+                <GridItem xs={12} sm={12} md={4}>
+                  <RemoteAutoComplete
+                    setSelectedData={(data) =>
+                      setAutoCompleteData(data, "color")
+                    }
+                    disabled={isView}
+                    searchString={"name"}
+                    apiName={backend_color}
+                    placeholder="Select Color"
+                    selectedValue={formState["color"]}
+                    isError={hasError("color", error)}
+                    errorText={
+                      hasError("color", error)
+                        ? error["color"].map((error) => {
+                            return error + " ";
+                          })
+                        : ""
+                    }
+                  />
+                </GridItem>
+              </GridContainer>
+              {/* <GridContainer>
                 <GridItem
                   xs={12}
                   sm={12}
@@ -918,9 +849,9 @@ export default function AddEditRawMaterial(props) {
                     </GridItem>
                   </GridContainer>
                 </GridItem>
-              </GridContainer>
+              </GridContainer> */}
               <GridContainer>
-                <GridItem xs={12} sm={12} md={4}>
+                {/* <GridItem xs={12} sm={12} md={4}>
                   <CustomAutoComplete
                     id="department-name"
                     labelText="Department"
@@ -941,7 +872,6 @@ export default function AddEditRawMaterial(props) {
                         })
                       ] || null
                     }
-                    /** For setting errors */
                     helperTextId={"helperText_department"}
                     isHelperText={hasError("department", error)}
                     helperText={
@@ -953,7 +883,7 @@ export default function AddEditRawMaterial(props) {
                     }
                     error={hasError("department", error)}
                   />
-                </GridItem>
+                </GridItem> */}
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}
@@ -1154,7 +1084,19 @@ export default function AddEditRawMaterial(props) {
                 </GridContainer>
               ))}
             </CardBody>
-            {isView ? null : (
+            {isView ? (
+              <CardFooter>
+                <Button
+                  color="primary"
+                  onClick={(e) => {
+                    history.push(EDITRAWMATERIALS + "/" + id);
+                    window.location.reload();
+                  }}
+                >
+                  Edit
+                </Button>
+              </CardFooter>
+            ) : (
               <CardFooter>
                 <Button color="primary" onClick={(e) => submit(e)}>
                   Save

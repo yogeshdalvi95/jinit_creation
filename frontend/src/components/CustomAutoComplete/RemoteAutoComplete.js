@@ -157,6 +157,7 @@ const RemoteAutoComplete = (props) => {
   return (
     <>
       <AsyncSelect
+        isDisabled={props.disabled}
         cacheOptions
         loadOptions={loadOptions}
         defaultOptions

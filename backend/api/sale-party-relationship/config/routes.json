@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/sale-party-relationships",
+      "handler": "sale-party-relationship.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-party-relationships/count",
+      "handler": "sale-party-relationship.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/sale-party-relationships/:id",
+      "handler": "sale-party-relationship.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/sale-party-relationships",
+      "handler": "sale-party-relationship.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sale-party-relationships/:id",
+      "handler": "sale-party-relationship.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/sale-party-relationships/:id",
+      "handler": "sale-party-relationship.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

@@ -568,46 +568,11 @@ export default function Sales() {
                 }}
                 actions={[
                   (rowData) => ({
-                    icon: () => <EditIcon fontSize="small" />,
+                    icon: () => <EditIcon fontSize="small" color="primary" />,
                     tooltip: "Edit",
-                    disabled: false,
-                    onClick: (event, rowData) => 
-                    new Promise((resolve) => {
-                      setTimeout(async () => {
-                        setBackDrop(true)
-                        await providerForDelete(
-                          backend_sales,
-                          rowData.id,
-                          Auth.getToken()
-                        )
-                          .then(async (res) => {
-                            setBackDrop(false)
-                            history.push(`${EDITSALES}/${rowData.id}`);
-                          })
-                          .catch((err) => {
-                            console.log("Error => ", err.response);
-                            if (
-                              err &&
-                              err.response &&
-                              err.response.data &&
-                              err.response.data.message
-                            ) {
-                              let status = err.response.data.message.status;
-                              if (status === -1) {
-                                alertBox(err.response.data.message.data.id);
-                              }
-                            } else {
-                              setSnackBar((snackBar) => ({
-                                ...snackBar,
-                                show: true,
-                                severity: "error",
-                                message: "Error deleting sale",
-                              }));
-                            }
-                          });
-                        resolve();
-                      }, 1000);
-                    }),
+                    onClick: (event, rowData) => {
+                      history.push(`${EDITSALES}/${rowData.id}`);
+                    },
                   }),
                   (rowData) => ({
                     icon: () => (

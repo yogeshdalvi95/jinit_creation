@@ -141,7 +141,10 @@ export const serviceProviderForDeleteRequest = async (
     Authorization: `Bearer ${token}`,
   }
 ) => {
-  const URL = url + "/" + id;
+  let URL = url;
+  if (id) {
+    URL = url + "/" + id;
+  }
   return await axios(URL, {
     method: "DELETE",
     headers: headers,

@@ -48,7 +48,12 @@ import {
 } from "../../constants";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { providerForGet, providerForPost, providerForPut } from "../../api";
+import {
+  providerForDelete,
+  providerForGet,
+  providerForPost,
+  providerForPut,
+} from "../../api";
 import moment from "moment";
 import { validateNumber } from "../../Utils";
 import { Chip, Typography } from "@mui/material";
@@ -239,6 +244,7 @@ export default function AddOrder(props) {
     await providerForGet(backend_color, { pageSize: -1 }, Auth.getToken())
       .then((res) => {
         setBackDrop(false);
+
         setColor(res.data.data);
       })
       .catch((err) => {
@@ -312,24 +318,7 @@ export default function AddOrder(props) {
       },
     ]);
 
-    let whiteColorId = null;
-    setColorPresent(
-      data.colors.map((c) => {
-        if (c.name.toLowerCase() === "white") {
-          whiteColorId = c.id;
-        }
-        return c.id;
-      })
-    );
-
-    if (!whiteColorId) {
-      setWhiteColorError(
-        "Note:- No white/plain color ratio found in design, please add white/plain colors detail in design to add its ratio below"
-      );
-    }
-
-    setColor(color.filter((c) => c.name.toLowerCase() !== "white"));
-    //    setColor([...data.colors]);
+    setColorPresent(data.colors.map((c) => c.id));
 
     setDesign((design) => ({
       ...design,
@@ -737,6 +726,42 @@ export default function AddOrder(props) {
 
     return validateNumber(formState.quantity) - output;
   };
+
+  const deleteDesignColor = async (colorKey) => {
+    if (id && design.id && colorKey) {
+      await providerForDelete(
+        `${backend_order}/id/design/${design.id}/color/${colorKey}`,
+        null,
+        Auth.getToken()
+      )
+        .then(async (res) => {
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "success",
+            message: "Successfully deleted the ratio",
+          }));
+        })
+        .catch((err) => {
+          console.log("Error => ", err.response);
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error deleting ratio",
+          }));
+        });
+    } else {
+      setSnackBar((snackBar) => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: "Error deleting ratio!",
+      }));
+    }
+  };
+
+  console.log('Color => ', color)
 
   return (
     <GridContainer>
@@ -1514,24 +1539,53 @@ export default function AddOrder(props) {
                                 name="quantityRemaining"
                               />
                             </GridItem>
-                            {/* <GridItem xs={12} sm={12} md={1}>
-                              <Tooltip
-                                title={
-                                  design.id ? "Change Design " : "Select Design"
-                                }
-                              >
-                                {colorPresent.includes(r.color) ? (
-                                  <DoneIcon color="success" />
-                                ) : (
-                                  <DoneIcon color="damger" />
-                                )}
-                              </Tooltip>
-                            </GridItem> */}
 
                             {isView ||
                             isEdit ||
                             formState.cancelled ||
-                            formState.completed ? null : (
+                            formState.completed ? (
+                              <>
+                                <GridItem
+                                  xs={6}
+                                  sm={6}
+                                  md={1}
+                                  className={classes.addDeleteFabButon}
+                                >
+                                  <FAB
+                                    marginTop={2}
+                                    color="danger"
+                                    align={"end"}
+                                    size={"small"}
+                                    onClick={() => {
+                                      deleteDesignColor(key);
+
+                                      if (ratio.length === 1) {
+                                        setRatio([
+                                          {
+                                            color: null,
+                                            colorData: null,
+                                            quantity: 0,
+                                            quantityCompleted: 0,
+                                            order: null,
+                                          },
+                                        ]);
+                                      } else {
+                                        setRatio([
+                                          ...ratio.slice(0, key),
+                                          ...ratio.slice(key + 1),
+                                        ]);
+                                      }
+                                      delete info["color" + key];
+                                      setInfo((info) => ({
+                                        ...info,
+                                      }));
+                                    }}
+                                  >
+                                    <DeleteIcon />
+                                  </FAB>
+                                </GridItem>
+                              </>
+                            ) : (
                               <>
                                 <GridItem
                                   xs={6}
