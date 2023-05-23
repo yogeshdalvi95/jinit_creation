@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -33,7 +33,6 @@ import {
   backend_departments,
   backend_raw_materials,
   backend_units,
-  frontendServerUrl,
 } from "../../constants";
 import { useState } from "react";
 import { Backdrop, CircularProgress, InputAdornment } from "@material-ui/core";
@@ -42,17 +41,6 @@ import SweetAlert from "react-bootstrap-sweetalert";
 import classNames from "classnames";
 import buttonStyles from "../../assets/jss/material-dashboard-react/components/buttonStyle.js";
 import validationForm from "./form/RawMaterialvalidation.json";
-import SearchBar from "material-ui-search-bar";
-import { BehaviorSubject, of, merge, throwError } from "rxjs";
-import {
-  debounceTime,
-  map,
-  distinctUntilChanged,
-  filter,
-  switchMap,
-  catchError,
-} from "rxjs/operators";
-
 // import { SearchService } from "../../Utils/SearchService";
 
 // const searchService = new SearchService();
@@ -61,20 +49,10 @@ const useStyles = makeStyles(styles);
 const buttonUseStyles = makeStyles(buttonStyles);
 
 export default function AddEditRawMaterial(props) {
+  const childRef = useRef();
   const classes = useStyles();
   const [alert, setAlert] = useState(null);
   const history = useHistory();
-  const [autoCompleteObject, setAutoCompleteObject] = React.useState({});
-  /** RXJS */
-  const [state, setState] = useState({
-    data: {
-      data: [],
-    },
-    loading: false,
-    errorMessage: "",
-    noResults: false,
-  });
-  const [subject, setSubject] = useState(null);
   const [units, setUnits] = useState([]);
   const [openBackDrop, setBackDrop] = useState(false);
   const [formState, setFormState] = useState({
@@ -109,67 +87,6 @@ export default function AddEditRawMaterial(props) {
       getRawMaterialInfo();
     }
   }, []);
-
-  useEffect(() => {
-    if (subject === null) {
-      const sub = new BehaviorSubject("");
-      setSubject(sub);
-    } else {
-      const observable = subject
-        .pipe(
-          map((s) => s.trim()),
-          distinctUntilChanged(),
-          filter((s) => s.length >= 2),
-          debounceTime(200),
-          switchMap((term) => {
-            let params = {
-              page: 1,
-              pageSize: 20,
-              name_contains: term,
-            };
-            return merge(
-              of({ loading: true, errorMessage: "", noResults: false }),
-              fetch(backend_raw_materials + "?" + new URLSearchParams(params), {
-                method: "GET",
-                headers: {
-                  "content-type": "application/json",
-                  Authorization: "Bearer " + Auth.getToken(),
-                },
-              })
-                .then((response) => {
-                  if (response.ok) {
-                    return response.json().then((data) => ({
-                      data,
-                      loading: false,
-                      noResults: data.length === 0,
-                    }));
-                  }
-                  return response.json().then((data) => ({
-                    data: [],
-                    loading: false,
-                    errorMessage: data.title,
-                  }));
-                })
-                .catch((error) => {
-                  throw error;
-                })
-            );
-          }),
-          catchError((e) => ({
-            loading: false,
-            errorMessage: "An application error occured",
-          }))
-        )
-        .subscribe((newState) => {
-          setState((s) => Object.assign({}, s, newState));
-        });
-
-      return () => {
-        observable.unsubscribe();
-        subject.unsubscribe();
-      };
-    }
-  }, [subject]);
 
   useEffect(() => {
     getUnits();
@@ -261,19 +178,6 @@ export default function AddEditRawMaterial(props) {
     }));
   };
 
-  useEffect(() => {
-    if (isEmptyString(formState.name)) {
-      setState({
-        data: {
-          data: [],
-        },
-        loading: false,
-        errorMessage: "",
-        noResults: false,
-      });
-    }
-  }, [formState.name]);
-
   const handleChange = (event) => {
     delete error[event.target.name];
     setError((error) => ({
@@ -283,21 +187,9 @@ export default function AddEditRawMaterial(props) {
       ...formState,
       [event.target.name]: event.target.value,
     }));
+
     if (event.target.name === "name") {
-      if (isEmptyString(event.target.value)) {
-        setState({
-          data: {
-            data: [],
-          },
-          loading: false,
-          errorMessage: "",
-          noResults: false,
-        });
-      } else {
-        if (subject) {
-          return subject.next(event.target.value);
-        }
-      }
+      childRef.current.handleChangeFunction(formState.name);
     }
   };
 
@@ -512,14 +404,6 @@ export default function AddEditRawMaterial(props) {
   };
 
   const handleSelectRawMaterial = (rawMaterial) => {
-    setState({
-      data: {
-        data: [],
-      },
-      loading: false,
-      errorMessage: "",
-      noResults: false,
-    });
     setFormState((formState) => ({
       ...formState,
       color: rawMaterial?.color?.id ? rawMaterial.color.id : null,
@@ -546,19 +430,11 @@ export default function AddEditRawMaterial(props) {
         ...formState,
         [key]: data.value,
       }));
-      // setAutoCompleteObject((autoCompleteObject) => ({
-      //   ...autoCompleteObject,
-      //   [key]: data,
-      // }));
     } else {
       delete formState[key];
-      delete autoCompleteObject[key];
       setFormState((formState) => ({
         ...formState,
       }));
-      // setAutoCompleteObject((autoCompleteObject) => ({
-      //   ...autoCompleteObject,
-      // }));
     }
   };
 
@@ -611,22 +487,15 @@ export default function AddEditRawMaterial(props) {
                   />
                 </GridItem>
               </GridContainer>
-              {state.data && state.data.data && state.data.data.length ? (
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <RawMaterialList
-                      data={state.data.data}
-                      handleSelectRawMaterial={handleSelectRawMaterial}
-                    />
-                  </GridItem>
-                </GridContainer>
-              ) : (
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    No data
-                  </GridItem>
-                </GridContainer>
-              )}
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <RawMaterialList
+                    isView={isView}
+                    ref={childRef}
+                    handleSelectRawMaterial={handleSelectRawMaterial}
+                  />
+                </GridItem>
+              </GridContainer>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={4}>
                   <RemoteAutoComplete
@@ -689,201 +558,7 @@ export default function AddEditRawMaterial(props) {
                   />
                 </GridItem>
               </GridContainer>
-              {/* <GridContainer>
-                <GridItem
-                  xs={12}
-                  sm={12}
-                  md={5}
-                  style={{
-                    margin: "27px 10px 0px 13px",
-                  }}
-                >
-                  <GridContainer
-                    style={{
-                      border: "1px solid #C0C0C0",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={8}
-                      style={{
-                        margin: "15px 0px 0px",
-                      }}
-                    >
-                      <GridContainer style={{ dispay: "flex" }}>
-                        <GridItem xs={12} sm={12} md={12}>
-                          <b>Category : </b> {formState.categoryName}
-                        </GridItem>
-                      </GridContainer>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={1}>
-                      <Tooltip
-                        title={
-                          formState.category
-                            ? "Change Category "
-                            : "Select Category"
-                        }
-                      >
-                        <IconButton
-                          onClick={() => {
-                            setOpenDialogForSelectingCategory(true);
-                          }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={1}>
-                      <IconButton
-                        onClick={() => {
-                          delete error["category"];
-                          setError((error) => ({
-                            ...error,
-                          }));
-                          setFormState((formState) => ({
-                            ...formState,
-                            category: null,
-                            categoryName: "",
-                          }));
-                        }}
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </GridItem>
-                  </GridContainer>
-                  <GridContainer>
-                    <GridItem>
-                      {hasError("category", error) ? (
-                        <GridItem xs={12} sm={12} md={12}>
-                          <FormHelperText
-                            id={"category_helpertext_id"}
-                            error={hasError("category", error)}
-                          >
-                            {hasError("category", error)
-                              ? error["category"].map((error) => {
-                                  return error + " ";
-                                })
-                              : null}
-                          </FormHelperText>
-                        </GridItem>
-                      ) : null}
-                    </GridItem>
-                  </GridContainer>
-                </GridItem>
-                <GridItem xs={12} sm={12} md={1}></GridItem>
-                <GridItem
-                  xs={12}
-                  sm={12}
-                  md={5}
-                  style={{
-                    margin: "27px 0px 0px",
-                  }}
-                >
-                  <GridContainer
-                    style={{
-                      border: "1px solid #C0C0C0",
-                      borderRadius: "10px",
-                    }}
-                  >
-                    <GridItem
-                      xs={12}
-                      sm={12}
-                      md={8}
-                      style={{
-                        margin: "15px 0px 0px",
-                      }}
-                    >
-                      <GridContainer style={{ dispay: "flex" }}>
-                        <GridItem xs={12} sm={12} md={12}>
-                          <b>Color : </b> {formState.colorName}
-                        </GridItem>
-                      </GridContainer>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={1}>
-                      <Tooltip
-                        title={
-                          formState.category ? "Change Color " : "Select Color"
-                        }
-                      >
-                        <IconButton
-                          onClick={() => {
-                            setOpenDialogForSelectingColor(true);
-                          }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={1}>
-                      <IconButton
-                        onClick={() => {
-                          setFormState((formState) => ({
-                            ...formState,
-                            color: null,
-                            colorName: "",
-                          }));
-                        }}
-                      >
-                        <ClearIcon />
-                      </IconButton>
-                    </GridItem>
-                  </GridContainer>
-                  <GridContainer>
-                    <GridItem>
-                      {hasError("color", error) ? (
-                        <GridItem xs={12} sm={12} md={12}>
-                          <FormHelperText
-                            id={"color_helpertext_id"}
-                            error={hasError("color", error)}
-                          >
-                            {hasError("color", error)
-                              ? error["color"].map((error) => {
-                                  return error + " ";
-                                })
-                              : null}
-                          </FormHelperText>
-                        </GridItem>
-                      ) : null}
-                    </GridItem>
-                  </GridContainer>
-                </GridItem>
-              </GridContainer> */}
               <GridContainer>
-                {/* <GridItem xs={12} sm={12} md={4}>
-                  <CustomAutoComplete
-                    id="department-name"
-                    labelText="Department"
-                    disabled={isView}
-                    autocompleteId={"department"}
-                    optionKey={"name"}
-                    options={departments}
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    onChange={(event, value) => {
-                      handleChangeAutoComplete("department", event, value);
-                    }}
-                    value={
-                      departments[
-                        departments.findIndex(function (item, i) {
-                          return item.id === formState.department;
-                        })
-                      ] || null
-                    }
-                    helperTextId={"helperText_department"}
-                    isHelperText={hasError("department", error)}
-                    helperText={
-                      hasError("department", error)
-                        ? error["department"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("department", error)}
-                  />
-                </GridItem> */}
                 <GridItem xs={12} sm={12} md={3}>
                   <CustomInput
                     onChange={(event) => handleChange(event)}

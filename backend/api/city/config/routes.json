@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/webapi/private/cities",
+      "handler": "city.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/cities/count",
+      "handler": "city.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/cities/:id",
+      "handler": "city.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/cities",
+      "handler": "city.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/webapi/private/cities/:id",
+      "handler": "city.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/webapi/private/cities/:id",
+      "handler": "city.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

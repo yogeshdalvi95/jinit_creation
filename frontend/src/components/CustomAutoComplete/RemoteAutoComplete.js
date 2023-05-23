@@ -79,7 +79,6 @@ const RemoteAutoComplete = (props) => {
     };
 
     let selectedData = props.selectedValue;
-    console.log("selectedData => ", selectedData);
     if (typeof selectedData === "number" || typeof selectedData === "string") {
       getData(selectedData);
     } else if (typeof selectedData === "object") {

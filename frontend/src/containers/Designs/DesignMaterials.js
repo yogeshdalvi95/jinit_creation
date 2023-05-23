@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Backdrop,
   CircularProgress,
@@ -31,6 +31,8 @@ import {
   RawMaterialDetail,
   DialogForSelectingCategory,
   CustomAutoComplete,
+  RawMaterialList,
+  DialogBox,
 } from "../../components";
 import {
   backend_departments,
@@ -49,6 +51,7 @@ import { EDITDESIGN, VIEWRAWMATERIALS } from "../../paths";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 
 export default function DesignMaterials(props) {
+  const childRef = useRef();
   const useStyles = makeStyles(styles);
   const theme = useTheme();
   const classes = useStyles();
@@ -56,9 +59,16 @@ export default function DesignMaterials(props) {
   const history = useHistory();
   const tableRef = React.createRef();
   const [openBackDrop, setOpenBackDrop] = useState(false);
+  const [openDialogToAcceptQuantity, setOpenDialogToAcceptQuantity] =
+    useState(false);
   const [departments, setDepartments] = useState([]);
+  const [rawMaterialName, setRawMaterialName] = useState("");
   const [colors] = useState(props?.designData?.colors);
   const isSmallerScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const [selectedRawMaterial, setSelectedRawmaterial] = useState({
+    rawMaterial: null,
+    quantity: 1,
+  });
   const [filter, setFilter] = useState({
     _sort: "updated_at:desc",
     isRawMaterial: props?.isRawMaterial,
@@ -427,7 +437,7 @@ export default function DesignMaterials(props) {
     }
   };
 
-  const addDesign = async (val, obj = {}, pcs = 1) => {
+  const addDesign = async (val, pcs = 1) => {
     let setRef = tableRef.current;
     handleCloseDialogForDesignMaterial();
     setOpenBackDrop(true);
@@ -437,7 +447,7 @@ export default function DesignMaterials(props) {
         raw_material: val.id,
         ready_material: null,
         design: filter.design,
-        color: filter?.isColor ? filter?.color : null,
+        color: filter?.isColor ? filter.color : null,
         quantity: quantity,
         price_per_piece: validateNumber(val.costing),
         total_price: validateNumber(val.costing) * quantity,
@@ -509,6 +519,14 @@ export default function DesignMaterials(props) {
     setOpenDialogForSelectingCategory(false);
   };
 
+  const handleSelectRawMaterial = (rawMaterial) => {
+    setSelectedRawmaterial({
+      quantity: 1,
+      rawMaterial: rawMaterial,
+    });
+    setOpenDialogToAcceptQuantity(true);
+  };
+
   return (
     <>
       <SnackBarComponent
@@ -540,6 +558,54 @@ export default function DesignMaterials(props) {
         filterId={filter.design}
         filterBy="design"
       />
+      <DialogBox
+        open={openDialogToAcceptQuantity}
+        dialogTitle={"Add Raw Material Quantity"}
+        cancelButton={"Cancel"}
+        acceptButton={"OK"}
+        handleAccept={() => {
+          setOpenDialogToAcceptQuantity(false);
+          addDesign(
+            selectedRawMaterial.rawMaterial,
+            selectedRawMaterial.quantity
+          );
+        }}
+        handleCancel={() => {
+          setOpenDialogToAcceptQuantity(false);
+          addDesign(selectedRawMaterial.rawMaterial, 1);
+        }}
+        handleClose={() => {
+          setOpenDialogToAcceptQuantity(false);
+          addDesign(selectedRawMaterial.rawMaterial, 1);
+        }}
+      >
+        <CustomInput
+          onChange={(event) => {
+            setSelectedRawmaterial((selectedRawMaterial) => ({
+              ...selectedRawMaterial,
+              quantity: event.target.value,
+            }));
+          }}
+          labelText="Raw material quantity"
+          name="name"
+          value={selectedRawMaterial.quantity}
+          id="name"
+          autoComplete="off"
+          formControlProps={{
+            fullWidth: true,
+          }}
+          inputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                {selectedRawMaterial.rawMaterial &&
+                !isEmptyString(selectedRawMaterial.rawMaterial.unit.name)
+                  ? "/" + selectedRawMaterial.rawMaterial.unit.name
+                  : ""}
+              </InputAdornment>
+            ),
+          }}
+        />
+      </DialogBox>
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
           <GridContainer>
@@ -575,6 +641,32 @@ export default function DesignMaterials(props) {
                 <AddIcon />
               </FAB>
             </GridItem>
+          </GridContainer>
+          <GridContainer>
+            <GridItem xs={12} sm={12} md={6}></GridItem>
+            <GridItem xs={12} sm={12} md={6}>
+              <CustomInput
+                onChange={(event) => {
+                  setRawMaterialName(event.target.value);
+                  childRef.current.handleChangeFunction(event.target.value);
+                }}
+                labelText="Type for a raw material to add in design"
+                name="name"
+                value={rawMaterialName}
+                id="name"
+                autoComplete="off"
+                formControlProps={{
+                  fullWidth: true,
+                }}
+              />
+              <RawMaterialList
+                isView={false}
+                ref={childRef}
+                handleSelectRawMaterial={handleSelectRawMaterial}
+              />
+            </GridItem>
+          </GridContainer>
+          <GridContainer>
             <GridItem
               xs={12}
               sm={12}

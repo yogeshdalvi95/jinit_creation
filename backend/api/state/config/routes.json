@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/webapi/private/states",
+      "handler": "state.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/states/count",
+      "handler": "state.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/states/:id",
+      "handler": "state.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/states",
+      "handler": "state.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/webapi/private/states/:id",
+      "handler": "state.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/webapi/private/states/:id",
+      "handler": "state.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

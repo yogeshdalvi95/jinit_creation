@@ -24,6 +24,7 @@ export const backend_category = `${apiBackendUrl}/categories`;
 export const backend_color = `${apiBackendUrl}/colors`;
 
 export const backend_raw_materials = `${apiBackendUrl}/raw-materials`;
+export const backend_cities = `${apiBackendUrl}/cities`;
 export const backend_raw_materials_for_autocomplete = `${apiBackendUrl}/raw-materials/getRawMaterialNameForAutoComplete`;
 
 export const backend_monthly_sheet = `${apiBackendUrl}/monthly-sheets`;

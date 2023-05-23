@@ -22,6 +22,18 @@ const ROLES = {
   "Super Admin": {
     controllers: [
       {
+        name: "country",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "state",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "city",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "category",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },

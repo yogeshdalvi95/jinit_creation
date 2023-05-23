@@ -251,11 +251,6 @@ const RouteWithTabLayout = ({
   };
 
   const calculateTotalPrice = () => {
-    console.log(
-      "formState?.designData?.colors",
-      formState?.designData,
-      selectedColor
-    );
     if (formState?.designData?.colors?.length) {
       let color = selectedColor.selectedColor;
       let colorPrice = selectedColor.selectedColorPrice;

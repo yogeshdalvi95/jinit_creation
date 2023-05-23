@@ -1,0 +1,68 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/webapi/private/countries",
+      "handler": "country.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/countries/count",
+      "handler": "country.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/countries/:id",
+      "handler": "country.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/countries",
+      "handler": "country.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/countries/state",
+      "handler": "country.createState",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/countries/city",
+      "handler": "country.createCity",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/webapi/private/countries/:id",
+      "handler": "country.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/webapi/private/countries/:id",
+      "handler": "country.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

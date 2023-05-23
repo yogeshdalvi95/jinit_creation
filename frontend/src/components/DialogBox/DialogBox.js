@@ -47,15 +47,16 @@ export default function DialogBox(props) {
               </>
             )}
 
-            {props.text.map(t => (
-              <div className={styles.secondText}>{t}</div>
-            ))}
+            {props.text &&
+              props.text.map((t) => (
+                <div className={styles.secondText}>{t}</div>
+              ))}
             {props.children}
           </DialogContentText>
         </DialogContent>
         <DialogActions
           style={{
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           <Button onClick={props.handleCancel} color="danger">
