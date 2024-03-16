@@ -177,7 +177,7 @@ export default function AddOrder(props) {
         completed: false,
       }));
     }
-  }, [formState.quantity]);
+  }, [formState.quantity, ratio]);
 
   const snackBarHandleClose = () => {
     setSnackBar((snackBar) => ({
@@ -204,9 +204,9 @@ export default function AddOrder(props) {
     setAlert(null);
   };
 
-  const handleAcceptDialog = () => {
+  const handleAcceptDialog = (status) => {
     setAlert(null);
-    addButton();
+    addButton(status);
   };
 
   const onBackClick = () => {
@@ -273,6 +273,7 @@ export default function AddOrder(props) {
 
     if (data.design) {
       let design = data.design;
+      setColorPresent(design.colors.map((c) => c.id));
       setDesign({
         id: design.id,
         material_no: design.material_no,
@@ -338,10 +339,15 @@ export default function AddOrder(props) {
     event.preventDefault();
     //setBackDrop(true);
     let isValid = true;
+    const status = {
+      completed: formState.completed,
+      inProgress: formState.inProgress,
+      cancelled: formState.cancelled,
+    };
 
     let output = 0;
     output = ratio.reduce((acc, currObj) => {
-      return acc + validateNumber(currObj.quantity);
+      return acc + validateNumber(currObj.quantityCompleted);
     }, output);
 
     if (output > formState.quantity) {
@@ -353,12 +359,18 @@ export default function AddOrder(props) {
           confirmBtnCssClass={cancelBtnClasses}
           title="Heads up?"
           onConfirm={() => setDuplicateColorAlert(null)}
+          style={{
+            position: "initial",
+          }}
         >
           Quantity added for ratios execeds the total order quantity
         </SweetAlert>
       );
     } else if (output === formState.quantity) {
       isValid = true;
+      status.inProgress = false;
+      status.completed = true;
+      status.cancelled = false;
       setFormState((formState) => ({
         ...formState,
         completed: true,
@@ -393,10 +405,13 @@ export default function AddOrder(props) {
           confirmBtnCssClass={confirmBtnClasses}
           confirmBtnBsStyle="outline-{variant}"
           title="Heads up?"
-          onConfirm={handleAcceptDialog}
+          onConfirm={() => handleAcceptDialog(status)}
           onCancel={handleCloseDialog}
           cancelBtnCssClass={cancelBtnClasses}
           focusCancelBtn
+          style={{
+            position: "initial",
+          }}
         >
           {"Arey you sure you want to save the changes?"}
         </SweetAlert>
@@ -404,7 +419,7 @@ export default function AddOrder(props) {
     }
   };
 
-  const addButton = async () => {
+  const addButton = async (status) => {
     setBackDrop(true);
     if (isEdit) {
       await providerForPut(
@@ -414,9 +429,9 @@ export default function AddOrder(props) {
           order_id: formState.order_id?.trim(),
           quantity: formState.quantity,
           date: formState.date,
-          in_progress: formState.inProgress,
-          completed: formState.completed,
-          cancelled: formState.cancelled,
+          in_progress: status.inProgress,
+          completed: status.completed,
+          cancelled: status.cancelled,
           notes: formState.notes,
           ratio: ratio,
         },
@@ -510,6 +525,7 @@ export default function AddOrder(props) {
       color_price: [],
       colors: 0,
     }));
+    setColorPresent([]);
     ratio.forEach((r, k) => {
       delete error["quantity" + k];
       delete error["quantityCompleted" + k];
@@ -592,6 +608,9 @@ export default function AddOrder(props) {
               confirmBtnCssClass={cancelBtnClasses}
               title="Heads up?"
               onConfirm={() => setDuplicateColorAlert(null)}
+              style={{
+                position: "initial",
+              }}
             >
               {`Ratio ${event.name} is already added!`}
             </SweetAlert>
@@ -681,7 +700,7 @@ export default function AddOrder(props) {
       .then((res) => {
         saveAs(
           new Blob([s2ab(res.data)], { type: "application/octet-stream" }),
-          `raw_material_availibility for order ${formState.order_id}.xlsx`
+          `raw_material_availibility_for_order_${formState.order_id}.xlsx`
         );
         setBackDrop(false);
       })
@@ -727,14 +746,43 @@ export default function AddOrder(props) {
     return validateNumber(formState.quantity) - output;
   };
 
-  const deleteDesignColor = async (colorKey) => {
-    if (id && design.id && colorKey) {
-      await providerForDelete(
-        `${backend_order}/id/design/${design.id}/color/${colorKey}`,
-        null,
-        Auth.getToken()
-      )
+  const setAlertForDeleteDesign = async (colorKey, key) => {
+    let content = "Are you sure you want to delete this ratio?";
+    if (ratio.length === 1) {
+      content =
+        "Are you sure you want to delete this ratio, this will delete the entire order?";
+    }
+    setAlert(
+      <SweetAlert
+        warning
+        showCancel
+        confirmBtnText="Yes"
+        confirmBtnCssClass={confirmBtnClasses}
+        confirmBtnBsStyle="outline-{variant}"
+        title="Heads up?"
+        onConfirm={() => {
+          ratio.length === 1
+            ? deleteEntireOrder()
+            : deleteDesignColor(colorKey, key);
+        }}
+        onCancel={handleCloseDialog}
+        cancelBtnCssClass={cancelBtnClasses}
+        focusCancelBtn
+        style={{
+          position: "initial",
+        }}
+      >
+        {content}
+      </SweetAlert>
+    );
+  };
+
+  const deleteEntireOrder = async () => {
+    if (id) {
+      await providerForDelete(`${backend_order}/${id}`, null, Auth.getToken())
         .then(async (res) => {
+          handleCloseDialog();
+          onBackClick();
           setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
@@ -743,7 +791,7 @@ export default function AddOrder(props) {
           }));
         })
         .catch((err) => {
-          console.log("Error => ", err.response);
+          handleCloseDialog();
           setSnackBar((snackBar) => ({
             ...snackBar,
             show: true,
@@ -752,6 +800,7 @@ export default function AddOrder(props) {
           }));
         });
     } else {
+      handleCloseDialog();
       setSnackBar((snackBar) => ({
         ...snackBar,
         show: true,
@@ -761,7 +810,59 @@ export default function AddOrder(props) {
     }
   };
 
-  console.log('Color => ', color)
+  const deleteDesignColor = async (colorKey, key) => {
+    if (id && design.id && colorKey) {
+      await providerForDelete(
+        `${backend_order}/${id}/design/${design.id}/color/${colorKey}`,
+        null,
+        Auth.getToken()
+      )
+        .then(async (res) => {
+          /** First change the ratio array */
+          if (ratio.length === 1) {
+            setRatio([
+              {
+                color: null,
+                colorData: null,
+                quantity: 0,
+                quantityCompleted: 0,
+                order: null,
+              },
+            ]);
+          } else {
+            setRatio([...ratio.slice(0, key), ...ratio.slice(key + 1)]);
+          }
+          delete info["color" + key];
+          setInfo((info) => ({
+            ...info,
+          }));
+          handleCloseDialog();
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "success",
+            message: "Successfully deleted the ratio",
+          }));
+        })
+        .catch((err) => {
+          handleCloseDialog();
+          setSnackBar((snackBar) => ({
+            ...snackBar,
+            show: true,
+            severity: "error",
+            message: "Error deleting ratio",
+          }));
+        });
+    } else {
+      handleCloseDialog();
+      setSnackBar((snackBar) => ({
+        ...snackBar,
+        show: true,
+        severity: "error",
+        message: "Error deleting ratio!",
+      }));
+    }
+  };
 
   return (
     <GridContainer>
@@ -782,6 +883,7 @@ export default function AddOrder(props) {
         handleCancel={handleCloseDialogForDesign}
         handleClose={handleCloseDialogForDesign}
         handleAddDesign={handleAddDesign}
+        selectedParty={party}
         isHandleKey={false}
         open={openDialogForSelectingDesign}
         selectMultiColors={false}
@@ -1374,7 +1476,6 @@ export default function AddOrder(props) {
                                 autocompleteId={"color" + key}
                                 optionKey={"name"}
                                 disabled={
-                                  isEdit ||
                                   isView ||
                                   formState.cancelled ||
                                   formState.completed
@@ -1452,7 +1553,6 @@ export default function AddOrder(props) {
                                 }
                                 labelText={"Quantity"}
                                 disabled={
-                                  isEdit ||
                                   isView ||
                                   formState.cancelled ||
                                   !r.color ||
@@ -1540,98 +1640,109 @@ export default function AddOrder(props) {
                               />
                             </GridItem>
 
-                            {isView ||
-                            isEdit ||
-                            formState.cancelled ||
-                            formState.completed ? (
+                            {!isView ? (
                               <>
-                                <GridItem
-                                  xs={6}
-                                  sm={6}
-                                  md={1}
-                                  className={classes.addDeleteFabButon}
-                                >
-                                  <FAB
-                                    marginTop={2}
-                                    color="danger"
-                                    align={"end"}
-                                    size={"small"}
-                                    onClick={() => {
-                                      deleteDesignColor(key);
+                                {isEdit ? (
+                                  <>
+                                    <GridItem
+                                      xs={6}
+                                      sm={6}
+                                      md={1}
+                                      className={classes.addDeleteFabButon}
+                                    >
+                                      <FAB
+                                        marginTop={2}
+                                        color="danger"
+                                        align={"end"}
+                                        size={"small"}
+                                        onClick={() => {
+                                          if (r.id) {
+                                            setAlertForDeleteDesign(
+                                              r.color,
+                                              key
+                                            );
+                                          } else {
+                                            setRatio([
+                                              ...ratio.slice(0, key),
+                                              ...ratio.slice(key + 1),
+                                            ]);
+                                            delete info["color" + key];
+                                            setInfo((info) => ({
+                                              ...info,
+                                            }));
+                                          }
+                                        }}
+                                      >
+                                        <DeleteIcon />
+                                      </FAB>
+                                    </GridItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <GridItem
+                                      xs={6}
+                                      sm={6}
+                                      md={1}
+                                      className={classes.addDeleteFabButon}
+                                    >
+                                      <FAB
+                                        color="danger"
+                                        align={"end"}
+                                        size={"small"}
+                                        disabled={!r.color}
+                                        onClick={() => {
+                                          // let colorData = ratio[key].colorData;
+                                          // color.push(colorData);
+                                          // setColor(color);
+                                          // delete info["color" + key];
+                                          // setInfo((info) => ({
+                                          //   ...info,
+                                          // }));
 
-                                      if (ratio.length === 1) {
-                                        setRatio([
-                                          {
-                                            color: null,
-                                            colorData: null,
-                                            quantity: 0,
-                                            quantityCompleted: 0,
-                                            order: null,
-                                          },
-                                        ]);
-                                      } else {
-                                        setRatio([
-                                          ...ratio.slice(0, key),
-                                          ...ratio.slice(key + 1),
-                                        ]);
-                                      }
-                                      delete info["color" + key];
-                                      setInfo((info) => ({
-                                        ...info,
-                                      }));
-                                    }}
-                                  >
-                                    <DeleteIcon />
-                                  </FAB>
-                                </GridItem>
-                              </>
-                            ) : (
-                              <>
-                                <GridItem
-                                  xs={6}
-                                  sm={6}
-                                  md={1}
-                                  className={classes.addDeleteFabButon}
-                                >
-                                  <FAB
-                                    color="danger"
-                                    align={"end"}
-                                    size={"small"}
-                                    disabled={!r.color}
-                                    onClick={() => {
-                                      // let colorData = ratio[key].colorData;
-                                      // color.push(colorData);
-                                      // setColor(color);
-                                      // delete info["color" + key];
-                                      // setInfo((info) => ({
-                                      //   ...info,
-                                      // }));
-
-                                      if (ratio.length === 1) {
-                                        setRatio([
-                                          {
-                                            color: null,
-                                            colorData: null,
-                                            quantity: 0,
-                                            quantityCompleted: 0,
-                                            order: null,
-                                          },
-                                        ]);
-                                      } else {
-                                        setRatio([
-                                          ...ratio.slice(0, key),
-                                          ...ratio.slice(key + 1),
-                                        ]);
-                                      }
-                                      delete info["color" + key];
-                                      setInfo((info) => ({
-                                        ...info,
-                                      }));
-                                    }}
-                                  >
-                                    <DeleteIcon />
-                                  </FAB>
-                                </GridItem>
+                                          if (ratio.length === 1) {
+                                            setRatio([
+                                              {
+                                                color: null,
+                                                colorData: null,
+                                                quantity: 0,
+                                                quantityCompleted: 0,
+                                                order: null,
+                                              },
+                                            ]);
+                                          } else {
+                                            setRatio([
+                                              ...ratio.slice(0, key),
+                                              ...ratio.slice(key + 1),
+                                            ]);
+                                          }
+                                          delete info["color" + key];
+                                          setInfo((info) => ({
+                                            ...info,
+                                          }));
+                                        }}
+                                      >
+                                        <DeleteIcon />
+                                      </FAB>
+                                    </GridItem>
+                                  </>
+                                  //   <GridItem xs={12} sm={12} md={12}>
+                                  //   <FAB
+                                  //     color="primary"
+                                  //     size={"medium"}
+                                  //     variant="extended"
+                                  //     onClick={() => addReadyMaterial()}
+                                  //     disabled={!party.id}
+                                  //     toolTip={
+                                  //       party.id
+                                  //         ? "Select raw materials for sale"
+                                  //         : "Select party first"
+                                  //     }
+                                  //   >
+                                  //     <AddIcon className={classes.extendedIcon} />
+                                  //     <h5>Add Ready Material</h5>
+                                  //   </FAB>
+                                  // </GridItem>
+                                )}
                                 {ratio.length - 1 === key ? (
                                   <GridItem
                                     xs={6}
@@ -1665,24 +1776,7 @@ export default function AddOrder(props) {
                                   </GridItem>
                                 ) : null}
                               </>
-                              //   <GridItem xs={12} sm={12} md={12}>
-                              //   <FAB
-                              //     color="primary"
-                              //     size={"medium"}
-                              //     variant="extended"
-                              //     onClick={() => addReadyMaterial()}
-                              //     disabled={!party.id}
-                              //     toolTip={
-                              //       party.id
-                              //         ? "Select raw materials for sale"
-                              //         : "Select party first"
-                              //     }
-                              //   >
-                              //     <AddIcon className={classes.extendedIcon} />
-                              //     <h5>Add Ready Material</h5>
-                              //   </FAB>
-                              // </GridItem>
-                            )}
+                            ) : null}
                           </GridContainer>
                         ))}
                       </>

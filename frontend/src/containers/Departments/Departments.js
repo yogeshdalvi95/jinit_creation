@@ -65,7 +65,6 @@ export default function Departments() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -141,7 +140,7 @@ export default function Departments() {
                     localization={{
                       body: {
                         editRow: {
-                          deleteText: `Are you sure you want to delete this Admin User?`,
+                          deleteText: `Are you sure you want to delete this Department?`,
                           saveTooltip: "Delete",
                         },
                       },

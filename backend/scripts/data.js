@@ -289,6 +289,7 @@ const ROLES = {
           "check_all_order_availibility",
           "downloadorder",
           "downloadordersheet",
+          "deleteFullOrder",
         ],
       },
       {
@@ -480,6 +481,7 @@ const ROLES = {
           "check_all_order_availibility",
           "downloadorder",
           "downloadordersheet",
+          "deleteFullOrder",
         ],
       },
       {

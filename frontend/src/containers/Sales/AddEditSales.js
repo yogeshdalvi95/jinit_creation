@@ -1024,6 +1024,9 @@ export default function AddEditSales(props) {
           onCancel={handleCloseDialog}
           cancelBtnCssClass={cancelBtnClasses}
           focusCancelBtn
+          style={{
+            position: "initial",
+          }}
         >
           The ready material quantities that are added will be deducted from the
           ready material present in the system! Are you sure you want to

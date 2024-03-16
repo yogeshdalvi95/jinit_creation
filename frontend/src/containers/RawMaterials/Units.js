@@ -61,7 +61,6 @@ export default function Units() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -134,7 +133,7 @@ export default function Units() {
                     localization={{
                       body: {
                         editRow: {
-                          deleteText: `Are you sure you want to delete this Admin User?`,
+                          deleteText: `Are you sure you want to delete this Unit?`,
                           saveTooltip: "Delete",
                         },
                       },

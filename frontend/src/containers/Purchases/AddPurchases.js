@@ -577,6 +577,9 @@ export default function AddPurchases(props) {
         onCancel={handleCloseDialog}
         cancelBtnCssClass={cancelBtnClasses}
         focusCancelBtn
+        style={{
+          position: "initial",
+        }}
       >
         {message}
       </SweetAlert>
@@ -810,11 +813,6 @@ export default function AddPurchases(props) {
                       disabled={isView}
                       value={formState.date || new Date()}
                       id="date"
-                      minDate={
-                        checkIfDateFallsInAcceptableRange(formState.date)
-                          ? getMinDate()
-                          : null
-                      }
                       formControlProps={{
                         fullWidth: true,
                       }}
@@ -978,10 +976,25 @@ export default function AddPurchases(props) {
                         marginTop: "3rem",
                       }}
                     >
-                      <b>{`Total amount:- ${convertNumber(
-                        formState.total_amt_with_tax,
-                        true
-                      )}`}</b>
+                      {isView ? (
+                        <b>{`Total amount:- ${convertNumber(
+                          formState.total_amt_with_tax,
+                          true
+                        )}`}</b>
+                      ) : (
+                        <CustomInput
+                          onChange={(event) => handleChange(event)}
+                          labelText="Total Amount"
+                          name="total_amt_with_tax"
+                          type="number"
+                          disabled={isView}
+                          value={formState.total_amt_with_tax}
+                          id="total_amt_with_tax"
+                          formControlProps={{
+                            fullWidth: true,
+                          }}
+                        />
+                      )}
                     </GridItem>
                   )}
                 </>

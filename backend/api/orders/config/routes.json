@@ -90,6 +90,14 @@
     },
     {
       "method": "DELETE",
+      "path": "/webapi/private/orders/:orderId",
+      "handler": "orders.deleteFullOrder",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
       "path": "/webapi/private/orders/:orderId/design/:designId/color/:colorId",
       "handler": "orders.delete",
       "config": {

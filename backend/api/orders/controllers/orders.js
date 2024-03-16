@@ -147,8 +147,7 @@ module.exports = {
               .find({
                 design: design,
               });
-            console.log("designColorsData => ", designColorsData);
-            if (designColorsData.length) {
+            if (designColorsData && designColorsData.length) {
               /** Check previous quantites of color and update with the current one */
               let colorData = {};
               let whiteColorId = null;
@@ -164,7 +163,7 @@ module.exports = {
                       oldStock: utils.validateNumber(el.stock),
                     },
                   };
-                  if (el.color.name.toLowerCase() === "white") {
+                  if (el.color.name.toLowerCase() === utils.whiteColorID) {
                     whiteColorId = el.color.id;
                   } else {
                     colorPresent.push(el.color.id);
@@ -174,10 +173,7 @@ module.exports = {
 
               let isAtleastOneColorPresent = colorPresent.length ? true : false;
 
-              console.log("Ratio =>", ratio);
-              console.log("colorPresent =>", colorPresent);
               await utils.asyncForEach(ratio, async (el) => {
-                console.log("el =>", el);
                 let colorInRatio = el.color;
                 if (
                   colorInRatio === whiteColorId ||
@@ -202,7 +198,7 @@ module.exports = {
                     isAtleastOneColorPresent &&
                     el.colorData &&
                     el.colorData.name &&
-                    el.colorData.name.toLowerCase() !== "white"
+                    el.colorData.name.toLowerCase() !== utils.whiteColorID
                   ) {
                     /** Need to add a condition */
                     /** Present Color takes
@@ -350,6 +346,10 @@ module.exports = {
                 colorPresent.push(whiteColorId);
               }
 
+              console.log("colorPresemt -> ", colorPresent);
+              console.log("whiteColorId -> ", whiteColorId);
+              console.log("body -> ", body);
+
               await strapi.query("designs").update(
                 { id: design },
                 {
@@ -424,6 +424,7 @@ module.exports = {
     const designId = orderData.design.id;
 
     let body = ctx.request.body;
+    console.log("body -> ", body);
 
     await bookshelf.transaction(async (t) => {
       await strapi
@@ -436,78 +437,292 @@ module.exports = {
         });
 
       await utils.asyncForEach(ratio, async (el) => {
-        let orderRatio = await strapi.query("order-ratios").findOne(
-          {
-            design: designId,
-            order: id,
-            color: el.color,
-          },
-          []
-        );
-
-        let designPrice = await strapi.query("design-color-price").findOne(
-          {
-            design: designId,
-            color: el.color,
-          },
-          []
-        );
-
-        /** Quantity completed */
-        let quantityCompleted = utils.validateNumber(el.quantityCompleted);
-        let previousCompleted = utils.validateNumber(
-          orderRatio.quantity_completed
-        );
-        /** Stock */
-        let stockAvailable = utils.validateNumber(designPrice.stock);
-
-        /**
-         *  Suppose previous completed = 3
-         *  so previous stock = previus stock (7) + 3 = suppose 10
-         *  quantityCompleted = 5
-         *  previousCompleted = 3
-         *  extra completed = 2
-         *  so deduct extra 2
-         *
-         */
-
-        /** (5 - 3 => 2)  this means add 2 in stocks as more quantity is completed
-         *
-         * or (1 - 3 => -2 this means subsctract -2 from stocks as quantity completed has be revised)
-         */
-        let quantity_to_add_deduct = quantityCompleted - previousCompleted;
-        let newStock = stockAvailable + quantity_to_add_deduct;
-
-        /** Update design */
-        await strapi
-          .query("design-color-price")
-          .update(
-            { id: designPrice.id },
+        console.log("el -> ", el);
+        if (el.id) {
+          /** Find the order ratios */
+          let orderRatio = await strapi.query("order-ratios").findOne(
             {
-              stock: newStock,
+              design: designId,
+              order: id,
+              color: el.color,
             },
-            { transacting: t, patch: true }
-          )
-          .then((model) => model)
-          .catch((err) => {
-            console.log(err);
-            throw 500;
-          });
+            []
+          );
 
-        await strapi
-          .query("order-ratios")
-          .update(
-            { id: orderRatio.id },
+          /** Find design color price */
+          let designPrice = await strapi.query("design-color-price").findOne(
             {
-              quantity_completed: quantityCompleted,
+              design: designId,
+              color: el.color,
             },
-            { transacting: t, patch: true }
-          )
-          .then((model) => model)
-          .catch((err) => {
-            console.log(err);
-            throw 500;
-          });
+            []
+          );
+
+          /** Quantity completed */
+          let quantityCompleted = utils.validateNumber(el.quantityCompleted);
+          let previousCompleted = utils.validateNumber(
+            orderRatio.quantity_completed
+          );
+          /** Stock */
+          let stockAvailable = utils.validateNumber(designPrice.stock);
+          /**
+           *  Suppose previous completed = 3
+           *  so previous stock = previus stock (7) + 3 = suppose 10
+           *  quantityCompleted = 5
+           *  previousCompleted = 3
+           *  extra completed = 2
+           *  so deduct extra 2
+           *
+           */
+
+          /** (5 - 3 => 2)  this means add 2 in stocks as more quantity is completed
+           *
+           * or (1 - 3 => -2 this means subsctract -2 from stocks as quantity completed has be revised)
+           */
+          let quantity_to_add_deduct = quantityCompleted - previousCompleted;
+          let newStock = stockAvailable + quantity_to_add_deduct;
+
+          /** Update design */
+          await strapi
+            .query("design-color-price")
+            .update(
+              { id: designPrice.id },
+              {
+                stock: newStock,
+              },
+              { transacting: t, patch: true }
+            )
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
+
+          await strapi
+            .query("order-ratios")
+            .update(
+              { id: orderRatio.id },
+              {
+                quantity_completed: quantityCompleted,
+              },
+              { transacting: t, patch: true }
+            )
+            .then((model) => model)
+            .catch((err) => {
+              console.log(err);
+              throw 500;
+            });
+        } else {
+          /** What if we got a new ratio */
+          const designColorsData = await strapi
+            .query("design-color-price")
+            .find({
+              design: designId,
+            });
+          if (designColorsData && designColorsData.length) {
+            /** Check previous quantites of color and update with the current one */
+            let colorData = {};
+            let whiteColorId = null;
+            let colorPresent = [];
+            designColorsData.forEach((dcData) => {
+              if (dcData.color.id && dcData.color.name) {
+                colorData = {
+                  ...colorData,
+                  [dcData.color.id]: {
+                    id: dcData.id,
+                    color: dcData.color.id,
+                    colorName: dcData.color.name,
+                    oldStock: utils.validateNumber(dcData.stock),
+                  },
+                };
+                if (dcData.color.name.toLowerCase() === utils.whiteColorID) {
+                  whiteColorId = dcData.color.id;
+                } else {
+                  colorPresent.push(dcData.color.id);
+                }
+              }
+            });
+            let isAtleastOneColorPresent = colorPresent.length ? true : false;
+            let colorInRatio = el.color;
+            if (
+              colorInRatio === whiteColorId ||
+              colorPresent.includes(colorInRatio)
+            ) {
+              await updateStock(el, colorInRatio, colorData, t, designId, {
+                id: id,
+              });
+            } else {
+              /** For colors not present */
+              /** Main Logic goes here */
+              let newQuantity = utils.validateNumber(el.quantityCompleted);
+              colorPresent.push(colorInRatio);
+              let colorPrice = 0;
+
+              if (
+                isAtleastOneColorPresent &&
+                el.colorData &&
+                el.colorData.name &&
+                el.colorData.name.toLowerCase() !== utils.whiteColorID
+              ) {
+                /** Need to add a condition */
+                /** Present Color takes
+                 *  one color from existing
+                 *  color to make a new design
+                 **/
+                let presentColor = colorPresent[0];
+
+                const designMaterial = await strapi
+                  .query("designs-and-materials")
+                  .find(
+                    {
+                      design: designId,
+                      isRawMaterial: true,
+                      isColor: true,
+                      color: presentColor,
+                    },
+                    ["raw_material"]
+                  );
+
+                /** Check which all raw materials are required to make this design if present add else create new */
+                await utils.asyncForEach(designMaterial, async (dm) => {
+                  let rawMaterialData = dm.raw_material;
+                  let size = rawMaterialData.size;
+                  let department = rawMaterialData.department;
+                  let unit = rawMaterialData.unit;
+                  let is_die = rawMaterialData.is_die;
+                  let category = rawMaterialData.category;
+                  let color = rawMaterialData.color;
+
+                  let rawMaterial = null;
+                  let totolMaterialCostInvolved = 0;
+
+                  if (color && color === presentColor) {
+                    const searchRawMaterial = await strapi
+                      .query("raw-material")
+                      .findOne({
+                        size: size,
+                        department: department,
+                        unit: unit,
+                        is_die: is_die,
+                        color: colorInRatio,
+                        category: category,
+                      });
+
+                    if (searchRawMaterial) {
+                      totolMaterialCostInvolved =
+                        utils.validateNumber(dm.quantity) *
+                        utils.validateNumber(searchRawMaterial.costing);
+                      colorPrice = colorPrice + totolMaterialCostInvolved;
+                      rawMaterial = searchRawMaterial;
+                    } else {
+                      /** Create a new similar entry */
+                      totolMaterialCostInvolved =
+                        utils.validateNumber(dm.quantity) *
+                        utils.validateNumber(rawMaterialData.costing);
+                      colorPrice = colorPrice + totolMaterialCostInvolved;
+
+                      rawMaterial = await strapi
+                        .query("raw-material")
+                        .create(
+                          {
+                            ...rawMaterialData,
+                            color: colorInRatio,
+                            balance: 0,
+                          },
+                          {
+                            transacting: t,
+                          }
+                        )
+                        .then((model) => model)
+                        .catch((err) => {
+                          console.log(err);
+                        });
+                    }
+                  } else {
+                    rawMaterial = rawMaterialData;
+                    totolMaterialCostInvolved =
+                      utils.validateNumber(dm.quantity) *
+                      utils.validateNumber(rawMaterialData.costing);
+                    colorPrice = colorPrice + totolMaterialCostInvolved;
+                  }
+
+                  await strapi
+                    .query("designs-and-materials")
+                    .create(
+                      {
+                        raw_material: rawMaterial.id,
+                        ready_material: null,
+                        design: designId,
+                        color: colorInRatio,
+                        quantity: dm.quantity,
+                        total_price: totolMaterialCostInvolved,
+                        isRawMaterial: true,
+                        isColor: true,
+                      },
+                      {
+                        transacting: t,
+                      }
+                    )
+                    .then((model) => model)
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                });
+              }
+
+              await strapi
+                .query("design-color-price")
+                .create(
+                  {
+                    design: designId,
+                    color: colorInRatio,
+                    color_price: colorPrice,
+                    stock: newQuantity,
+                  },
+                  {
+                    transacting: t,
+                  }
+                )
+                .then((model) => model)
+                .catch((err) => {
+                  console.log(err);
+                });
+
+              await strapi
+                .query("order-ratios")
+                .create(
+                  {
+                    design: designId,
+                    color: colorInRatio,
+                    quantity: el.quantity,
+                    quantity_completed: el.quantityCompleted,
+                    order: id,
+                  },
+                  { transacting: t }
+                )
+                .then((model) => model)
+                .catch((err) => {
+                  console.log(err);
+                  throw 500;
+                });
+
+              if (whiteColorId) {
+                colorPresent.push(whiteColorId);
+              }
+
+              await strapi.query("designs").update(
+                { id: designId },
+                {
+                  colors: colorPresent,
+                },
+                {
+                  patch: true,
+                  transacting: t,
+                }
+              );
+            }
+          }
+        }
       });
     });
     ctx.send(200);
@@ -586,7 +801,6 @@ module.exports = {
     });
 
     let arrOfMaterialKeys = Object.keys(finalRawMaterialJson);
-    console.log("arrOfMaterialKeys => ", arrOfMaterialKeys);
     let jsonArray = [];
     let jsonArray2 = [];
     arrOfMaterialKeys.forEach((d) => {
@@ -985,27 +1199,117 @@ module.exports = {
 
     if (orderId) {
       const orderData = await strapi.query("orders").findOne({
-        order_id: orderId,
+        id: orderId,
       });
+
       if (!orderData) {
         return ctx.badRequest(null, "Order doesn't exist");
       } else {
-        await bookshelf.transaction(async (t) => {
-          let orderRatios = await strapi.query("order-ratios").findOne({
-            order: orderId,
-            design: designId,
-            color: colorId,
+        try {
+          await bookshelf.transaction(async (t) => {
+            await deleteIndividualRatioInfoFromOrder(
+              orderId,
+              designId,
+              colorId,
+              t
+            );
           });
-
-          if (orderRatios && orderRatios.quantity_completed) {
-            let completedQuantity = orderRatios.quantity_completed;
-          } else {
-            return ctx.badRequest(null, "No order data found");
-          }
-        });
+          ctx.send(200);
+        } catch (error) {
+          return ctx.badRequest(null, "Issue deleting order data");
+        }
       }
     }
   },
+
+  async deleteFullOrder(ctx) {
+    const { orderId } = ctx.params;
+    const orderRatios = await strapi.query("order-ratios").find({
+      order: orderId,
+    });
+
+    try {
+      await bookshelf.transaction(async (t) => {
+        await utils.asyncForEach(orderRatios, async (or) => {
+          await deleteIndividualRatioInfoFromOrder(
+            orderId,
+            or.design.id,
+            or.color.id,
+            t
+          );
+        });
+        await strapi.query("orders").delete(
+          {
+            id: orderId,
+          },
+          {
+            patch: true,
+            transacting: t,
+          }
+        );
+      });
+      ctx.send(200);
+    } catch (error) {
+      return ctx.badRequest(null, "Issue deleting order");
+    }
+  },
+};
+
+const deleteIndividualRatioInfoFromOrder = async (
+  orderId,
+  designId,
+  colorId,
+  t
+) => {
+  /** get corresponding order details */
+  let orderRatios = await strapi.query("order-ratios").findOne({
+    order: orderId,
+    design: designId,
+    color: colorId,
+  });
+
+  if (orderRatios) {
+    let completedQuantity = utils.validateNumber(
+      orderRatios.quantity_completed
+    );
+    const designColorPrice = await strapi.query("design-color-price").findOne({
+      design: designId,
+      color: colorId,
+    });
+    if (designColorPrice) {
+      const colorStock = utils.validateNumber(designColorPrice.stock);
+      const newStock = utils.validateNumber(colorStock - completedQuantity);
+      await strapi
+        .query("design-color-price")
+        .update(
+          { id: designColorPrice.id },
+          {
+            stock: newStock,
+          },
+          { transacting: t, patch: true }
+        )
+        .then((model) => model)
+        .catch((err) => {
+          console.log(err);
+          throw new Error("some error");
+        });
+
+      /** Delete data from order ratios */
+      await strapi.query("order-ratios").delete(
+        {
+          id: orderRatios.id,
+        },
+        {
+          patch: true,
+          transacting: t,
+        }
+      );
+    } else {
+      throw new Error("some error");
+    }
+  } else {
+    throw new Error("No order data found");
+  }
 };
 
 const getRawMaterialAvailibilityPerOrder = async (
@@ -1013,12 +1317,10 @@ const getRawMaterialAvailibilityPerOrder = async (
   ratio,
   ctx
 ) => {
-  console.log("ratio => ", ratio);
   await utils.asyncForEach(ratio, async (or) => {
     console.log(
       "------------------------------------------------------------------------------------------"
     );
-    console.log("Color => ", or.color);
     let totalQuantity = utils.validateNumber(or.quantity);
     let quantityCompleted = utils.validateNumber(or.quantity_completed);
     let remainingQuantity = totalQuantity - quantityCompleted;
@@ -1060,9 +1362,7 @@ const getRawMaterialAvailibilityPerOrder = async (
 
     if (concatedArray.length) {
       concatedArray.forEach((dM) => {
-        console.log("Raw Material => ", dM.raw_material.name);
         let rawMaterialId = dM?.raw_material?.id;
-        console.log("Raw Material ID => ", dM.raw_material.id, rawMaterialId);
         if (rawMaterialId) {
           /** Quantity requires for making single piece of design */
           let quantityRequiredPerPieceOfDesign = utils.validateNumber(
@@ -1113,19 +1413,6 @@ const getRawMaterialAvailibilityPerOrder = async (
           if (finalRawMaterialJson.hasOwnProperty(rawMaterialId)) {
             console.log(
               "------------------------------------------------------------------------------------------"
-            );
-            console.log(
-              "finalRawMaterialJson[rawMaterialId]=> ",
-              finalRawMaterialJson[rawMaterialId]
-            );
-            // console.log("finalRawMaterialJson => ", finalRawMaterialJson);
-            console.log(
-              "totalMaterialsRequiredForRemainingQuantity => ",
-              totalMaterialsRequiredForRemainingQuantity
-            );
-            console.log(
-              "totalMaterialsUsedForCompletedQuantity => ",
-              totalMaterialsUsedForCompletedQuantity
             );
             let temp1 = finalRawMaterialJson[rawMaterialId]["Total Required"];
             let temp2 = finalRawMaterialJson[rawMaterialId]["Total Used"];
@@ -1511,14 +1798,7 @@ const getDepartmentSheetDetails = async (id) => {
   return output;
 };
 
-const updateStock = async (
-  el,
-  colorInRatio,
-  colorData,
-  t,
-  design,
-  newOrder
-) => {
+const updateStock = async (el, colorInRatio, colorData, t, design, order) => {
   /** No logic just calculate the stocks */
   let newQuantity = utils.validateNumber(el.quantityCompleted);
   let oldQuantity = colorData[colorInRatio].oldStock;
@@ -1545,7 +1825,7 @@ const updateStock = async (
         color: colorInRatio,
         quantity: el.quantity,
         quantity_completed: el.quantityCompleted,
-        order: newOrder.id,
+        order: order.id,
       },
       { transacting: t }
     )

@@ -410,7 +410,11 @@ export default function ViewOrders(props) {
 
   const onRowDelete = async (data) => {
     let setRef = tableRef.current;
-    await providerForDelete(backend_designs, data.id, Auth.getToken())
+    await providerForDelete(
+      `${backend_order}/${data.id}`,
+      null,
+      Auth.getToken()
+    )
       .then((res) => {
         if (setRef) {
           setRef.onQueryChange();
@@ -419,7 +423,7 @@ export default function ViewOrders(props) {
           ...snackBar,
           show: true,
           severity: "success",
-          message: "Successfully deleted design " + data?.material_no,
+          message: "Successfully deleted order",
         }));
       })
       .catch((err) => {
@@ -428,7 +432,7 @@ export default function ViewOrders(props) {
           ...snackBar,
           show: true,
           severity: "error",
-          message: "Error deleting design " + data?.material_no,
+          message: "Error deleting order",
         }));
       });
   };
@@ -716,7 +720,7 @@ export default function ViewOrders(props) {
                     localization={{
                       body: {
                         editRow: {
-                          deleteText: `Are you sure you want to delete this Admin User?`,
+                          deleteText: `Are you sure you want to delete this Order?`,
                           saveTooltip: "Delete",
                         },
                       },

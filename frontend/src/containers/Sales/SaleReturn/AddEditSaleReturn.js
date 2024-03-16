@@ -282,6 +282,9 @@ export default function AddEditSaleReturn(props) {
           }}
           cancelBtnCssClass={cancelBtnClasses}
           focusCancelBtn
+          style={{
+            position: "initial",
+          }}
         >
           Please make sure you have added the right quantity and selected the
           right raw material because the quantity will be deducted from the raw

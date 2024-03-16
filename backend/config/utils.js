@@ -12,6 +12,8 @@ const {
 } = require("pdf-lib");
 const fontkit = require("@pdf-lib/fontkit");
 
+const whiteColorID = "white (plain colour)";
+
 function getMonth(m_no) {
   let month = ""; //Create a local variable to hold the string
   switch (m_no) {
@@ -391,4 +393,5 @@ module.exports = {
   base64_encode,
   getMonthDifference,
   getMonth,
+  whiteColorID,
 };

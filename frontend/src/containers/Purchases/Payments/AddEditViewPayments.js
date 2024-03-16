@@ -217,6 +217,9 @@ const AddEditViewPayments = (props) => {
         onCancel={handleCloseDialog}
         cancelBtnCssClass={cancelBtnClasses}
         focusCancelBtn
+        style={{
+          position: "initial",
+        }}
       >
         {message}
       </SweetAlert>

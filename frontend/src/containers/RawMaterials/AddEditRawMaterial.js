@@ -383,6 +383,9 @@ export default function AddEditRawMaterial(props) {
             onCancel={handleCloseDialog}
             cancelBtnCssClass={cancelBtnClasses}
             focusCancelBtn
+            style={{
+              position: "initial",
+            }}
           >
             Please make sure you have added the right Initial balance. Balance
             once added can be edited only if you haven't added any entry in the

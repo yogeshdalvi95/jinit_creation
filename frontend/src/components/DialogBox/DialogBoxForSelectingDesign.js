@@ -33,6 +33,7 @@ export default function DialogBoxForSelectingDesign(props) {
   const tableRef = React.createRef();
   const [openBackDrop, setBackDrop] = useState(false);
   const [design, setDesign] = useState(null);
+  const [selectedParty, setSelectedParty] = useState(null);
   const classes = useStyles();
   const [filter, setFilter] = useState({
     _sort: "id:desc",
@@ -41,6 +42,7 @@ export default function DialogBoxForSelectingDesign(props) {
 
   useEffect(() => {
     setSelectedDesign(props.selectedDesign);
+    setSelectedParty(props.selectedParty);
   }, [props]);
 
   const columns = [
@@ -272,176 +274,155 @@ export default function DialogBoxForSelectingDesign(props) {
         <DialogContent>
           <DialogContentText id="dialog-description">
             <GridContainer>
-              <GridItem xs={12} sm={12} md={12}>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomInput
-                      onChange={(e) => {
-                        if (isEmptyString(e.target.value)) {
-                          delete filter["material_no_contains"];
-                          setFilter((filter) => ({
-                            ...filter,
-                          }));
-                        } else {
-                          setFilter((filter) => ({
-                            ...filter,
-                            material_no_contains: e.target.value,
-                          }));
-                        }
-                      }}
-                      type="text"
-                      labelText="Type Ready Materal..."
-                      name="material_no_contains"
-                      noMargin
-                      value={filter["material_no_contains"] || ""}
-                      id="material_no_contains"
-                      formControlProps={{
-                        fullWidth: true,
-                      }}
-                    />
+              <>
+                {selectedParty ? (
+                  <GridItem xs={12} sm={12} md={12}>
+                    <b>Selected Party : {selectedParty.party_name}</b>
                   </GridItem>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={1}
-                    style={{
-                      marginTop: "auto",
-                      marginBottom: "auto",
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    OR
-                  </GridItem>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={4}
-                    style={{ marginTop: "auto", marginBottom: "auto" }}
-                  >
-                    <RemoteAutoComplete
-                      setSelectedData={setDesignData}
-                      searchString={"material_no"}
-                      apiName={backend_designs}
-                      placeholder="Select Ready Material..."
-                      selectedValue={design}
-                    />
-                  </GridItem>
-
-                  <GridItem xs={12} sm={12} md={6}>
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        tableRef.current.onQueryChange();
-                      }}
-                    >
-                      Search
-                    </Button>
-                    <Button
-                      color="primary"
-                      onClick={() => {
-                        setFilter((filter) => ({
-                          _sort: "id:desc",
-                        }));
-                        setDesign(null);
-                        tableRef.current.onQueryChange();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </GridItem>
-                </GridContainer>
-                <br />
-                {props.selectMultiColors ? (
-                  <Table
-                    tableRef={tableRef}
-                    title="Ready Materials"
-                    columns={columns}
-                    data={async (query) => {
-                      return await getDesignData(
-                        query.page + 1,
-                        query.pageSize
-                      );
-                    }}
-                    localization={{
-                      body: {
-                        editRow: {
-                          deleteText: `Are you sure you want to delete this design?`,
-                          saveTooltip: "Save",
-                        },
-                      },
-                    }}
-                    // detailPanel={(rowData) => {
-                    //   let output = generateSelectColorComponent(rowData);
-                    //   return output;
-                    // }}
-                    options={{
-                      pageSize: 10,
-                      search: false,
-                      sorting: true,
-                      thirdSortClick: false,
-                    }}
-                    onOrderChange={(orderedColumnId, orderDirection) => {
-                      orderFunc(orderedColumnId, orderDirection);
-                    }}
-                  />
-                ) : (
-                  <Table
-                    tableRef={tableRef}
-                    title="Ready Materials"
-                    columns={columns}
-                    data={async (query) => {
-                      return await getDesignData(
-                        query.page + 1,
-                        query.pageSize
-                      );
-                    }}
-                    localization={{
-                      body: {
-                        editRow: {
-                          deleteText: `Are you sure you want to delete this design?`,
-                          saveTooltip: "Save",
-                        },
-                      },
-                    }}
-                    actions={[
-                      (rowData) => ({
-                        icon: () => (
-                          <Button
-                            color="primary"
-                            //disabled={selectedDesign.includes(rowData.id)}
-                          >
-                            Select
-                          </Button>
-                        ),
-                        // tooltip: selectedDesign.includes(rowData.id)
-                        //   ? "Already added"
-                        //   : "Select this Ready Material",
-                        onClick: (event, rowData) => {
-                          if (props.isHandleKey) {
-                            props.handleAddDesign(
-                              "design",
-                              props.gridKey,
-                              rowData
-                            );
+                ) : null}
+                <GridItem xs={12} sm={12} md={12}>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={4}>
+                      <CustomInput
+                        onChange={(e) => {
+                          if (isEmptyString(e.target.value)) {
+                            delete filter["material_no_contains"];
+                            setFilter((filter) => ({
+                              ...filter,
+                            }));
                           } else {
-                            props.handleAddDesign(rowData);
+                            setFilter((filter) => ({
+                              ...filter,
+                              material_no_contains: e.target.value,
+                            }));
                           }
+                        }}
+                        type="text"
+                        labelText="Type Design Number..."
+                        name="material_no_contains"
+                        noMargin
+                        value={filter["material_no_contains"] || ""}
+                        id="material_no_contains"
+                        formControlProps={{
+                          fullWidth: true,
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={6}>
+                      <Button
+                        color="primary"
+                        onClick={() => {
+                          tableRef.current.onQueryChange();
+                        }}
+                      >
+                        Search
+                      </Button>
+                      <Button
+                        color="primary"
+                        onClick={() => {
+                          setFilter((filter) => ({
+                            _sort: "id:desc",
+                          }));
+                          setDesign(null);
+                          tableRef.current.onQueryChange();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </GridItem>
+                  </GridContainer>
+                  <br />
+                  {props.selectMultiColors ? (
+                    <Table
+                      tableRef={tableRef}
+                      title="Ready Materials"
+                      columns={columns}
+                      data={async (query) => {
+                        return await getDesignData(
+                          query.page + 1,
+                          query.pageSize
+                        );
+                      }}
+                      localization={{
+                        body: {
+                          editRow: {
+                            deleteText: `Are you sure you want to delete this design?`,
+                            saveTooltip: "Save",
+                          },
                         },
-                      }),
-                    ]}
-                    options={{
-                      pageSize: 10,
-                      search: false,
-                      sorting: true,
-                      thirdSortClick: false,
-                    }}
-                    onOrderChange={(orderedColumnId, orderDirection) => {
-                      orderFunc(orderedColumnId, orderDirection);
-                    }}
-                  />
-                )}
-              </GridItem>
+                      }}
+                      // detailPanel={(rowData) => {
+                      //   let output = generateSelectColorComponent(rowData);
+                      //   return output;
+                      // }}
+                      options={{
+                        pageSize: 10,
+                        search: false,
+                        sorting: true,
+                        thirdSortClick: false,
+                      }}
+                      onOrderChange={(orderedColumnId, orderDirection) => {
+                        orderFunc(orderedColumnId, orderDirection);
+                      }}
+                    />
+                  ) : (
+                    <Table
+                      tableRef={tableRef}
+                      title="Ready Materials"
+                      columns={columns}
+                      data={async (query) => {
+                        return await getDesignData(
+                          query.page + 1,
+                          query.pageSize
+                        );
+                      }}
+                      localization={{
+                        body: {
+                          editRow: {
+                            deleteText: `Are you sure you want to delete this design?`,
+                            saveTooltip: "Save",
+                          },
+                        },
+                      }}
+                      actions={[
+                        (rowData) => ({
+                          icon: () => (
+                            <Button
+                              color="primary"
+                              //disabled={selectedDesign.includes(rowData.id)}
+                            >
+                              Select
+                            </Button>
+                          ),
+                          // tooltip: selectedDesign.includes(rowData.id)
+                          //   ? "Already added"
+                          //   : "Select this Ready Material",
+                          onClick: (event, rowData) => {
+                            if (props.isHandleKey) {
+                              props.handleAddDesign(
+                                "design",
+                                props.gridKey,
+                                rowData
+                              );
+                            } else {
+                              props.handleAddDesign(rowData);
+                            }
+                          },
+                        }),
+                      ]}
+                      options={{
+                        pageSize: 10,
+                        search: false,
+                        sorting: true,
+                        thirdSortClick: false,
+                      }}
+                      onOrderChange={(orderedColumnId, orderDirection) => {
+                        orderFunc(orderedColumnId, orderDirection);
+                      }}
+                    />
+                  )}
+                </GridItem>
+              </>
             </GridContainer>
           </DialogContentText>
         </DialogContent>

@@ -44,12 +44,14 @@ module.exports = {
           },
           ["color"]
         );
-        const partyDetails = await strapi.query("design-parties-relationship").find(
-          {
-            design: d.id,
-          },
-          ["party"]
-        );
+        const partyDetails = await strapi
+          .query("design-parties-relationship")
+          .find(
+            {
+              design: d.id,
+            },
+            ["party"]
+          );
         newJson.color_price = designColorPrice;
         newJson.partyDetails = partyDetails;
         newData.push(newJson);
@@ -956,59 +958,53 @@ module.exports = {
   async delete(ctx) {
     const { id } = ctx.params;
 
-    const designData = await strapi.query("designs").findOne({
-      id: id,
-    });
+    const checkIfPresentInSales = await strapi
+      .query("individual-sale-ready-material")
+      .findOne({ design: id });
 
-    if (designData) {
-      const chechIfDesignPresentInReadyMaterial = await strapi
-        .query("ready-material")
-        .findOne({
-          design: id,
+    const checkfPresentInOrders = await strapi
+      .query("orders")
+      .findOne({ design: id });
+
+    const checkIfPresentInOrderRatios = await strapi
+      .query("order-ratios")
+      .findOne({ design: id });
+
+    if (
+      !checkIfPresentInSales &&
+      !checkfPresentInOrders &&
+      !checkIfPresentInOrderRatios
+    ) {
+      await bookshelf
+        .transaction(async (t) => {
+          await strapi.query("designs-and-materials").delete(
+            {
+              design: id,
+            },
+            { transacting: t }
+          );
+          await strapi.query("design-color-price").delete(
+            {
+              design: id,
+            },
+            { transacting: t }
+          );
+          await strapi.query("designs").delete(
+            {
+              id: id,
+            },
+            { transacting: t }
+          );
+        })
+        .then((res) => {
+          ctx.send(200);
+        })
+        .catch((err) => {
+          console.log("err ", err);
+          return ctx.badRequest(null, "Error");
         });
-      if (chechIfDesignPresentInReadyMaterial) {
-        return ctx.badRequest(null, "Cannot delete");
-      } else {
-        const chechIfDesignPresentInOrders = await strapi
-          .query("orders")
-          .findOne({
-            design: id,
-          });
-        if (chechIfDesignPresentInOrders) {
-          return ctx.badRequest(null, "Cannot delete");
-        } else {
-          await bookshelf
-            .transaction(async (t) => {
-              await strapi.query("designs-and-materials").delete(
-                {
-                  design: id,
-                },
-                { transacting: t }
-              );
-              await strapi.query("design-color-price").delete(
-                {
-                  design: id,
-                },
-                { transacting: t }
-              );
-              await strapi.query("designs").delete(
-                {
-                  id: id,
-                },
-                { transacting: t }
-              );
-            })
-            .then((res) => {
-              ctx.send(200);
-            })
-            .catch((err) => {
-              console.log("err ", err);
-              return ctx.badRequest(null, "Error");
-            });
-        }
-      }
     } else {
-      return ctx.badRequest(null, "Error");
+      return ctx.badRequest(null, "");
     }
   },
 };
