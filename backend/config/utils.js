@@ -275,7 +275,14 @@ function checkIfDateFallsInCurrentMonth(date) {
 }
 
 function base64_encode(file) {
-  var bitmap = fs.readFileSync(file);
+  let bitmap = null;
+  try {
+    bitmap = fs.readFileSync(file);
+  } catch (error) {
+    bitmap = fs.readFileSync(
+      path.resolve(__dirname, `../assets/images/nodata.jpg`)
+    );
+  }
   return new Buffer.from(bitmap).toString("base64");
 }
 

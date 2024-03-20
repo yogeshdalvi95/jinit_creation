@@ -142,9 +142,9 @@ const DatePicker = (props) => {
           KeyboardButtonProps={{
             "aria-label": "change date",
           }}
-          maxDate={
-            new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
-          }
+          // maxDate={
+          //   new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)
+          // }
           classes={{
             root: marginTop,
             disabled: classes.disabled,

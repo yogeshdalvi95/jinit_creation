@@ -7,6 +7,7 @@ const {
   generatePDF,
   getDateInMMDDYYYY,
   base64_encode,
+  validateNumber,
 } = require("../../../config/utils");
 var path = require("path");
 const { PDFDocument, StandardFonts, rgb, degrees } = require("pdf-lib");
@@ -124,9 +125,30 @@ module.exports = {
       },
       []
     );
+    let totalPriceForAnyOneColor = 0;
+    let totalPriceForCommonColor = 0;
+    totalPriceForCommonColor =
+      validateNumber(designData.material_price) +
+      validateNumber(designData.add_price);
+
+    let mapColor = {};
+    if (designColorPrice && designColorPrice.length) {
+      totalPriceForAnyOneColor =
+        totalPriceForCommonColor + designColorPrice[0].color_price;
+      await utils.asyncForEach(designColorPrice, async (d) => {
+        let colorData = await strapi.query("color").findOne({ id: d.color });
+        console.log(colorData);
+        mapColor = {
+          ...mapColor,
+          [colorData.name]: totalPriceForCommonColor + d.color_price,
+        };
+      });
+    }
     designData = {
       ...designData,
+      totalPriceForAnyOneColor: totalPriceForAnyOneColor,
       color_price: designColorPrice,
+      mapColor: mapColor,
     };
     ctx.send(designData);
   },
@@ -357,7 +379,7 @@ module.exports = {
             />
         `;
         let buffer = await generatePDF(
-          "Design Details",
+          `Design Number:- ${designData.material_no}`,
           html,
           false,
           "A4",

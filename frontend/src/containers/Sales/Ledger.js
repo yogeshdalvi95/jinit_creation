@@ -108,6 +108,13 @@ export default function Ledger() {
         .format("YYYY-MM-DDT23:59:59.999Z");
     }
 
+    if (new Date().getMonth() < 3 && new Date().getFullYear() === 2024) {
+      startDate = new Date(2024, 3, 1);
+      endDate = moment(new Date(2025, 3, 0).toISOString())
+        .endOf("day")
+        .format("YYYY-MM-DDT23:59:59.999Z");
+    }
+
     filter = {
       ...filter,
       date_gte: startDate,
@@ -424,6 +431,8 @@ export default function Ledger() {
                     onChange={(event) => handleStartDateChange(event)}
                     label="Month/Year from"
                     name="date_gte"
+                    minDate={new Date("04-01-2024")}
+                    maxDate={undefined}
                     value={filter.date_gte || null}
                     id="date_gte"
                     formControlProps={{
@@ -452,6 +461,8 @@ export default function Ledger() {
                     onChange={(event) => handleEndDateChange(event)}
                     label="Month/Year to"
                     name="date_lte"
+                    minDate={new Date("04-01-2024")}
+                    maxDate={undefined}
                     value={filter.date_lte || null}
                     id="date_lte"
                     formControlProps={{

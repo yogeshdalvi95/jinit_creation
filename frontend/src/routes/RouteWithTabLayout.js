@@ -25,7 +25,7 @@ import {
   SELECTREADYMATERIALS,
   SELECTREADYMATERIALSWOHASH,
 } from "../paths";
-import { convertNumber, getRoutesOnLogin } from "../Utils";
+import { convertNumber, getRoutesOnLogin, validateNumber } from "../Utils";
 import { primaryColor } from "../assets/jss/material-dashboard-react";
 import { providerForGet } from "../api";
 import { backend_designs } from "../constants";
@@ -280,10 +280,8 @@ const RouteWithTabLayout = ({
                 <>
                   {" "}
                   <b>
-                    Price of all the raw materials required for color '
-                    {color?.name}'
+                    Price of all the raw materials required for '{color?.name}'
                   </b>{" "}
-                  ( this price excludes add. price ):{" "}
                   {loaderForUpdateDesign
                     ? getLoader()
                     : convertNumber(
@@ -295,8 +293,8 @@ const RouteWithTabLayout = ({
               <GridItem xs={12}>
                 <>
                   {" "}
-                  <b>Total Price for color '{color?.name}': </b> ( i.e price of
-                  all the common raw materials i.e (
+                  <b>Total Price for '{color?.name}': </b> (price of all the
+                  common raw materials ={" "}
                   {convertNumber(
                     [
                       parseFloat(formState?.designData?.material_price).toFixed(
@@ -305,18 +303,17 @@ const RouteWithTabLayout = ({
                     ],
                     true
                   )}
-                  ) + price of raw materials required for color '{color?.name}'
-                  i.e (
+                  ) + (price of raw materials required for '{color?.name}'={" "}
                   {convertNumber(
                     parseFloat(colorPrice?.color_price).toFixed(2),
                     true
                   )}
-                  ) + add. price i.e (
+                  ) + (add. price ={" "}
                   {convertNumber(
                     parseFloat(formState?.designData?.add_price).toFixed(2),
                     true
                   )}
-                  ) ):{" "}
+                  ) :{" "}
                 </>
                 <b></b>
                 {loaderForUpdateDesign
@@ -330,38 +327,57 @@ const RouteWithTabLayout = ({
                       true
                     )}
               </GridItem>
-              <GridItem xs={12}>
+              <GridItem
+                xs={12}
+                style={{
+                  marginTop: "10px",
+                }}
+              >
                 <b>Stock Available:</b> {colorPrice.stock}
               </GridItem>
             </>
-          ) : null}
+          ) : (
+            <GridItem
+              xs={12}
+              style={{
+                marginTop: "15px",
+              }}
+            >
+              <b>Total Price:</b>{" "}
+              {convertNumber(
+                validateNumber(formState?.designData?.totalPriceForAnyOneColor)
+              )}
+            </GridItem>
+          )}
         </>
       );
     } else {
       return (
-        <GridItem xs={12}>
-          <b>Total Price </b>( price of all the materials required for this
-          order i.e (
-          {convertNumber(
-            parseFloat(formState?.designData?.material_price).toFixed(2),
-            true
-          )}
-          ) + add. price i.e (
-          {convertNumber(
-            parseFloat(formState?.designData?.add_price).toFixed(2),
-            true
-          )}
-          )) :{" "}
-          {loaderForUpdateDesign
-            ? getLoader()
-            : convertNumber(
-                parseFloat(
-                  formState?.designData?.material_price +
-                    formState?.designData?.add_price
-                ).toFixed(2),
-                true
-              )}
-        </GridItem>
+        <>
+          <GridItem xs={12}>
+            <b>Total Price </b>( price of all the materials required for this
+            order i.e (
+            {convertNumber(
+              parseFloat(formState?.designData?.material_price).toFixed(2),
+              true
+            )}
+            ) + add. price i.e (
+            {convertNumber(
+              parseFloat(formState?.designData?.add_price).toFixed(2),
+              true
+            )}
+            )) :{" "}
+            {loaderForUpdateDesign
+              ? getLoader()
+              : convertNumber(
+                  parseFloat(
+                    formState?.designData?.material_price +
+                      formState?.designData?.add_price
+                  ).toFixed(2),
+                  true
+                )}
+          </GridItem>
+        </>
       );
     }
   };
