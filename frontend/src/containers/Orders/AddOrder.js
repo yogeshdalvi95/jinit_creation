@@ -942,6 +942,7 @@ export default function AddOrder(props) {
               <GridItem xs={12} sm={12} md={4}>
                 <DatePicker
                   onChange={(event) => handleOrderDate(event)}
+                  isSelectOnlyFinancialYear={true}
                   label="Order Date"
                   name="order_date"
                   disabled={isView}

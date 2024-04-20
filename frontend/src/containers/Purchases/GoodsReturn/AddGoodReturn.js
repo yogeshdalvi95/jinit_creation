@@ -901,6 +901,7 @@ export default function AddGoodReturn(props) {
                       onChange={(event) => handleStartDateChange(event)}
                       label="Selling Date"
                       name="date"
+                      isSelectOnlyFinancialYear={true}
                       disabled={isView}
                       value={formState.date || new Date()}
                       id="date"

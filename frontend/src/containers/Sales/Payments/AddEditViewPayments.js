@@ -322,6 +322,7 @@ const AddEditViewPayments = (props) => {
                   <DatePicker
                     onChange={(event) => handleDate(event)}
                     label="Payment Date"
+                    isSelectOnlyFinancialYear={true}
                     name="payment_date"
                     disabled={isView}
                     value={formState.payment_date}

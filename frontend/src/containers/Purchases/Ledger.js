@@ -6,6 +6,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  CustomDropDown,
   CustomMaterialUITable,
   CustomRadioButton,
   CustomTableBody,
@@ -53,6 +54,7 @@ import {
   VIEWPURCHASEPAYEMENT,
   VIEWPURCHASES,
 } from "../../paths";
+import { financialYearValues, getFinancialYear } from "../../Utils/CommonUtils";
 
 const useStyles = makeStyles(styles);
 export default function Ledger() {
@@ -71,55 +73,22 @@ export default function Ledger() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    let startDate = urlParams.get("sd");
-    let endDate = urlParams.get("ed");
+    let financialYear = urlParams.get("fy");
     let seller_id = urlParams.get("s");
     let type_of_bill = urlParams.get("tol");
     let filter = {};
 
-    /** Check dates */
-    let sd = new Date(startDate);
-    let ed = new Date(endDate);
-    if (startDate && !isEmptyString(startDate) && checkIFValidDateObject(sd)) {
-      let year = sd.getFullYear();
-      let month = sd.getMonth();
-      startDate = new Date(year, month, 1);
+    const fyArr = getFinancialYear();
+    if (financialYear) {
+      // let year = sd.getFullYear();
+      // let month = sd.getMonth();
+      // startDate = new Date(year, month, 1);
     } else {
-      let date = new Date();
-      let year = date.getFullYear();
-      let month = date.getMonth();
-      if (month < 3) {
-        year = year - 1;
-      }
-      startDate = new Date(year, 3, 1);
-    }
-
-    if (endDate && !isEmptyString(endDate) && checkIFValidDateObject(ed)) {
-      let year = ed.getFullYear();
-      let month = ed.getMonth();
-      endDate = moment(new Date(year, month + 1, 0).toISOString())
-        .endOf("day")
-        .format("YYYY-MM-DDT23:59:59.999Z");
-    } else {
-      let date = new Date();
-      let year = date.getFullYear();
-      let month = date.getMonth();
-      endDate = moment(new Date(year, month + 1, 0).toISOString())
-        .endOf("day")
-        .format("YYYY-MM-DDT23:59:59.999Z");
-    }
-
-    if (new Date().getMonth() < 3 && new Date().getFullYear() === 2024) {
-      startDate = new Date(2024, 3, 1);
-      endDate = moment(new Date(2025, 3, 0).toISOString())
-        .endOf("day")
-        .format("YYYY-MM-DDT23:59:59.999Z");
+      // let;
     }
 
     filter = {
       ...filter,
-      date_gte: startDate,
-      date_lte: endDate,
       type_of_bill: type_of_bill ? type_of_bill : "Kachha",
     };
     setFilter(filter);
@@ -142,7 +111,6 @@ export default function Ledger() {
   const getSellerInfo = async (sellerId, filter) => {
     await providerForGet(backend_sellers + "/" + sellerId, {}, Auth.getToken())
       .then((res) => {
-        console.log("res ", res);
         setSellerInfo({
           value: sellerId,
           label: res.data.seller_name,
@@ -361,6 +329,8 @@ export default function Ledger() {
 
   const deleteTxn = (id, txnType) => {};
 
+  console.log("filter -> ", filter);
+
   return (
     <>
       <SnackBarComponent
@@ -425,65 +395,21 @@ export default function Ledger() {
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={2}>
-                  <DatePicker
-                    variant="inline"
-                    openTo="month"
-                    views={["year", "month"]}
-                    onChange={(event) => handleStartDateChange(event)}
-                    label="Month/Year from"
-                    name="date_gte"
-                    minDate={new Date("04-01-2024")}
-                    maxDate={undefined}
-                    value={filter.date_gte || null}
-                    id="date_gte"
+                  <CustomDropDown
+                    id="financial_year"
+                    onChange={(event) => {
+                      setFilter((filter) => ({
+                        ...filter,
+                        financial_year: event.target.value,
+                      }));
+                    }}
+                    labelText="Financial Year"
+                    name="financial_year"
+                    value={filter.financial_year}
+                    nameValue={financialYearValues()}
                     formControlProps={{
                       fullWidth: true,
                     }}
-                    style={{
-                      marginTop: "1.8rem",
-                      width: "100%",
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_date_gte"}
-                    isHelperText={hasError("date_gte", error)}
-                    helperText={
-                      hasError("date_gte", error)
-                        ? error["date_gte"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("date_gte", error)}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={2}>
-                  <DatePicker
-                    views={["year", "month"]}
-                    onChange={(event) => handleEndDateChange(event)}
-                    label="Month/Year to"
-                    name="date_lte"
-                    value={filter.date_lte || null}
-                    id="date_lte"
-                    minDate={new Date("04-01-2024")}
-                    maxDate={undefined}
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    style={{
-                      marginTop: "1.8rem",
-                      width: "100%",
-                    }}
-                    /** For setting errors */
-                    helperTextId={"helperText_date_lte"}
-                    isHelperText={hasError("date_lte", error)}
-                    helperText={
-                      hasError("date_lte", error)
-                        ? error["date_lte"].map((error) => {
-                            return error + " ";
-                          })
-                        : null
-                    }
-                    error={hasError("date_lte", error)}
                   />
                 </GridItem>
                 <GridItem

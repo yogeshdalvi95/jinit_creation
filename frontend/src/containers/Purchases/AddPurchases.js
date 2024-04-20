@@ -811,6 +811,7 @@ export default function AddPurchases(props) {
                       label="Purchase Date"
                       name="date"
                       disabled={isView}
+                      isSelectOnlyFinancialYear={true}
                       value={formState.date || new Date()}
                       id="date"
                       formControlProps={{

@@ -431,8 +431,6 @@ export default function Ledger() {
                     onChange={(event) => handleStartDateChange(event)}
                     label="Month/Year from"
                     name="date_gte"
-                    minDate={new Date("04-01-2024")}
-                    maxDate={undefined}
                     value={filter.date_gte || null}
                     id="date_gte"
                     formControlProps={{
@@ -461,8 +459,6 @@ export default function Ledger() {
                     onChange={(event) => handleEndDateChange(event)}
                     label="Month/Year to"
                     name="date_lte"
-                    minDate={new Date("04-01-2024")}
-                    maxDate={undefined}
                     value={filter.date_lte || null}
                     id="date_lte"
                     formControlProps={{

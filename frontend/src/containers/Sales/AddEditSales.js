@@ -1253,6 +1253,7 @@ export default function AddEditSales(props) {
                     <GridItem xs={12} sm={12} md={2}>
                       <DatePicker
                         onChange={(event) => handleOrderDate(event)}
+                        isSelectOnlyFinancialYear={true}
                         label="Sale Date"
                         name="date"
                         disabled={isView}

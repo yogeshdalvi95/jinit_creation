@@ -585,6 +585,7 @@ export default function AddEditSaleReturn(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={3}>
                   <DatePicker
+                    isSelectOnlyFinancialYear={true}
                     onChange={(event) => handleStartDateChange(event)}
                     label="Sale Return Date"
                     name="date"

@@ -83,6 +83,46 @@ export const setAllQueryParamsFromUrl = (filterObject, filterKeys, prefix) => {
   return filterObject;
 };
 
+export const financialYearValues = () => {
+  let arr = [];
+  for (let i = 2022; i < new Date().getFullYear() + 1; i++) {
+    arr = [
+      ...arr,
+      {
+        name: `April ${i} - March ${i + 1}`,
+        value: {
+          startYear: i,
+          startMonth: 3,
+          endYear: i + 1,
+          endMonth: 3,
+          value: `April ${i} - March ${i + 1}`,
+        },
+      },
+    ];
+  }
+  return arr;
+};
+
+export const getFinancialYear = () => {
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  let year = null;
+  let year1 = null;
+  if (currentMonth > 2) {
+    /** if current month > March */
+    year = currentDate.getFullYear() - 2;
+    year1 = currentDate.getFullYear() + 1;
+  } else if (currentMonth < 3) {
+    /** if current month < April */
+    year = currentDate.getFullYear() - 3;
+    year1 = currentDate.getFullYear();
+  }
+  return {
+    minDate: new Date(year, 3, 1),
+    maxDate: new Date(year1, 3, 0),
+  };
+};
+
 export const setAllQueryParamsForSearch = (filter, prefix, filterKeys) => {
   const queryParams = new URLSearchParams(window.location.search);
   /** First remove existing */

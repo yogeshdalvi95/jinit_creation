@@ -329,6 +329,7 @@ const AddEditViewPayments = (props) => {
                     disabled={isView}
                     value={formState.payment_date}
                     id="payment_date"
+                    isSelectOnlyFinancialYear={true}
                     formControlProps={{
                       fullWidth: true,
                     }}
