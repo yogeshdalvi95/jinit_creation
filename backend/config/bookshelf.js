@@ -3,7 +3,7 @@ const knex = require("knex")({
   connection: {
     host: "127.0.0.1",
     port: parseInt("5432"),
-    database: "jinit_creation",
+    database: "jinit_backup",
     user: "postgres",
     password: "root",
   },
@@ -26,6 +26,11 @@ bookshelf.model("color", {
 
 bookshelf.model("department", {
   tableName: "departments",
+  requireFetch: false,
+});
+
+bookshelf.model("plating", {
+  tableName: "platings",
   requireFetch: false,
 });
 

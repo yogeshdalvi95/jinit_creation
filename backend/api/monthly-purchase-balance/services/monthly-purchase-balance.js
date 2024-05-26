@@ -2,7 +2,7 @@
 const utils = require("../../../config/utils");
 const bookshelf = require("../../../config/bookshelf");
 const _ = require("lodash");
-const { validateNumber } = require("../../../config/utils");
+const { validateNumber, getFinancialYear } = require("../../../config/utils");
 
 /**
  * Read the documentation (https://strapi.io/documentation/developer-docs/latest/development/backend-customization.html#core-services)
@@ -11,6 +11,12 @@ const { validateNumber } = require("../../../config/utils");
 
 module.exports = {
   async updateLedger(dateFrom, seller) {
+    console.log("seller -> ", seller);
+    const financialYear = getFinancialYear();
+    console.log("financialYear -> ", financialYear);
+  },
+
+  async updateLedger_new(dateFrom, seller) {
     await bookshelf.transaction(async (t) => {
       let dateToCheckFrom = new Date(dateFrom);
 
@@ -25,8 +31,13 @@ module.exports = {
 
       let previousKachhaClosingBalance = 0;
       let previousPakkaClosingBalance = 0;
+      console.log("monthDiffArray -> ", monthDiffArray);
 
       await utils.asyncForEach(monthDiffArray, async (m_no) => {
+        console.log(
+          "--------------------------------------------------------------------------------------------------"
+        );
+        console.log("m_no -> ", m_no);
         let getMiddleDate = new Date(new Date().setDate(15));
         let correspondingDate = new Date(
           getMiddleDate.setMonth(getMiddleDate.getMonth() - m_no)
@@ -117,6 +128,9 @@ module.exports = {
           });
         }
 
+        console.log("kachhaBalanceData -> ", kachhaBalanceData);
+        console.log("pakkaBalanceData -> ", pakkaBalanceData);
+
         /** ------- */
 
         let getAllTransactions = await strapi
@@ -126,6 +140,10 @@ module.exports = {
             year: correspondingYear,
             seller: seller,
           });
+
+        console.log("correspondingMonth -> ", correspondingMonth);
+        console.log("correspondingYear -> ", correspondingYear);
+        console.log("getAllTransactions -> ", getAllTransactions);
 
         getAllTransactions.forEach((el) => {
           let num = validateNumber(el.transaction_amount);
@@ -148,6 +166,18 @@ module.exports = {
 
         previousKachhaClosingBalance = kachhaBalanceData.closing_balance;
         previousPakkaClosingBalance = pakkaBalanceData.closing_balance;
+
+        console.log(
+          "previousKachhaClosingBalance -> ",
+          previousKachhaClosingBalance
+        );
+        console.log(
+          "previousPakkaClosingBalance -> ",
+          previousPakkaClosingBalance
+        );
+
+        console.log("kachhaBalanceData -> ", kachhaBalanceData);
+        console.log("pakkaBalanceData -> ", pakkaBalanceData);
 
         /** For Kachha ledger */
         if (kachhaLedgerId) {

@@ -98,7 +98,7 @@
     },
     {
       "method": "DELETE",
-      "path": "/webapi/private/orders/:orderId/design/:designId/color/:colorId",
+      "path": "/webapi/private/orders/:orderId/design/:designId/plating/:platingId/color/:colorId",
       "handler": "orders.delete",
       "config": {
         "policies": []

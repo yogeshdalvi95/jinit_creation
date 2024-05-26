@@ -20,6 +20,7 @@ export {
   getMonth,
   getMonthDifference,
   checkIFValidDateObject,
+  whiteColorID,
 } from "./CommonUtils";
 export {
   checkAllKeysPresent,

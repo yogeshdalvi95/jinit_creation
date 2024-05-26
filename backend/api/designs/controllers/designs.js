@@ -379,7 +379,7 @@ module.exports = {
             />
         `;
         let buffer = await generatePDF(
-          `Design Number:- ${designData.material_no}`,
+          `${designData.material_no}`,
           html,
           false,
           "A4",

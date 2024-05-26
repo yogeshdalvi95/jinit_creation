@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/webapi/private/platings",
+      "handler": "plating.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/platings/count",
+      "handler": "plating.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/webapi/private/platings/:id",
+      "handler": "plating.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/webapi/private/platings",
+      "handler": "plating.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/webapi/private/platings/:id",
+      "handler": "plating.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/webapi/private/platings/:id",
+      "handler": "plating.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

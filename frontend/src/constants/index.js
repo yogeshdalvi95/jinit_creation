@@ -51,4 +51,5 @@ export {
   backend_download_designs,
   backend_download_sale_ledger,
   backend_sale_ledger,
+  backend_plating,
 } from "./UrlConstants";

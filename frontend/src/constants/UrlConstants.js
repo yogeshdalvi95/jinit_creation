@@ -22,6 +22,7 @@ export const backend_check_seller_duplicate = `${apiBackendUrl}/sellers/check_du
 export const backend_category = `${apiBackendUrl}/categories`;
 
 export const backend_color = `${apiBackendUrl}/colors`;
+export const backend_plating = `${apiBackendUrl}/platings`;
 
 export const backend_raw_materials = `${apiBackendUrl}/raw-materials`;
 export const backend_cities = `${apiBackendUrl}/cities`;

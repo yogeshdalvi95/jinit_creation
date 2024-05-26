@@ -18,6 +18,8 @@ export const getInitials = (name) => {
   return initials;
 };
 
+export const whiteColorID = "white (plain colour)";
+
 export function isSameDay(d1, d2) {
   return (
     d1.getFullYear() === d2.getFullYear() &&

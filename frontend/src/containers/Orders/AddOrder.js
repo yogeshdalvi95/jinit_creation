@@ -45,6 +45,7 @@ import {
   backend_color,
   backend_order,
   backend_order_check_raw_material_availibility,
+  backend_plating,
 } from "../../constants";
 import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -128,6 +129,7 @@ export default function AddOrder(props) {
 
   const [ratio, setRatio] = useState([]);
   const [color, setColor] = useState([]);
+  const [plating, setPlating] = useState([]);
   const [colorPresent, setColorPresent] = useState([]);
   const [duplicateColorAlert, setDuplicateColorAlert] = useState(null);
 
@@ -142,6 +144,7 @@ export default function AddOrder(props) {
       getData(id);
     }
     getColorData();
+    getPlatingData();
   }, []);
 
   useEffect(() => {
@@ -206,6 +209,7 @@ export default function AddOrder(props) {
 
   const handleAcceptDialog = (status) => {
     setAlert(null);
+    console.log("ratio -> ", ratio);
     addButton(status);
   };
 
@@ -239,12 +243,29 @@ export default function AddOrder(props) {
       });
   };
 
+  const getPlatingData = async () => {
+    setBackDrop(true);
+    await providerForGet(backend_plating, { pageSize: -1 }, Auth.getToken())
+      .then((res) => {
+        setBackDrop(false);
+        setPlating(res.data.data);
+      })
+      .catch((err) => {
+        setBackDrop(false);
+        setSnackBar((snackBar) => ({
+          ...snackBar,
+          show: true,
+          severity: "error",
+          message: "Error getting plating data",
+        }));
+      });
+  };
+
   const getColorData = async () => {
     setBackDrop(true);
     await providerForGet(backend_color, { pageSize: -1 }, Auth.getToken())
       .then((res) => {
         setBackDrop(false);
-
         setColor(res.data.data);
       })
       .catch((err) => {
@@ -316,6 +337,8 @@ export default function AddOrder(props) {
         quantity: 0,
         quantityCompleted: 0,
         order: null,
+        plating: null,
+        platingData: null,
       },
     ]);
 
@@ -438,7 +461,8 @@ export default function AddOrder(props) {
         Auth.getToken()
       )
         .then((res) => {
-          history.push(ORDERS);
+          // history.push(`${EDITORDER}/${id}`);
+          window.location.reload();
           setBackDrop(false);
         })
         .catch((err) => {
@@ -585,10 +609,19 @@ export default function AddOrder(props) {
         }
       }
     } else {
-      obj = {
-        ...obj,
-        colorData: event,
-      };
+      console.log("Here I am -->>>", event, ratio[key], ratio, key, targetName);
+      if (targetName === "plating") {
+        obj = {
+          ...obj,
+          platingData: event,
+        };
+      } else {
+        obj = {
+          ...obj,
+          colorData: event,
+        };
+      }
+
       if (!event) {
         // let colorData = ratio[key].colorData;
         // color.push(colorData);
@@ -599,22 +632,56 @@ export default function AddOrder(props) {
         }));
       } else {
         // setColor(color.filter((c) => c.id !== value));
-        if (ratio.findIndex((r) => r.color === value) !== -1) {
-          isSetData = false;
-          setDuplicateColorAlert(
-            <SweetAlert
-              danger
-              confirmBtnText="Cancel"
-              confirmBtnCssClass={cancelBtnClasses}
-              title="Heads up?"
-              onConfirm={() => setDuplicateColorAlert(null)}
-              style={{
-                position: "initial",
-              }}
-            >
-              {`Ratio ${event.name} is already added!`}
-            </SweetAlert>
-          );
+        if (targetName !== "plating") {
+          if (
+            !obj.plating &&
+            ratio.findIndex((r) => !r.plating && r.color === value) !== -1
+          ) {
+            isSetData = false;
+            setDuplicateColorAlert(
+              <SweetAlert
+                danger
+                confirmBtnText="Cancel"
+                confirmBtnCssClass={cancelBtnClasses}
+                title="Heads up?"
+                onConfirm={() => setDuplicateColorAlert(null)}
+                style={{
+                  position: "initial",
+                }}
+              >
+                {`${event.name} is already added!`}
+              </SweetAlert>
+            );
+
+            if (ratio[key]) {
+              setRatio([...ratio.slice(0, key), ...ratio.slice(key + 1)]);
+            }
+          } else if (
+            obj.plating &&
+            ratio.findIndex(
+              (r) => r.plating === obj.plating && r.color === value
+            ) !== -1
+          ) {
+            isSetData = false;
+            setDuplicateColorAlert(
+              <SweetAlert
+                danger
+                confirmBtnText="Cancel"
+                confirmBtnCssClass={cancelBtnClasses}
+                title="Heads up?"
+                onConfirm={() => setDuplicateColorAlert(null)}
+                style={{
+                  position: "initial",
+                }}
+              >
+                {`${event.name} is already added for plating ${obj.platingData.name}!`}
+              </SweetAlert>
+            );
+
+            if (ratio[key]) {
+              setRatio([...ratio.slice(0, key), ...ratio.slice(key + 1)]);
+            }
+          }
         }
 
         if (isSetData) {
@@ -746,7 +813,7 @@ export default function AddOrder(props) {
     return validateNumber(formState.quantity) - output;
   };
 
-  const setAlertForDeleteDesign = async (colorKey, key) => {
+  const setAlertForDeleteDesign = async (platingKey, colorKey, key) => {
     let content = "Are you sure you want to delete this ratio?";
     if (ratio.length === 1) {
       content =
@@ -763,7 +830,7 @@ export default function AddOrder(props) {
         onConfirm={() => {
           ratio.length === 1
             ? deleteEntireOrder()
-            : deleteDesignColor(colorKey, key);
+            : deleteDesignColor(platingKey, colorKey, key);
         }}
         onCancel={handleCloseDialog}
         cancelBtnCssClass={cancelBtnClasses}
@@ -810,10 +877,10 @@ export default function AddOrder(props) {
     }
   };
 
-  const deleteDesignColor = async (colorKey, key) => {
+  const deleteDesignColor = async (platingKey, colorKey, key) => {
     if (id && design.id && colorKey) {
       await providerForDelete(
-        `${backend_order}/${id}/design/${design.id}/color/${colorKey}`,
+        `${backend_order}/${id}/design/${design.id}/plating/${platingKey}/color/${colorKey}`,
         null,
         Auth.getToken()
       )
@@ -824,6 +891,8 @@ export default function AddOrder(props) {
               {
                 color: null,
                 colorData: null,
+                plating: null,
+                platingData: null,
                 quantity: 0,
                 quantityCompleted: 0,
                 order: null,
@@ -907,7 +976,7 @@ export default function AddOrder(props) {
         availibleStocks={availibleStocks}
         open={openDialogForStockAvailibility}
       />
-      <GridItem xs={12} sm={12} md={8}>
+      <GridItem xs={12} sm={12} md={10}>
         <Card>
           <CardHeader color="primary" className={classes.cardHeaderStyles}>
             <h4 className={classes.cardTitleWhite}>{props.header}</h4>
@@ -1470,13 +1539,68 @@ export default function AddOrder(props) {
                       <>
                         {ratio.map((r, key) => (
                           <GridContainer>
-                            <GridItem xs={12} sm={12} md={3}>
+                            <GridItem xs={12} sm={12} md={2}>
+                              <CustomAutoComplete
+                                id={"plating" + key}
+                                labelText="Plating"
+                                autocompleteId={"plating" + key}
+                                optionKey={"name"}
+                                disabled={
+                                  r.id ||
+                                  isView ||
+                                  formState.cancelled ||
+                                  formState.completed
+                                }
+                                options={plating}
+                                onChange={(event, value) => {
+                                  handleChangeRepeatableComponent(
+                                    value,
+                                    key,
+                                    false,
+                                    "Plating",
+                                    "plating" + key,
+                                    "plating"
+                                  );
+                                }}
+                                value={
+                                  plating[
+                                    plating.findIndex(function (item, i) {
+                                      return item.id === r.plating;
+                                    })
+                                  ] || null
+                                }
+                                formControlProps={{
+                                  fullWidth: true,
+                                }}
+                                /** For setting errors */
+                                helperTextId={"helperText_plating" + key}
+                                isHelperText={true}
+                                helperText={
+                                  info["plating" + key]
+                                    ? info["plating" + key].msg
+                                    : ""
+                                }
+                                error={
+                                  info["plating" + key]?.isError ? true : false
+                                }
+                              />
+                              {/**
+                               * design: d.design,
+                               * color: d.color?.id,
+                               * colorName: d.color?.name,
+                               * quantity: 0,
+                               * quantityCompleted: 0,
+                               * order: null,
+                               */}
+                            </GridItem>
+                            <GridItem xs={12} sm={12} md={2}>
                               <CustomAutoComplete
                                 id={"color" + key}
                                 labelText="Color"
                                 autocompleteId={"color" + key}
                                 optionKey={"name"}
                                 disabled={
+                                  r.id ||
                                   isView ||
                                   formState.cancelled ||
                                   formState.completed
@@ -1484,18 +1608,28 @@ export default function AddOrder(props) {
                                 renderOption={(option, state) => {
                                   if (colorPresent.includes(option.id)) {
                                     return (
-                                      <Chip
-                                        label={option.name}
-                                        color="success"
-                                        variant="outlined"
-                                      />
+                                      <Tooltip
+                                        title={option.name}
+                                        placement="top"
+                                      >
+                                        <Chip
+                                          label={option.name}
+                                          color="success"
+                                          variant="outlined"
+                                        />
+                                      </Tooltip>
                                     );
                                   } else {
                                     return (
-                                      <Chip
-                                        label={option.name}
-                                        variant="outlined"
-                                      />
+                                      <Tooltip
+                                        title={option.name}
+                                        placement="top"
+                                      >
+                                        <Chip
+                                          label={option.name}
+                                          variant="outlined"
+                                        />
+                                      </Tooltip>
                                     );
                                   }
                                 }}
@@ -1657,8 +1791,10 @@ export default function AddOrder(props) {
                                         align={"end"}
                                         size={"small"}
                                         onClick={() => {
+                                          console.log("r -> ", r);
                                           if (r.id) {
                                             setAlertForDeleteDesign(
+                                              r.plating,
                                               r.color,
                                               key
                                             );
@@ -1705,6 +1841,8 @@ export default function AddOrder(props) {
                                               {
                                                 color: null,
                                                 colorData: null,
+                                                plating: null,
+                                                platingData: null,
                                                 quantity: 0,
                                                 quantityCompleted: 0,
                                                 order: null,
@@ -1765,6 +1903,8 @@ export default function AddOrder(props) {
                                           {
                                             color: null,
                                             colorData: null,
+                                            plating: null,
+                                            platingData: null,
                                             quantity: 0,
                                             quantityCompleted: 0,
                                             order: null,

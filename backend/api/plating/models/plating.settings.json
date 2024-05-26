@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "platings",
+  "info": {
+    "name": "Plating"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

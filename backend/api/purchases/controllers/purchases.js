@@ -687,7 +687,7 @@ async function generateLedger(params) {
     );
     let correspondingMonth = correspondingDate.getMonth() + 1;
     let correspondingYear = correspondingDate.getFullYear();
-
+    let isOpeningBalanceEditable = false;
     let purchasePaymentTransaction = await strapi
       .query("purchase-payment-transaction")
       .find({
@@ -788,6 +788,7 @@ async function generateLedger(params) {
         totalCredit: netTotalCredit,
         totalDebit: netTotalDebit,
         data: [...txnData],
+        isOpeningBalanceEditable: isOpeningBalanceEditable,
       },
     };
   });

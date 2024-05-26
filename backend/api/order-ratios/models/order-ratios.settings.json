@@ -26,6 +26,9 @@
     },
     "order": {
       "model": "orders"
+    },
+    "plating": {
+      "model": "plating"
     }
   }
 }

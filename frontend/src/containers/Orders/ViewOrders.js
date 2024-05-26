@@ -4,6 +4,7 @@ import { saveAs } from "file-saver";
 import {
   Backdrop,
   CircularProgress,
+  Divider,
   FormControlLabel,
   Icon,
   makeStyles,
@@ -20,6 +21,7 @@ import {
   frontendServerUrl,
   backend_parties,
   backend_designs,
+  apiUrl,
 } from "../../constants";
 import {
   Auth,
@@ -53,6 +55,7 @@ import {
   providerForDownload,
   providerForGet,
 } from "../../api";
+import no_image_icon from "../../assets/img/no_image_icon.png";
 import DownloadIcon from "@mui/icons-material/Download";
 
 const useStyles = makeStyles(styles);
@@ -95,52 +98,46 @@ export default function ViewOrders(props) {
         rowData.design?.material_no ? rowData.design?.material_no : "----",
     },
     {
+      title: "Design Image",
+      sorting: false,
+      align: "center",
+      render: (rowData) => (
+        <div className={classes.imageDivInTable}>
+          {rowData.design &&
+          rowData.design.images &&
+          rowData.design.images.length &&
+          rowData.design.images[0].url ? (
+            <img
+              alt="ready_material_photo"
+              src={apiUrl + rowData.design.images[0].url}
+              loader={<CircularProgress />}
+              style={{
+                height: "5rem",
+                width: "10rem",
+              }}
+              className={classes.UploadImage}
+            />
+          ) : (
+            <img
+              src={no_image_icon}
+              alt="ready_material_photo"
+              style={{
+                height: "5rem",
+                width: "10rem",
+              }}
+              loader={<CircularProgress />}
+              className={classes.DefaultNoImage}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
       title: "Party",
       field: "party",
       sorting: false,
       render: (rowData) => (rowData.party ? rowData.party.party_name : "----"),
     },
-    // {
-    //   title: "Party Number",
-    //   field: "party_no",
-    // },
-    {
-      title: "Ratio",
-      render: (rowData) => {
-        let output = "";
-        if (rowData.orderRatio && rowData.orderRatio.length) {
-          let array = rowData.orderRatio;
-          array.forEach((el, index) => {
-            const temp =
-              el.color?.name +
-              ": " +
-              validateNumber(el.quantity_completed) +
-              "/" +
-              validateNumber(el.quantity);
-            if (index === 0) {
-              output = output + temp;
-            } else {
-              output = output + ", " + temp;
-            }
-            output = output + "\n\n";
-          });
-        } else {
-          output = rowData.completed_quantity + "/" + rowData.quantity;
-        }
-        return output;
-      },
-    },
-    // {
-    //   title: "Quantity saved for later",
-    //   field: "buffer_quantity",
-    // },
-    // { title: "Completed Quantity", field: "completed_quantity" },
-
-    // {
-    //   title: "Total Price",
-    //   field: "total_price",
-    //   render: (rowData) => convertNumber(rowData.total_price, true),
-    // },
     {
       title: "Status",
       render: (rowData) => {
@@ -757,6 +754,96 @@ export default function ViewOrders(props) {
                         },
                       }),
                     ]}
+                    detailPanel={(rowData) => {
+                      let platingKeys = Object.keys(rowData.ratioData);
+                      let na_keys = [];
+                      if (rowData.ratioData["NA"]) {
+                        na_keys = Object.keys(rowData.ratioData["NA"]);
+                      }
+                      return (
+                        <GridContainer>
+                          {platingKeys && platingKeys.length ? (
+                            <>
+                              {na_keys.length ? (
+                                <GridItem xs={12} sm={12} md={12}>
+                                  {na_keys.map((el, index) => {
+                                    let temp =
+                                      validateNumber(
+                                        rowData.ratioData["NA"][el][
+                                          "quantity_completed"
+                                        ]
+                                      ) +
+                                      "/" +
+                                      validateNumber(
+                                        rowData.ratioData["NA"][el]["quantity"]
+                                      );
+
+                                    if (index === na_keys.length - 1) {
+                                      return (
+                                        <>
+                                          <b>{el}</b> : {temp}
+                                        </>
+                                      );
+                                    } else {
+                                      return (
+                                        <>
+                                          <b>{el}</b> : {temp} &nbsp;,
+                                        </>
+                                      );
+                                    }
+                                  })}
+                                </GridItem>
+                              ) : null}
+                              <br />
+                              <GridItem xs={12} sm={12} md={12}>
+                                {platingKeys.map((pl) => {
+                                  if (pl !== "NA") {
+                                    let ratioKeys = Object.keys(
+                                      rowData.ratioData[pl]
+                                    );
+                                    let x = ratioKeys.map((el, index) => {
+                                      let temp =
+                                        validateNumber(
+                                          rowData.ratioData[pl][el][
+                                            "quantity_completed"
+                                          ]
+                                        ) +
+                                        "/" +
+                                        validateNumber(
+                                          rowData.ratioData[pl][el]["quantity"]
+                                        );
+
+                                      if (index === ratioKeys.length - 1) {
+                                        return (
+                                          <>
+                                            <b>{el}</b> : {temp}
+                                          </>
+                                        );
+                                      } else {
+                                        return (
+                                          <>
+                                            <b>{el}</b> : {temp} &nbsp;,
+                                          </>
+                                        );
+                                      }
+                                    });
+                                    return (
+                                      <>
+                                        <Divider></Divider>
+                                        <b>Plating: {pl}</b>
+                                        <br />
+                                        {x}
+                                        <br />
+                                      </>
+                                    );
+                                  }
+                                })}
+                              </GridItem>
+                            </>
+                          ) : null}
+                        </GridContainer>
+                      );
+                    }}
                     editable={{
                       onRowDelete: (oldData) =>
                         new Promise((resolve) => {

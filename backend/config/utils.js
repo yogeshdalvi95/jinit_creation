@@ -339,6 +339,7 @@ const generatePDF = async (
   //   footerTemplate:
   //     '3432524fsdfs <span style="font-size: 10px; margin-left:auto; margin-right:35px;"> <span class="pageNumber"></span></span></span>',
   // });
+
   const buffer = await page.pdf({
     landscape: landscape,
     format: format,
@@ -366,6 +367,26 @@ function getMonthDifference(startDate, endDate) {
     12 * (endDate.getFullYear() - startDate.getFullYear())
   );
 }
+
+const getFinancialYear = () => {
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  let year = null;
+  let year1 = null;
+  if (currentMonth > 2) {
+    /** if current month > March */
+    year = currentDate.getFullYear() - 2;
+    year1 = currentDate.getFullYear() + 1;
+  } else if (currentMonth < 3) {
+    /** if current month < April */
+    year = currentDate.getFullYear() - 3;
+    year1 = currentDate.getFullYear();
+  }
+  return {
+    minDate: new Date(year, 3, 1),
+    maxDate: new Date(year1, 3, 0),
+  };
+};
 
 module.exports = {
   roundNumberTo2digit,
@@ -401,4 +422,5 @@ module.exports = {
   getMonthDifference,
   getMonth,
   whiteColorID,
+  getFinancialYear,
 };

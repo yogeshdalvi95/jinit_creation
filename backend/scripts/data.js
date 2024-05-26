@@ -124,6 +124,10 @@ const ROLES = {
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
+        name: "plating",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
         name: "monthly-sheet",
         action: [],
       },
@@ -195,6 +199,10 @@ const ROLES = {
           "delete",
           "getmaterialcount",
         ],
+      },
+      {
+        name: "plating",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {
         name: "purchase-payments",
@@ -378,6 +386,10 @@ const ROLES = {
       },
       {
         name: "purchase-payments",
+        action: ["find", "create", "update", "findOne", "update", "delete"],
+      },
+      {
+        name: "plating",
         action: ["find", "create", "update", "findOne", "update", "delete"],
       },
       {

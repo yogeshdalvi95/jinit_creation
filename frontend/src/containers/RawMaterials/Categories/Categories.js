@@ -79,7 +79,6 @@ export default function Categories() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -252,36 +251,36 @@ export default function Categories() {
                         },
                       }),
                     ]}
-                    editable={{
-                      onRowDelete: (oldData) =>
-                        new Promise((resolve) => {
-                          setTimeout(async () => {
-                            await providerForDelete(
-                              backend_category,
-                              oldData.id,
-                              Auth.getToken()
-                            )
-                              .then(async (res) => {
-                                setSnackBar((snackBar) => ({
-                                  ...snackBar,
-                                  show: true,
-                                  severity: "success",
-                                  message:
-                                    "Successfully deleted " + oldData.name,
-                                }));
-                              })
-                              .catch((err) => {
-                                setSnackBar((snackBar) => ({
-                                  ...snackBar,
-                                  show: true,
-                                  severity: "error",
-                                  message: "Error deleting " + oldData.name,
-                                }));
-                              });
-                            resolve();
-                          }, 1000);
-                        }),
-                    }}
+                    // editable={{
+                    //   onRowDelete: (oldData) =>
+                    //     new Promise((resolve) => {
+                    //       setTimeout(async () => {
+                    //         await providerForDelete(
+                    //           backend_category,
+                    //           oldData.id,
+                    //           Auth.getToken()
+                    //         )
+                    //           .then(async (res) => {
+                    //             setSnackBar((snackBar) => ({
+                    //               ...snackBar,
+                    //               show: true,
+                    //               severity: "success",
+                    //               message:
+                    //                 "Successfully deleted " + oldData.name,
+                    //             }));
+                    //           })
+                    //           .catch((err) => {
+                    //             setSnackBar((snackBar) => ({
+                    //               ...snackBar,
+                    //               show: true,
+                    //               severity: "error",
+                    //               message: "Error deleting " + oldData.name,
+                    //             }));
+                    //           });
+                    //         resolve();
+                    //       }, 1000);
+                    //     }),
+                    // }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,

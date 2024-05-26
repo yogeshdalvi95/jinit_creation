@@ -23,6 +23,9 @@
     },
     "stock": {
       "type": "float"
+    },
+    "plating": {
+      "model": "plating"
     }
   }
 }

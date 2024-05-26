@@ -1,0 +1,20 @@
+Check delete functionality application wide -- Done
+View Design 
+Order edit functionality -- Done
+Sale ledge download pdf check
+Rename White colour -> White colour ( Plain Design) 
+Excel sheet containing party id and design id mapping
+Give alert if the design is already given to another party -> design-parties-relationship
+
+
+Need to check the functionality for ledger update!!!
+
+Update the Opening stock for start
+
+
+
+Need to check:-
+- https://rally1.rallydev.com/#/201665254124ud/myrally?detail=%2Fdefect%2F621936531725
+
+
+Canada -> http://localhost:8080/ainsley	

@@ -25,7 +25,7 @@ import { useHistory } from "react-router-dom";
 import { ADDCOLOR, EDITCOLOR } from "../../../paths";
 import { Backdrop, CircularProgress } from "@material-ui/core";
 import { providerForDelete, providerForGet } from "../../../api";
-import { isEmptyString } from "../../../Utils";
+import { isEmptyString, whiteColorID } from "../../../Utils";
 
 const useStyles = makeStyles(styles);
 
@@ -74,7 +74,6 @@ export default function Color() {
               Auth.clearAppStorage();
               window.location.href = `${frontendServerUrl}/login`;
             } else {
-              
             }
           }
         })
@@ -242,41 +241,48 @@ export default function Color() {
                       (rowData) => ({
                         icon: () => <EditOutlinedIcon fontSize="small" />,
                         tooltip: "Edit",
+                        disabled:
+                          rowData.name.toLowerCase() === whiteColorID
+                            ? true
+                            : false,
                         onClick: (event, rowData) => {
                           handleTableAction(rowData, false);
                         },
                       }),
                     ]}
-                    editable={{
-                      onRowDelete: (oldData) =>
-                        new Promise((resolve) => {
-                          setTimeout(async () => {
-                            await providerForDelete(
-                              backend_color,
-                              oldData.id,
-                              Auth.getToken()
-                            )
-                              .then(async (res) => {
-                                setSnackBar((snackBar) => ({
-                                  ...snackBar,
-                                  show: true,
-                                  severity: "success",
-                                  message:
-                                    "Successfully deleted " + oldData.name,
-                                }));
-                              })
-                              .catch((err) => {
-                                setSnackBar((snackBar) => ({
-                                  ...snackBar,
-                                  show: true,
-                                  severity: "error",
-                                  message: "Error deleting " + oldData.name,
-                                }));
-                              });
-                            resolve();
-                          }, 1000);
-                        }),
-                    }}
+                    // editable={{
+                    //   onRowDelete: (oldData) => {
+                    //     console.log("oldData -> ", oldData);
+                    //     // oldData.name.toLowerCase() === whiteColorID ?
+                    //     return new Promise((resolve) => {
+                    //       setTimeout(async () => {
+                    //         await providerForDelete(
+                    //           backend_color,
+                    //           oldData.id,
+                    //           Auth.getToken()
+                    //         )
+                    //           .then(async (res) => {
+                    //             setSnackBar((snackBar) => ({
+                    //               ...snackBar,
+                    //               show: true,
+                    //               severity: "success",
+                    //               message:
+                    //                 "Successfully deleted " + oldData.name,
+                    //             }));
+                    //           })
+                    //           .catch((err) => {
+                    //             setSnackBar((snackBar) => ({
+                    //               ...snackBar,
+                    //               show: true,
+                    //               severity: "error",
+                    //               message: "Error deleting " + oldData.name,
+                    //             }));
+                    //           });
+                    //         resolve();
+                    //       }, 1000);
+                    //     });
+                    //   },
+                    // }}
                     options={{
                       pageSize: 10,
                       actionsColumnIndex: -1,
