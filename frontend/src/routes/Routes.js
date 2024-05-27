@@ -116,6 +116,8 @@ import {
   AddEditViewPaymentsForSales,
   AllPaymentsForSales,
   SaleLedger,
+  AddEditPlating,
+  Plating,
 } from "../containers";
 import DefaultRoute from "./DefaultRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -132,8 +134,11 @@ import NotFoundRoute from "./NotFoundRoute";
 import RouteWithTabLayout from "./RouteWithTabLayout";
 import DailyUsage from "../containers/RawMaterials/DailyUsage/DailyUsage";
 import {
+  ADDPLATING,
   EDITPARTYID,
+  EDITPLATING,
   EDITSALERETURNID,
+  PLATING,
   VIEWPARTYID,
   VIEWSALERETURNID,
 } from "../paths/Paths";
@@ -637,6 +642,31 @@ const Routes = () => {
           exact
           component={Color}
           header={"Colors"}
+        />
+
+        {/** Plating */}
+        <PrivateRoute
+          openSubMenu={true}
+          path={ADDPLATING}
+          exact
+          component={AddEditPlating}
+          header={"Add Plating"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={EDITPLATING}
+          exact
+          component={AddEditPlating}
+          header={"Edit Plating"}
+        />
+
+        <PrivateRoute
+          openSubMenu={true}
+          path={PLATING}
+          exact
+          component={Plating}
+          header={"Plating"}
         />
 
         {/** Categoris */}

@@ -122,6 +122,10 @@ export const COLORS = "/colors";
 export const ADDCOLOR = "/add-color";
 export const EDITCOLOR = "/edit-color";
 
+export const PLATING = "/plating";
+export const ADDPLATING = "/add-plating";
+export const EDITPLATING = "/edit-plating";
+
 export const CATEGORIES = "/categories";
 export const ADDCATEGORIES = "/add-category";
 export const EDITCATEGORIES = "/edit-category";

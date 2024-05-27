@@ -37,4 +37,10 @@ export {
   AllPayments as AllPaymentsForSales,
   Ledger as SaleLedger,
 } from "./Sales";
-export { AddOrder, ViewOrders, DepartmentSheet } from "./Orders";
+export {
+  AddOrder,
+  ViewOrders,
+  DepartmentSheet,
+  AddEditPlating,
+  Plating,
+} from "./Orders";

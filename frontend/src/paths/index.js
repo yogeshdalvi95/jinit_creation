@@ -110,4 +110,8 @@ export {
   VIEWSALEPAYEMENT,
   VIEWSALEPAYEMENTID,
   SALELEDGER,
+  /** PPLating */
+  PLATING,
+  EDITPLATING,
+  ADDPLATING,
 } from "./Paths";

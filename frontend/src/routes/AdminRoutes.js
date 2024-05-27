@@ -81,7 +81,13 @@ import {
   VIEWSALEPAYEMENTID,
   SALELEDGER,
 } from "../paths";
-import { EDITSALERETURNID, VIEWSALERETURNID } from "../paths/Paths";
+import {
+  ADDPLATING,
+  EDITPLATING,
+  EDITSALERETURNID,
+  PLATING,
+  VIEWSALERETURNID,
+} from "../paths/Paths";
 
 /** Raw material and units */
 
@@ -188,6 +194,7 @@ const orderPathsList = [
   EDITORDERID,
   VIEWORDERID,
 ];
+const platingPathList = [ADDPLATING, EDITPLATING, PLATING];
 const departmentSheetPaths = [VIEWDEPARTMENTSHEETID, EDITDEPARTMENTSHEETID];
 const orderPaths = [...orderPathsList, ...departmentSheetPaths];
 
@@ -355,6 +362,13 @@ const ordersJson = {
   pathList: orderPathsList,
 };
 
+const platingJSON = {
+  path: PLATING,
+  name: "Plating",
+  layout: "",
+  pathList: platingPathList,
+};
+
 export const DashboardStaffRoutes = [
   {
     name: "Purchases",
@@ -391,7 +405,7 @@ export const DashboardStaffRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson],
+    children: [ordersJson, platingJSON],
   },
   {
     name: "Sales",
@@ -450,7 +464,7 @@ export const DashboardAdminRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson],
+    children: [ordersJson, platingJSON],
   },
   {
     name: "Sales",
@@ -516,7 +530,7 @@ export const SuperAdminDashboardRoutes = [
     name: "Orders",
     layout: "",
     pathList: orderPaths,
-    children: [ordersJson],
+    children: [ordersJson, platingJSON],
   },
   {
     name: "Sales",
