@@ -1017,25 +1017,27 @@ module.exports = {
         });
         if (ratio.length) {
           let ratioData = {};
+          let totalQuantity = 0;
+          let totalCompletedQuantity = 0;
           ratio.forEach((r) => {
+            let quantity = utils.validateNumber(r.quantity);
+            let completedQuantity = utils.validateNumber(r.quantity_completed);
+            totalQuantity += quantity;
+            totalCompletedQuantity += completedQuantity;
             if (r.plating) {
               ratioData[r.plating.name] = {
                 ...ratioData[r.plating.name],
                 [r.color.name]: {
-                  quantity: utils.validateNumber(r.quantity),
-                  quantity_completed: utils.validateNumber(
-                    r.quantity_completed
-                  ),
+                  quantity: quantity,
+                  quantity_completed: completedQuantity,
                 },
               };
             } else {
               ratioData["NA"] = {
                 ...ratioData["NA"],
                 [r.color.name]: {
-                  quantity: utils.validateNumber(r.quantity),
-                  quantity_completed: utils.validateNumber(
-                    r.quantity_completed
-                  ),
+                  quantity: quantity,
+                  quantity_completed: completedQuantity,
                 },
               };
             }
@@ -1096,6 +1098,9 @@ module.exports = {
             partyName: order.party?.party_name,
             ratio: output,
             isImagePresent: isImagePresent,
+            totalQuantity: totalQuantity,
+            totalCompletedQuantity: totalCompletedQuantity,
+            notes: order.notes,
           });
         }
       });
@@ -1106,13 +1111,15 @@ module.exports = {
         html +
         `
         <br>
-        <table class="table">
+        <table class="table table_layout_fixed">
             <thead>
             <tr>
-              <th class="th leftAlignText">Order Id</th>
-              <th colspan = "3" class="th leftAlignText">Design</th>
-              <th colspan = "5" class="th leftAlignText">Image</th>
-              <th colspan = "5" class="th leftAlignText">Ratio</th>
+              <th colspan = "2" class="th leftAlignText">Order Id</th>
+              <th colspan = "2" class="th leftAlignText">Design</th>
+              <th colspan = "3" class="th leftAlignText">Image</th>
+              <th colspan = "2" class="th leftAlignText width100">Ratio</th>
+              <th colspan = "1" class="th leftAlignText width50">Total</th>
+              <th colspan = "3" class="th leftAlignText width100">Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -1123,11 +1130,11 @@ module.exports = {
           html +
           `
             <tr>
-              <td class="td leftAlignText">${fd.orderId}</td>
-              <td colspan = "3" class="td leftAlignText whiteSpacePre">${
+              <td colspan = "2" class="td leftAlignText">${fd.orderId}</td>
+              <td colspan = "2" class="td leftAlignText whiteSpacePre">${
                 fd.design
               }</td>
-              <th colspan = "5" class="th leftAlignText">
+              <th colspan = "3" class="td leftAlignText">
                 <div>
                   <img
                     alt="ready_material_photo"
@@ -1138,8 +1145,14 @@ module.exports = {
                   />
                 </div>
               </th>
-              <td colspan = "5" class="td leftAlignText whiteSpacePre">${
+              <td colspan = "2" class="td leftAlignText whiteSpacePre width100">${
                 fd.ratio
+              }</td>
+              <td colspan = "1" class="td leftAlignText whiteSpacePre width50">${
+                fd.totalQuantity
+              }</td>
+              <td colspan = "3" class="td leftAlignText whiteSpacePre width100">${
+                fd.notes
               }</td>
             </tr>
         `;
@@ -1599,9 +1612,8 @@ const getRawMaterialAvailibilityPerOrder = async (
           };
 
           if (finalRawMaterialJson.hasOwnProperty(rawMaterialId)) {
-            console.log(
-              "------------------------------------------------------------------------------------------"
-            );
+            let currentBalanceInJson =
+              finalRawMaterialJson[rawMaterialId]["Current Balance"];
             let temp1 = finalRawMaterialJson[rawMaterialId]["Total Required"];
             let temp2 = finalRawMaterialJson[rawMaterialId]["Total Used"];
             let temp3 =
@@ -1612,23 +1624,20 @@ const getRawMaterialAvailibilityPerOrder = async (
               finalRawMaterialJson[rawMaterialId][
                 "Cost incurred for completed orders (Rs:-)"
               ];
-            let temp5 = finalRawMaterialJson[rawMaterialId]["Difference"];
-            console.log(
-              "------------------------------------------------------------------------------------------"
-            );
+            let finalTotalRequiredInJson =
+              temp1 + totalMaterialsRequiredForRemainingQuantity;
 
             finalRawMaterialJson = {
               ...finalRawMaterialJson,
               [rawMaterialId]: {
                 ...finalRawMaterialJson[rawMaterialId],
-                ["Total Required"]:
-                  temp1 + totalMaterialsRequiredForRemainingQuantity,
+                ["Total Required"]: finalTotalRequiredInJson,
                 ["Total Used"]: temp2 + totalMaterialsUsedForCompletedQuantity,
                 ["Cost for order completion (Rs:-)"]:
                   temp3 + costofRawMaterialRequiredForOrderCompletion,
                 ["Cost incurred for completed orders (Rs:-)"]:
                   temp4 + costofRawMaterialUsedForCompletedQuantity,
-                Difference: temp5 + difference,
+                Difference: currentBalanceInJson - finalTotalRequiredInJson,
               },
             };
           } else {
